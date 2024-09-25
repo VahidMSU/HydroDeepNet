@@ -56,7 +56,6 @@ if __name__ == "__main__":
         remove_large_files(directory, size_limit_mb)
 
     main_directory = "./"
-    remove_git_directories(main_directory)
 
     remove_image_files(main_directory)
 
