@@ -50,6 +50,7 @@ if __name__ == "__main__":
         "./gw_machine_learning/SWAT_recharge_hru/results/",
         "./gw_machine_learning/input_videos/",
         "./PFAS_GNN/figs/",
+        "./PFAS_GNN/results/",
     ]
     size_limit_mb = 0
     for directory in directories_to_clean:
