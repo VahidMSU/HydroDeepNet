@@ -56,8 +56,8 @@ class DataIntegration:
 					rasters_to_copy.append(selected_raster)
 					data_array = src.read(1)
 					nodata = src.nodatavals[0]
-					
-					# Ensure data type can handle -999
+
+					# Ensure data type can handle -99
 					if data_array.dtype in [np.uint8, np.int8, np.uint16, np.int16]:
 						data_array = data_array.astype(np.int32)
 
