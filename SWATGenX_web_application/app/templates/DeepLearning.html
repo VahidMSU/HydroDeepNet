@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}Deep Learning Models{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Deep Learning Models for Predicting Groundwater Hydraulic Properties</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p class="lead">Our deep learning models leverage state-of-the-art techniques to provide accurate predictions of groundwater hydraulic properties, helping researchers and engineers make informed decisions.</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title">Sparse Fully Convolutional Network Classification</h3>
+                    <p class="card-text">The Sparse Fully Convolutional Network (Sparse FCN) model is designed to classify and predict hydraulic conductivity with high precision. It efficiently handles sparse data, making it ideal for large-scale groundwater modeling.</p>
+                    <img src="{{ url_for('static', filename='images/ClassCNN_Predictions_obs_H_COND_1_250m.png') }}" class="img-fluid image-size" alt="ClassCNN Predictions">
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title">ResNet Deep Learning Prediction</h3>
+                    <p class="card-text">The ResNet model applies deep residual learning to predict groundwater hydraulic properties. It captures complex patterns and relationships within the data, ensuring robust and accurate predictions.</p>
+                    <img src="{{ url_for('static', filename='images/FFR_Predicted obs_H_COND_2_100m.png') }}" class="img-fluid image-size" alt="FFR Predictions">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 1200px;
+    }
+    .image-size {
+        max-height: 400px;
+        object-fit: cover;
+    }
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+    .card-body {
+        padding: 2rem;
+    }
+    .card-title {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+    .card-text {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
+    .img-fluid {
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}

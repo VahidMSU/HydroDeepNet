@@ -1,0 +1,109 @@
+2024-08-08 10:49:16,489 - libs.utilts - INFO - Loading data from GDB and creating cache
+2024-08-08 10:49:16,489 - libs.utilts - INFO - Loading data from GDB and creating cache
+2024-08-08 10:49:16,489 - libs.utilts - INFO - Reading the MUPOLYGON data from the gdb file
+2024-08-08 10:49:16,489 - libs.utilts - INFO - Reading the MUPOLYGON data from the gdb file
+2024-08-08 10:49:16,489 - libs.utilts - INFO - Reading the MUPOLYGON data from the gdb file
+2024-08-08 10:49:16,489 - libs.utilts - INFO - Skipping MUPOLYGON as it already exists
+2024-08-08 10:49:16,489 - libs.utilts - INFO - Skipping MUPOLYGON as it already exists
+2024-08-08 10:49:16,489 - libs.utilts - INFO - Skipping MUPOLYGON as it already exists
+2024-08-08 10:49:16,884 - libs.utilts - INFO - Loaded MUPOLYGON columns:
+['AREASYMBOL', 'MUSYM', 'MUKEY']
+2024-08-08 10:49:16,884 - libs.utilts - INFO - Loaded MUPOLYGON columns:
+['AREASYMBOL', 'MUSYM', 'MUKEY']
+2024-08-08 10:49:16,884 - libs.utilts - INFO - Loaded MUPOLYGON columns:
+['AREASYMBOL', 'MUSYM', 'MUKEY']
+2024-08-08 10:49:17,964 - libs.utilts - INFO - Reading the component data from the gdb file
+2024-08-08 10:49:17,964 - libs.utilts - INFO - Reading the component data from the gdb file
+2024-08-08 10:49:17,964 - libs.utilts - INFO - Reading the component data from the gdb file
+2024-08-08 10:49:17,964 - libs.utilts - INFO - Reading the component data from the gdb file
+2024-08-08 10:49:17,965 - libs.utilts - INFO - Skipping component as it already exists
+2024-08-08 10:49:17,965 - libs.utilts - INFO - Skipping component as it already exists
+2024-08-08 10:49:17,965 - libs.utilts - INFO - Skipping component as it already exists
+2024-08-08 10:49:17,965 - libs.utilts - INFO - Skipping component as it already exists
+2024-08-08 10:49:17,980 - libs.utilts - INFO - Loaded component columns:
+['comppct_r', 'compname', 'albedodry_r', 'hydgrp', 'mukey', 'cokey']
+2024-08-08 10:49:17,980 - libs.utilts - INFO - Loaded component columns:
+['comppct_r', 'compname', 'albedodry_r', 'hydgrp', 'mukey', 'cokey']
+2024-08-08 10:49:17,980 - libs.utilts - INFO - Loaded component columns:
+['comppct_r', 'compname', 'albedodry_r', 'hydgrp', 'mukey', 'cokey']
+2024-08-08 10:49:17,980 - libs.utilts - INFO - Loaded component columns:
+['comppct_r', 'compname', 'albedodry_r', 'hydgrp', 'mukey', 'cokey']
+2024-08-08 10:49:17,981 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-08-08 10:49:17,981 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-08-08 10:49:17,981 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-08-08 10:49:17,981 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-08-08 10:49:17,981 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-08-08 10:49:17,982 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-08-08 10:49:17,982 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-08-08 10:49:17,982 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-08-08 10:49:17,982 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-08-08 10:49:17,982 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-08-08 10:49:18,059 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['texture', 'chkey']
+2024-08-08 10:49:18,059 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['texture', 'chkey']
+2024-08-08 10:49:18,059 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['texture', 'chkey']
+2024-08-08 10:49:18,059 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['texture', 'chkey']
+2024-08-08 10:49:18,059 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['texture', 'chkey']
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-08-08 10:49:18,061 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-08-08 10:49:18,121 - libs.utilts - INFO - Loaded chorizon columns:
+['hzdept_r', 'hzdepb_r', 'hzthk_r', 'fraggt10_r', 'sandtotal_r', 'silttotal_r', 'claytotal_r', 'om_r', 'dbthirdbar_r', 'ksat_r', 'awc_r', 'kwfact', 'caco3_r', 'ec_r', 'ph1to1h2o_r', 'cokey', 'chkey']
+2024-08-08 10:49:18,121 - libs.utilts - INFO - Loaded chorizon columns:
+['hzdept_r', 'hzdepb_r', 'hzthk_r', 'fraggt10_r', 'sandtotal_r', 'silttotal_r', 'claytotal_r', 'om_r', 'dbthirdbar_r', 'ksat_r', 'awc_r', 'kwfact', 'caco3_r', 'ec_r', 'ph1to1h2o_r', 'cokey', 'chkey']
+2024-08-08 10:49:18,121 - libs.utilts - INFO - Loaded chorizon columns:
+['hzdept_r', 'hzdepb_r', 'hzthk_r', 'fraggt10_r', 'sandtotal_r', 'silttotal_r', 'claytotal_r', 'om_r', 'dbthirdbar_r', 'ksat_r', 'awc_r', 'kwfact', 'caco3_r', 'ec_r', 'ph1to1h2o_r', 'cokey', 'chkey']
+2024-08-08 10:49:18,121 - libs.utilts - INFO - Loaded chorizon columns:
+['hzdept_r', 'hzdepb_r', 'hzthk_r', 'fraggt10_r', 'sandtotal_r', 'silttotal_r', 'claytotal_r', 'om_r', 'dbthirdbar_r', 'ksat_r', 'awc_r', 'kwfact', 'caco3_r', 'ec_r', 'ph1to1h2o_r', 'cokey', 'chkey']
+2024-08-08 10:49:18,121 - libs.utilts - INFO - Loaded chorizon columns:
+['hzdept_r', 'hzdepb_r', 'hzthk_r', 'fraggt10_r', 'sandtotal_r', 'silttotal_r', 'claytotal_r', 'om_r', 'dbthirdbar_r', 'ksat_r', 'awc_r', 'kwfact', 'caco3_r', 'ec_r', 'ph1to1h2o_r', 'cokey', 'chkey']
+2024-08-08 10:49:18,121 - libs.utilts - INFO - Loaded chorizon columns:
+['hzdept_r', 'hzdepb_r', 'hzthk_r', 'fraggt10_r', 'sandtotal_r', 'silttotal_r', 'claytotal_r', 'om_r', 'dbthirdbar_r', 'ksat_r', 'awc_r', 'kwfact', 'caco3_r', 'ec_r', 'ph1to1h2o_r', 'cokey', 'chkey']
+2024-08-08 10:49:18,122 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-08-08 10:49:18,122 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-08-08 10:49:18,122 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-08-08 10:49:18,122 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-08-08 10:49:18,122 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-08-08 10:49:18,122 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-08-08 10:49:18,122 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-08-08 10:49:18,123 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-08-08 10:49:18,123 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-08-08 10:49:18,123 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-08-08 10:49:18,123 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-08-08 10:49:18,123 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-08-08 10:49:18,123 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-08-08 10:49:18,123 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-08-08 10:49:18,696 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-08-08 10:49:18,696 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-08-08 10:49:18,696 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-08-08 10:49:18,696 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-08-08 10:49:18,696 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-08-08 10:49:18,696 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-08-08 10:49:18,696 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-08-08 10:49:18,697 - libs.utilts - INFO - Data has been successfully loaded.
+2024-08-08 10:49:18,697 - libs.utilts - INFO - Data has been successfully loaded.
+2024-08-08 10:49:18,697 - libs.utilts - INFO - Data has been successfully loaded.
+2024-08-08 10:49:18,697 - libs.utilts - INFO - Data has been successfully loaded.
+2024-08-08 10:49:18,697 - libs.utilts - INFO - Data has been successfully loaded.
+2024-08-08 10:49:18,697 - libs.utilts - INFO - Data has been successfully loaded.
+2024-08-08 10:49:18,697 - libs.utilts - INFO - Data has been successfully loaded.

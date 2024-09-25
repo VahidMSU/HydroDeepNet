@@ -1,0 +1,1 @@
+Test_obs_H_COND_1_250m, MSE: 4795.07, RMSE: 69.25, NSE: 0.03, R2: 0.22, MPE: -185.18

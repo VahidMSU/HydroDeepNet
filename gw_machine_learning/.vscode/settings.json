@@ -1,0 +1,6 @@
+{
+	"python.REPL.enableREPLSmartSend": false,
+	"python.analysis.autoImportCompletions": true,
+	"remote.SSH.reconnectionTimeout": 1,
+	"terminal.integrated.splitCwd": "workspaceRoot",
+}

@@ -1,0 +1,8 @@
+VPUID: 0407
+LEVEL: huc12
+NAME: 04128990
+MODEL_NAME: SWAT_MODEL_gssurgo
+landuse_product: NLCD
+landuse_epoch: 2021
+ls_resolution: 30
+dem_resolution: 30
