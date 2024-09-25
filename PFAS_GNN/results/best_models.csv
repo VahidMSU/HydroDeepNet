@@ -1,0 +1,2 @@
+gnn_model,train_loss,val_loss,test_loss,sw_train_loss,sw_val_loss,sw_test_loss,out_channels,epochs,lr,weight_decay,distance_options_km,gw_gw_distance_threshold_km,gw_features,aggregation
+GatedEdgePReLUGNN,0.0955,0.2981,0.1698,251495.6406,251348.7969,186985.0781,16,1000,0.001,0.005,10.0,1.0,SWL_DEM,mean

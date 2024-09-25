@@ -1,0 +1,238 @@
+2024-09-21 15:32:05,465 - libs.utilts - INFO - Loading data from GDB and creating cache
+2024-09-21 15:32:05,465 - libs.utilts - INFO - Loading data from GDB and creating cache
+2024-09-21 15:32:05,466 - libs.utilts - INFO - Reading the MUPOLYGON data from the gdb file
+2024-09-21 15:32:05,466 - libs.utilts - INFO - Reading the MUPOLYGON data from the gdb file
+2024-09-21 15:32:05,466 - libs.utilts - INFO - Reading the MUPOLYGON data from the gdb file
+2024-09-21 15:32:08,674 - libs.utilts - ERROR - No data found in the MUPOLYGON layer.
+2024-09-21 15:32:08,674 - libs.utilts - ERROR - No data found in the MUPOLYGON layer.
+2024-09-21 15:32:08,674 - libs.utilts - ERROR - No data found in the MUPOLYGON layer.
+2024-09-21 15:32:08,681 - libs.utilts - INFO - Reading the component data from the gdb file
+2024-09-21 15:32:08,681 - libs.utilts - INFO - Reading the component data from the gdb file
+2024-09-21 15:32:08,681 - libs.utilts - INFO - Reading the component data from the gdb file
+2024-09-21 15:32:08,681 - libs.utilts - INFO - Reading the component data from the gdb file
+2024-09-21 15:32:08,681 - libs.utilts - INFO - Skipping component as it already exists
+2024-09-21 15:32:08,681 - libs.utilts - INFO - Skipping component as it already exists
+2024-09-21 15:32:08,681 - libs.utilts - INFO - Skipping component as it already exists
+2024-09-21 15:32:08,681 - libs.utilts - INFO - Skipping component as it already exists
+2024-09-21 15:32:08,695 - libs.utilts - INFO - Loaded component columns:
+['albedodry_r', 'cokey', 'compname', 'comppct_r', 'hydgrp', 'mukey']
+2024-09-21 15:32:08,695 - libs.utilts - INFO - Loaded component columns:
+['albedodry_r', 'cokey', 'compname', 'comppct_r', 'hydgrp', 'mukey']
+2024-09-21 15:32:08,695 - libs.utilts - INFO - Loaded component columns:
+['albedodry_r', 'cokey', 'compname', 'comppct_r', 'hydgrp', 'mukey']
+2024-09-21 15:32:08,695 - libs.utilts - INFO - Loaded component columns:
+['albedodry_r', 'cokey', 'compname', 'comppct_r', 'hydgrp', 'mukey']
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Reading the chtexturegrp data from the gdb file
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-09-21 15:32:08,696 - libs.utilts - INFO - Skipping chtexturegrp as it already exists
+2024-09-21 15:32:08,769 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['chkey', 'texture']
+2024-09-21 15:32:08,769 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['chkey', 'texture']
+2024-09-21 15:32:08,769 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['chkey', 'texture']
+2024-09-21 15:32:08,769 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['chkey', 'texture']
+2024-09-21 15:32:08,769 - libs.utilts - INFO - Loaded chtexturegrp columns:
+['chkey', 'texture']
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Reading the chorizon data from the gdb file
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-09-21 15:32:08,770 - libs.utilts - INFO - Skipping chorizon as it already exists
+2024-09-21 15:32:08,827 - libs.utilts - INFO - Loaded chorizon columns:
+['awc_r', 'caco3_r', 'chkey', 'claytotal_r', 'cokey', 'dbthirdbar_r', 'ec_r', 'fraggt10_r', 'hzdepb_r', 'hzdept_r', 'hzthk_r', 'ksat_r', 'kwfact', 'om_r', 'ph1to1h2o_r', 'sandtotal_r', 'silttotal_r']
+2024-09-21 15:32:08,827 - libs.utilts - INFO - Loaded chorizon columns:
+['awc_r', 'caco3_r', 'chkey', 'claytotal_r', 'cokey', 'dbthirdbar_r', 'ec_r', 'fraggt10_r', 'hzdepb_r', 'hzdept_r', 'hzthk_r', 'ksat_r', 'kwfact', 'om_r', 'ph1to1h2o_r', 'sandtotal_r', 'silttotal_r']
+2024-09-21 15:32:08,827 - libs.utilts - INFO - Loaded chorizon columns:
+['awc_r', 'caco3_r', 'chkey', 'claytotal_r', 'cokey', 'dbthirdbar_r', 'ec_r', 'fraggt10_r', 'hzdepb_r', 'hzdept_r', 'hzthk_r', 'ksat_r', 'kwfact', 'om_r', 'ph1to1h2o_r', 'sandtotal_r', 'silttotal_r']
+2024-09-21 15:32:08,827 - libs.utilts - INFO - Loaded chorizon columns:
+['awc_r', 'caco3_r', 'chkey', 'claytotal_r', 'cokey', 'dbthirdbar_r', 'ec_r', 'fraggt10_r', 'hzdepb_r', 'hzdept_r', 'hzthk_r', 'ksat_r', 'kwfact', 'om_r', 'ph1to1h2o_r', 'sandtotal_r', 'silttotal_r']
+2024-09-21 15:32:08,827 - libs.utilts - INFO - Loaded chorizon columns:
+['awc_r', 'caco3_r', 'chkey', 'claytotal_r', 'cokey', 'dbthirdbar_r', 'ec_r', 'fraggt10_r', 'hzdepb_r', 'hzdept_r', 'hzthk_r', 'ksat_r', 'kwfact', 'om_r', 'ph1to1h2o_r', 'sandtotal_r', 'silttotal_r']
+2024-09-21 15:32:08,827 - libs.utilts - INFO - Loaded chorizon columns:
+['awc_r', 'caco3_r', 'chkey', 'claytotal_r', 'cokey', 'dbthirdbar_r', 'ec_r', 'fraggt10_r', 'hzdepb_r', 'hzdept_r', 'hzthk_r', 'ksat_r', 'kwfact', 'om_r', 'ph1to1h2o_r', 'sandtotal_r', 'silttotal_r']
+2024-09-21 15:32:08,828 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-09-21 15:32:08,828 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-09-21 15:32:08,828 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-09-21 15:32:08,828 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-09-21 15:32:08,828 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-09-21 15:32:08,828 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-09-21 15:32:08,828 - libs.utilts - INFO - Reading the cointerp data from the gdb file
+2024-09-21 15:32:08,829 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-09-21 15:32:08,829 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-09-21 15:32:08,829 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-09-21 15:32:08,829 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-09-21 15:32:08,829 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-09-21 15:32:08,829 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-09-21 15:32:08,829 - libs.utilts - INFO - Skipping cointerp as it already exists
+2024-09-21 15:32:09,393 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-09-21 15:32:09,393 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-09-21 15:32:09,393 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-09-21 15:32:09,393 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-09-21 15:32:09,393 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-09-21 15:32:09,393 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-09-21 15:32:09,393 - libs.utilts - INFO - Loaded cointerp columns:
+['cokey', 'seqnum']
+2024-09-21 15:32:09,394 - libs.utilts - INFO - Data has been successfully loaded.
+2024-09-21 15:32:09,394 - libs.utilts - INFO - Data has been successfully loaded.
+2024-09-21 15:32:09,394 - libs.utilts - INFO - Data has been successfully loaded.
+2024-09-21 15:32:09,394 - libs.utilts - INFO - Data has been successfully loaded.
+2024-09-21 15:32:09,394 - libs.utilts - INFO - Data has been successfully loaded.
+2024-09-21 15:32:09,394 - libs.utilts - INFO - Data has been successfully loaded.
+2024-09-21 15:32:09,394 - libs.utilts - INFO - Data has been successfully loaded.
+2024-09-21 15:32:21,008 - libs.utilts - INFO - unique values in seqnum: [0 1 2 3 4 5]
+2024-09-21 15:32:21,008 - libs.utilts - INFO - unique values in seqnum: [0 1 2 3 4 5]
+2024-09-21 15:32:21,008 - libs.utilts - INFO - unique values in seqnum: [0 1 2 3 4 5]
+2024-09-21 15:32:21,008 - libs.utilts - INFO - unique values in seqnum: [0 1 2 3 4 5]
+2024-09-21 15:32:21,008 - libs.utilts - INFO - unique values in seqnum: [0 1 2 3 4 5]
+2024-09-21 15:32:21,008 - libs.utilts - INFO - unique values in seqnum: [0 1 2 3 4 5]
+2024-09-21 15:32:21,008 - libs.utilts - INFO - unique values in seqnum: [0 1 2 3 4 5]
+2024-09-21 15:32:30,575 - libs.utilts - INFO - hyd_grp: 0           D
+1           D
+2           D
+3           D
+4           D
+           ..
+49110577    D
+49110578    D
+49110579    D
+49110580    D
+49110581    D
+Name: hyd_grp, Length: 49110582, dtype: object
+2024-09-21 15:32:30,575 - libs.utilts - INFO - hyd_grp: 0           D
+1           D
+2           D
+3           D
+4           D
+           ..
+49110577    D
+49110578    D
+49110579    D
+49110580    D
+49110581    D
+Name: hyd_grp, Length: 49110582, dtype: object
+2024-09-21 15:32:30,575 - libs.utilts - INFO - hyd_grp: 0           D
+1           D
+2           D
+3           D
+4           D
+           ..
+49110577    D
+49110578    D
+49110579    D
+49110580    D
+49110581    D
+Name: hyd_grp, Length: 49110582, dtype: object
+2024-09-21 15:32:30,575 - libs.utilts - INFO - hyd_grp: 0           D
+1           D
+2           D
+3           D
+4           D
+           ..
+49110577    D
+49110578    D
+49110579    D
+49110580    D
+49110581    D
+Name: hyd_grp, Length: 49110582, dtype: object
+2024-09-21 15:32:30,575 - libs.utilts - INFO - hyd_grp: 0           D
+1           D
+2           D
+3           D
+4           D
+           ..
+49110577    D
+49110578    D
+49110579    D
+49110580    D
+49110581    D
+Name: hyd_grp, Length: 49110582, dtype: object
+2024-09-21 15:32:30,575 - libs.utilts - INFO - hyd_grp: 0           D
+1           D
+2           D
+3           D
+4           D
+           ..
+49110577    D
+49110578    D
+49110579    D
+49110580    D
+49110581    D
+Name: hyd_grp, Length: 49110582, dtype: object
+2024-09-21 15:32:30,575 - libs.utilts - INFO - hyd_grp: 0           D
+1           D
+2           D
+3           D
+4           D
+           ..
+49110577    D
+49110578    D
+49110579    D
+49110580    D
+49110581    D
+Name: hyd_grp, Length: 49110582, dtype: object
+2024-09-21 15:32:30,575 - libs.utilts - INFO - hyd_grp: 0           D
+1           D
+2           D
+3           D
+4           D
+           ..
+49110577    D
+49110578    D
+49110579    D
+49110580    D
+49110581    D
+Name: hyd_grp, Length: 49110582, dtype: object
+2024-09-21 15:32:31,491 - libs.utilts - INFO - number of NaN values in the hyd_grp column: 152985
+2024-09-21 15:32:31,491 - libs.utilts - INFO - number of NaN values in the hyd_grp column: 152985
+2024-09-21 15:32:31,491 - libs.utilts - INFO - number of NaN values in the hyd_grp column: 152985
+2024-09-21 15:32:31,491 - libs.utilts - INFO - number of NaN values in the hyd_grp column: 152985
+2024-09-21 15:32:31,491 - libs.utilts - INFO - number of NaN values in the hyd_grp column: 152985
+2024-09-21 15:32:31,491 - libs.utilts - INFO - number of NaN values in the hyd_grp column: 152985
+2024-09-21 15:32:31,491 - libs.utilts - INFO - number of NaN values in the hyd_grp column: 152985
+2024-09-21 15:32:31,491 - libs.utilts - INFO - number of NaN values in the hyd_grp column: 152985
+2024-09-21 15:32:34,587 - libs.utilts - INFO - number of NaN values in the hyd_grp column after fillna: 0
+2024-09-21 15:32:34,587 - libs.utilts - INFO - number of NaN values in the hyd_grp column after fillna: 0
+2024-09-21 15:32:34,587 - libs.utilts - INFO - number of NaN values in the hyd_grp column after fillna: 0
+2024-09-21 15:32:34,587 - libs.utilts - INFO - number of NaN values in the hyd_grp column after fillna: 0
+2024-09-21 15:32:34,587 - libs.utilts - INFO - number of NaN values in the hyd_grp column after fillna: 0
+2024-09-21 15:32:34,587 - libs.utilts - INFO - number of NaN values in the hyd_grp column after fillna: 0
+2024-09-21 15:32:34,587 - libs.utilts - INFO - number of NaN values in the hyd_grp column after fillna: 0
+2024-09-21 15:32:34,587 - libs.utilts - INFO - number of NaN values in the hyd_grp column after fillna: 0
+2024-09-21 15:32:36,789 - libs.utilts - INFO - number of NaN values in the dp_tot column after fillna: 206283
+2024-09-21 15:32:36,789 - libs.utilts - INFO - number of NaN values in the dp_tot column after fillna: 206283
+2024-09-21 15:32:36,789 - libs.utilts - INFO - number of NaN values in the dp_tot column after fillna: 206283
+2024-09-21 15:32:36,789 - libs.utilts - INFO - number of NaN values in the dp_tot column after fillna: 206283
+2024-09-21 15:32:36,789 - libs.utilts - INFO - number of NaN values in the dp_tot column after fillna: 206283
+2024-09-21 15:32:36,789 - libs.utilts - INFO - number of NaN values in the dp_tot column after fillna: 206283
+2024-09-21 15:32:36,789 - libs.utilts - INFO - number of NaN values in the dp_tot column after fillna: 206283
+2024-09-21 15:32:36,789 - libs.utilts - INFO - number of NaN values in the dp_tot column after fillna: 206283
+2024-09-21 15:32:43,177 - libs.utilts - INFO - Checking if 377988 is in muid: False
+2024-09-21 15:32:43,177 - libs.utilts - INFO - Checking if 377988 is in muid: False
+2024-09-21 15:32:43,177 - libs.utilts - INFO - Checking if 377988 is in muid: False
+2024-09-21 15:32:43,177 - libs.utilts - INFO - Checking if 377988 is in muid: False
+2024-09-21 15:32:43,177 - libs.utilts - INFO - Checking if 377988 is in muid: False
+2024-09-21 15:32:43,177 - libs.utilts - INFO - Checking if 377988 is in muid: False
+2024-09-21 15:32:43,177 - libs.utilts - INFO - Checking if 377988 is in muid: False
+2024-09-21 15:32:43,177 - libs.utilts - INFO - Checking if 377988 is in muid: False
