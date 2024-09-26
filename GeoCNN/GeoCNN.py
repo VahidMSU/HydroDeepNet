@@ -226,7 +226,7 @@ if __name__ == '__main__':
     
     args_list = [
 
-        {   'overwrite': False,
+        {   'overwrite': True,
             'batch_window': 256,
             'embed_size': 2**10,
             'plotting': False,  # Set to True to plot the data

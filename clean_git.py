@@ -1,6 +1,15 @@
 import os
 import shutil
 
+
+def remove_tiff_files(directory):
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".tif") or file.endswith(".tiff"):
+                file_path = os.path.join(root, file)
+                print(f"Removing tiff file {file_path}")
+                os.remove(file_path)
+
 def remove_git_directories(base_directory):
     for root, dirs, files in os.walk(base_directory):
         if '.git' in dirs:
@@ -36,7 +45,6 @@ def remove_large_files(directory, size_limit_mb):
 
 if __name__ == "__main__":
     directories_to_clean = [
-        "./SWATplus_development/aarthi_work/SWATplus_development/40601020807/",
         "./GeoCNN/models/",
         "./HydroGeo/SWATplus_performance/input_shape/",
         "./PostProcessing/model_bounds/",
@@ -61,3 +69,5 @@ if __name__ == "__main__":
     remove_image_files(main_directory)
 
     remove_ml_models(main_directory)
+
+    remove_tiff_files(main_directory)
