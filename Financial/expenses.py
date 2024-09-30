@@ -29,7 +29,7 @@ total_annual = 9 * car_payment + 6 * personal_loan + 12 * (rent + gas + insuranc
 print(f"Total annual expenses: {total_annual}")
 
 ## annual income
-annual_income = 80000
+annual_income = 0
 ### tax rate
 retirement = 0.05
 annual_income *= 1 - retirement

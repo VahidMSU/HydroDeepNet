@@ -13,7 +13,6 @@ from pyproj import CRS
 
 # Define the EPSG code for the geographic coordinate system
 epsg_code = 4269  # EPSG code for GCS_North_American_1983
-
 variable = 'ppt'
 year = 1990
 for year in range(1990, 2023):

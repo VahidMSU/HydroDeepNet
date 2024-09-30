@@ -28,8 +28,7 @@ if __name__ == "__main__":
     variable = 'pr'
 
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    cc_path = f"/data/MyDataBase/SWATGenXAppData/climate_change/cirrus.ucsd.edu/~pierce/LOCA2/CONUS_regions_split/{model}/{region}/{resolution}/{ensemble}/{scenario}/{variable}/"
-
+    cc_path = f"/data/LOCA2/CONUS_regions_split/{model}/{region}/{resolution}/{ensemble}/{scenario}/{variable}/"
 
     # Find the nc file
     cc_file = None
@@ -39,6 +38,7 @@ if __name__ == "__main__":
             print(file)
             cc_file = os.path.join(cc_path, file)
             break
+    
     if cc_file := os.path.join(
         cc_path,
         "pr.CNRM-CM6-1-HR.ssp585.r1i1p1f2.2075-2100.LOCA_16thdeg_v20220519.monthly.e_n_cent.nc",

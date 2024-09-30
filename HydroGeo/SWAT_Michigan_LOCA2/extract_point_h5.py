@@ -222,7 +222,7 @@ def extract_model_scenario_ensemble(BASE_PATH, TARGET_PATH, NAME, cc_model, scen
 
     model_path = os.path.join(BASE_PATH, f"SWAT_input/huc12/{NAME}/PRISM")
     mesh_path = os.path.join(model_path, "PRISM_grid.shp")
-    cc_path = os.path.join("E:/MyDataBase/climate_change/cirrus.ucsd.edu/~pierce/LOCA2/CONUS_regions_split")
+    cc_path = os.path.join("/data/LOCA2/CONUS_regions_split")
     output_dir = os.path.join(TARGET_PATH, f"SWATplus_by_VPUID/{VPUID}/huc12/{NAME}/climate_change_models/{cc_model}_{scenario}_{ensemble}")
     ### if the output_dir already exists and the number of files ending with pcp and tmp are the same, then continue
 

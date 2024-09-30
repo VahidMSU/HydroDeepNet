@@ -132,3 +132,5 @@ if __name__ == '__main__':
 			os.remove(database_path)
 		data_integration = DataIntegration(rasters_path, database_path)
 		data_integration.process_rasters()
+
+	

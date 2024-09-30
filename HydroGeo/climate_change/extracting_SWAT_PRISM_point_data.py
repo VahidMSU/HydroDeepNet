@@ -99,7 +99,7 @@ if __name__ == "__main__":
 	base_path = "/data/"
 
 	mesh_path = "/data/SWATplus_models/04102700/PRISM/PRISM_grid.shp"
-	cc_path = os.path.join(base_path,"climate_change/cirrus.ucsd.edu/~pierce/LOCA2/CONUS_regions_split")
+	cc_path = os.path.join(base_path,"/LOCA2/CONUS_regions_split")
 	output_dir = os.path.join(base_path,"climate_change/processed_data")
 
 	config = {

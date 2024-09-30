@@ -27,8 +27,14 @@
 		"xycoords",
 		"ylabel"
 	],
-	"python.formatting.autopep8Args": ["--indent-size=2"],
+	"python.formatting.autopep8Args": [
+		"--indent-size=2"
+	],
 	"editor.insertSpaces": false,
 	"editor.detectIndentation": false,
-	"editor.tabSize": 2
+	"editor.tabSize": 2,
+	"python.analysis.extraPaths": [
+		"/home/rafieiva/MyDataBase/codebase/NHDPlus_SWAT/",
+		"/home/rafieiva/MyDataBase/codebase/ModelProcessing"
+	],
 }

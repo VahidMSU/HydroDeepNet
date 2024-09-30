@@ -88,8 +88,19 @@ class ClimateDataDownloader:
             print(f'Failed to download {file_url}')
 
 if __name__ == "__main__":
+
+    """
+    
+    This script downloads the LOCA2 data from the list of all models and scenarios.
+
+    THe region of donwload is e_n_cent and the resolution is 0p0625deg.
+    
+    
+    """
+
+
     base_url = 'https://cirrus.ucsd.edu/~pierce/LOCA2/CONUS_regions_split'
-    model_file_path = "E:/MyDataBase/climate_change/list_of_all_models.txt"
-    download_dir = "E:/MyDataBase/climate_change/cirrus.ucsd.edu/~pierce/LOCA2/CONUS_regions_split"
+    model_file_path = "/data/MyDataBase/climate_change/list_of_all_models.txt"
+    download_dir = "/data/LOCA2/CONUS_regions_split"
     downloader = ClimateDataDownloader(base_url, model_file_path, download_dir, max_workers=100)
     downloader.download_files()
