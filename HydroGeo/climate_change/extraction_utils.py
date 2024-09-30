@@ -202,4 +202,4 @@ def save_time_series(ts, rst):
     # Write the DataFrame to the same file without writing the header and index
     ts.to_csv(full_path, mode='a', header=False, index=False, sep='\t')
 
-#"E:/MyDataBase/climate_change/cirrus.ucsd.edu/~pierce/LOCA2/CONUS_regions_split\\EC-Earth3-Veg/e_n_cent/0p0625deg/r1i1p1f1/ssp245/tasmax\\tasmax.EC-Earth3-Veg.ssp245.r1i1p1f1.2075-2100.LOCA_16thdeg_v20220413.e_n_cent.nc"
+#"/data/LOCA2/CONUS_regions_split\\EC-Earth3-Veg/e_n_cent/0p0625deg/r1i1p1f1/ssp245/tasmax\\tasmax.EC-Earth3-Veg.ssp245.r1i1p1f1.2075-2100.LOCA_16thdeg_v20220413.e_n_cent.nc"

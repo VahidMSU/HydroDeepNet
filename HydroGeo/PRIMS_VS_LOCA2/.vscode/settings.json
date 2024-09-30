@@ -1,0 +1,11 @@
+{
+    "files.exclude": {
+        "**/data/modules/": false
+    },
+    "python.analysis.extraPaths": [
+        "/data/modules"
+    ],
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "/data/modules:${env:PYTHONPATH}"
+    }
+}
