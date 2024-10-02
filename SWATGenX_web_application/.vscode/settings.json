@@ -1,0 +1,14 @@
+{
+    "python.pythonPath": "/home/rafieiva/MyDataBase/codebase/SWATGenX_web_application/.venv/bin/python",
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.profiles.linux": {
+        "bash": {
+            "path": "/bin/bash",
+            "args": []
+        }
+    },
+    "python.analysis.extraPaths": [
+        "/home/rafieiva/MyDataBase/codebase/NHDPlus_SWAT",
+        "/home/rafieiva/MyDataBase/codebase/ModelProcessing"
+    ]
+}

@@ -4,8 +4,8 @@ import time
 from flask import Flask, request, render_template, send_file, jsonify
 from waitress import serve
 import sys
-sys.path.append(r'/data/MyDataBase/SWATGenXAppData/codes/NHDPlus_SWAT')
-sys.path.append(r'/data/MyDataBase/SWATGenXAppData/codes/ModelProcessing')
+sys.path.append(r'/home/rafieiva/MyDataBase/codebase/NHDPlus_SWAT')
+sys.path.append(r'/home/rafieiva/MyDataBase/codebase/ModelProcessing')
 from NHDPlus_SWAT.SWATGenXCommand import SWATGenXCommand
 from NHDPlus_SWAT.integrate_streamflow_data import integrate_streamflow_data
 from ModelProcessing.core import process_SCV_SWATGenXModel
