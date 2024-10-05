@@ -9,6 +9,7 @@
     },
     "python.analysis.extraPaths": [
         "/home/rafieiva/MyDataBase/codebase/NHDPlus_SWAT",
-        "/home/rafieiva/MyDataBase/codebase/ModelProcessing"
+        "/home/rafieiva/MyDataBase/codebase/ModelProcessing",
+        "/home/rafieiva/swatplus_installation/swatplus-editor/src/api",
     ]
 }

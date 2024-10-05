@@ -2,6 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from app.models import User
+from wtforms import SelectField, BooleanField, IntegerField
+from wtforms.validators import NumberRange
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -30,12 +32,10 @@ class ContactForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
-from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, BooleanField, IntegerField, SubmitField
-from wtforms.validators import DataRequired, NumberRange
 
 class ModelSettingsForm(FlaskForm):
     user_input = StringField('USGS Station Number', validators=[DataRequired()])
+    search_input = StringField('Search Site Name')  # New search field
     ls_resolution = SelectField('Landuse/Soil Resolution', choices=[('30', '30'), ('100', '100'), ('250', '250'), ('500', '500'), ('1000', '1000'), ('2000', '2000')], validators=[DataRequired()])
     dem_resolution = SelectField('DEM Resolution', choices=[('30', '30'), ('100', '100'), ('250', '250')], validators=[DataRequired()])
     calibration_flag = BooleanField('Calibration')
@@ -48,3 +48,5 @@ class ModelSettingsForm(FlaskForm):
     validation_flag = BooleanField('Validation')
     verification_samples = IntegerField('Samples', validators=[NumberRange(min=1, max=50)], default=25)
     submit = SubmitField('Run')
+    search_submit = SubmitField('Search')  # New submit button for search
+

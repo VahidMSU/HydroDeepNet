@@ -7,6 +7,7 @@ import logging
 from functools import partial
 from multiprocessing import Process
 import sys
+from app.utils import find_station
 
 
 sys.path.append(r'/home/rafieiva/MyDataBase/codebase/NHDPlus_SWAT')
@@ -182,3 +183,27 @@ def init_routes(app):
 	def michigan():
 		logging.info("Michigan route called")
 		return render_template('michigan.html')
+
+
+	@app.route('/search_site', methods=['GET', 'POST'])
+	@login_required
+	def search_site():
+		logging.info("Search site route called")
+		search_term = request.args.get('search_term', '').lower()
+		
+		if not search_term:
+			return jsonify({"error": "Search term is required"}), 400
+
+		try:
+			# Paths for the data files
+			# Call the utility function to search for station regions
+			results = find_station(search_term)
+
+			if results.empty:
+				return jsonify({"error": "No matching sites found"}), 404
+
+			return jsonify(results.to_dict(orient='records'))
+
+		except Exception as e:
+			logging.error(f"Error while searching for site: {e}")
+			return jsonify({"error": "An error occurred during the search"}), 500

@@ -10,6 +10,17 @@
             <div class="card-body">
                 <form method="post">
                     {{ form.hidden_tag() }}
+                    
+                    <!-- Search Site Name -->
+                    <div class="form-group">
+                        <label for="search_input">Search Site Name:</label>
+                        {{ form.search_input(class="form-control", id="search_input", placeholder="Enter site name") }}
+                        <button type="button" class="btn btn-secondary mt-2" id="search_button">Search</button>
+                    </div>
+
+                    <div id="search_results"></div>  <!-- Search results will be displayed here -->
+                    
+                    <!-- USGS Station Number (this will be updated based on search) -->
                     <div class="form-group">
                         <label for="user_input">USGS Station Number:</label>
                         {{ form.user_input(class="form-control", id="user_input", placeholder="Enter station number", list="station_list") }}
@@ -19,6 +30,7 @@
                             {% endfor %}
                         </datalist>
                     </div>
+
                     <div id="station_characteristics">
                         {% if station_characteristics %}
                             <h5>Station Characteristics:</h5>
@@ -29,6 +41,8 @@
                             </ul>
                         {% endif %}
                     </div>
+                    
+                    <!-- Other form fields -->
                     <div class="form-group">
                         <label for="ls_resolution">Landuse/Soil Resolution:</label>
                         {{ form.ls_resolution(class="form-control", id="ls_resolution") }}
@@ -37,6 +51,8 @@
                         <label for="dem_resolution">DEM Resolution:</label>
                         {{ form.dem_resolution(class="form-control", id="dem_resolution") }}
                     </div>
+
+                    <!-- Calibration Settings -->
                     <div class="checkbox-container">
                         <div class="form-group form-check">
                             {{ form.calibration_flag(class="form-check-input", id="calibration_flag", onchange="toggleCalibration(this)") }}
@@ -53,6 +69,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Sensitivity Settings -->
                     <div class="checkbox-container">
                         <div class="form-group form-check">
                             {{ form.sensitivity_flag(class="form-check-input", id="sensitivity_flag", onchange="toggleSensitivity(this)") }}
@@ -73,6 +91,8 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Validation Settings -->
                     <div class="checkbox-container">
                         <div class="form-group form-check">
                             {{ form.validation_flag(class="form-check-input", id="validation_flag", onchange="toggleValidation(this)") }}
@@ -85,6 +105,7 @@
                             </div>
                         </div>
                     </div>
+                    
                     {{ form.submit(class="btn btn-primary") }}
                 </form>
             </div>
@@ -94,33 +115,47 @@
         <div id="viewDiv" style="height: 500px;"></div>
     </div>
 </div>
+
 <script>
     function toggleCalibration(checkbox) {
         var calibrationSettings = document.getElementById("calibration_settings");
-        if (checkbox.checked) {
-            calibrationSettings.style.display = "flex";
-        } else {
-            calibrationSettings.style.display = "none";
-        }
+        calibrationSettings.style.display = checkbox.checked ? "flex" : "none";
     }
 
     function toggleSensitivity(checkbox) {
         var sensitivitySettings = document.getElementById("sensitivity_settings");
-        if (checkbox.checked) {
-            sensitivitySettings.style.display = "flex";
-        } else {
-            sensitivitySettings.style.display = "none";
-        }
+        sensitivitySettings.style.display = checkbox.checked ? "flex" : "none";
     }
 
     function toggleValidation(checkbox) {
         var validationSettings = document.getElementById("validation_settings");
-        if (checkbox.checked) {
-            validationSettings.style.display = "flex";
-        } else {
-            validationSettings.style.display = "none";
-        }
+        validationSettings.style.display = checkbox.checked ? "flex" : "none";
     }
+
+    // Handle site search
+    document.getElementById('search_button').addEventListener('click', function() {
+        var searchTerm = document.getElementById('search_input').value;
+
+        fetch('/search_site?search_term=' + searchTerm)
+        .then(response => response.json())
+        .then(data => {
+            var resultsDiv = document.getElementById('search_results');
+            if (data.error) {
+                resultsDiv.innerHTML = `<p>${data.error}</p>`;
+            } else {
+                resultsDiv.innerHTML = '<ul>';
+                data.forEach(site => {
+                    resultsDiv.innerHTML += `<li>Site: ${site.SiteName} (Number: ${site.SiteNumber})</li>`;
+                });
+                resultsDiv.innerHTML += '</ul>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching search results:', error);
+        });
+    });
+
+    // JavaScript for Esri Map and Station Details
     require([
         "esri/Map",
         "esri/views/MapView",
