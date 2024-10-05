@@ -1,0 +1,8 @@
+VPUID: 0405
+LEVEL: huc12
+NAME: 04112500
+MODEL_NAME: SWAT_MODEL_Web_Application
+landuse_product: NLCD
+landuse_epoch: 2021
+ls_resolution: 250
+dem_resolution: 30

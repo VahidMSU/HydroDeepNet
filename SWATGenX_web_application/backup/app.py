@@ -27,7 +27,7 @@ def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_fl
     print(f"max_cal_iterations: {max_cal_iterations}")
     print(f"verification_samples: {verification_samples}")
 
-    BASE_PATH = r'/data/MyDataBase/SWATGenXAppData/'
+    BASE_PATH = r'/data2/MyDataBase/SWATGenXAppData/'
     LEVEL = "huc12"
     MAX_AREA = 500
     MIN_AREA = 100
@@ -46,8 +46,8 @@ def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_fl
         if cal_functionality:
             process_SCV_SWATGenXModel(NAME=station_name, sensitivity_flag=sensitivity_flag, calibration_flag=calibration_flag, verification_flag=validation_flag, START_YEAR=2015, END_YEAR=2022, nyskip=3, sen_total_evaluations=sen_total_evaluations, sen_pool_size=sen_pool_size, num_levels=num_levels, cal_pool_size=cal_pool_size, max_cal_iterations=max_cal_iterations, termination_tolerance=10, epsilon=0.0001, Ver_START_YEAR=2004, Ver_END_YEAR=2022, Ver_nyskip=3, range_reduction_flag=False, pet=2, cn=1, no_value=1e6, verification_samples=25)
 
-        output_path = os.path.join("D:/Generated_models", f"{site_no}")
-        os.makedirs("D:/Generated_models", exist_ok=True)
+        output_path = os.path.join("/data/Generated_models", f"{site_no}")
+        os.makedirs("/data/Generated_models", exist_ok=True)
         shutil.make_archive(output_path, 'zip', model_path)
         return f"{output_path}.zip"
 
@@ -89,14 +89,14 @@ def home():
 #        except Exception as e:
 #            output = f'Error: {str(e)}'
 
-    station_data = integrate_streamflow_data(r"/data/MyDataBase/SWATGenXAppData/USGS")
+    station_data = integrate_streamflow_data(r"/data2/MyDataBase/SWATGenXAppData/USGS")
     station_list = station_data.SiteNumber.unique()
     return render_template('form_template.html', output=output, station_list=station_list)
 
 @app.route('/get_station_characteristics', methods=['GET'])
 def get_station_characteristics():
     station_no = request.args.get('station')
-    station_data = integrate_streamflow_data(r"/data/MyDataBase/SWATGenXAppData/USGS")
+    station_data = integrate_streamflow_data(r"/data2/MyDataBase/SWATGenXAppData/USGS")
     print("############ calling get_station_characteristics ###############")
     # Filter the data for the selected station
     station_row = station_data[station_data.SiteNumber == station_no]
