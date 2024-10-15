@@ -1,9 +1,2 @@
 **/.venv/
-**/downloads/
-**/figs/
-**/figs_scatters/
-**/figs_recharge_rainfall/
-**/models/
-**/database/
-**/input_figs/
-**/ml_data/
+**/SWATPlusEditor
