@@ -1,0 +1,11 @@
+ Processing SWATGenX 
+2024-09-11 09:56:17,623 [ERROR] Site number 04128990 is not among FPS lists
+2024-09-11 09:56:17,623 [INFO] Processing VPUID: 0101
+2024-09-11 09:56:17,693 [INFO] Logging setup for 04128990
+2024-09-11 09:56:17,898 [INFO] SWATGenXCore: Beginning the extraction of the model for 04128990
+2024-09-11 09:56:17,899 [ERROR] The model extraction has failed for 04128990 before (PRISM extracted but streamflow shapefile does not exist)
+2024-09-11 09:57:23,889 [INFO] First Stage completed for 04128990, 0407
+2024-09-11 09:58:15,313 [INFO] QSWAT+ processes are completed for 04128990, 0407
+2024-09-11 10:00:05,767 [INFO] Model already exists for 04128990 in SWAT_input
+2024-09-11 10:00:05,767 [INFO] Model already exists for 04128990 in SWAT_input
+2024-09-11 10:00:05,767 [INFO] station name path: /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0407/huc12/04128990/

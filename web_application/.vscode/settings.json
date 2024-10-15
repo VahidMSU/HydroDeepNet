@@ -1,0 +1,15 @@
+{
+    "python.pythonPath": "/data/SWATGenXApp/codes/.venv/bin/python",
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.profiles.linux": {
+        "bash": {
+            "path": "/bin/bash",
+            "args": []
+        }
+    },
+    "python.analysis.extraPaths": [
+        "/data/SWATGenXApp/codes/SWATGenX",
+        "/data/SWATGenXApp/codes/ModelProcessing",
+        "/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api",
+    ]
+}
