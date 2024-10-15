@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Welcome to SWATGenX</h2>
+<div class="card">
+    <div class="card-body">
+        <h3>Introduction</h3>
+        <p>
+            SWATGenX is an advanced platform for integrated watershed and groundwater modeling. It provides a
+            comprehensive
+            system to manage, simulate, and analyze water resources using state-of-the-art tools and technologies.
+        </p>
+
+        <h3>Core Components</h3>
+        <p>SWATGenX integrates several key components to deliver robust and efficient water resource management
+            solutions:</p>
+        <ul>
+            <li><b>QSWAT+</b>: Interface for SWAT+ model creation and management.</li>
+            <li><b>SWAT+ Editor</b>: Tool for editing and configuring SWAT+ models.</li>
+            <li><b>SWAT+</b>: Soil and Water Assessment Tool Plus, a comprehensive model for watershed simulation.</li>
+            <li><b>MODGenX</b>: Groundwater model generation (MODFLOW-NWT) based on states and national datasets.</li>
+            <li><b>Flopy</b>: Python package to work with MODFLOW models.</li>
+            <li><b>Parallel Processing System</b>: Framework for calibration, validation, and sensitivity analysis using
+                advanced algorithms like Particle Swarm Optimization and Morris Method.</li>
+            <li><b>GeoNet Deep Learning</b>: Integration with deep learning models for enhanced data analysis and
+                predictions.</li>
+            <li><b>Hierarchical Database System (HDF5)</b>: Efficient storage and management of large datasets.</li>
+        </ul>
+
+        <h3>Data Sources</h3>
+        <p>SWATGenX utilizes a variety of data sources to ensure accurate and reliable simulations:</p>
+        <ul>
+            <li>NWIS: National Water Information System</li>
+            <li>LOCA2: Localized Constructed Analogs Version 2 (2*2km resolution)</li>
+            <li>PRISM: Parameter-elevation Regressions on Independent Slopes Model (2*2km resolution)</li>
+            <li>NLCD: National Land Cover Database (30m resolution)</li>
+            <li>NHDPlus HR: National Hydrography Dataset Plus High Resolution (10m resolution)</li>
+            <li>NSRDB: National Solar Radiation Database (2*2km resolution)</li>
+            <li>SNODAS: Snow Assmilation Dataset (1*1km resolution)</li>
+            <li>gSSURGO: Gridded Soil Survey Geographic Database (30m resolution)</li>
+            <li>USGS 3D DEM: 3D Digital Elevation Model (10m resolution)</li>
+            <li>Water well information (Wellogic)</li>
+        </ul>
+
+        <h3>Groundwater Modeling</h3>
+        <p>SWATGenX integrates groundwater modeling with the following components:</p>
+        <ul>
+            <li>GW layers data</li>
+            <li>Hydraulic properties</li>
+            <li>Pumping rate</li>
+        </ul>
+
+        <img src="{{ url_for('static', filename='images/SWATGenX.png') }}" class="img-fluid" alt="SWATGenX API Diagram">
+    </div>
+</div>
+{% endblock %}
