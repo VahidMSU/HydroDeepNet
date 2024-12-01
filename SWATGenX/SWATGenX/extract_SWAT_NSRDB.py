@@ -111,7 +111,7 @@ def extract_SWAT_PRISM_variable(variable, NSRDB_index_SWAT, years, swat_prism_pa
 
 def NSRDB_extract(VPUID,NAME,LEVEL):
 	years = range(2000, 2021)
-	DIC = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/"
+	DIC = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/"
 	variables = ['ghi','wind_speed','relative_humidity']
 
 	swat_prism_path = os.path.join(DIC, f"{LEVEL}/{NAME}/PRISM/")

@@ -12,6 +12,8 @@ sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX')
 from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
 from app.utils import get_huc12_geometries, single_model_creation
 from app.forms import ModelSettingsForm
+from flask import render_template
+import os
 
 def init_routes(app):
 	@app.route('/')
@@ -20,8 +22,88 @@ def init_routes(app):
 		logging.info("Index route called. Redirecting to /home.")
 		return redirect(url_for('home'))
 	@app.route('/dashboard')
+	#@login_required
 	def dashboard():
 		return render_template('dashboard.html')
+			
+	@app.route('/get_options', methods=['GET'])
+	#@login_required
+	def get_options():
+		try:
+			names_path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
+			variables = ['et', 'perc', 'precip', 'snofall', 'snomlt', 'surq_gen', 'wateryld']
+
+			# List all NAMES
+			if os.path.exists(names_path):
+				names = os.listdir(names_path)
+				if "log.txt" in names:
+					names.remove("log.txt")
+			else:
+				names = []
+
+			return jsonify({'names': names, 'variables': variables})
+		except Exception as e:
+			logging.error(f"Error fetching options: {e}")
+			return jsonify({"error": "Failed to fetch options"}), 500
+
+	@app.route('/visualizations', methods=['GET'])
+	#@login_required
+	def visualizations():
+		print("Visualizations route called")
+		name = request.args.get('NAME', default=None)
+		ver = request.args.get('ver', default=None)
+		variable = request.args.get('variable', default=None)
+
+		print(f"Parameters received - NAME: {name}, Version: {ver}, Variable: {variable}")
+
+		if not all([name, ver, variable]):
+			# Check if it's an AJAX request
+			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+				return jsonify({"error": "Please provide NAME, Version, and Variable."}), 400
+			else:
+				return render_template('visualizations.html', error="Please provide NAME, Version, and Variable.")
+
+		base_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
+		static_plots_path = os.path.join(base_path, "watershed_static_plots")
+		video_path = os.path.join(base_path, "verifications_videos")
+
+		video_file = os.path.join(video_path, f"{ver}_{variable}_animation.gif")
+		static_plot_dir = os.path.join(static_plots_path, variable.capitalize())
+
+		gif_url = f"/static/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{variable}_animation.gif"
+		static_plot_files = []
+
+		if os.path.exists(static_plot_dir):
+			static_plot_files = [
+				f"/static/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/watershed_static_plots/{variable.capitalize()}/{file}"
+				for file in os.listdir(static_plot_dir) if file.endswith('.png')
+			]
+
+		if not os.path.exists(video_file) and not static_plot_files:
+			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+				return jsonify({"error": f"No visualizations found for NAME: {name}, Version: {ver}, Variable: {variable}."}), 404
+			else:
+				return render_template('visualizations.html', error=f"No visualizations found for NAME: {name}, Version: {ver}, Variable: {variable}.")
+
+		print(f"Static plot files: {static_plot_files}")
+		print(f"GIF URL: {gif_url}")
+
+		# For AJAX requests, return JSON
+		if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+			return jsonify({
+				"gif_file": gif_url if os.path.exists(video_file) else None,
+				"png_files": static_plot_files
+			})
+
+		# For direct access via browser, render the template
+		return render_template(
+			'visualizations.html',
+			name=name,
+			ver=ver,
+			variable=variable,
+			gif_file=gif_url,
+			png_files=static_plot_files
+		)
 
 	@app.route('/login', methods=['GET', 'POST'])
 	def login():

@@ -71,7 +71,7 @@ if __name__ == "__main__":
             selected_list = station_names
     else:
         if LEVEL == "huc8":
-            selected_list = ['04100013']
+            selected_list = ['04100001']
         else:
             selected_list = ['04292000']
     

@@ -4,31 +4,162 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4 text-center">Deep Learning Models for Predicting Groundwater Hydraulic Properties</h2>
+    <h2 class="mb-4 text-center">CNN-Transformer Framework for Hydrological Modeling</h2>
+
     <div class="card mb-4">
         <div class="card-body">
-            <p class="lead">Our deep learning models leverage state-of-the-art techniques to provide accurate predictions of groundwater hydraulic properties, helping researchers and engineers make informed decisions.</p>
+            <p class="lead">
+                This CNN-Transformer architecture integrates convolutional neural networks (CNNs) for spatial feature
+                extraction and Transformers for temporal modeling. It has been designed to handle high-resolution
+                spatiotemporal hydrological datasets, enabling robust predictions of groundwater recharge and other
+                hydrological variables.
+            </p>
         </div>
     </div>
-    <div class="row">
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title">Sparse Fully Convolutional Network Classification</h3>
-                    <p class="card-text">The Sparse Fully Convolutional Network (Sparse FCN) model is designed to classify and predict hydraulic conductivity with high precision. It efficiently handles sparse data, making it ideal for large-scale groundwater modeling.</p>
-                    <img src="{{ url_for('static', filename='images/ClassCNN_Predictions_obs_H_COND_1_250m.png') }}" class="img-fluid image-size" alt="ClassCNN Predictions">
-                </div>
-            </div>
+
+    <h3 class="mt-4">Model Overview</h3>
+    <div class="card mb-4">
+        <div class="card-body">
+            <p>
+                The CNN-Transformer model processes 5-dimensional input tensors of shape
+                <code>[batch_size, time_steps, channels, height, width]</code>. Its primary components include:
+            </p>
+            <ul>
+                <li>
+                    <b>Down-Sampling Pathway:</b> Extracts spatial features at multiple resolutions using convolutional
+                    layers, Squeeze-and-Excitation blocks, and skip connections for preserving fine-grained spatial
+                    details.
+                </li>
+                <li>
+                    <b>Bottleneck Layer:</b> Compacts spatial information into a high-dimensional embedding for each
+                    time step.
+                </li>
+                <li>
+                    <b>Temporal Transformer Encoder:</b> Models dependencies between time steps using a multi-head
+                    self-attention mechanism with Fourier positional encoding.
+                </li>
+                <li>
+                    <b>Up-Sampling Pathway:</b> Restores the spatial resolution by integrating skip connections and
+                    deformable convolutional layers with edge-preserving filters.
+                </li>
+                <li>
+                    <b>Final Output:</b> Reconstructs predictions for each time step, producing spatiotemporal outputs
+                    with desired target dimensions.
+                </li>
+            </ul>
+            <p>
+                The architecture's flexibility allows for the incorporation of various attention mechanisms, positional
+                encoding strategies,
+                and activation functions, enabling it to adapt to different hydrological datasets and objectives.
+            </p>
         </div>
-        <div class="col-lg-6 mb-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title">ResNet Deep Learning Prediction</h3>
-                    <p class="card-text">The ResNet model applies deep residual learning to predict groundwater hydraulic properties. It captures complex patterns and relationships within the data, ensuring robust and accurate predictions.</p>
-                    <img src="{{ url_for('static', filename='images/FFR_Predicted obs_H_COND_2_100m.png') }}" class="img-fluid image-size" alt="FFR Predictions">
-                </div>
-            </div>
+    </div>
+
+    <h3 class="mt-4">Key Architectural Components</h3>
+
+    <!-- Down-Sampling Pathway -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Down-Sampling Pathway</h4>
+            <p>
+                The down-sampling pathway progressively reduces the spatial resolution while increasing the depth of
+                feature maps. Each block includes:
+            </p>
+            <ul>
+                <li>
+                    <b>Convolutional Layers:</b> Extract spatial features with increasing complexity.
+                </li>
+                <li>
+                    <b>Squeeze-and-Excitation (SE) Layers:</b> Enhance channel-wise attention by adapting feature maps
+                    based on their global importance.
+                </li>
+                <li>
+                    <b>Coordinate Attention:</b> Improves spatial awareness by integrating coordinate-based positional
+                    information into the feature maps.
+                </li>
+                <li>
+                    <b>Skip Connections:</b> Preserve fine-grained details for use during the up-sampling pathway.
+                </li>
+            </ul>
         </div>
+    </div>
+
+    <!-- Temporal Transformer Encoder -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Temporal Transformer Encoder</h4>
+            <p>
+                The transformer encoder captures temporal dependencies between sequential data points. It incorporates:
+            </p>
+            <ul>
+                <li>
+                    <b>Fourier Positional Encoding:</b> Retains temporal order and enhances model stability.
+                </li>
+                <li>
+                    <b>Multi-Head Self-Attention:</b> Focuses on relevant time steps to capture dynamic or periodic
+                    patterns.
+                </li>
+                <li>
+                    <b>Layer Normalization:</b> Stabilizes the training process by normalizing intermediate
+                    representations.
+                </li>
+            </ul>
+            <p>
+                This component transforms spatial embeddings from the CNN into temporally informed feature maps, which
+                are then
+                used to predict hydrological variables at each time step.
+            </p>
+        </div>
+    </div>
+
+    <!-- Up-Sampling Pathway -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Up-Sampling Pathway</h4>
+            <p>
+                The up-sampling pathway restores the original spatial resolution while incorporating features from the
+                down-sampling
+                pathway through skip connections. It includes:
+            </p>
+            <ul>
+                <li>
+                    <b>Deformable Convolutional Layers:</b> Dynamically adjust receptive fields to focus on critical
+                    spatial regions.
+                </li>
+                <li>
+                    <b>Edge-Preserving Filters:</b> Maintain boundary details in reconstructed images.
+                </li>
+                <li>
+                    <b>Sub-Pixel Convolution:</b> Upscales feature maps efficiently without introducing artifacts.
+                </li>
+            </ul>
+            <p>
+                At each stage, skip connections are concatenated with the up-sampled feature maps, enhancing spatial
+                representations
+                and improving prediction accuracy.
+            </p>
+        </div>
+    </div>
+
+    <!-- Final Output -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">Final Output</h4>
+            <p>
+                The model outputs reconstructed predictions for each time step. A final convolution layer maps the
+                processed features
+                to the target dimensions (e.g., groundwater recharge or other hydrological variables). The outputs are
+                reshaped
+                into a 5D tensor of shape <code>[batch_size, time_steps, num_classes, height, width]</code>.
+            </p>
+        </div>
+    </div>
+
+    <!-- Visual Representation -->
+    <h3 class="mt-4">Visual Representation</h3>
+    <div class="text-center">
+        <img src="{{ url_for('static', filename='images/CNN_Transformer_Architecture.png') }}"
+            class="img-fluid image-size mb-4" alt="CNN-Transformer Architecture Diagram">
     </div>
 </div>
 
@@ -36,25 +167,32 @@
     .container {
         max-width: 1200px;
     }
+
     .image-size {
         max-height: 400px;
-        object-fit: cover;
+        object-fit: contain;
     }
+
     .card {
         border: none;
         border-radius: 15px;
     }
+
     .card-body {
         padding: 2rem;
     }
+
     .card-title {
         font-size: 1.75rem;
         margin-bottom: 1rem;
     }
-    .card-text {
+
+    .card-text,
+    ul {
         font-size: 1.1rem;
         margin-bottom: 1.5rem;
     }
+
     .img-fluid {
         border-radius: 10px;
     }
