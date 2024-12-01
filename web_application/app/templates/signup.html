@@ -7,22 +7,52 @@
     <h2>Sign Up</h2>
     <form method="post" action="{{ url_for('signup') }}">
         {{ form.hidden_tag() }}
+
+        <!-- Username Field -->
         <div class="form-group">
             <label for="username">Username:</label>
             {{ form.username(class="form-control") }}
+            {% if form.username.errors %}
+            <div class="error-message">
+                {{ form.username.errors[0] }}
+            </div>
+            {% endif %}
         </div>
+
+        <!-- Email Field -->
         <div class="form-group">
             <label for="email">Email:</label>
             {{ form.email(class="form-control") }}
+            {% if form.email.errors %}
+            <div class="error-message">
+                {{ form.email.errors[0] }}
+            </div>
+            {% endif %}
         </div>
+
+        <!-- Password Field -->
         <div class="form-group">
             <label for="password">Password:</label>
             {{ form.password(class="form-control") }}
+            {% if form.password.errors %}
+            <div class="error-message">
+                {{ form.password.errors[0] }}
+            </div>
+            {% endif %}
         </div>
+
+        <!-- Confirm Password Field -->
         <div class="form-group">
             <label for="confirm_password">Confirm Password:</label>
             {{ form.confirm_password(class="form-control") }}
+            {% if form.confirm_password.errors %}
+            <div class="error-message">
+                {{ form.confirm_password.errors[0] }}
+            </div>
+            {% endif %}
         </div>
+
+        <!-- Submit Button -->
         <button type="submit" class="btn btn-primary">Sign Up</button>
     </form>
 </div>
