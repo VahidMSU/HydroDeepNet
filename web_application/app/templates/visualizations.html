@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+
+{% block title %}Visualizations{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Visualizations</h1>
+    <form id="visualization_form" class="mb-4" method="GET" action="{{ url_for('visualizations') }}">
+        <div class="row">
+            <!-- Watershed Name Dropdown -->
+            <div class="col-md-4">
+                <label for="NAME" class="form-label">Watershed Name (NAME)</label>
+                <select name="NAME" id="NAME" class="form-select" required>
+                    <option value="">Select a Watershed</option>
+                </select>
+            </div>
+
+            <!-- Version Input -->
+            <div class="col-md-4">
+                <label for="ver" class="form-label">Version (ver)</label>
+                <input type="text" name="ver" id="ver" class="form-control" value="{{ ver or '' }}" required>
+            </div>
+
+            <!-- Variable Dropdown -->
+            <div class="col-md-4">
+                <label for="variable" class="form-label">Variable Name</label>
+                <select name="variable" id="variable" class="form-select" multiple>
+                    <!-- Options populated dynamically -->
+                </select>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <button type="button" class="btn btn-primary w-100" id="show_visualizations">Show
+                    Visualizations</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Error Message -->
+    <div id="error_message" class="alert alert-danger d-none" role="alert"></div>
+
+    <!-- Static Plots -->
+    <div id="static_plots" class="d-none">
+        <h2>Static Plots (PNGs)</h2>
+        <div class="row" id="png_container">
+            <!-- PNG Images will be inserted here -->
+        </div>
+    </div>
+    <!-- GIF Animations -->
+    <div id="gif_animation" class="d-none mt-4">
+        <h2 class="mt-4">Spatiotemporal Animations (GIFs)</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Updated frame styling -->
+                <div
+                    style="width: 600px; height: 600px; border: 1px solid #ccc; overflow: hidden; position: relative; margin: 0 auto;">
+                    <img id="gif_image" src="" alt="GIF Animation"
+                        style="width: 100%; height: 100%; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fetch options for NAME and variable dropdowns
+    async function populateDropdowns() {
+        try {
+            const response = await fetch('/get_options');
+            if (!response.ok) throw new Error("Failed to fetch options");
+
+            const data = await response.json();
+            const nameSelect = document.getElementById("NAME");
+            const variableSelect = document.getElementById("variable");
+
+            // Clear existing options
+            nameSelect.innerHTML = '<option value="">Select a Watershed</option>';
+            variableSelect.innerHTML = '';
+
+            // Populate NAMES dropdown
+            data.names.forEach(name => {
+                const option = document.createElement("option");
+                option.value = name;
+                option.textContent = name;
+                nameSelect.appendChild(option);
+            });
+
+            // Populate variables dropdown
+            data.variables.forEach(variable => {
+                const option = document.createElement("option");
+                option.value = variable;
+                option.textContent = variable;
+                variableSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Error fetching options:", error);
+        }
+    }
+
+    // Handle visualization updates
+    async function updateVisualizations() {
+        const name = document.getElementById("NAME").value;
+        const ver = document.getElementById("ver").value;
+        const variable = Array.from(document.getElementById("variable").selectedOptions).map(opt => opt.value);
+
+        if (!name || !ver || variable.length === 0) {
+            showError("Please select all required fields.");
+            return;
+        }
+
+        try {
+            const params = new URLSearchParams({ NAME: name, ver: ver, variable: variable.join(",") });
+            const response = await fetch(`/visualizations?${params.toString()}`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+            if (!response.ok) throw new Error("Failed to fetch visualizations");
+
+            const data = await response.json();
+
+            if (data.error) {
+                showError(data.error);
+                return;
+            }
+
+            // Update GIF
+            const gifAnimation = document.getElementById("gif_animation");
+            const gifImage = document.getElementById("gif_image");
+            if (data.gif_file) {
+                gifImage.src = data.gif_file;
+                gifAnimation.classList.remove("d-none");
+            } else {
+                gifAnimation.classList.add("d-none");
+            }
+
+            // Update PNGs
+            const staticPlots = document.getElementById("static_plots");
+            const pngContainer = document.getElementById("png_container");
+            pngContainer.innerHTML = ""; // Clear previous images
+            if (data.png_files && data.png_files.length > 0) {
+                data.png_files.forEach(png => {
+                    const colDiv = document.createElement("div");
+                    colDiv.className = "col-md-4";
+                    const img = document.createElement("img");
+                    img.src = png;
+                    img.alt = "Static Plot";
+                    img.className = "img-fluid mb-3";
+                    colDiv.appendChild(img);
+                    pngContainer.appendChild(colDiv);
+                });
+                staticPlots.classList.remove("d-none");
+            } else {
+                staticPlots.classList.add("d-none");
+            }
+
+            // Clear error messages
+            hideError();
+        } catch (error) {
+            console.error("Error updating visualizations:", error);
+            showError("An error occurred while fetching visualizations. Please try again.");
+        }
+    }
+
+    // Show error message
+    function showError(message) {
+        const errorMessage = document.getElementById("error_message");
+        errorMessage.textContent = message;
+        errorMessage.classList.remove("d-none");
+    }
+
+    // Hide error message
+    function hideError() {
+        const errorMessage = document.getElementById("error_message");
+        errorMessage.classList.add("d-none");
+        errorMessage.textContent = "";
+    }
+
+    // Initialize page
+    document.addEventListener("DOMContentLoaded", () => {
+        populateDropdowns();
+        document.getElementById("show_visualizations").addEventListener("click", updateVisualizations);
+    });
+</script>
+{% endblock %}

@@ -85,10 +85,11 @@ def generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_pro
     path = "/data/SWATGenXApp/GenXAppData/Soil/SWAT_gssurgo.csv"
     df = pd.read_csv(path)
     mask_value = df.muid.values
-    assert most_common_value in mask_value, f"Most common value {most_common_value} is not in mask values"
+    print(f"Number of unique values in SWAT_gssurgo.csv: {len(mask_value)}")
+    print(f"Number of unique values in soil raster: {len(np.unique(soil_array))}")
+    print(f"Number of unique soil rasters not found in mask:{len(set(np.unique(soil_array)) - set(mask_value))} ")
+    assert most_common_value in mask_value, f"Most common value {most_common_value} is not in SWAT_gssurgo.csv"
     ### fist find out which soil does not exist in the SWAT_gssurgo.csv
-    print(f"not presented values: {set(np.unique(soil_array)) - set(mask_value)}")
-    # Replace values not in mask
 
     for i in range(soil_array.shape[0]):
         for j in range(soil_array.shape[1]):
@@ -103,8 +104,12 @@ def generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_pro
         profile = src.profile
         profile.update(dtype=rasterio.uint32, compress='lzw')
 
+
+
     with rasterio.open(swatplus_soil_temp, 'w', **profile) as dst:
         dst.write(soil_array, 1)
+
+
 
     # Clip the temp soil raster to watershed boundary and save it using `rasterio.mask.mask`
     with fiona.open(watershed_boundary_path, "r") as shapefile:
@@ -120,7 +125,7 @@ def generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_pro
     # Delete the temp soil raster
     if os.path.exists(swatplus_soil_temp):
         os.remove(swatplus_soil_temp)
-
+    print(f"################## Finished generating raster files for {NAME} {LEVEL} {VPUID} ##################")
 if __name__ == "__main__":
     VPUID = "0410"
     LEVEL = "huc8"
