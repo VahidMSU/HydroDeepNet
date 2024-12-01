@@ -1,0 +1,14 @@
+ Processing SWATGenX 
+2024-11-27 04:26:51,832 [ERROR] Site number 04100001 is not among FPS lists
+2024-11-27 04:26:53,680 [INFO] Logging setup for 04100001
+2024-11-27 04:26:54,823 [INFO] SWATGenXCore: Beginning the extraction of the model for 04100001
+2024-11-27 04:26:56,999 [INFO] Created 4 records
+2024-11-27 04:27:00,217 [INFO] Created 799 records
+2024-11-27 04:27:00,263 [INFO] Created 799 records
+2024-11-27 04:27:00,285 [INFO] Created 54 records
+2024-11-27 04:27:01,782 [INFO] Created 27 records
+2024-11-27 04:27:01,808 [INFO] Created 799 records
+2024-11-27 04:27:01,853 [INFO] Created 799 records
+2024-11-27 04:27:01,891 [INFO] Created 1 records
+2024-11-27 04:27:07,259 [INFO] First Stage completed for 04100001, 0410
+2024-11-27 04:30:20,253 [ERROR] HRU2 shapefile does not exist for 04100001 after running QSWAT+

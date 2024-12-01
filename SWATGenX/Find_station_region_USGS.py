@@ -65,5 +65,5 @@ if __name__ == "__main__":
     governmental_boundries_path =  "/data/SWATGenXApp/GenXAppData/USGS/GovernmentUnits_National_GDB/GovernmentUnits_National_GDB.gdb"
     USGS_stations_path = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv"
     USGS_CONUS_shp = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.shp"
-    search_term = "metal"
+    search_term = "MI tribs"
     df = find_station_region(search_term, governmental_boundries_path, USGS_stations_path, USGS_CONUS_shp)
