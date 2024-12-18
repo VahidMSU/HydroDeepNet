@@ -1,182 +1,73 @@
 {% extends "layout.html" %}
 
-{% block title %}Visualizations{% endblock %}
+{% block title %}Visualizations Dashboard{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 class="my-4">Visualizations</h1>
-    <form id="visualization_form" class="mb-4" method="GET" action="{{ url_for('visualizations') }}">
-        <div class="row">
-            <!-- Watershed Name Dropdown -->
-            <div class="col-md-4">
-                <label for="NAME" class="form-label">Watershed Name (NAME)</label>
-                <select name="NAME" id="NAME" class="form-select" required>
-                    <option value="">Select a Watershed</option>
-                </select>
-            </div>
+<main class="container my-5">
+    <h1 class="text-center mb-4">Visualizations Dashboard</h1>
 
-            <!-- Version Input -->
-            <div class="col-md-4">
-                <label for="ver" class="form-label">Version (ver)</label>
-                <input type="text" name="ver" id="ver" class="form-control" value="{{ ver or '' }}" required>
-            </div>
 
-            <!-- Variable Dropdown -->
-            <div class="col-md-4">
-                <label for="variable" class="form-label">Variable Name</label>
-                <select name="variable" id="variable" class="form-select" multiple>
-                    <!-- Options populated dynamically -->
-                </select>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-4">
-                <button type="button" class="btn btn-primary w-100" id="show_visualizations">Show
-                    Visualizations</button>
-            </div>
-        </div>
-    </form>
+    <!-- Visualization Form Section -->
+    <section aria-labelledby="form-title">
+        <h2 id="form-title" class="visually-hidden">Visualization Input Form</h2>
+        <form id="visualization_form" class="border p-4 rounded shadow-sm bg-light" method="GET"
+            action="{{ url_for('visualizations') }}">
+            <div class="row g-3">
+                <!-- Watershed Name Dropdown -->
+                <div class="col-md-6">
+                    <label for="NAME" class="form-label">Watershed Name</label>
+                    <select name="NAME" id="NAME" class="form-select" aria-required="true" required>
+                        <option value="">Select a Watershed</option>
+                    </select>
+                </div>
 
-    <!-- Error Message -->
-    <div id="error_message" class="alert alert-danger d-none" role="alert"></div>
-
-    <!-- Static Plots -->
-    <div id="static_plots" class="d-none">
-        <h2>Static Plots (PNGs)</h2>
-        <div class="row" id="png_container">
-            <!-- PNG Images will be inserted here -->
-        </div>
-    </div>
-    <!-- GIF Animations -->
-    <div id="gif_animation" class="d-none mt-4">
-        <h2 class="mt-4">Spatiotemporal Animations (GIFs)</h2>
-        <div class="row">
-            <div class="col-md-6">
-                <!-- Updated frame styling -->
-                <div
-                    style="width: 600px; height: 600px; border: 1px solid #ccc; overflow: hidden; position: relative; margin: 0 auto;">
-                    <img id="gif_image" src="" alt="GIF Animation"
-                        style="width: 100%; height: 100%; object-fit: contain;">
+                <!-- Version Input -->
+                <div class="col-md-6">
+                    <label for="ver" class="form-label">Version</label>
+                    <input type="text" name="ver" id="ver" class="form-control" placeholder="Enter version (e.g., v1)"
+                        aria-required="true" required>
                 </div>
             </div>
+
+            <div class="row g-3 mt-3">
+                <!-- Variable Dropdown -->
+                <div class="col-md-12">
+                    <label for="variable" class="form-label">Variable Name</label>
+                    <select name="variable" id="variable" class="form-select" aria-multiselectable="true" multiple>
+                        <!-- Options populated dynamically -->
+                    </select>
+                    <small id="variable-help" class="form-text text-muted">
+                        Hold Ctrl/Cmd to select multiple variables.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center mt-4">
+                <button type="button" class="btn btn-primary btn-lg px-4" id="show_visualizations"
+                    aria-label="Show visualizations">
+                    <i class="fas fa-chart-bar me-2" aria-hidden="true"></i> Show Visualizations
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Error Message Section -->
+    <section aria-live="polite" aria-atomic="true" class="mt-3">
+        <div id="error_message" class="alert alert-danger d-none text-center" role="alert"></div>
+    </section>
+
+    <!-- Visualization Results Section -->
+    <section id="visualization_results" class="mt-5 d-none" aria-labelledby="results-title">
+        <h2 id="results-title" class="text-center mb-4">Spatiotemporal Animations (GIFs)</h2>
+        <div id="gif_container" class="d-flex flex-wrap justify-content-center gap-4">
+            <!-- GIF Images will be inserted dynamically -->
         </div>
-    </div>
-</div>
+    </section>
+</main>
 
-<script>
-    // Fetch options for NAME and variable dropdowns
-    async function populateDropdowns() {
-        try {
-            const response = await fetch('/get_options');
-            if (!response.ok) throw new Error("Failed to fetch options");
-
-            const data = await response.json();
-            const nameSelect = document.getElementById("NAME");
-            const variableSelect = document.getElementById("variable");
-
-            // Clear existing options
-            nameSelect.innerHTML = '<option value="">Select a Watershed</option>';
-            variableSelect.innerHTML = '';
-
-            // Populate NAMES dropdown
-            data.names.forEach(name => {
-                const option = document.createElement("option");
-                option.value = name;
-                option.textContent = name;
-                nameSelect.appendChild(option);
-            });
-
-            // Populate variables dropdown
-            data.variables.forEach(variable => {
-                const option = document.createElement("option");
-                option.value = variable;
-                option.textContent = variable;
-                variableSelect.appendChild(option);
-            });
-        } catch (error) {
-            console.error("Error fetching options:", error);
-        }
-    }
-
-    // Handle visualization updates
-    async function updateVisualizations() {
-        const name = document.getElementById("NAME").value;
-        const ver = document.getElementById("ver").value;
-        const variable = Array.from(document.getElementById("variable").selectedOptions).map(opt => opt.value);
-
-        if (!name || !ver || variable.length === 0) {
-            showError("Please select all required fields.");
-            return;
-        }
-
-        try {
-            const params = new URLSearchParams({ NAME: name, ver: ver, variable: variable.join(",") });
-            const response = await fetch(`/visualizations?${params.toString()}`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
-            if (!response.ok) throw new Error("Failed to fetch visualizations");
-
-            const data = await response.json();
-
-            if (data.error) {
-                showError(data.error);
-                return;
-            }
-
-            // Update GIF
-            const gifAnimation = document.getElementById("gif_animation");
-            const gifImage = document.getElementById("gif_image");
-            if (data.gif_file) {
-                gifImage.src = data.gif_file;
-                gifAnimation.classList.remove("d-none");
-            } else {
-                gifAnimation.classList.add("d-none");
-            }
-
-            // Update PNGs
-            const staticPlots = document.getElementById("static_plots");
-            const pngContainer = document.getElementById("png_container");
-            pngContainer.innerHTML = ""; // Clear previous images
-            if (data.png_files && data.png_files.length > 0) {
-                data.png_files.forEach(png => {
-                    const colDiv = document.createElement("div");
-                    colDiv.className = "col-md-4";
-                    const img = document.createElement("img");
-                    img.src = png;
-                    img.alt = "Static Plot";
-                    img.className = "img-fluid mb-3";
-                    colDiv.appendChild(img);
-                    pngContainer.appendChild(colDiv);
-                });
-                staticPlots.classList.remove("d-none");
-            } else {
-                staticPlots.classList.add("d-none");
-            }
-
-            // Clear error messages
-            hideError();
-        } catch (error) {
-            console.error("Error updating visualizations:", error);
-            showError("An error occurred while fetching visualizations. Please try again.");
-        }
-    }
-
-    // Show error message
-    function showError(message) {
-        const errorMessage = document.getElementById("error_message");
-        errorMessage.textContent = message;
-        errorMessage.classList.remove("d-none");
-    }
-
-    // Hide error message
-    function hideError() {
-        const errorMessage = document.getElementById("error_message");
-        errorMessage.classList.add("d-none");
-        errorMessage.textContent = "";
-    }
-
-    // Initialize page
-    document.addEventListener("DOMContentLoaded", () => {
-        populateDropdowns();
-        document.getElementById("show_visualizations").addEventListener("click", updateVisualizations);
-    });
-</script>
+<!-- External CSS and JS -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/visualization_style.css') }}">
+<script src="{{ url_for('static', filename='js/visualization_script.js') }}" defer></script>
 {% endblock %}
