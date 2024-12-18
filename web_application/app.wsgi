@@ -6,6 +6,7 @@ import os
 os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib-cache'
 
 # Add the application path to the system path
+
 sys.path.insert(0, "/data/SWATGenXApp/codes/web_application")
 
 # Import the create_app function after modifying sys.path

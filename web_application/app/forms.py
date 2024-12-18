@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from app.models import User
 from wtforms import SelectField, BooleanField, IntegerField
 from wtforms.validators import NumberRange
+from wtforms.validators import Optional
 
 class RegistrationForm(FlaskForm):
 
@@ -32,10 +33,40 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Sign Up')
 
 
+
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
+
+
+
+
+class HydroGeoDatasetForm(FlaskForm):
+    # Fields for single point selection
+    latitude = StringField('Latitude', validators=[Optional()])
+    longitude = StringField('Longitude', validators=[Optional()])
+    
+    # Fields for range selection
+    min_latitude = StringField('Min Latitude', validators=[Optional()])
+    max_latitude = StringField('Max Latitude', validators=[Optional()])
+    min_longitude = StringField('Min Longitude', validators=[Optional()])
+    max_longitude = StringField('Max Longitude', validators=[Optional()])
+    
+    # Variable and subvariable selection
+    variable = SelectField(
+        'Variable',
+        validators=[DataRequired()],
+        choices=[]  # Dynamically populated in the view
+    )
+    subvariable = SelectField(
+        'Subvariable',
+        validators=[DataRequired()],
+        choices=[]  # Dynamically populated in the view
+    )
+    submit = SubmitField('Get Variable Value')
+
 
 class ContactForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
