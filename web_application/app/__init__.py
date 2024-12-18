@@ -3,8 +3,8 @@ from flask_wtf.csrf import CSRFProtect
 from config import Config
 from app.extensions import db, login_manager
 from app.models import User  # Ensure this is imported after db is initialized
-
-
+import sys
+sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX')
 
 def create_app():
     print("Creating app")
