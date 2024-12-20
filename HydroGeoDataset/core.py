@@ -173,9 +173,9 @@ class DataImporter:
 		self.config['geology'] = False if 'geology' not in config else config['geology']
 		self.config['NHDPlus'] = False if 'NHDPlus' not in config else config['NHDPlus']
 		self.config['plot'] = False if 'plot' not in config else config['plot']
-		self.config['pfas_database_path'] = f'/data/SWATGenXApp/PFAS_sw_{config["RESOLUTION"]}m.h5'
+		self.config['pfas_database_path'] = f'/data/MyDataBase/HydroGeoDataset/PFAS_sw_{config["RESOLUTION"]}m.h5'
 		self.config['huc8'] = None if 'huc8' not in config else config['huc8']
-		self.config['snowdas_h5_path'] = '/data/SWATGenXApp/SNODAS.h5'
+		self.config['snowdas_h5_path'] = '/data/MyDataBase/HydroGeoDataset/SNODAS.h5'
 		self.config['video'] = False if 'video' not in config else config['video']
 		self.config['aggregation'] = None if 'aggregation' not in config else config['aggregation']
 
@@ -199,7 +199,7 @@ class DataImporter:
 			#	f'geospatial/COUNTY_{self.config["RESOLUTION"]}m',
 			#	f'geospatial/landforms_{config["RESOLUTION"]}m_250Dis',
 			#	f'Soil/gSURRGO_swat_{self.config["RESOLUTION"]}m',
-				f'NLCD/landuse_{self.config["RESOLUTION"]}m',
+				f'geospatial/landuse_{self.config["RESOLUTION"]}m',
 			#	f'geospatial/geomorphons_{config["RESOLUTION"]}m_250Dis',
 			#	f'geospatial/MI_geol_poly_{self.config["RESOLUTION"]}m',
 			#	f'geospatial/Glacial_Landsystems_{self.config["RESOLUTION"]}m',
@@ -210,14 +210,14 @@ class DataImporter:
 		return features
 
 	def select_numerical_features(self, config, features, RESOLUTION) -> None:
-		if config["geoloc"]:
+		if config.get("geospatial", False):
 			features.extend([
 				f'geospatial/DEM_{self.config["RESOLUTION"]}m',
 				f'geospatial/x_{self.config["RESOLUTION"]}m',
 				f'geospatial/y_{self.config["RESOLUTION"]}m',
 			])
 
-		if config["snow"]:
+		if config.get("climate_pattern", False):
 
 			features.extend([
 					f'climate_pattern/non_snow_accumulation_raster_{self.config["RESOLUTION"]}m',
@@ -227,7 +227,7 @@ class DataImporter:
 					f'climate_pattern/snow_layer_thickness_raster_{self.config["RESOLUTION"]}m',
 				])
 
-		if config['groundwater']:
+		if config.get("EBK", False):
 			features.extend([
 				f'EBK/kriging_output_H_COND_1_{self.config["RESOLUTION"]}m',
 				f'EBK/kriging_output_AQ_THK_1_{self.config["RESOLUTION"]}m',
@@ -246,7 +246,7 @@ class DataImporter:
 				f'EBK/kriging_stderr_AQ_THK_2_{self.config["RESOLUTION"]}m',
 			])
 
-		if config['NHDPlus']:
+		if config.get("NHDPlus", False):
 			features.extend([
 				f'NHDPlus/QAMA_MILP_{self.config["RESOLUTION"]}m',        ## mean annual streamflow
 				f'NHDPlus/QBMA_MILP_{self.config["RESOLUTION"]}m',        ## Mean annual flow from excess ET
@@ -266,7 +266,7 @@ class DataImporter:
 				f'NHDPlus/VDMA_MILP_{self.config["RESOLUTION"]}m',        # Velocity for QCMA
 				f'NHDPlus/VEMA_MILP_{self.config["RESOLUTION"]}m',	      # Velocity from gage adjustment
 			])
-		if config['landfire']:
+		if config.get('LANDFIRE', False):	
 			features.extend([
 				f'LADFIRE/LC20_Asp_220_{self.config["RESOLUTION"]}m',
 				f'LADFIRE/LC20_BPS_220_{self.config["RESOLUTION"]}m',
@@ -278,7 +278,7 @@ class DataImporter:
 				f'LADFIRE/LC22_EVH_220_{self.config["RESOLUTION"]}m',
 			])
 
-		if config['population_array']:
+		if config.get('population', False):
 			features.extend([
 				f'population/pden1990_ML_{self.config["RESOLUTION"]}m',
 				f'population/pden2000_ML_{self.config["RESOLUTION"]}m',
@@ -328,11 +328,11 @@ class DataImporter:
 			gw_station_data = {}
 			#if stations is None:
 			stations = f.keys()
-			logging.info(f"## stations: {stations}")
+			#logging.info(f"## stations: {stations}")
 			for station in stations:
 
 				gw_head = f[station][start_index:end_index]
-				logging.info(f"## station: {station} with shape: {gw_head.shape} and %{100*(1- sum(np.isnan(gw_head)/gw_head.size)):.2f} observations. ")
+				#logging.info(f"## station: {station} with shape: {gw_head.shape} and %{100*(1- sum(np.isnan(gw_head)/gw_head.size)):.2f} observations. ")
 				row = station.split('_')[1]
 				col = station.split('_')[2]
 				numerical_feature =  numerical[:, int(row), int(col)]
@@ -350,9 +350,9 @@ class DataImporter:
 				}
 
 
-		logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
-		logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
-		logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
+		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
+		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
+		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
 
 
 		return gw_station_data
@@ -827,7 +827,7 @@ class DataImporter:
 
 		#logging.info(f"Size of the mask: {mask.shape}")
 		ppts, tmaxs, tmins = [], [], []
-		PRISM_path = '/data/SWATGenXApp/PRISM_ML_250m.h5'
+		PRISM_path = '/data/MyDataBase/HydroGeoDataset/PRISM_ML_250m.h5'
 
 		with h5py.File(PRISM_path, 'r') as f:
 			logging.info(f"PRISM keys: {f.keys()}")
@@ -916,13 +916,13 @@ class DataImporter:
 		plt.close()
 
 	def apply_numerical_scale(self, array2d, array_name):
-		logging.info(f"###Numerical {array_name}:", "shape:", array2d.shape)
+		logging.info(f"###Numerical {array_name}: shape: {array2d.shape}")
 		if self.config['plot']: self.plot_feature(np.where(array2d < 0, np.nan, array2d), array_name)
 		array2d = np.where(array2d < 0, -999, array2d)
 		return array2d
 
 	def apply_categorical_encoding(self, array2d, array_name):
-		logging.info(f"###Categorical {array_name}:", "shape:", array2d.shape)
+		logging.info(f"###Categorical {array_name}: shape: array2d.shape")
 		encoder = LabelEncoder()
 		array2d = np.array([encoder.fit_transform(column) for column in array2d.T]).T
 		if self.config['plot']: self.plot_feature(array2d, array_name, categorical=True)
@@ -975,8 +975,8 @@ class DataImporter:
 
 		print(f"loaded gdf shape: {gdf.shape}")
 		with h5py.File(self.config['database_path'], 'r') as f:
-			lat_ = f[f"lat_{self.config['RESOLUTION']}m"][:]
-			lon_ = f[f"lon_{self.config['RESOLUTION']}m"][:]
+			lat_ = f[f"geospatial/lat_{self.config['RESOLUTION']}m"][:]
+			lon_ = f[f"geospatial/lon_{self.config['RESOLUTION']}m"][:]
 
 			# Replace -999 with nan
 			lat_ = np.where(lat_ == -999, np.nan, lat_)
@@ -1088,10 +1088,15 @@ class DataImporter:
 				for array_name in self.get_var_name("numerical", self.config['RESOLUTION'], self.config)
 			]
 
-			categorical_data = [
-		#		self.apply_categorical_encoding(np.array(f[array_name][:][row_min:row_max, col_min:col_max]), array_name)
-		#		for array_name in self.get_var_name("categorical", self.config['RESOLUTION'], self.config)
-			]
+			# Extract categorical data
+			categorical_data = []
+			for array_name in self.get_var_name("categorical", self.config['RESOLUTION'], self.config):
+				print(f"array_name: {array_name}")
+				print(f"array shape: {f.keys()}")
+				array_data = np.array(f[array_name][:][row_min:row_max, col_min:col_max])
+				print(f"array_data shape: {array_data.shape}")
+				encoded_data = self.apply_categorical_encoding(array_data, array_name)
+				categorical_data.append(encoded_data)
 
 			groups = self.apply_categorical_encoding(np.array(f[f"geospatial/COUNTY_{self.config['RESOLUTION']}m"][:][row_min:row_max, col_min:col_max]), f"COUNTY_{self.config['RESOLUTION']}m")
 		### change the shape of the numerical data from tuple to numpy array
@@ -1124,4 +1129,19 @@ class DataImporter:
 		for i, year in enumerate(time_range):
 			if self.config['plot']: self.plot_feature(all_data[i], f"{name}_{year}")
 		return all_data
+	
+if __name__ == "__main__":
+	config = {
+			"RESOLUTION": 250,
+			
+			"geospatial": True,
+		}
+
+	importer = DataImporter(config)
+
+	gw_station_data = importer.gw_stations_ds(start_year=1990, end_year=2021)
+
+	print(f"numerical feature: {gw_station_data['421332085401901_1609_389']['numerical_feature']}")
+	print(f"categorical feature: {gw_station_data['421332085401901_1609_389']['categorical_feature']}")
+	print(f"head: {gw_station_data['421332085401901_1609_389']}")
 
