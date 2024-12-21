@@ -195,15 +195,16 @@ class DataImporter:
 	def get_var_name(self, feature_type, RESOLUTION, config):
 		features = []
 		if feature_type == 'categorical':
+
 			features = [
-			#	f'geospatial/COUNTY_{self.config["RESOLUTION"]}m',
-			#	f'geospatial/landforms_{config["RESOLUTION"]}m_250Dis',
-			#	f'Soil/gSURRGO_swat_{self.config["RESOLUTION"]}m',
+				f'geospatial/COUNTY_{self.config["RESOLUTION"]}m',
+				f'geospatial/landforms_{config["RESOLUTION"]}m_250Dis',
+				f'Soil/gSURRGO_swat_{self.config["RESOLUTION"]}m',
 				f'geospatial/landuse_{self.config["RESOLUTION"]}m',
-			#	f'geospatial/geomorphons_{config["RESOLUTION"]}m_250Dis',
-			#	f'geospatial/MI_geol_poly_{self.config["RESOLUTION"]}m',
-			#	f'geospatial/Glacial_Landsystems_{self.config["RESOLUTION"]}m',
-			#	f'geospatial/Aquifer_Characteristics_Of_Glacial_Drift_{self.config["RESOLUTION"]}m',
+				f'geospatial/geomorphons_{config["RESOLUTION"]}m_250Dis',
+				f'geospatial/MI_geol_poly_{self.config["RESOLUTION"]}m',
+				f'geospatial/Glacial_Landsystems_{self.config["RESOLUTION"]}m',
+				f'geospatial/Aquifer_Characteristics_Of_Glacial_Drift_{self.config["RESOLUTION"]}m',
 				]
 		elif feature_type == 'numerical':
 			self.select_numerical_features(config, features, RESOLUTION)
@@ -285,8 +286,6 @@ class DataImporter:
 				f'population/pden2010_ML_{self.config["RESOLUTION"]}m',
 			])
 
-
-
 	def gw_3d_ds(self, start_year=2020, end_year=2022) -> np.ndarray:
 		""" Extract the 3D groundwater head data from the database. """
 
@@ -348,12 +347,9 @@ class DataImporter:
 					'numerical_feature': numerical_feature,
 					'categorical_feature': categorical_feature,
 				}
-
-
 		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
 		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
 		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
-
 
 		return gw_station_data
 
