@@ -7,17 +7,24 @@
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
     <title>HydroGeo Dataset</title>
+
     <!-- Bootstrap CSS -->
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css"
     />
+
     <!-- ArcGIS API -->
     <script src="https://js.arcgis.com/4.21/"></script>
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="static/css/HydroGeoDataset_style.css" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/HydroGeoDataset_style.css') }}"
+    />
   </head>
 
   <body>
@@ -32,83 +39,59 @@
       <!-- Map Section -->
       <div id="viewDiv"></div>
 
-      <!-- Hidden Inputs for Range Selection -->
-      <input
-        type="hidden"
-        id="polygon_coordinates"
-        name="polygon_coordinates"
-      />
-
       <!-- Form Section -->
       <div class="form-container">
         <div class="form-card">
-          <form method="POST" action="/hydro_geo_dataset">
-            <!-- Replace Flask's form.hidden_tag() -->
-            <input type="hidden" name="csrf_token" value="" />
+          <form method="POST" action="{{ url_for('hydro_geo_dataset') }}">
+            {{ form.hidden_tag() }}
 
             <!-- Single Point Inputs -->
             <div class="mb-3">
               <label for="latitude" class="form-label">Latitude</label>
-              <input type="text" id="latitude" class="form-control" readonly />
+              {{ form.latitude(class="form-control", id="latitude",
+              readonly=True) }}
             </div>
             <div class="mb-3">
               <label for="longitude" class="form-label">Longitude</label>
-              <input type="text" id="longitude" class="form-control" readonly />
+              {{ form.longitude(class="form-control", id="longitude",
+              readonly=True) }}
             </div>
             <hr />
 
             <!-- Range Inputs -->
             <div class="mb-3">
               <label for="min_latitude" class="form-label">Min Latitude</label>
-              <input
-                type="text"
-                id="min_latitude"
-                class="form-control"
-                readonly
-              />
+              {{ form.min_latitude(class="form-control", id="min_latitude",
+              readonly=True) }}
             </div>
             <div class="mb-3">
               <label for="max_latitude" class="form-label">Max Latitude</label>
-              <input
-                type="text"
-                id="max_latitude"
-                class="form-control"
-                readonly
-              />
+              {{ form.max_latitude(class="form-control", id="max_latitude",
+              readonly=True) }}
             </div>
             <div class="mb-3">
               <label for="min_longitude" class="form-label"
                 >Min Longitude</label
               >
-              <input
-                type="text"
-                id="min_longitude"
-                class="form-control"
-                readonly
-              />
+              {{ form.min_longitude(class="form-control", id="min_longitude",
+              readonly=True) }}
             </div>
             <div class="mb-3">
               <label for="max_longitude" class="form-label"
                 >Max Longitude</label
               >
-              <input
-                type="text"
-                id="max_longitude"
-                class="form-control"
-                readonly
-              />
+              {{ form.max_longitude(class="form-control", id="max_longitude",
+              readonly=True) }}
             </div>
 
             <!-- Variable and Subvariable Inputs -->
             <div class="mb-3">
               <label for="variable" class="form-label">Variable</label>
-              <select id="variable" name="variable" class="form-select">
-                <option value="">Select a variable</option>
-              </select>
-
-              <select id="subvariable" name="subvariable" class="form-select">
-                <option value="">Select a variable first</option>
-              </select>
+              {{ form.variable(class="form-select", id="variable") }}
+            </div>
+            <div class="mb-3">
+              <label for="subvariable" class="form-label">Subvariable</label>
+              {{ form.subvariable(class="form-select", id="subvariable") }}
             </div>
 
             <!-- Submit Button -->
@@ -118,14 +101,19 @@
           </form>
 
           <!-- Display Results -->
-          <div id="result">
-            <!-- Result Container -->
+          {% if data %}
+          <div id="result" class="mt-4">
+            <h3 class="text-center">Fetched Data</h3>
+            <pre class="border rounded p-3 bg-light">
+              {{ data | tojson(indent=2) }}
+            </pre>
           </div>
+          {% endif %}
         </div>
       </div>
     </div>
 
     <!-- Custom JavaScript -->
-    <script src="static/js/HydroGeoDataset_script.js"></script>
+    <script src="{{ url_for('static', filename='js/HydroGeoDataset_script.js') }}"></script>
   </body>
 </html>

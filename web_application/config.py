@@ -6,7 +6,7 @@ class Config:
     USGS_PATH = os.getenv('USGS_PATH', '/data/SWATGenXApp/GenXAppData/USGS')
     
     # Read the secret key from a file or environment variable
-    with open('/data/SWATGenXApp/codes/web_application/ciwre-bae-crs/ciwre-bae.campusad.msu.edu.key') as f:
+    with open('/data/SWATGenXApp/codes/ciwre-bae-crs/ciwre-bae.campusad.msu.edu.key') as f:
         SECRET_KEY = f.read().strip()
         
     # OR use environment variable for SECRET_KEY
