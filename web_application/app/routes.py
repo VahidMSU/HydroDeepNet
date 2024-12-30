@@ -13,7 +13,8 @@ import os
 import json
 from app.utils import LoggerSetup, single_model_creation, hydrogeo_dataset_dict, read_h5_file
 import numpy as np
-class HydroGeoDatasetApp:
+
+class AppManager:
 	def __init__(self, app):
 		self.app = app
 		self.init_routes()
@@ -303,7 +304,6 @@ class HydroGeoDatasetApp:
 				if not variable or not subvariable:
 					flash("Variable and Subvariable are required.", "danger")
 					return render_template('HydroGeoDataset.html', form=form)
-
 				try:
 					if latitude and longitude:
 						self.logger.info(f"Fetching data for {variable}/{subvariable} at {latitude}, {longitude}")
@@ -354,7 +354,6 @@ class HydroGeoDatasetApp:
 			self.logger.info(f"Subvariables for {variable}: {subvariables}")
 
 			return jsonify({"subvariables": subvariables})
-
 
 		@self.app.route('/ftp-access')
 		@login_required

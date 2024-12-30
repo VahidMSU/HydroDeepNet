@@ -31,8 +31,8 @@ def create_app():
         print("Creating all tables")    
         db.create_all()
 
-    from app.routes import HydroGeoDatasetApp
-    hydro_geo_app = HydroGeoDatasetApp(app)
+    from app.routes import AppManager
+    hydro_geo_app = AppManager(app)
     print("Initializing routes")    
 
     return app
