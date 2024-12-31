@@ -4,10 +4,13 @@ from config import Config
 from app.extensions import db, login_manager
 from app.models import User  # Ensure this is imported after db is initialized
 import sys
+from app.utils import LoggerSetup
 sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX')
 
 def create_app():
-    print("Creating app")
+    logger = LoggerSetup("/data/SWATGenXApp/codes/web_application/logs", rewrite=True)
+    logger = logger.setup_logger("app")
+    logger.info("Creating app")
 
     app = Flask(__name__, static_url_path='/static', static_folder='/data/MyDataBase')
 
@@ -24,15 +27,14 @@ def create_app():
 
     @login_manager.user_loader
     def load_user(user_id):
-        print(f"User ID: {user_id}")    
+        logger.info(f"User ID: {user_id}") 
         return User.query.get(int(user_id))
 
     with app.app_context():
-        print("Creating all tables")    
+        logger.info("Creating all tables")
         db.create_all()
 
     from app.routes import AppManager
     hydro_geo_app = AppManager(app)
-    print("Initializing routes")    
-
+    logger.info("Initializing routes")
     return app

@@ -1,28 +1,31 @@
 import sys
-import logging
 import os
+import logging
 
-# Set environment variable for Matplotlib
-os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib-cache'
-
-# Add the application path to the system path
-
+# Set the Python path for your application
 sys.path.insert(0, "/data/SWATGenXApp/codes/web_application")
 
-# Import the create_app function after modifying sys.path
-from app import create_app
+# Ensure Matplotlib can write temporary files
+os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib-cache'
 
-# Create a directory for logs if it doesn't exist
+# Set environment variables for the Flask application
+os.environ['FLASK_ENV'] = 'production'
+os.environ['FLASK_APP'] = 'app.py'
+
+# Logging setup
 log_dir = "/data/SWATGenXApp/logs"
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir, exist_ok=True)
-
-# Set up logging to a writable directory (e.g., /data/SWATGenXApp/logs)
+os.makedirs(log_dir, exist_ok=True)
 log_file_path = os.path.join(log_dir, 'myapp.log')
-logging.basicConfig(filename=log_file_path, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Log a message indicating the application startup
+logging.basicConfig(
+    filename=log_file_path,
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logging.info("Starting the Flask application...")
 
-# Create the application object
+# Import the Flask app
+from app import create_app
+
+# Create the WSGI application object
 application = create_app()
