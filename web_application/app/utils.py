@@ -3,7 +3,6 @@ sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX')
 from SWATGenX.SWATGenXCommand import SWATGenXCommand
 from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
 from SWATGenX.find_station_region import find_station_region
-
 #sys.path.append(r'/data/SWATGenXApp/codes/ModelProcessing') ## not yet created
 #from ModelProcessing.core import process_SCV_SWATGenXModel
 import os
@@ -262,9 +261,6 @@ def get_rowcol_index_by_latlon(desired_lat, desired_lon):
         lon_idx = valid_indices[1][idx]
 
         return lat_idx, lon_idx
-
-
-
 
 def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples):
     logging.info(f"Starting model creation for site_no: {site_no}")

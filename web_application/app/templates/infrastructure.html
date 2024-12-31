@@ -1,45 +1,48 @@
-{% extends "layout.html" %}
-
-{% block title %}Computational Infrastructure{% endblock %}
-
-{% block content %}
+{% extends "layout.html" %} {% block title %}Computational Infrastructure{%
+endblock %} {% block content %}
 <h2 class="mb-4">Computational Infrastructure</h2>
 <div class="card">
-    <div class="card-body">
-        <p>
-            Our computational infrastructure is designed to provide robust performance and high availability for complex simulations and data processing tasks. Below is an overview of the key components of our infrastructure:
-        </p>
-        <h3>Windows Host Server</h3>
-        <ul>
-            <li>Processor: 2x AMD EPYC 3.10GHz, 64C/128T, 256M Cache</li>
-            <li>Memory: 16x 32GB 4800 MT/s DDR5</li>
-            <li>Storage: 8x NVMe 3.8TB</li>
-        </ul>
+  <div class="card-body">
+    <p>
+      Our computational infrastructure is designed to provide robust performance
+      and high availability for complex simulations and data processing tasks.
+      Below is an overview of the key components of our infrastructure:
+    </p>
+    <h3>Windows Host Server</h3>
+    <ul>
+      <li>Processor: 2x AMD EPYC 3.10GHz, 64C/128T, 256M Cache</li>
+      <li>Memory: 16x 32GB 4800 MT/s DDR5</li>
+      <li>Storage: 8x NVMe 3.8TB</li>
+    </ul>
 
-        <h3>Linux Host Server</h3>
-        <ul>
-            <li>Processor: 2x 5th Gen Intel Xeon Platinum 48C/96T, 300M Cache</li>
-            <li>Memory: 24x 32GB 5600 MT/s DDR5</li>
-            <li>Storage: 6x NVMe 3.8TB</li>
-            <li>GPU: 4x L40S Tesla class GPU</li>
-        </ul>
+    <h3>Linux Host Server</h3>
+    <ul>
+      <li>Processor: 2x 5th Gen Intel Xeon Platinum 48C/96T, 300M Cache</li>
+      <li>Memory: 24x 32GB 5600 MT/s DDR5</li>
+      <li>Storage: 6x NVMe 3.8TB</li>
+      <li>GPU: 4x L40S Tesla class GPU</li>
+    </ul>
 
-        <h3>Shared Storage</h3>
-        <ul>
-            <li>200 TB PowerVault</li>
-        </ul>
+    <h3>Shared Storage</h3>
+    <ul>
+      <li>200 TB PowerVault</li>
+    </ul>
 
-        <h3>Total Resources</h3>
-        <ul>
-            <li>448 Processors</li>
-            <li>184 GB GPU Memory</li>
-            <li>72,704 CUDA Cores</li>
-            <li>1.2 TB Memory</li>
-            <li>230 TB Storage</li>
-        </ul>
+    <h3>Total Resources</h3>
+    <ul>
+      <li>448 Processors</li>
+      <li>184 GB GPU Memory</li>
+      <li>72,704 CUDA Cores</li>
+      <li>1.2 TB Memory</li>
+      <li>230 TB Storage</li>
+    </ul>
 
-        <h3>Infrastructure Diagram</h3>
-        <img src="{{ url_for('static', filename='images/Computional_infrastructure.jpeg') }}" class="img-fluid" alt="Computational Infrastructure Diagram">
-    </div>
+    <h3>Infrastructure Diagram</h3>
+    <img
+      src="{{ url_for('static', filename='images/Computional_infrastructure.jpeg') }}"
+      class="img-fluid"
+      alt="Computational Infrastructure Diagram"
+    />
+  </div>
 </div>
 {% endblock %}
