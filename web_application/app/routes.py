@@ -3,11 +3,9 @@ from flask_login import login_user, logout_user, login_required
 from app.models import User, ContactMessage
 from app.forms import RegistrationForm, LoginForm, ContactForm, ModelSettingsForm, HydroGeoDatasetForm
 from app.extensions import db
-import logging
 from functools import partial
 from multiprocessing import Process
 from app.utils import find_station, get_huc12_geometries
-from scipy.spatial import cKDTree
 from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
 import os
 import json
@@ -18,9 +16,8 @@ class AppManager:
 	def __init__(self, app):
 		self.app = app
 		self.init_routes()
-		self.logger = LoggerSetup(report_path="web_application/logs", verbose=True, rewrite=False)
+		self.logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/web_application/logs", verbose=True, rewrite=False)
 		self.logger = self.logger.setup_logger("WebAppLogger")
-
 
 	def init_routes(self):
 		@self.app.route('/')
@@ -44,10 +41,10 @@ class AppManager:
 						names.remove("log.txt")
 				else:
 					names = []
-
+					
 				return jsonify({'names': names, 'variables': variables})
 			except Exception as e:
-				logging.error(f"Error fetching options: {e}")
+				self.logger.error(f"Error fetching options: {e}")
 				return jsonify({"error": "Failed to fetch options"}), 500
 
 		@self.app.route('/visualizations', methods=['GET'])
@@ -97,7 +94,6 @@ class AppManager:
 
 		@self.app.route('/login', methods=['GET', 'POST'])
 		def login():
-
 			self.logger.info("Login route called")	
 			form = LoginForm()
 
@@ -132,7 +128,7 @@ class AppManager:
 					flash('Account created successfully! You can now log in.')
 					return redirect(url_for('login'))
 				except Exception as e:
-					logging.error(f"Error adding user to the database: {e}")
+					self.logger.error(f"Error adding user to the database: {e}")
 					db.session.rollback()
 					flash('An error occurred while creating the account. Please try again.')
 			else:
@@ -311,7 +307,6 @@ class AppManager:
 							lat=float(latitude), lon=float(longitude), address=f"{variable}/{subvariable}"
 						)
 						# Convert np.float32 to float
-						
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
 						self.logger.info(f"Data fetched: {data}")
 					elif all([min_latitude, max_latitude, min_longitude, max_longitude]):
@@ -364,7 +359,12 @@ class AppManager:
 		@self.app.route('/deeplearning_models')
 		@login_required
 		def deeplearning_models():
-			return render_template('redirect.html')
+			return render_template('DeepLearning.html')
+		
+		@self.app.route('/vision_system')
+		@login_required
+		def vision_system():
+			return render_template('VisionSystem.html')
 
 		@self.app.route('/michigan')
 		def michigan():
@@ -375,18 +375,15 @@ class AppManager:
 		def search_site():
 			self.logger.info("Search site route called")	
 			search_term = request.args.get('search_term', '').lower()
-
 			if not search_term:
 				return jsonify({"error": "Search term is required"}), 400
-
+			
 			try:
 				results = find_station(search_term)
-
 				if results.empty:
+					self.logger.info("No matching sites found")
 					return jsonify({"error": "No matching sites found"}), 404
-
 				return jsonify(results.to_dict(orient='records'))
-
 			except Exception as e:
-				logging.error(f"Error while searching for site: {e}")
+				self.logger.error(f"Error searching for site: {e}")
 				return jsonify({"error": "An error occurred during the search"}), 500

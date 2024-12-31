@@ -12,3 +12,377 @@
 2024-11-27 04:27:01,891 [INFO] Created 1 records
 2024-11-27 04:27:07,259 [INFO] First Stage completed for 04100001, 0410
 2024-11-27 04:30:20,253 [ERROR] HRU2 shapefile does not exist for 04100001 after running QSWAT+
+2024-12-30 18:33:46,976 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 18:33:46,976 [INFO] Config loaded
+2024-12-30 18:33:47,141 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 18:33:47,144 [INFO] Starting server
+2024-12-30 18:33:47,145 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 18:34:35,881 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 18:34:35,881 [INFO] Config loaded
+2024-12-30 18:34:36,044 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 18:34:36,048 [INFO] Starting server
+2024-12-30 18:34:36,049 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 18:34:43,795 [INFO] Home route called, user is authenticated.
+2024-12-30 18:34:47,347 [INFO] HydroGeoDataset route called
+2024-12-30 18:34:47,349 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 18:35:00,218 [INFO] Get Subvariables route called
+2024-12-30 18:35:00,219 [INFO] Received variable: EBK
+2024-12-30 18:35:00,220 [INFO] Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+2024-12-30 18:35:01,461 [INFO] HydroGeoDataset route called
+2024-12-30 18:35:01,463 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 18:35:01,463 [INFO] Form submitted
+2024-12-30 18:35:01,463 [INFO] Form validated successfully
+2024-12-30 18:35:01,463 [INFO] Fetching data for EBK/kriging_output_AQ_THK_1_250m at 44.780803, -84.205200
+2024-12-30 18:35:01,959 [INFO] Data fetched: {'value': 29.795394897460938}
+2024-12-30 18:38:02,460 [INFO] HydroGeoDataset route called
+2024-12-30 18:38:02,462 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 18:38:04,680 [INFO] Index route called. Redirecting to /home.
+2024-12-30 18:38:04,692 [INFO] Home route called, user is authenticated.
+2024-12-30 18:38:06,516 [INFO] HydroGeoDataset route called
+2024-12-30 18:38:06,517 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 18:38:12,484 [INFO] Login route called
+2024-12-30 18:39:56,234 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 18:39:56,234 [INFO] Config loaded
+2024-12-30 18:39:56,394 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 18:39:56,398 [INFO] Starting server
+2024-12-30 18:39:56,399 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 18:42:33,185 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 18:42:33,185 [INFO] Config loaded
+2024-12-30 18:42:33,350 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 18:42:33,354 [INFO] Starting server
+2024-12-30 18:42:33,355 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 18:42:37,396 [INFO] HydroGeoDataset route called
+2024-12-30 18:42:37,398 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 18:42:45,708 [INFO] Get Subvariables route called
+2024-12-30 18:42:45,708 [INFO] Received variable: LANDFIRE
+2024-12-30 18:42:45,709 [INFO] Subvariables for LANDFIRE: ['LC20_Asp_220_250m', 'LC20_BPS_220_250m', 'LC20_EVT_220_250m', 'LC20_Elev_220_250m', 'LC20_SlpD_220_250m', 'LC20_SlpP_220_250m', 'LC22_EVC_220_250m', 'LC22_EVH_220_250m']
+2024-12-30 18:42:48,470 [INFO] HydroGeoDataset route called
+2024-12-30 18:42:48,472 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 18:42:48,472 [INFO] Form submitted
+2024-12-30 18:42:48,472 [INFO] Form validated successfully
+2024-12-30 18:42:48,472 [INFO] Received range: (44.650687, 44.709275), (-85.166503, -85.084106)
+2024-12-30 18:42:48,472 [INFO] Fetching data for LANDFIRE/LC20_Asp_220_250m in range (44.650687, 44.709275), (-85.166503, -85.084106)
+2024-12-30 18:42:48,502 [INFO] Data fetched for range: {'number of cells': 625, 'median': np.float64(-1.0), 'max': np.float64(356.0), 'min': np.float64(-1.0), 'mean': np.float64(30.33), 'std': np.float64(83.6)}
+2024-12-30 19:01:39,104 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 19:01:39,104 [INFO] Config loaded
+2024-12-30 19:01:39,273 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 19:01:39,277 [INFO] Starting server
+2024-12-30 19:01:39,278 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 19:01:45,206 [INFO] Index route called. Redirecting to /home.
+2024-12-30 19:01:45,266 [INFO] Home route called, user is authenticated.
+2024-12-30 19:01:47,029 [INFO] HydroGeoDataset route called
+2024-12-30 19:01:47,031 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 19:02:52,103 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 19:02:52,103 [INFO] Config loaded
+2024-12-30 19:02:52,272 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 19:02:52,276 [INFO] Starting server
+2024-12-30 19:02:52,277 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 19:02:55,830 [INFO] Index route called. Redirecting to /home.
+2024-12-30 19:02:55,891 [INFO] Home route called, user is authenticated.
+2024-12-30 19:02:57,694 [INFO] HydroGeoDataset route called
+2024-12-30 19:02:57,696 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 19:03:04,980 [INFO] Get Subvariables route called
+2024-12-30 19:03:04,980 [INFO] Received variable: EBK
+2024-12-30 19:03:04,982 [INFO] Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+2024-12-30 19:03:35,352 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 19:03:35,352 [INFO] Config loaded
+2024-12-30 19:03:35,518 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 19:03:35,522 [INFO] Starting server
+2024-12-30 19:03:35,523 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 19:03:42,300 [INFO] HydroGeoDataset route called
+2024-12-30 19:03:42,302 [ERROR] Exception on /hydro_geo_dataset [GET]
+Traceback (most recent call last):
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/data/SWATGenXApp/codes/web_application/app/routes.py", line 260, in hydro_geo_dataset
+    if selected_variable in hydrodict:
+UnboundLocalError: local variable 'selected_variable' referenced before assignment
+2024-12-30 19:03:46,078 [INFO] HydroGeoDataset route called
+2024-12-30 19:03:46,079 [ERROR] Exception on /hydro_geo_dataset [GET]
+Traceback (most recent call last):
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/data/SWATGenXApp/codes/web_application/app/routes.py", line 260, in hydro_geo_dataset
+    if selected_variable in hydrodict:
+UnboundLocalError: local variable 'selected_variable' referenced before assignment
+2024-12-30 19:04:23,149 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 19:04:23,149 [INFO] Config loaded
+2024-12-30 19:04:23,316 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 19:04:23,319 [INFO] Starting server
+2024-12-30 19:04:23,320 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 19:04:26,124 [INFO] HydroGeoDataset route called
+2024-12-30 19:04:26,126 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 19:04:31,436 [INFO] Get Subvariables route called
+2024-12-30 19:04:31,436 [INFO] Received variable: EBK
+2024-12-30 19:04:31,438 [INFO] Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+2024-12-30 19:04:33,474 [INFO] HydroGeoDataset route called
+2024-12-30 19:04:33,475 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 19:04:33,475 [INFO] Form submitted
+2024-12-30 19:04:33,475 [INFO] Form validated successfully
+2024-12-30 19:04:33,476 [INFO] Fetching data for EBK/kriging_output_AQ_THK_1_250m at 44.481099, -84.864379
+2024-12-30 19:04:33,973 [INFO] Data fetched: {'value': 44.283546447753906}
+2024-12-30 19:04:48,457 [INFO] Index route called. Redirecting to /home.
+2024-12-30 19:04:48,512 [INFO] Home route called, user is authenticated.
+2024-12-30 19:04:50,164 [INFO] HydroGeoDataset route called
+2024-12-30 19:04:50,166 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 19:05:17,965 [INFO] HydroGeoDataset route called
+2024-12-30 19:05:17,967 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 19:41:11,410 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 19:41:11,410 [INFO] Config loaded
+2024-12-30 19:41:11,576 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 19:41:11,579 [INFO] Starting server
+2024-12-30 19:41:11,580 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 19:41:22,175 [INFO] Login route called
+2024-12-30 19:41:30,611 [INFO] Login route called
+2024-12-30 19:41:30,611 [INFO] Attempting login for: admin
+2024-12-30 19:41:30,615 [INFO] Login successful for: admin
+2024-12-30 19:41:30,660 [INFO] Home route called, user is authenticated.
+2024-12-30 19:42:35,641 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 19:42:35,641 [INFO] Config loaded
+2024-12-30 19:42:35,808 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 19:42:35,812 [INFO] Starting server
+2024-12-30 19:42:35,813 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 19:43:01,102 [INFO] Home route called, user is authenticated.
+2024-12-30 19:43:07,612 [INFO] Visualizations route called
+2024-12-30 19:43:09,222 [INFO] Visualizations route called
+2024-12-30 19:43:10,353 [INFO] HydroGeoDataset route called
+2024-12-30 19:43:10,354 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 19:43:19,196 [INFO] Get Subvariables route called
+2024-12-30 19:43:19,196 [INFO] Received variable: EBK
+2024-12-30 19:43:19,197 [INFO] Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+2024-12-30 19:43:20,838 [INFO] HydroGeoDataset route called
+2024-12-30 19:43:20,839 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 19:43:20,839 [INFO] Form submitted
+2024-12-30 19:43:20,839 [INFO] Form validated successfully
+2024-12-30 19:43:20,839 [INFO] Received range: (44.437536, 44.514186), (-84.875366, -84.777710)
+2024-12-30 19:43:20,839 [INFO] Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.437536, 44.514186), (-84.875366, -84.777710)
+2024-12-30 19:43:20,869 [INFO] Data fetched for range: {'number of cells': 990, 'median': 33.93000030517578, 'max': 46.099998474121094, 'min': 18.780000686645508, 'mean': 34.02000045776367, 'std': 4.670000076293945}
+2024-12-30 20:20:30,514 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 20:20:30,514 [INFO] Config loaded
+2024-12-30 20:20:30,673 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 20:20:30,676 [INFO] Starting server
+2024-12-30 20:20:30,677 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 20:20:38,795 [INFO] Index route called. Redirecting to /home.
+2024-12-30 20:20:38,858 [INFO] Home route called, user is authenticated.
+2024-12-30 20:20:43,461 [ERROR] Exception on /vision_system [GET]
+Traceback (most recent call last):
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask_login/utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "/data/SWATGenXApp/codes/web_application/app/routes.py", line 370, in vision_system
+    return render_template('vision_system.html')
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/jinja2/environment.py", line 1084, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/jinja2/environment.py", line 1013, in get_template
+    return self._load_template(name, globals)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/jinja2/environment.py", line 972, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/jinja2/loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/templating.py", line 65, in get_source
+    return self._get_source_fast(environment, template)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/templating.py", line 99, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: vision_system.html
+2024-12-30 20:24:03,612 [ERROR] Exception on /vision_system [GET]
+Traceback (most recent call last):
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask_login/utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+  File "/data/SWATGenXApp/codes/web_application/app/routes.py", line 370, in vision_system
+    return render_template('vision_system.html')
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/jinja2/environment.py", line 1084, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/jinja2/environment.py", line 1013, in get_template
+    return self._load_template(name, globals)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/jinja2/environment.py", line 972, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/jinja2/loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/templating.py", line 65, in get_source
+    return self._get_source_fast(environment, template)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/templating.py", line 99, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: vision_system.html
+2024-12-30 20:24:44,008 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 20:24:44,008 [INFO] Config loaded
+2024-12-30 20:24:44,172 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 20:24:44,175 [INFO] Starting server
+2024-12-30 20:24:44,176 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 20:25:35,514 [INFO] Model Settings route called
+2024-12-30 20:25:35,559 [ERROR] Exception on /model-settings [GET]
+Traceback (most recent call last):
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/data/SWATGenXApp/codes/web_application/app/routes.py", line 187, in model_settings
+    station_data = integrate_streamflow_data(current_app.config['USGS_PATH'])
+  File "/data/SWATGenXApp/codes/SWATGenX/SWATGenX/integrate_streamflow_data.py", line 32, in integrate_streamflow_data
+    all_stations.to_csv(os.path.join(usgs_data_base, "all_VPUIDs.csv"), index=False)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/util/_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/core/generic.py", line 3967, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/formats/format.py", line 1014, in to_csv
+    csv_formatter.save()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/formats/csvs.py", line 251, in save
+    with get_handle(
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+PermissionError: [Errno 13] Permission denied: '/data/SWATGenXApp/GenXAppData/USGS/all_VPUIDs.csv'
+2024-12-30 20:25:39,745 [INFO] HydroGeoDataset route called
+2024-12-30 20:25:39,746 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 20:36:19,065 [INFO] Index route called. Redirecting to /home.
+2024-12-30 20:36:19,120 [INFO] Home route called, user is authenticated.
+2024-12-30 20:42:24,469 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 20:42:24,469 [INFO] Config loaded
+2024-12-30 20:42:24,639 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 20:42:24,643 [INFO] Starting server
+2024-12-30 20:42:24,644 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 20:42:36,557 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 20:42:36,558 [INFO] Config loaded
+2024-12-30 20:42:36,721 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 20:42:36,725 [INFO] Starting server
+2024-12-30 20:42:36,726 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 20:43:53,881 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 20:43:53,882 [INFO] Config loaded
+2024-12-30 20:43:54,041 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 20:43:54,044 [INFO] Starting server
+2024-12-30 20:43:54,046 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 20:44:19,566 [INFO] Index route called. Redirecting to /home.
+2024-12-30 20:44:19,580 [INFO] Home route called, user is authenticated.
+2024-12-30 20:44:24,012 [INFO] Model Settings route called
+2024-12-30 20:44:24,057 [ERROR] Exception on /model-settings [GET]
+Traceback (most recent call last):
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/data/SWATGenXApp/codes/web_application/app/routes.py", line 184, in model_settings
+    station_data = integrate_streamflow_data(current_app.config['USGS_PATH'])
+  File "/data/SWATGenXApp/codes/SWATGenX/SWATGenX/integrate_streamflow_data.py", line 32, in integrate_streamflow_data
+    all_stations.to_csv(os.path.join(usgs_data_base, "all_VPUIDs.csv"), index=False)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/util/_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/core/generic.py", line 3967, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/formats/format.py", line 1014, in to_csv
+    csv_formatter.save()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/formats/csvs.py", line 251, in save
+    with get_handle(
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+PermissionError: [Errno 13] Permission denied: '/data/SWATGenXApp/GenXAppData/USGS/all_VPUIDs.csv'
+2024-12-30 20:44:27,312 [INFO] Home route called, user is authenticated.
+2024-12-30 20:44:31,592 [INFO] Visualizations route called
+2024-12-30 20:44:33,760 [INFO] HydroGeoDataset route called
+2024-12-30 20:44:33,761 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 20:44:43,147 [INFO] Get Subvariables route called
+2024-12-30 20:44:43,147 [INFO] Received variable: LANDFIRE
+2024-12-30 20:44:43,148 [INFO] Subvariables for LANDFIRE: ['LC20_Asp_220_250m', 'LC20_BPS_220_250m', 'LC20_EVT_220_250m', 'LC20_Elev_220_250m', 'LC20_SlpD_220_250m', 'LC20_SlpP_220_250m', 'LC22_EVC_220_250m', 'LC22_EVH_220_250m']
+2024-12-30 20:44:44,796 [INFO] HydroGeoDataset route called
+2024-12-30 20:44:44,797 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 20:44:44,797 [INFO] Form submitted
+2024-12-30 20:44:44,797 [INFO] Form validated successfully
+2024-12-30 20:44:44,797 [INFO] Received range: (44.416613, 44.486325), (-84.855835, -84.738647)
+2024-12-30 20:44:44,797 [INFO] Fetching data for LANDFIRE/LC20_Asp_220_250m in range (44.416613, 44.486325), (-84.855835, -84.738647)
+2024-12-30 20:44:44,828 [INFO] Data fetched for range: {'number of cells': 1080, 'median': np.float64(-1.0), 'max': np.float64(358.0), 'min': np.float64(-1.0), 'mean': np.float64(19.38), 'std': np.float64(67.27)}
+2024-12-30 20:45:06,827 [INFO] Index route called. Redirecting to /home.
+2024-12-30 20:45:06,883 [INFO] Home route called, user is authenticated.
+2024-12-30 20:52:39,192 [INFO] Logging to web_application/logs/Config.log
+2024-12-30 20:52:39,192 [INFO] Config loaded
+2024-12-30 20:52:39,351 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 20:52:39,355 [INFO] Starting server
+2024-12-30 20:52:39,356 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 20:52:44,725 [INFO] Index route called. Redirecting to /home.
+2024-12-30 20:52:44,741 [INFO] Home route called, user is authenticated.
+2024-12-30 20:52:48,994 [INFO] Model Settings route called
+2024-12-30 20:52:49,038 [ERROR] Exception on /model-settings [GET]
+Traceback (most recent call last):
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/data/SWATGenXApp/codes/web_application/app/routes.py", line 184, in model_settings
+    station_data = integrate_streamflow_data(current_app.config['USGS_PATH'])
+  File "/data/SWATGenXApp/codes/SWATGenX/SWATGenX/integrate_streamflow_data.py", line 32, in integrate_streamflow_data
+    all_stations.to_csv(os.path.join(usgs_data_base, "all_VPUIDs.csv"), index=False)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/util/_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/core/generic.py", line 3967, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/formats/format.py", line 1014, in to_csv
+    csv_formatter.save()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/formats/csvs.py", line 251, in save
+    with get_handle(
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+PermissionError: [Errno 13] Permission denied: '/data/SWATGenXApp/GenXAppData/USGS/all_VPUIDs.csv'
+2024-12-30 20:52:52,837 [INFO] Visualizations route called
+2024-12-30 21:19:09,017 [INFO] Logging to /data/SWATGenXApp/codes/web_application/logs/app.log
+2024-12-30 21:19:09,018 [INFO] Creating app
+2024-12-30 21:19:09,023 [INFO] Creating all tables
+2024-12-30 21:19:09,030 [INFO] Logging to web_application/logs/WebAppLogger.log
+2024-12-30 21:19:09,030 [INFO] Initializing routes
+2024-12-30 21:19:09,033 [INFO] Starting server
+2024-12-30 21:19:09,034 [INFO] Serving on http://0.0.0.0:5050
+2024-12-30 21:19:23,422 [INFO] HydroGeoDataset route called
+2024-12-30 21:19:23,424 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 21:19:23,429 [INFO] User ID: 1
+2024-12-30 21:19:26,119 [INFO] Index route called. Redirecting to /home.
+2024-12-30 21:19:26,177 [INFO] Home route called, user is authenticated.
+2024-12-30 21:19:26,179 [INFO] User ID: 1
+2024-12-30 21:19:27,969 [INFO] User ID: 1
+2024-12-30 21:19:30,176 [INFO] Visualizations route called
+2024-12-30 21:19:30,178 [INFO] User ID: 1
+2024-12-30 21:19:32,304 [INFO] Visualizations route called
+2024-12-30 21:19:32,304 [INFO] User ID: 1
+2024-12-30 21:19:34,764 [INFO] HydroGeoDataset route called
+2024-12-30 21:19:34,765 [INFO] Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+2024-12-30 21:19:34,765 [INFO] User ID: 1
+2024-12-30 21:19:37,418 [INFO] Index route called. Redirecting to /home.
+2024-12-30 21:19:37,471 [INFO] Home route called, user is authenticated.
+2024-12-30 21:19:37,471 [INFO] User ID: 1

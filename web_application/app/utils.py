@@ -1,17 +1,20 @@
 import sys
 sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX')
-#sys.path.append(r'/data/SWATGenXApp/codes/ModelProcessing')
-sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX/')
-import os
-import shutil
-import logging
-from shapely.geometry import mapping
-import geopandas as gpd
 from SWATGenX.SWATGenXCommand import SWATGenXCommand
 from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
-#from ModelProcessing.core import process_SCV_SWATGenXModel
 from SWATGenX.find_station_region import find_station_region
 
+#sys.path.append(r'/data/SWATGenXApp/codes/ModelProcessing') ## not yet created
+#from ModelProcessing.core import process_SCV_SWATGenXModel
+import os
+import shutil
+import geopandas as gpd
+import h5py
+import numpy as np
+import pandas as pd
+import logging
+from shapely.geometry import mapping
+from scipy.spatial import cKDTree
 
 
 class LoggerSetup:
@@ -120,15 +123,6 @@ class LoggerSetup:
 		log_method = log_methods.get(level.lower(), temp_logger.info)
 		log_method(message)
 
-
-
-
-import h5py
-import numpy as np
-import pandas as pd
-import os
-from scipy.spatial import cKDTree
-
 def hydrogeo_dataset_dict(path="/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"):
     with h5py.File(path, 'r') as f:
         groups = f.keys()
@@ -194,33 +188,33 @@ def read_h5_file(address, lat=None, lon=None, lat_range=None, lon_range=None, lo
     return dict_data
 
 def process_data(data, address):
-    data_median = np.nanmedian(data)
-    data_max = np.nanmax(data)
-    data_min = np.nanmin(data)
-    data_mean = np.nanmean(data)
-    data_std = np.nanstd(data)
+	data_median = np.nanmedian(data)
+	data_max = np.nanmax(data)
+	data_min = np.nanmin(data)
+	data_mean = np.nanmean(data)
+	data_std = np.nanstd(data)
 
-    if "CDL" in address:
-        unique, counts = np.unique(data, return_counts=True)
-        cell_area_ha = 6.25
-        dict_data = {
-            CDL_lookup(key): value * cell_area_ha
-            for key, value in zip(unique, counts)
-        }
-        dict_data.update({
-            "Total Area": np.nansum(list(dict_data.values())),
-            "unit": "hectares",
-        })
-    else:
-        dict_data = {
-            "number of cells": data.size,
-            "median": data_median.round(2),
-            "max": data_max.round(2),
-            "min": data_min.round(2),
-            "mean": data_mean.round(2),
-            "std": data_std.round(2)
-        }
-    return dict_data
+	if "CDL" in address:
+		unique, counts = np.unique(data, return_counts=True)
+		cell_area_ha = 6.25
+		dict_data = {
+		    CDL_lookup(key): value * cell_area_ha
+		    for key, value in zip(unique, counts)
+		}
+		dict_data |= {
+			"Total Area": np.nansum(list(dict_data.values())),
+			"unit": "hectares",
+		}
+	else:
+		dict_data = {
+		    "number of cells": data.size,
+		    "median": data_median.round(2),
+		    "max": data_max.round(2),
+		    "min": data_min.round(2),
+		    "mean": data_mean.round(2),
+		    "std": data_std.round(2)
+		}
+	return dict_data
 
 def get_rowcol_range_by_latlon(desired_min_lat, desired_max_lat, desired_min_lon, desired_max_lon):
     path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
