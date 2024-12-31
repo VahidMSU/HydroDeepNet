@@ -7,10 +7,24 @@ from wtforms.validators import NumberRange
 from wtforms.validators import Optional
 
 class RegistrationForm(FlaskForm):
+    """
+    RegistrationForm is a Flask-WTF form used for user registration.
 
+    This form collects the username, email, password, and confirmation of the password from the user. It includes validation methods to ensure that the username and email are unique and that the password meets the minimum length requirement.
 
-    
-    
+    Attributes:
+        username (StringField): The username of the user.
+        email (StringField): The email address of the user.
+        password (PasswordField): The password for the user account.
+        confirm_password (PasswordField): A field to confirm the user's password.
+        submit (SubmitField): A button to submit the registration form.
+
+    Methods:
+        validate_username(username): Validates that the username is unique.
+        validate_password(password): Validates that the password meets the minimum length requirement.
+        validate_email(email): Validates that the email is unique.
+    """
+
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -26,22 +40,16 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Password must be at least 8 characters long.')
 
     def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if user:
+        if user := User.query.filter_by(email=email.data).first():
             raise ValidationError('That email is already in use. Please choose a different one.')
         
     submit = SubmitField('Sign Up')
 
-
-
-
 class LoginForm(FlaskForm):
+
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
-
-
-
 
 class HydroGeoDatasetForm(FlaskForm):
     # Fields for single point selection
@@ -74,8 +82,6 @@ class ContactForm(FlaskForm):
     message = TextAreaField('Message', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
-
-
 class ModelSettingsForm(FlaskForm):
     user_input = StringField('USGS Station Number', validators=[DataRequired()])
     search_input = StringField('Search Site Name')  # New search field
@@ -92,4 +98,3 @@ class ModelSettingsForm(FlaskForm):
     verification_samples = IntegerField('Samples', validators=[NumberRange(min=1, max=50)], default=25)
     submit = SubmitField('Run')
     search_submit = SubmitField('Search')  # New submit button for search
-
