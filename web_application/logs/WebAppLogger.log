@@ -42,3 +42,16 @@ Home route called, user is authenticated.
 Model Settings route called
 Home route called, user is authenticated.
 Contact route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+FTP Access route called
+About route called
+About route called

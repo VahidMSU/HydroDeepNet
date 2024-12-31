@@ -1,108 +1,153 @@
-{% extends "layout.html" %}
-
-{% block title %}Home{% endblock %}
-
-{% block content %}
+{% extends "layout.html" %} {% block title %}Home{% endblock %} {% block content
+%}
 <h2 class="mb-4">Welcome to the Physically Informed Deep Learning Platform</h2>
 <div class="card">
-    <div class="card-body">
-        <h3>Overview</h3>
-        <p>
-            The Physically Informed Deep Learning Platform integrates hydrological modeling, hierarchical data
-            management, and advanced deep learning techniques to predict hydrological variables at high spatial and
-            temporal resolution. This system is designed to enhance our understanding of surface and subsurface
-            hydrological processes, with a focus on groundwater recharge, evapotranspiration, and surface runoff.
-        </p>
-        <p>
-            The platform combines three key components: (1) physically based hydrological modeling using SWAT+, (2)
-            hierarchical data organization and preprocessing, and (3) a custom CNN-Transformer architecture for
-            spatiotemporal regression. Each stage builds on the other, ensuring accuracy, scalability, and adaptability
-            for various hydrological applications.
-        </p>
+  <div class="card-body">
+    <h3>Overview</h3>
+    <p>
+      The Physically Informed Deep Learning Platform integrates hydrological
+      modeling, hierarchical data management, and advanced deep learning
+      techniques to predict hydrological variables at high spatial and temporal
+      resolution. This system is designed to enhance our understanding of
+      surface and subsurface hydrological processes, with a focus on groundwater
+      recharge, evapotranspiration, and surface runoff.
+    </p>
+    <p>
+      The platform combines three key components: (1) physically based
+      hydrological modeling using SWAT+, (2) hierarchical data organization and
+      preprocessing, and (3) a custom CNN-Transformer architecture for
+      spatiotemporal regression. Each stage builds on the other, ensuring
+      accuracy, scalability, and adaptability for various hydrological
+      applications.
+    </p>
 
-        <h3>Key Components</h3>
-        <h4>1. Hydrological Modeling with SWAT+</h4>
-        <p>
-            SWAT+ (Soil and Water Assessment Tool Plus) serves as the foundation for generating hydrological outputs.
-            Using the NHDPlus High Resolution (HR) dataset, SWAT+ simulates surface and subsurface hydrological cycles
-            across multiple watersheds. Key aspects include:
-        </p>
-        <ul>
-            <li>Representation of hydrological processes like evapotranspiration, runoff, and groundwater recharge.</li>
-            <li>Use of hierarchical land classifications, from basins to hydrological response units (HRUs).</li>
-            <li>Calibration of model parameters using Particle Swarm Optimization (PSO) to ensure accuracy in predicting
-                observed data.</li>
-        </ul>
+    <h3>Key Components</h3>
+    <h4>1. Hydrological Modeling with SWAT+</h4>
+    <p>
+      SWAT+ (Soil and Water Assessment Tool Plus) serves as the foundation for
+      generating hydrological outputs. Using the NHDPlus High Resolution (HR)
+      dataset, SWAT+ simulates surface and subsurface hydrological cycles across
+      multiple watersheds. Key aspects include:
+    </p>
+    <ul>
+      <li>
+        Representation of hydrological processes like evapotranspiration,
+        runoff, and groundwater recharge.
+      </li>
+      <li>
+        Use of hierarchical land classifications, from basins to hydrological
+        response units (HRUs).
+      </li>
+      <li>
+        Calibration of model parameters using Particle Swarm Optimization (PSO)
+        to ensure accuracy in predicting observed data.
+      </li>
+    </ul>
 
-        <h4>2. Hierarchical Data Management</h4>
-        <p>
-            Managing and preprocessing large datasets is crucial for effective modeling and analysis. The platform
-            employs a hierarchical database system to integrate and standardize data from multiple sources:
-        </p>
-        <ul>
-            <li>High-resolution datasets, including PRISM (4km), MODIS (250m), NLCD (30m), and gSSURGO (30m).</li>
-            <li>Consistent spatial and temporal preprocessing to align data at a 250m resolution across Michigan's Lower
-                Peninsula.</li>
-            <li>Gap-filling techniques to handle missing values in remote sensing data, ensuring temporal continuity and
-                reliability.</li>
-        </ul>
+    <h4>2. Hierarchical Data Management</h4>
+    <p>
+      Managing and preprocessing large datasets is crucial for effective
+      modeling and analysis. The platform employs a hierarchical database system
+      to integrate and standardize data from multiple sources:
+    </p>
+    <ul>
+      <li>
+        High-resolution datasets, including PRISM (4km), MODIS (250m), NLCD
+        (30m), and gSSURGO (30m).
+      </li>
+      <li>
+        Consistent spatial and temporal preprocessing to align data at a 250m
+        resolution across Michigan's Lower Peninsula.
+      </li>
+      <li>
+        Gap-filling techniques to handle missing values in remote sensing data,
+        ensuring temporal continuity and reliability.
+      </li>
+    </ul>
 
-        <h4>3. Deep Learning with CNN-Transformer Models</h4>
-        <p>
-            At the core of the platform lies a custom CNN-Transformer architecture designed for spatiotemporal
-            regression tasks. This model leverages convolutional neural networks (CNNs) for spatial feature extraction
-            and Transformers for modeling temporal dependencies. Key features include:
-        </p>
-        <ul>
-            <li>Processing multi-channel spatiotemporal data in tensor format [batch_size, time_steps, channels, height,
-                width].</li>
-            <li>Down-sampling and up-sampling pathways with skip connections to preserve spatial details.</li>
-            <li>Use of positional encoding and attention mechanisms to capture temporal patterns effectively.</li>
-        </ul>
+    <h4>3. Deep Learning with CNN-Transformer Models</h4>
+    <p>
+      At the core of the platform lies a custom CNN-Transformer architecture
+      designed for spatiotemporal regression tasks. This model leverages
+      convolutional neural networks (CNNs) for spatial feature extraction and
+      Transformers for modeling temporal dependencies. Key features include:
+    </p>
+    <ul>
+      <li>
+        Processing multi-channel spatiotemporal data in tensor format
+        [batch_size, time_steps, channels, height, width].
+      </li>
+      <li>
+        Down-sampling and up-sampling pathways with skip connections to preserve
+        spatial details.
+      </li>
+      <li>
+        Use of positional encoding and attention mechanisms to capture temporal
+        patterns effectively.
+      </li>
+    </ul>
 
-        <h3>Methodology</h3>
-        <p>
-            The platform follows a systematic approach to integrate hydrological modeling, data management, and deep
-            learning:
-        </p>
-        <ol>
-            <li>
-                <b>Generate SWAT+ Models:</b> Predefined hydrological models are created using the NHDPlus HR dataset,
-                calibrated with streamflow and other observed data. A total of 58 SWAT+ models are implemented across
-                Michigan’s Lower Peninsula, covering watersheds ranging from 50 km² to 3,500 km².
-            </li>
-            <li>
-                <b>Preprocess Datasets:</b> Data from multiple sources (MODIS, PRISM, NLCD) is aligned spatially and
-                temporally. Missing values are addressed through interpolation and averaging techniques, ensuring clean
-                inputs for deep learning.
-            </li>
-            <li>
-                <b>Train CNN-Transformer Models:</b> The deep learning model is trained using SWAT+-simulated outputs
-                (e.g., recharge, runoff) alongside geospatial and remote sensing datasets. The trained model is then
-                used to predict hydrological variables in ungauged watersheds where SWAT+ model is not available.
-            </li>
-        </ol>
+    <h3>Methodology</h3>
+    <p>
+      The platform follows a systematic approach to integrate hydrological
+      modeling, data management, and deep learning:
+    </p>
+    <ol>
+      <li>
+        <b>Generate SWAT+ Models:</b> Predefined hydrological models are created
+        using the NHDPlus HR dataset, calibrated with streamflow and other
+        observed data. A total of 58 SWAT+ models are implemented across
+        Michigan’s Lower Peninsula, covering watersheds ranging from 50 km² to
+        3,500 km².
+      </li>
+      <li>
+        <b>Preprocess Datasets:</b> Data from multiple sources (MODIS, PRISM,
+        NLCD) is aligned spatially and temporally. Missing values are addressed
+        through interpolation and averaging techniques, ensuring clean inputs
+        for deep learning.
+      </li>
+      <li>
+        <b>Train CNN-Transformer Models:</b> The deep learning model is trained
+        using SWAT+-simulated outputs (e.g., recharge, runoff) alongside
+        geospatial and remote sensing datasets. The trained model is then used
+        to predict hydrological variables in ungauged watersheds where SWAT+
+        model is not available.
+      </li>
+    </ol>
 
-        <h3>Applications</h3>
-        <p>
-            The Physically Informed Deep Learning Platform is designed to address key challenges in hydrology and water
-            resource management:
-        </p>
-        <ul>
-            <li>Predicting groundwater recharge in areas without observational data.</li>
-            <li>Assessing the impacts of climate change on water availability and hydrological processes.</li>
-            <li>Providing scalable solutions for watershed-level hydrological modeling and analysis.</li>
-        </ul>
+    <h3>Applications</h3>
+    <p>
+      The Physically Informed Deep Learning Platform is designed to address key
+      challenges in hydrology and water resource management:
+    </p>
+    <ul>
+      <li>
+        Predicting groundwater recharge in areas without observational data.
+      </li>
+      <li>
+        Assessing the impacts of climate change on water availability and
+        hydrological processes.
+      </li>
+      <li>
+        Providing scalable solutions for watershed-level hydrological modeling
+        and analysis.
+      </li>
+    </ul>
 
-        <h3>Educational Value</h3>
-        <p>
-            Beyond its research applications, this platform serves as a valuable tool for education and training in
-            hydrology and machine learning. It demonstrates the integration of physically based models with modern deep
-            learning approaches, bridging the gap between domain knowledge and computational advancements.
-        </p>
+    <h3>Educational Value</h3>
+    <p>
+      Beyond its research applications, this platform serves as a valuable tool
+      for education and training in hydrology and machine learning. It
+      demonstrates the integration of physically based models with modern deep
+      learning approaches, bridging the gap between domain knowledge and
+      computational advancements.
+    </p>
 
-        <img src="{{ url_for('static', filename='images/SWATGenX.png') }}" class="img-fluid mt-4"
-            alt="Platform Workflow Diagram">
-    </div>
+    <img
+      src="{{ url_for('static', filename='images/SWATGenX.png') }}"
+      class="img-fluid mt-4"
+      alt="Platform Workflow Diagram"
+    />
+  </div>
 </div>
 {% endblock %}
