@@ -9,3 +9,36 @@ Login route called
 Attempting login for: admin
 Login successful for: admin
 Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Home route called, user is authenticated.
+FTP Access route called
+Home route called, user is authenticated.
+Model Settings route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+FTP Access route called
+Contact route called
+About route called
+Sign Up route called
+Form validation failed
+Home route called, user is authenticated.
+Model Settings route called
+Home route called, user is authenticated.
+Contact route called
