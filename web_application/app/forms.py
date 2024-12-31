@@ -75,7 +75,6 @@ class HydroGeoDatasetForm(FlaskForm):
     )
     submit = SubmitField('Get Variable Value')
 
-
 class ContactForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])

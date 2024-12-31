@@ -15,16 +15,118 @@ from scipy.spatial import cKDTree
 import logging
 
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+class LoggerSetup:
+	def __init__(self, report_path, verbose=True, rewrite=False):
+		"""
+		Initialize the LoggerSetup class.
+
+		Args:
+			report_path (str): Path to the directory where the log file will be saved.
+			verbose (bool): Whether to print logs to console. Defaults to True.
+		"""
+		self.report_path = report_path
+		self.logger = None
+		self.verbose = verbose
+		self.rewrite = rewrite  
+
+	def setup_logger(self, name="GeoClassCNNLogger"):
+		"""
+		Set up the logger to log messages to a file and optionally to the console.
+
+		Returns:
+			logging.Logger: Configured logger.
+		"""
+		if not self.logger:
+			# Define the path for the log file
+			path = os.path.join(self.report_path, f"{name}.log")
+			if self.rewrite and os.path.exists(path):
+				os.remove(path)
+			# Create a logger
+			self.logger = logging.getLogger(name)
+			self.logger.setLevel(logging.INFO)  # Set the logging level
+
+			# FileHandler for logging to a file
+			file_handler = logging.FileHandler(path)
+			file_handler.setLevel(logging.INFO)
+			self.logger.addHandler(file_handler)
+
+			# Conditionally add console handler based on verbose flag
+			if self.verbose:
+				console_handler = logging.StreamHandler()
+				console_handler.setLevel(logging.INFO)
+				self.logger.addHandler(console_handler)
+
+			self.logger.info(f"Logging to {path}")
+
+		return self.logger
+	def error(self, message, time_stamp=True):
+		"""
+		Log an error message.
+
+		Args:
+			message (str): The error message to log.
+			time_stamp (bool): Whether to include a timestamp in the log.
+		"""
+		self.info(message, level="error", time_stamp=time_stamp)
+
+	def warning(self, message, time_stamp=True):
+		"""
+		Log a warning message.
+
+		Args:
+			message (str): The warning message to log.
+			time_stamp (bool): Whether to include a timestamp in the log.
+		"""
+		self.info(message, level="warning", time_stamp=time_stamp)
+
+	def info(self, message, level="info", time_stamp=True):
+		"""
+		Log a message with or without a timestamp.
+
+		Args:
+			message (str): The message to log.
+			level (str): The logging level (e.g., "info", "error").
+			time_stamp (bool): Whether to include a timestamp in the log.
+		"""
+		# Create a temporary logger with the desired format
+		temp_logger = logging.getLogger("TempLogger")
+		temp_logger.setLevel(self.logger.level)
+
+		# Remove existing handlers to avoid duplicates
+		temp_logger.handlers.clear()
+
+		# Define the log format based on the time_stamp flag
+		log_format = '%(asctime)s - %(levelname)s - %(message)s' if time_stamp else '%(levelname)s - %(message)s'
+
+		# Add file handler
+		for handler in self.logger.handlers:
+			if isinstance(handler, logging.FileHandler):
+				new_file_handler = logging.FileHandler(handler.baseFilename)
+				new_file_handler.setFormatter(logging.Formatter(log_format))
+				temp_logger.addHandler(new_file_handler)
+
+		# Conditionally add console handler based on verbose flag
+		if self.verbose:
+			console_handler = logging.StreamHandler()
+			console_handler.setFormatter(logging.Formatter(log_format))
+			temp_logger.addHandler(console_handler)
+
+		# Log the message at the specified level
+		log_methods = {
+			"info": temp_logger.info,
+			"error": temp_logger.error,
+			"warning": temp_logger.warning,
+			"debug": temp_logger.debug
+		}
+		log_method = log_methods.get(level.lower(), temp_logger.info)
+		log_method(message)
 
 
 def hydrogeo_dataset_dict(path=None):
 	path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
 	with h5py.File(path,'r') as f:
 		groups = f.keys()
-		hydrogeo_dict = {}
-		for group in groups:	
-			hydrogeo_dict[group] = list(f[group].keys())
+		hydrogeo_dict = {group: list(f[group].keys()) for group in groups}
 	return hydrogeo_dict
 
 
@@ -178,6 +280,7 @@ class DataImporter:
 		self.config['snowdas_h5_path'] = '/data/MyDataBase/HydroGeoDataset/SNODAS.h5'
 		self.config['video'] = False if 'video' not in config else config['video']
 		self.config['aggregation'] = None if 'aggregation' not in config else config['aggregation']
+		self.logger = LoggerSetup(os.getcwd(), rewrite=True).setup_logger("HydroGeoDataset")
 
 	def get_database_rows_cols(self):
 
@@ -306,10 +409,10 @@ class DataImporter:
 			gw_head = np.where(gw_head == -999, np.nan, gw_head)
 			## if all nan, return None
 			if np.isnan(gw_head).all():
-				logging.info("All nan values in the groundwater head data.")
+				self.logger.info("All nan values in the groundwater head data.")
 				return None
 
-		logging.info(f"Groundwater head shape: {gw_head.shape}")
+		self.logger.info(f"Groundwater head shape: {gw_head.shape}")
 		return gw_head
 
 	## add hints for the stations
@@ -327,11 +430,11 @@ class DataImporter:
 			gw_station_data = {}
 			#if stations is None:
 			stations = f.keys()
-			#logging.info(f"## stations: {stations}")
+			#self.logger.info(f"## stations: {stations}")
 			for station in stations:
 
 				gw_head = f[station][start_index:end_index]
-				#logging.info(f"## station: {station} with shape: {gw_head.shape} and %{100*(1- sum(np.isnan(gw_head)/gw_head.size)):.2f} observations. ")
+				#self.logger.info(f"## station: {station} with shape: {gw_head.shape} and %{100*(1- sum(np.isnan(gw_head)/gw_head.size)):.2f} observations. ")
 				row = station.split('_')[1]
 				col = station.split('_')[2]
 				numerical_feature =  numerical[:, int(row), int(col)]
@@ -339,7 +442,7 @@ class DataImporter:
 
 				## if all nan, return None
 				if np.isnan(gw_head).all():
-					logging.info(f"All nan values in the groundwater head data for station {station}.")
+					self.logger.info(f"All nan values in the groundwater head data for station {station}.")
 					continue
 				### add the features to the dictionary
 				gw_station_data[station] = {
@@ -347,9 +450,9 @@ class DataImporter:
 					'numerical_feature': numerical_feature,
 					'categorical_feature': categorical_feature,
 				}
-		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
-		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
-		#logging.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
+		#self.logger.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
+		#self.logger.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
+		#self.logger.info(f"Groundwater head data for stations: {list(gw_station_data.keys())}")
 
 		return gw_station_data
 
@@ -358,8 +461,6 @@ class DataImporter:
 		array3d = np.where(array3d > percentile_99, -999, array3d)
 
 		return array3d
-
-
 
 	def MODIS_ET(self, start_year=None, end_year=None, h5_group_name="MODIS_ET"):
 		"""
@@ -383,7 +484,7 @@ class DataImporter:
 		## get huc8 ranges
 		if self.config['huc8']:
 			min_x, max_x, min_y, max_y = self.get_huc8_ranges(self.config['database_path'], self.config['huc8'])
-			logging.info(f"HydroGeoDataSet Range of Lat and Lon for the Required huc8: {min_x, max_x, min_y, max_y}")
+			self.logger.info(f"HydroGeoDataSet Range of Lat and Lon for the Required huc8: {min_x, max_x, min_y, max_y}")
 
 
 		# Open the HDF5 file
@@ -419,8 +520,6 @@ class DataImporter:
 		
 		return extracted_data
 
-
-
 	def extract_snowdas_data(self, snowdas_var, year) -> np.ndarray:
 
 		""" parameter to extract the data from the SNODAS dataset.
@@ -433,11 +532,11 @@ class DataImporter:
 		extract_snowdas_data('snowdas_var', 44, 47, -87, -84)
 		"""
 		with h5py.File(self.config["snowdas_h5_path"], "r") as h5_file:
-			logging.info(f"Extracting {snowdas_var} data for the year {year}.")
+			self.logger.info(f"Extracting {snowdas_var} data for the year {year}.")
 
 			var = h5_file[f"250m/{year}/{snowdas_var}"][:]
 			unit = h5_file[f"250m/{year}/{snowdas_var}"].attrs['units']
-			logging.info(f"Size of the SNOWDAS data: {var.shape}")
+			self.logger.info(f"Size of the SNOWDAS data: {var.shape}")
 			convertor = h5_file[f"250m/{year}/{snowdas_var}"].attrs['converters']
 			var = np.where(var == 55537, np.nan, var*convertor)
 			if self.config['huc8']:
@@ -445,8 +544,7 @@ class DataImporter:
 				min_x, max_x, min_y, max_y  = self.get_huc8_ranges(self.config['database_path'], self.config['huc8'])
 				var = var[:, min_x:max_x, min_y:max_y]
 
-
-			logging.info(f"Size of the SNOWDAS data after cropping: {var.shape}")
+			self.logger.info(f"Size of the SNOWDAS data after cropping: {var.shape}")
 			if self.config['video']:
 				self.video_data(var, f"{snowdas_var}_{unit}_{year}")
 		return var
@@ -462,7 +560,7 @@ class DataImporter:
 		Returns:
 		None
 		"""
-		logging.info(f"Creating video of {name} data.")
+		self.logger.info(f"Creating video of {name} data.")
 		# Replace -999 with NaN for better visualization
 		data = np.where(data == -999, np.nan, data)
 
@@ -479,10 +577,7 @@ class DataImporter:
 		# Add the color bar (created only once, with limits based on full time series)
 		cbar = fig.colorbar(im, ax=ax)
 		## data unit
-		if 'ppt' in name or 'pr' in name:
-			dataunit = 'mm/day'
-		else:
-			dataunit = 'C'
+		dataunit = 'mm/day' if 'ppt' in name or 'pr' in name else 'C'
 		cbar.set_label(f'95th Percentile Range ({dataunit})')
 
 		def update_frame(i):
@@ -500,7 +595,7 @@ class DataImporter:
 		os.makedirs('input_videos', exist_ok=True)
 
 		# Determine the output file name
-		
+
 		output_filename = f'input_videos/{name}.gif'
 		if self.config.get('huc8'):
 			output_filename = f'input_videos/{name}_{self.config["huc8"]}.gif'
@@ -511,7 +606,7 @@ class DataImporter:
 		# Close the figure
 		plt.close(fig)
 
-		logging.info(f"Video of {name} data saved as {output_filename}.")
+		self.logger.info(f"Video of {name} data saved as {output_filename}.")
 
 
 
@@ -543,7 +638,7 @@ class DataImporter:
 		loca2_lats = f['lat'][:]
 		loca2_lons = f['lon'][:]
 		huc8_lat_max, huc8_lat_min, huc8_lon_max, huc8_lon_min = self.get_huc8_latlon(self.config['database_path'], self.config['huc8'])
-		#logging.info(f"HydroGeoDataSet Range of Lat and Lon for the Required huc8: {huc8_lat_max, huc8_lat_min, huc8_lon_max, huc8_lon_min}")
+		#self.logger.info(f"HydroGeoDataSet Range of Lat and Lon for the Required huc8: {huc8_lat_max, huc8_lat_min, huc8_lon_max, huc8_lon_min}")
 		clipped_loca2_rows = np.where((loca2_lats >= huc8_lat_min) & (loca2_lats <= huc8_lat_max))[0]
 		clipped_loca2_cols = np.where((loca2_lons >= huc8_lon_min) & (loca2_lons <= huc8_lon_max))[0]
 		
@@ -556,7 +651,7 @@ class DataImporter:
 		loca2_lats = loca2_lats[loca2_min_rows:loca2_max_rows]
 		loca2_lons = loca2_lons[loca2_min_cols:loca2_max_cols]
 
-		#logging.info(f"LOCA2 Clipped Range of Lat and Lon for the Required huc8: {np.nanmax(loca2_lats), np.nanmin(loca2_lats), np.nanmax(loca2_lons), np.nanmin(loca2_lons)}")
+		#self.logger.info(f"LOCA2 Clipped Range of Lat and Lon for the Required huc8: {np.nanmax(loca2_lats), np.nanmin(loca2_lats), np.nanmax(loca2_lons), np.nanmin(loca2_lons)}")
 
 
 
@@ -593,7 +688,7 @@ class DataImporter:
 
 		huc8_lat_max, huc8_lat_min, huc8_lon_max, huc8_lon_min = self.get_huc8_latlon(database_path, huc8_select)
 
-		logging.info(f"HydroGeoDataSet{self.config['RESOLUTION']}: range of lat and lon for the required huc8: {huc8_lat_max, huc8_lat_min, huc8_lon_max, huc8_lon_min}")
+		self.logger.info(f"HydroGeoDataSet{self.config['RESOLUTION']}: range of lat and lon for the required huc8: {huc8_lat_max, huc8_lat_min, huc8_lon_max, huc8_lon_min}")
 		return row_min, row_max, col_min, col_max
 
 
@@ -636,46 +731,41 @@ class DataImporter:
 	def LOCA2(self, start_year, end_year, cc_model, scenario, ensemble,cc_time_step, row = None, col = None) -> np.ndarray:
 		self.config['start_year'] = start_year
 		self.config['end_year'] = end_year
-		if scenario == 'historical':
-			time_range = '1950_2014'
-		else:
-			time_range = '2015_2100'
+		time_range = '1950_2014' if scenario == 'historical' else '2015_2100'
 		""" The function imports the climate data from the database
 		and applies the necessary preprocessing steps."""
 
-		
+
 		start, end = self.get_loca2_time_index_of_year(start_year, end_year)
 
 		path = '/data/SWATGenXApp/LOCA2_MLP.h5'
 		with h5py.File(path, 'r') as f:
-			#logging.info(f"LOCA2 keys: {f.keys()}")
+			#self.logger.info(f"LOCA2 keys: {f.keys()}")
 			## time length 
 			mask = self.get_mask()
-			#logging.info(f"LOCA2 time length: {f['e_n_cent/ACCESS-CM2/historical/r1i1p1f1/daily/1950_2014/pr'].shape[0]}")
-			logging.info(f"Attempting to load climate data for {cc_model}, {scenario}, {ensemble}, {cc_time_step}, {time_range}.")
+			#self.logger.info(f"LOCA2 time length: {f['e_n_cent/ACCESS-CM2/historical/r1i1p1f1/daily/1950_2014/pr'].shape[0]}")
+			self.logger.info(f"Attempting to load climate data for {cc_model}, {scenario}, {ensemble}, {cc_time_step}, {time_range}.")
 			pr = f[f'e_n_cent/{cc_model}/{scenario}/{ensemble}/{cc_time_step}/{time_range}/pr'][start:end]      # 3D array, shape: (23741, 67, 75)
 			tmax = f[f'e_n_cent/{cc_model}/{scenario}/{ensemble}/{cc_time_step}/{time_range}/tasmax'][start:end] # 3D array, shape: (23741, 67, 75)
 			tmin = f[f'e_n_cent/{cc_model}/{scenario}/{ensemble}/{cc_time_step}/{time_range}/tasmin'][start:end]
 			if self.config['huc8']:
-				
+
 				pr = self.clip_h5(f, pr)
 				tmax = self.clip_h5(f, tmax)
 				tmin = self.clip_h5(f, tmin)
-
 				
-
 				rows = mask.shape[0]
 				cols = mask.shape[1]
 				#print(f"loaded rows: {rows}, cols: {cols}")
 
 			else:
 
-				logging.info(f"Size of the climate data: {pr.shape}, {tmax.shape}, {tmin.shape}")
+				self.logger.info(f"Size of the climate data: {pr.shape}, {tmax.shape}, {tmin.shape}")
 				rows, cols = self.get_database_rows_cols()
 
 			# Calculate the replication factors
 			rep_factors = (int(np.ceil((rows-1) / pr.shape[1])), int(np.ceil((cols-1) / pr.shape[2])))
-			logging.info(f"Replication factors: {rep_factors}")
+			self.logger.info(f"Replication factors: {rep_factors}")
 
 			# Replicate the climate data using numpy.repeat
 			pr = np.repeat(pr, rep_factors[0], axis=1)
@@ -687,37 +777,34 @@ class DataImporter:
 			tmin = np.repeat(tmin, rep_factors[0], axis=1)
 			tmin = np.repeat(tmin, rep_factors[1], axis=2)
 
-			logging.info(f"Size of the climate data after replication: {pr.shape}, {tmax.shape}, {tmin.shape}")
+			self.logger.info(f"Size of the climate data after replication: {pr.shape}, {tmax.shape}, {tmin.shape}")
 
 			# Flip the climate data to correct the orientation
 			pr = np.flip(pr, axis=1).copy()
 			tmax = np.flip(tmax, axis=1).copy()
 			tmin = np.flip(tmin, axis=1).copy()
-			logging.info("Flipping completed.")
+			self.logger.info("Flipping completed.")
 
 			# Pad the climate data to achieve the exact target shape
 			## shape before cropping: (23741, 67, 75)
-			logging.info(f"Shape before cropping: {pr.shape}, {tmax.shape}, {tmin.shape}")
-			
+			self.logger.info(f"Shape before cropping: {pr.shape}, {tmax.shape}, {tmin.shape}")
+
 
 			target_shape = (pr.shape[0], rows, cols)
 			pr = pr[:, :target_shape[1], :target_shape[2]]
 			tmax = tmax[:, :target_shape[1], :target_shape[2]]
 			tmin = tmin[:, :target_shape[1], :target_shape[2]]
 
-			logging.info(f"Size of the climate data after cropping: {pr.shape}, {tmax.shape}, {tmin.shape}")
+			self.logger.info(f"Size of the climate data after cropping: {pr.shape}, {tmax.shape}, {tmin.shape}")
 			## replace nan with -999
 
 			### get the mask
-			
 			mask = mask[:pr.shape[1], :pr.shape[2]]  # Adjust mask shape to match pr shape
 			## also convert kg m-2 s-1 to mm/day
 			pr = np.where(mask != 1, -999, pr*86400)
 			## also convet K to C
 			tmax = np.where(mask != 1, -999, tmax - 273.15)
 			tmin = np.where(mask != 1, -999, tmin - 273.15)
-			
-
 
 			### if there is any nan, convert it to -999
 			pr = np.where(np.isnan(pr), -999, pr)
@@ -730,10 +817,10 @@ class DataImporter:
 				self.video_data(tmin, 'tmin_LOCA2')
 
 
-		
+
 			if self.config['aggregation']:
 				pr, tmax, tmin = self.aggregate_temporal_data(pr, tmax, tmin)
-				logging.info(f"Aggregated data shape: {pr.shape}, {tmax.shape}, {tmin.shape}")
+				self.logger.info(f"Aggregated data shape: {pr.shape}, {tmax.shape}, {tmin.shape}")
 
 			return pr, tmax, tmin
 
@@ -768,7 +855,7 @@ class DataImporter:
 			pr = np.array(pr_monthly)
 			tmax = np.array(tmax_monthly)
 			tmin = np.array(tmin_monthly)
-			logging.info(f"Aggregated data shape (monthly): {pr.shape}, {tmax.shape}, {tmin.shape}")
+			self.logger.info(f"Aggregated data shape (monthly): {pr.shape}, {tmax.shape}, {tmin.shape}")
 
 		elif self.config['aggregation'] == 'seasonal':
 			# Define the seasons as months: DJF, MAM, JJA, SON
@@ -794,7 +881,7 @@ class DataImporter:
 			pr = np.array(pr_seasonal)
 			tmax = np.array(tmax_seasonal)
 			tmin = np.array(tmin_seasonal)
-			logging.info(f"Aggregated data shape (seasonal): {pr.shape}, {tmax.shape}, {tmin.shape}")
+			self.logger.info(f"Aggregated data shape (seasonal): {pr.shape}, {tmax.shape}, {tmin.shape}")
 
 		elif self.config['aggregation'] == 'annual':
 			# Group by year using the dates array
@@ -805,13 +892,13 @@ class DataImporter:
 			pr = np.array(pr_annual)
 			tmax = np.array(tmax_annual)
 			tmin = np.array(tmin_annual)
-			logging.info(f"Aggregated data shape (annual): {pr.shape}, {tmax.shape}, {tmin.shape}")
+			self.logger.info(f"Aggregated data shape (annual): {pr.shape}, {tmax.shape}, {tmin.shape}")
 
 		return pr, tmax, tmin
 
 
 	def PRISM(self, start_year=None, end_year=None) -> np.ndarray:
-		logging.info("Extracting PRISM data.")
+		self.logger.info("Extracting PRISM data.")
 		if start_year is None:
 			assert 'start_year' in self.config, "start_year is not provided."
 			start_year = self.config['start_year']
@@ -821,17 +908,17 @@ class DataImporter:
 
 		mask = self.get_mask()	
 
-		#logging.info(f"Size of the mask: {mask.shape}")
+		#self.logger.info(f"Size of the mask: {mask.shape}")
 		ppts, tmaxs, tmins = [], [], []
 		PRISM_path = '/data/MyDataBase/HydroGeoDataset/PRISM_ML_250m.h5'
 
 		with h5py.File(PRISM_path, 'r') as f:
-			logging.info(f"PRISM keys: {f.keys()}")
-			logging.info(f"Range of available years: {f['ppt'].keys()}")
+			self.logger.info(f"PRISM keys: {f.keys()}")
+			self.logger.info(f"Range of available years: {f['ppt'].keys()}")
 			
 			for year in range(start_year, end_year+1):	
-				logging.info(f"Size of the original PRISM data (year {year}): {f[f'ppt/{year}/data'].shape}")
-				logging.info(f"Extracting PRISM data for the year {year}.")
+				self.logger.info(f"Size of the original PRISM data (year {year}): {f[f'ppt/{year}/data'].shape}")
+				self.logger.info(f"Extracting PRISM data for the year {year}.")
 
 				if self.config['huc8'] is not None:
 					row_min, row_max, col_min, col_max = self.get_huc8_ranges(self.config['database_path'], self.config['huc8'])
@@ -842,8 +929,8 @@ class DataImporter:
 				tmax = f[f'tmax/{year}/data'][:, row_min:row_max, col_min:col_max]
 				tmin = f[f'tmin/{year}/data'][:, row_min:row_max, col_min:col_max]
 
-				logging.info(f"Mask shape: {mask.shape}")
-				logging.info(f"Size of the PRISM data after cropping (year {year}): {ppt.shape}, {tmax.shape}, {tmin.shape}")
+				self.logger.info(f"Mask shape: {mask.shape}")
+				self.logger.info(f"Size of the PRISM data after cropping (year {year}): {ppt.shape}, {tmax.shape}, {tmin.shape}")
 
 				ppt = np.where(mask != 1, -999, ppt)
 				tmax = np.where(mask != 1, -999, tmax)
@@ -868,17 +955,17 @@ class DataImporter:
 		tmaxs = np.where(np.isnan(tmaxs), -999, tmaxs)
 		tmins = np.where(np.isnan(tmins), -999, tmins)
 			
-		logging.info(f"loaded PRISM data shape: {ppts.shape}, {tmaxs.shape}, {tmins.shape}")
+		self.logger.info(f"loaded PRISM data shape: {ppts.shape}, {tmaxs.shape}, {tmins.shape}")
 		
 		if self.config['aggregation']:
 			ppts, tmaxs, tmins = self.aggregate_temporal_data(ppts, tmaxs, tmins)
-			logging.info(f"Aggregated data shape: {ppts.shape}, {tmaxs.shape}, {tmins.shape}")
+			self.logger.info(f"Aggregated data shape: {ppts.shape}, {tmaxs.shape}, {tmins.shape}")
 
 		return ppts, tmaxs, tmins
 
 
 	def plot_feature(self, array2d, array_name, categorical=False) -> None:
-		logging.info(f"Plotting {array_name} data.")
+		self.logger.info(f"Plotting {array_name} data.")
 		plt.figure()
 		array2d = np.where(array2d == -999, np.nan, array2d)
 		array2d = np.where(array2d == 55537, np.nan, array2d)
@@ -912,13 +999,13 @@ class DataImporter:
 		plt.close()
 
 	def apply_numerical_scale(self, array2d, array_name):
-		logging.info(f"###Numerical {array_name}: shape: {array2d.shape}")
+		self.logger.info(f"###Numerical {array_name}: shape: {array2d.shape}")
 		if self.config['plot']: self.plot_feature(np.where(array2d < 0, np.nan, array2d), array_name)
 		array2d = np.where(array2d < 0, -999, array2d)
 		return array2d
 
 	def apply_categorical_encoding(self, array2d, array_name):
-		logging.info(f"###Categorical {array_name}: shape: array2d.shape")
+		self.logger.info(f"###Categorical {array_name}: shape: array2d.shape")
 		encoder = LabelEncoder()
 		array2d = np.array([encoder.fit_transform(column) for column in array2d.T]).T
 		if self.config['plot']: self.plot_feature(array2d, array_name, categorical=True)
@@ -932,7 +1019,7 @@ class DataImporter:
 				DEM_ = DEM_[row_min:row_max, col_min:col_max]
 			mask = np.where(DEM_ == -999, 0, 1)
 			if self.config['plot']: self.plot_feature(mask, "mask_domain")
-			logging.info(f"Mask shape: {mask.shape}")
+			self.logger.info(f"Mask shape: {mask.shape}")
 			return mask
 	
 
@@ -952,7 +1039,7 @@ class DataImporter:
 			gdf (GeoDataFrame): The GeoDataFrame with extracted features added as new columns.
 		"""
 		if single_location:
-			
+
 			### the single location is (lat, lon)
 			### create a dataframe using that lat,lon
 			from shapely.geometry import Point
@@ -960,90 +1047,87 @@ class DataImporter:
 			### convert to geodataframe
 			gdf = gpd.GeoDataFrame(gdf, geometry='geometry', crs='EPSG:4326')
 
+		elif input_path.endswith('.pkl'):
+			gdf = pd.read_pickle(input_path).to_crs(epsg=4326)
+		elif input_path.endswith('.geojson'):
+			gdf = gpd.read_file(input_path, driver='GeoJSON').to_crs(epsg=4326)
 		else:
-			### if the file is picke, use pandas
-			if input_path.endswith('.pkl'):
-				gdf = pd.read_pickle(input_path).to_crs(epsg=4326)	
-			elif input_path.endswith('.geojson'):
-				gdf = gpd.read_file(input_path, driver='GeoJSON').to_crs(epsg=4326)
-			else:
-				gdf = gpd.read_file(input_path).to_crs(epsg=4326)
+			gdf = gpd.read_file(input_path).to_crs(epsg=4326)
 
 		print(f"loaded gdf shape: {gdf.shape}")
 		with h5py.File(self.config['database_path'], 'r') as f:
-			lat_ = f[f"geospatial/lat_{self.config['RESOLUTION']}m"][:]
-			lon_ = f[f"geospatial/lon_{self.config['RESOLUTION']}m"][:]
+			return self._extracted_from_extract_features_34(f, pattern, ET, gdf)
 
-			# Replace -999 with nan
-			lat_ = np.where(lat_ == -999, np.nan, lat_)
-			lon_ = np.where(lon_ == -999, np.nan, lon_)
-			print(f"loaded lat shape: {lat_.shape}, lon shape: {lon_.shape}")
-			# Valid mask to filter out nan values
-			valid_mask = ~np.isnan(lat_) & ~np.isnan(lon_)
-			valid_lat = lat_[valid_mask]
-			valid_lon = lon_[valid_mask]
-			coordinates = np.column_stack((valid_lat, valid_lon))
+	# TODO Rename this here and in `extract_features`
+	def _extracted_from_extract_features_34(self, f, pattern, ET, gdf):
+		lat_ = f[f"geospatial/lat_{self.config['RESOLUTION']}m"][:]
+		lon_ = f[f"geospatial/lon_{self.config['RESOLUTION']}m"][:]
 
-			# Build KDTree for efficient nearest neighbor search
-			tree = cKDTree(coordinates)
-			print(f"Keys in the h5 file: {f.keys()}")
-			# Extract features with the same RESOLUTION and valid mask
-			#features = [feature for feature in f.keys() if f[feature].shape == lat_.shape]
-			### get all features in the h5 file
-			features = [feature for feature in f.keys() if hasattr(f[feature], 'shape') and f[feature].shape == lat_.shape]
-			if pattern:
-				
-				## always include DEM_250m in the features
-				features = [feature for feature in features if pattern in feature]
-				features.append(f"DEM_{self.config['RESOLUTION']}m")
+		# Replace -999 with nan
+		lat_ = np.where(lat_ == -999, np.nan, lat_)
+		lon_ = np.where(lon_ == -999, np.nan, lon_)
+		print(f"loaded lat shape: {lat_.shape}, lon shape: {lon_.shape}")
+		# Valid mask to filter out nan values
+		valid_mask = ~np.isnan(lat_) & ~np.isnan(lon_)
+		valid_lat = lat_[valid_mask]
+		valid_lon = lon_[valid_mask]
+		coordinates = np.column_stack((valid_lat, valid_lon))
 
-			if ET:
-				## get all dataset in group "MODIS_ET"
-				ET_features = [feature for feature in f["MODIS_ET"].keys() if hasattr(f["MODIS_ET"][feature], 'shape') and f["MODIS_ET"][feature].shape == lat_.shape]
-				### add group name to the ET_features
-				ET_features = [f"MODIS_ET/{feature}" for feature in ET_features]
-				features.extend(ET_features)
+		# Build KDTree for efficient nearest neighbor search
+		tree = cKDTree(coordinates)
+		print(f"Keys in the h5 file: {f.keys()}")
+		# Extract features with the same RESOLUTION and valid mask
+		#features = [feature for feature in f.keys() if f[feature].shape == lat_.shape]
+		### get all features in the h5 file
+		features = [feature for feature in f.keys() if hasattr(f[feature], 'shape') and f[feature].shape == lat_.shape]
+		if pattern:
 
-				
-			# Initialize a dictionary to hold the new columns
-			print(f"features: {features}")
-			import time
-			time.sleep(10)
-			feature_data = {feature: [] for feature in features}
+			## always include DEM_250m in the features
+			features = [feature for feature in features if pattern in feature]
+			features.append(f"DEM_{self.config['RESOLUTION']}m")
 
-			lat_min, lat_max = np.nanmin(lat_), np.nanmax(lat_)
-			lon_min, lon_max = np.nanmin(lon_), np.nanmax(lon_)
-			
-			for lat, lon in zip(gdf.geometry.y, gdf.geometry.x):
-				# Check if lat and lon are within the range
-				if lat_min <= lat <= lat_max and lon_min <= lon <= lon_max:
-					# Query the nearest neighbor
-					distance, index = tree.query([lat, lon])
-					logging.info(f" Extracting features for {lat:.2f}, {lon:.2f} with distance {distance}")
-
-					# Get the indices in the original arrays
-					lat_index, lon_index = np.where(valid_mask)[0][index], np.where(valid_mask)[1][index]
-					
-					for feature in features:
-						# Collect the feature value
-						feature_data[feature].append(f[feature][lat_index, lon_index])
-				else:
-					# Assign -999 if the point is out of range
-					for feature in features:
-						feature_data[feature].append(-999)
-
-			# Create a new DataFrame from the collected feature data
-			new_feature_df = pd.DataFrame(feature_data)
-
-			# Concatenate the new features with the original GeoDataFrame
-			gdf = pd.concat([gdf, new_feature_df], axis=1)
-			logging.info(f"Extracted features: {features}")
-			return gdf
+		if ET:
+			## get all dataset in group "MODIS_ET"
+			ET_features = [feature for feature in f["MODIS_ET"].keys() if hasattr(f["MODIS_ET"][feature], 'shape') and f["MODIS_ET"][feature].shape == lat_.shape]
+			### add group name to the ET_features
+			ET_features = [f"MODIS_ET/{feature}" for feature in ET_features]
+			features.extend(ET_features)
 
 
+		# Initialize a dictionary to hold the new columns
+		print(f"features: {features}")
+		import time
+		time.sleep(10)
+		feature_data = {feature: [] for feature in features}
 
+		lat_min, lat_max = np.nanmin(lat_), np.nanmax(lat_)
+		lon_min, lon_max = np.nanmin(lon_), np.nanmax(lon_)
 
+		for lat, lon in zip(gdf.geometry.y, gdf.geometry.x):
+			# Check if lat and lon are within the range
+			if lat_min <= lat <= lat_max and lon_min <= lon <= lon_max:
+				# Query the nearest neighbor
+				distance, index = tree.query([lat, lon])
+				self.logger.info(f" Extracting features for {lat:.2f}, {lon:.2f} with distance {distance}")
 
+				# Get the indices in the original arrays
+				lat_index, lon_index = np.where(valid_mask)[0][index], np.where(valid_mask)[1][index]
+
+				for feature in features:
+					# Collect the feature value
+					feature_data[feature].append(f[feature][lat_index, lon_index])
+			else:
+				# Assign -999 if the point is out of range
+				for feature in features:
+					feature_data[feature].append(-999)
+
+		# Create a new DataFrame from the collected feature data
+		new_feature_df = pd.DataFrame(feature_data)
+
+		# Concatenate the new features with the original GeoDataFrame
+		gdf = pd.concat([gdf, new_feature_df], axis=1)
+		self.logger.info(f"Extracted features: {features}")
+		return gdf
 
 	def import_pfas_data(self):
 		
@@ -1052,7 +1136,7 @@ class DataImporter:
 		else:
 			row_min, row_max, col_min, col_max = 0, -1, 0, -1
 
-		logging.info(f"Reading PFAS data from {self.config['pfas_database_path']}")
+		self.logger.info(f"Reading PFAS data from {self.config['pfas_database_path']}")
 
 		
 		with h5py.File(self.config['pfas_database_path'], 'r') as f_pfas:
@@ -1062,16 +1146,16 @@ class DataImporter:
 			pfas_std = np.array(f_pfas[f"/Std/{self.config['PFAS']}.tif"][:][row_min:row_max, col_min:col_max])
 
 		try:
-			logging.info("PFAS max shape: %s, range: %s - %s", pfas_max.shape, np.max(pfas_max), np.min(pfas_max[pfas_max != -999]))
-			logging.info("PFAS mean shape: %s, range: %s - %s", pfas_mean.shape, np.max(pfas_mean), np.min(pfas_mean[pfas_mean != -999]))
-			logging.info("PFAS std shape: %s, range: %s - %s", pfas_std.shape, np.max(pfas_std), np.min(pfas_std[pfas_std != -999]))
+			self.logger.info("PFAS max shape: %s, range: %s - %s", pfas_max.shape, np.max(pfas_max), np.min(pfas_max[pfas_max != -999]))
+			self.logger.info("PFAS mean shape: %s, range: %s - %s", pfas_mean.shape, np.max(pfas_mean), np.min(pfas_mean[pfas_mean != -999]))
+			self.logger.info("PFAS std shape: %s, range: %s - %s", pfas_std.shape, np.max(pfas_std), np.min(pfas_std[pfas_std != -999]))
 		except Exception:
-			logging.info("NO PFAS DATA for %s", self.config['PFAS'])
+			self.logger.info("NO PFAS DATA for %s", self.config['PFAS'])
 
 		return pfas_max, pfas_mean, pfas_std
 
 	def import_static_data(self, huc8=True) -> np.ndarray:# numerical_data, categorical_data, groups
-		logging.info("Importing static data")
+		self.logger.info("Importing static data")
 		if self.config['huc8'] and huc8:
 			row_min, row_max, col_min, col_max = self.get_huc8_ranges(self.config['database_path'], self.config['huc8'])
 		else:
@@ -1099,9 +1183,9 @@ class DataImporter:
 		numerical_data = np.array(numerical_data)
 		categorical_data = np.array(categorical_data)
 
-		logging.info(f"Numerical data shape: {numerical_data.shape}")
-		logging.info(f"Categorical data shape: {categorical_data.shape}")
-		logging.info(f"Groups data shape: {groups.shape}")
+		self.logger.info(f"Numerical data shape: {numerical_data.shape}")
+		self.logger.info(f"Categorical data shape: {categorical_data.shape}")
+		self.logger.info(f"Groups data shape: {groups.shape}")
 
 		return numerical_data, categorical_data, groups
 
@@ -1121,7 +1205,7 @@ class DataImporter:
 				all_data.append(data)
 
 		all_data = np.array(all_data)
-		logging.info(f"Size of the {name} data: {all_data.shape}")
+		self.logger.info(f"Size of the {name} data: {all_data.shape}")
 		for i, year in enumerate(time_range):
 			if self.config['plot']: self.plot_feature(all_data[i], f"{name}_{year}")
 		return all_data
