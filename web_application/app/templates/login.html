@@ -1,47 +1,43 @@
-{% extends "layout.html" %}
+{% extends "layout.html" %} {% block title %}Login{% endblock %} {% block
+content %}
+<div class="card mx-auto" style="max-width: 400px">
+  <div class="card-body">
+    <h2 class="card-title text-center mb-4">Login</h2>
+    <form method="post" action="{{ url_for('login') }}">
+      {{ form.hidden_tag() }}
 
-{% block title %}Login{% endblock %}
+      <!-- Username Field -->
+      <div class="form-group mb-3">
+        <label for="username">Username</label>
+        {{ form.username(class="form-control", placeholder="Enter your
+        username") }} {% if form.username.errors %}
+        <small class="text-danger"> {{ form.username.errors[0] }} </small>
+        {% endif %}
+      </div>
 
-{% block content %}
-<div class="card mx-auto" style="max-width: 400px;">
-    <div class="card-body">
-        <h2 class="card-title text-center mb-4">Login</h2>
-        <form method="post" action="{{ url_for('login') }}">
-            {{ form.hidden_tag() }}
+      <!-- Password Field -->
+      <div class="form-group mb-3">
+        <label for="password">Password</label>
+        {{ form.password(class="form-control", placeholder="Enter your
+        password") }} {% if form.password.errors %}
+        <small class="text-danger"> {{ form.password.errors[0] }} </small>
+        {% endif %}
+      </div>
 
-            <!-- Username Field -->
-            <div class="form-group mb-3">
-                <label for="username">Username</label>
-                {{ form.username(class="form-control", placeholder="Enter your username") }}
-                {% if form.username.errors %}
-                <small class="text-danger">
-                    {{ form.username.errors[0] }}
-                </small>
-                {% endif %}
-            </div>
+      <!-- Submit Button -->
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+      </div>
+    </form>
 
-            <!-- Password Field -->
-            <div class="form-group mb-3">
-                <label for="password">Password</label>
-                {{ form.password(class="form-control", placeholder="Enter your password") }}
-                {% if form.password.errors %}
-                <small class="text-danger">
-                    {{ form.password.errors[0] }}
-                </small>
-                {% endif %}
-            </div>
-
-            <!-- Submit Button -->
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
-            </div>
-        </form>
-
-        <!-- Additional Links -->
-        <div class="text-center mt-4">
-            <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up here</a>.</p>
-            <p><a href="{{ url_for('home') }}">Return to Home</a></p>
-        </div>
+    <!-- Additional Links -->
+    <div class="text-center mt-4">
+      <p>
+        Don't have an account?
+        <a href="{{ url_for('signup') }}">Sign up here</a>.
+      </p>
+      <p><a href="{{ url_for('home') }}">Return to Home</a></p>
     </div>
+  </div>
 </div>
 {% endblock %}
