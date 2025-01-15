@@ -318,9 +318,6 @@ def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_fl
     
     return f"{output_path}.zip"
 
-
-
-
 def get_huc12_geometries(list_of_huc12s):
     #logging.info(f"Getting geometries for HUC12s: {list_of_huc12s}")
     ### list of huc12 are like:  ['020200030604', '020200030603', '020200030601', '020200030602', '020200030605']
@@ -328,10 +325,10 @@ def get_huc12_geometries(list_of_huc12s):
     print(VPUID)
     # Read the shapefile
     path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/"
-    GBD_path = os.listdir(path)
-    GBD_path = [x for x in GBD_path if x.endswith('.gdb')][0]
-    GBD_path = os.path.join(path, GBD_path)
-    gdf = gpd.read_file(GBD_path, layer = "WBDHU12")
+    geodata_path = os.listdir(path)
+    geodata_path = [x for x in geodata_path if x.endswith('.gdb')][0]
+    geodata_path = os.path.join(path, geodata_path)
+    gdf = gpd.read_file(geodata_path, layer = "WBDHU12")
     gdf.rename(columns = {'HUC12': 'huc12'}, inplace = True)
     gdf = gdf[gdf['huc12'].isin(list_of_huc12s)]
     return gdf['geometry'].apply(mapping).tolist()

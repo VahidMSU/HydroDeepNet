@@ -350,10 +350,11 @@ class AppManager:
 			return jsonify({"subvariables": subvariables})
 
 		@self.app.route('/ftp-access')
-		@login_required
+		#@login_required
 		def ftp_access():
 			self.logger.info("FTP Access route called")
-			return render_template('redirect.html')
+			#return render_template('redirect.html')
+			return render_template("ftp_access.html")
 
 		@self.app.route('/deeplearning_models')
 		@login_required
@@ -361,7 +362,7 @@ class AppManager:
 			return render_template('DeepLearning.html')
 		
 		@self.app.route('/vision_system')
-		@login_required
+		#@login_required
 		def vision_system():
 			return render_template('VisionSystem.html')
 

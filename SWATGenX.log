@@ -1,0 +1,14 @@
+ Processing SWATGenX 
+2025-01-14 13:25:26,043 [ERROR] Site number 04292000 is not among FPS lists
+2025-01-14 13:25:26,043 [INFO] LEVEL: huc12, station_name: 04292000, single_model: True
+2025-01-14 13:25:26,085 [INFO] Logging setup for 04292000
+2025-01-14 13:25:26,419 [INFO] SWATGenXCore: Beginning the extraction of the model for 04292000
+2025-01-14 13:25:28,943 [INFO] Created 13 records
+2025-01-14 13:25:29,664 [INFO] Created 3,554 records
+2025-01-14 13:25:29,727 [INFO] Created 3,554 records
+2025-01-14 13:25:29,730 [INFO] Created 0 records
+2025-01-14 13:25:32,857 [INFO] Created 34 records
+2025-01-14 13:25:32,912 [INFO] Created 3,554 records
+2025-01-14 13:25:32,974 [INFO] Created 3,554 records
+2025-01-14 13:25:32,989 [INFO] Created 1 records
+2025-01-14 13:25:33,085 [INFO] GDAL signalled an error: err_no=4, msg='/data/SWATGenXApp/GenXAppData/Soil/gSSURGO_CONUS/0415/gSSURGO_0415_250m.tif: No such file or directory'
