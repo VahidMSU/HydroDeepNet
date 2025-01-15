@@ -8,7 +8,7 @@ if __name__ == "__main__":
 	VPUIDs = get_all_VPUIDs()
 	processes = []
 	for VPUID in VPUIDs:
-		if VPUID not in ["1506"]:
+		if VPUID not in ["0415"]:
 			continue
 		p = Process(target=clip_PRISM_by_VPUID, args=(VPUID,))
 		p.start()

@@ -8,3 +8,33 @@ User ID: 1
 User ID: 1
 User ID: 1
 User ID: 1
+User ID: 1
+Exception on /model-settings [GET]
+Traceback (most recent call last):
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 1473, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 882, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 880, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/flask/app.py", line 865, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+  File "/data/SWATGenXApp/codes/web_application/app/routes.py", line 183, in model_settings
+    station_data = integrate_streamflow_data(current_app.config['USGS_PATH'])
+  File "/data/SWATGenXApp/codes/SWATGenX/SWATGenX/integrate_streamflow_data.py", line 32, in integrate_streamflow_data
+    all_stations.to_csv(os.path.join(usgs_data_base, "all_VPUIDs.csv"), index=False)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/util/_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/core/generic.py", line 3967, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/formats/format.py", line 1014, in to_csv
+    csv_formatter.save()
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/formats/csvs.py", line 251, in save
+    with get_handle(
+  File "/data/SWATGenXApp/codes/.venv/lib/python3.10/site-packages/pandas/io/common.py", line 873, in get_handle
+    handle = open(
+PermissionError: [Errno 13] Permission denied: '/data/SWATGenXApp/GenXAppData/USGS/all_VPUIDs.csv'
+User ID: 1
+User ID: 1
+User ID: 1
+User ID: 1
