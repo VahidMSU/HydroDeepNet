@@ -55,3 +55,721 @@ Home route called, user is authenticated.
 FTP Access route called
 About route called
 About route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Get Subvariables route called
+Received variable: LANDFIRE
+Subvariables for LANDFIRE: ['LC20_Asp_220_250m', 'LC20_BPS_220_250m', 'LC20_EVT_220_250m', 'LC20_Elev_220_250m', 'LC20_SlpD_220_250m', 'LC20_SlpP_220_250m', 'LC22_EVC_220_250m', 'LC22_EVH_220_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.081279, 44.402661), (-84.781982, -84.214355)
+Fetching data for LANDFIRE/LC20_Asp_220_250m in range (44.081279, 44.402661), (-84.781982, -84.214355)
+Error fetching data: 'NoneType' object has no attribute 'items'
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.081279, 44.402661), (-84.781982, -84.214355)
+Fetching data for LANDFIRE/LC20_Asp_220_250m in range (44.081279, 44.402661), (-84.781982, -84.214355)
+Data fetched for range: {'number of cells': 25883, 'median': np.float64(-1.0), 'max': np.float64(359.0), 'min': np.float64(-1.0), 'mean': np.float64(38.66), 'std': np.float64(86.35)}
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.081279, 44.402661), (-84.781982, -84.214355)
+Fetching data for LANDFIRE/LC20_Asp_220_250m in range (44.081279, 44.402661), (-84.781982, -84.214355)
+Data fetched for range: {'number of cells': 25883, 'median': np.float64(-1.0), 'max': np.float64(359.0), 'min': np.float64(-1.0), 'mean': np.float64(38.66), 'std': np.float64(86.35)}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.081279, 44.402661), (-84.781982, -84.214355)
+Fetching data for LANDFIRE/LC20_Asp_220_250m in range (44.081279, 44.402661), (-84.781982, -84.214355)
+Data fetched for range: {'number of cells': 25883, 'median': np.float64(-1.0), 'max': np.float64(359.0), 'min': np.float64(-1.0), 'mean': np.float64(38.66), 'std': np.float64(86.35)}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.546384, 44.605077), (-84.928467, -84.827759)
+Fetching data for LANDFIRE/LC20_Asp_220_250m in range (44.546384, 44.605077), (-84.928467, -84.827759)
+Data fetched for range: {'number of cells': 775, 'median': np.float64(-1.0), 'max': np.float64(359.0), 'min': np.float64(-1.0), 'mean': np.float64(39.59), 'std': np.float64(89.8)}
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.546384, 44.605077), (-84.928467, -84.827759)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.546384, 44.605077), (-84.928467, -84.827759)
+Data fetched for range: {'number of cells': 775, 'median': 31.770000457763672, 'max': 49.02000045776367, 'min': 22.690000534057617, 'mean': 32.36000061035156, 'std': 5.349999904632568}
+Get Subvariables route called
+Received variable: Wellogic
+Subvariables for Wellogic: ['obs_AQ_THK_1_250m', 'obs_AQ_THK_2_250m', 'obs_H_COND_1_250m', 'obs_H_COND_2_250m', 'obs_SWL_250m', 'obs_TRANSMSV_1_250m', 'obs_TRANSMSV_2_250m', 'obs_V_COND_1_250m', 'obs_V_COND_2_250m', 'obs_lat_250m', 'obs_lon_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.546384, 44.605077), (-84.928467, -84.827759)
+Fetching data for Wellogic/obs_AQ_THK_1_250m in range (44.546384, 44.605077), (-84.928467, -84.827759)
+Data fetched for range: {'number of cells': 775, 'median': 27.0, 'max': 97.0, 'min': 8.0, 'mean': 34.380001068115234, 'std': 25.329999923706055}
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Visualizations route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Visualizations route called
+Visualizations route called
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Fetching data for EBK/kriging_output_AQ_THK_1_250m at 44.935116, -84.616781
+Data fetched: {'value': 67.7934341430664}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: MODIS
+Subvariables for MODIS: ['MOD09GQ_sur_refl_b01', 'MOD09GQ_sur_refl_b02', 'MOD13Q1_EVI', 'MOD13Q1_NDVI', 'MOD15A2H_Fpar_500m', 'MOD15A2H_Lai_500m', 'MOD16A2_ET', 'MODIS_ET']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.402661, 44.431725), (-85.153890, -85.113199)
+Fetching data for MODIS/MOD09GQ_sur_refl_b01 in range (44.402661, 44.431725), (-85.153890, -85.113199)
+Error fetching data: 'NoneType' object has no attribute 'items'
+Get Subvariables route called
+Received variable: LANDFIRE
+Subvariables for LANDFIRE: ['LC20_Asp_220_250m', 'LC20_BPS_220_250m', 'LC20_EVT_220_250m', 'LC20_Elev_220_250m', 'LC20_SlpD_220_250m', 'LC20_SlpP_220_250m', 'LC22_EVC_220_250m', 'LC22_EVH_220_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.402661, 44.431725), (-85.153890, -85.113199)
+Fetching data for LANDFIRE/LC20_Asp_220_250m in range (44.402661, 44.431725), (-85.153890, -85.113199)
+Data fetched for range: {'number of cells': 144, 'median': np.float64(-1.0), 'max': np.float64(314.0), 'min': np.float64(-1.0), 'mean': np.float64(50.05), 'std': np.float64(88.65)}
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.105389, 44.126422), (-85.482665, -85.424072)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.105389, 44.126422), (-85.482665, -85.424072)
+Data fetched for range: {'number of cells': 162, 'median': 14.4399995803833, 'max': 21.229999542236328, 'min': 11.630000114440918, 'mean': 14.890000343322754, 'std': 2.2100000381469727}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.105389, 44.126422), (-85.482665, -85.424072)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.105389, 44.126422), (-85.482665, -85.424072)
+Data fetched for range: {'number of cells': 162, 'median': 14.4399995803833, 'max': 21.229999542236328, 'min': 11.630000114440918, 'mean': 14.890000343322754, 'std': 2.2100000381469727}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.691488, 44.740065), (-84.740478, -84.720947)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.691488, 44.740065), (-84.740478, -84.720947)
+Data fetched for range: {'number of cells': 105, 'median': 36.439998626708984, 'max': 44.83000183105469, 'min': 32.279998779296875, 'mean': 37.7400016784668, 'std': 4.429999828338623}
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (43.392904, 44.175471), (-84.935791, -84.222900)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (43.392904, 44.175471), (-84.935791, -84.222900)
+Data fetched for range: {'number of cells': 80040, 'median': 13.890000343322754, 'max': 57.63999938964844, 'min': 4.599999904632568, 'mean': 14.630000114440918, 'std': 4.440000057220459}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.290923, 44.757403), (-84.992552, -84.338257)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.290923, 44.757403), (-84.992552, -84.338257)
+Data fetched for range: {'number of cells': 43056, 'median': 28.8799991607666, 'max': 154.82000732421875, 'min': 8.890000343322754, 'mean': 29.3799991607666, 'std': 7.420000076293945}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (42.876240, 43.168959), (-84.455445, -84.084351)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (42.876240, 43.168959), (-84.455445, -84.084351)
+Data fetched for range: {'number of cells': 15480, 'median': 14.470000267028809, 'max': 38.189998626708984, 'min': 8.979999542236328, 'mean': 14.520000457763672, 'std': 2.069999933242798}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.660239, 44.985790), (-85.197630, -84.416382)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.660239, 44.985790), (-85.197630, -84.416382)
+Data fetched for range: {'number of cells': 35815, 'median': 34.22999954223633, 'max': 113.19000244140625, 'min': 15.779999732971191, 'mean': 34.58000183105469, 'std': 6.789999961853027}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.660239, 44.985790), (-85.197630, -84.416382)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.660239, 44.985790), (-85.197630, -84.416382)
+Data fetched for range: {'number of cells': 35815, 'median': 34.22999954223633, 'max': 113.19000244140625, 'min': 15.779999732971191, 'mean': 34.58000183105469, 'std': 6.789999961853027}
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.175471, 44.738909), (-85.275350, -84.632446)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.175471, 44.738909), (-85.275350, -84.632446)
+Data fetched for range: {'number of cells': 51455, 'median': 28.899999618530273, 'max': 154.82000732421875, 'min': 8.890000343322754, 'mean': 29.420000076293945, 'std': 7.300000190734863}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.321207, 44.767804), (-84.957967, -84.331340)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.321207, 44.767804), (-84.957967, -84.331340)
+Data fetched for range: {'number of cells': 39402, 'median': 29.559999465942383, 'max': 154.82000732421875, 'min': 8.890000343322754, 'mean': 29.940000534057617, 'std': 7.360000133514404}
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+Model Settings route called
+Home route called, user is authenticated.
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.023522, 44.646345), (-84.892863, -84.152304)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (44.023522, 44.646345), (-84.892863, -84.152304)
+Data fetched for range: {'number of cells': 65136, 'median': 25.690000534057617, 'max': 154.82000732421875, 'min': 6.130000114440918, 'mean': 25.729999542236328, 'std': 9.239999771118164}
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.070317, 44.640555), (-84.664999, -84.062785)
+Fetching data for EBK/kriging_output_AQ_THK_2_250m in range (44.070317, 44.640555), (-84.664999, -84.062785)
+Data fetched for range: {'number of cells': 48384, 'median': 34.09000015258789, 'max': 95.41000366210938, 'min': 8.050000190734863, 'mean': 32.599998474121094, 'std': 9.600000381469727}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.361948, 44.715782), (-84.420857, -83.672160)
+Fetching data for EBK/kriging_output_AQ_THK_2_250m in range (44.361948, 44.715782), (-84.420857, -83.672160)
+Data fetched for range: {'number of cells': 37366, 'median': 32.02000045776367, 'max': 80.16000366210938, 'min': 8.050000190734863, 'mean': 32.540000915527344, 'std': 6.889999866485596}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.361948, 44.715782), (-84.420857, -83.672160)
+Fetching data for EBK/kriging_output_AQ_THK_2_250m in range (44.361948, 44.715782), (-84.420857, -83.672160)
+Data fetched for range: {'number of cells': 37366, 'median': 32.02000045776367, 'max': 80.16000366210938, 'min': 8.050000190734863, 'mean': 32.540000915527344, 'std': 6.889999866485596}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.431725, 45.009959), (-84.901000, -83.794230)
+Fetching data for EBK/kriging_output_AQ_THK_2_250m in range (44.431725, 45.009959), (-84.901000, -83.794230)
+Data fetched for range: {'number of cells': 90207, 'median': 34.130001068115234, 'max': 153.32000732421875, 'min': 10.84000015258789, 'mean': 34.88999938964844, 'std': 7.329999923706055}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.431725, 45.009959), (-84.901000, -83.794230)
+Fetching data for EBK/kriging_output_AQ_THK_2_250m in range (44.431725, 45.009959), (-84.901000, -83.794230)
+Data fetched for range: {'number of cells': 90207, 'median': 34.130001068115234, 'max': 153.32000732421875, 'min': 10.84000015258789, 'mean': 34.88999938964844, 'std': 7.329999923706055}
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+Visualizations route called
+Visualizations route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Login route called
+Login route called
+Login route called
+Login route called
+Attempting login for: admin
+Login successful for: admin
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Login route called
+Home route called, user is authenticated.
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: LANDFIRE
+Subvariables for LANDFIRE: ['LC20_Asp_220_250m', 'LC20_BPS_220_250m', 'LC20_EVT_220_250m', 'LC20_Elev_220_250m', 'LC20_SlpD_220_250m', 'LC20_SlpP_220_250m', 'LC22_EVC_220_250m', 'LC22_EVH_220_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Fetching data for LANDFIRE/LC20_Asp_220_250m at 44.061546, -84.315064
+Data fetched: {'value': np.int32(-1)}
+Error fetching data: Object of type int32 is not JSON serializable
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Fetching data for LANDFIRE/LC20_Asp_220_250m at 44.061546, -84.315064
+Data fetched: {'value': np.int32(-1)}
+Error fetching data: Object of type int32 is not JSON serializable
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Fetching data for EBK/kriging_output_AQ_THK_1_250m at 44.061546, -84.315064
+Data fetched: {'value': 13.145307540893555}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Fetching data for EBK/kriging_output_AQ_THK_1_250m at 44.710577, -84.329712
+Data fetched: {'value': 27.226686477661133}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Fetching data for EBK/kriging_output_AQ_THK_1_250m at 43.154712, -84.095337
+Data fetched: {'value': 16.017337799072266}
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+Model Settings route called
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Model Settings route called
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+Model Settings route called
+Get Station Characteristics route called
+Station number: 04213440
+Station 04213440 found
+characteristics: {'SiteNumber': '04213440', 'Drainage area (sqkm)': 79.51, 'Number of expected records (1999-2022)': 8402, 'Streamflow records gap (1999-2022) (%)': 100.0, 'SiteName': '---', 'Status': '---', 'USGSFunding': '---', 'HUC12 id of the station': '041201020108', 'HUC12 ids of the watershed': "['041201020108']", 'site_no': '04213440', 'Latitude': 42.45, 'Longitude': -78.65, 'huc_cd': 4120102.0}
+Michigan route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Get Station Characteristics route called
+Station number: 04213410
+Station 04213410 found
+characteristics: {'SiteNumber': '04213410', 'Drainage area (sqkm)': 447.13, 'Number of expected records (1999-2022)': 8402, 'Streamflow records gap (1999-2022) (%)': 100.0, 'SiteName': '---', 'Status': '---', 'USGSFunding': '---', 'HUC12 id of the station': '041201020106', 'HUC12 ids of the watershed': "['041201020105', '041201020102', '041201020104', '041201020103', '041201020101', '041201020106']", 'site_no': '04213410', 'Latitude': 42.54, 'Longitude': -78.46, 'huc_cd': 4120102.0}
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Login route called
+Michigan route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: LANDFIRE
+Subvariables for LANDFIRE: ['LC20_Asp_220_250m', 'LC20_BPS_220_250m', 'LC20_EVT_220_250m', 'LC20_Elev_220_250m', 'LC20_SlpD_220_250m', 'LC20_SlpP_220_250m', 'LC22_EVC_220_250m', 'LC22_EVH_220_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Get Subvariables route called
+Received variable: Wellogic
+Subvariables for Wellogic: ['obs_AQ_THK_1_250m', 'obs_AQ_THK_2_250m', 'obs_H_COND_1_250m', 'obs_H_COND_2_250m', 'obs_SWL_250m', 'obs_TRANSMSV_1_250m', 'obs_TRANSMSV_2_250m', 'obs_V_COND_1_250m', 'obs_V_COND_2_250m', 'obs_lat_250m', 'obs_lon_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+Visualizations route called
+Visualizations route called
+Model Settings route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Login route called
+About route called
+Sign Up route called
+Form validation failed
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Login route called
+Model Settings route called
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Model Settings route called
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+Home route called, user is authenticated.
+Model Settings route called
+Get Station Characteristics route called
+Station number: 04176500
+Station 04176500 found
+characteristics: {'SiteNumber': '04176500', 'Drainage area (sqkm)': 2755.24, 'Number of expected records (1999-2022)': 8402, 'Streamflow records gap (1999-2022) (%)': 0.0, 'SiteName': 'RIVER RAISIN NEAR MONROE, MI', 'Status': 'Active', 'USGSFunding': 'Full', 'HUC12 id of the station': '041000020410', 'HUC12 ids of the watershed': "['041000020310', '041000020409', '041000020408', '041000020309', '041000020308', '041000020307', '041000020206', '041000020108', '041000020306', '041000020205', '041000020202', '041000020204', '041000020201', '041000020203', '041000020106', '041000020105', '041000020107', '041000020104', '041000020103', '041000020102', '041000020101', '041000020305', '041000020304', '041000020302', '041000020303', '041000020301', '041000020403', '041000020402', '041000020401', '041000020407', '041000020404', '041000020405', '041000020406', '041000020410']", 'site_no': '04176500', 'Latitude': 41.96, 'Longitude': -83.53, 'huc_cd': 4100002.0}
+Model Settings route called
+Form validated successfully
+Model settings received: 04176500, 100, 100, True, True, True, 50, 180, 1000, 10, 25, 25
+Model Confirmation route called
+Michigan route called
+Visualizations route called
+Visualizations route called
+Visualizations route called
+Visualizations route called
+Visualizations route called
+Visualizations route called
+Michigan route called
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Michigan route called
+Visualizations route called
+Michigan route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+Get Subvariables route called
+Received variable: LANDFIRE
+Subvariables for LANDFIRE: ['LC20_Asp_220_250m', 'LC20_BPS_220_250m', 'LC20_EVT_220_250m', 'LC20_Elev_220_250m', 'LC20_SlpD_220_250m', 'LC20_SlpP_220_250m', 'LC22_EVC_220_250m', 'LC22_EVH_220_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (44.122917, 44.833633), (-85.158569, -83.849974)
+Fetching data for LANDFIRE/LC20_EVT_220_250m in range (44.122917, 44.833633), (-85.158569, -83.849974)
+Data fetched for range: {'number of cells': 132088, 'median': np.float64(7366.0), 'max': np.float64(9817.0), 'min': np.float64(7238.0), 'mean': np.float64(7866.69), 'std': np.float64(806.31)}
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Model Settings route called
+Search site route called
+Error searching for site: 'float' object is not subscriptable
+Search site route called
+Get Station Characteristics route called
+Station number: 13203000
+Station 13203000 found
+characteristics: {}
+Get Station Characteristics route called
+Station number: 06609000
+Station 06609000 found
+characteristics: {}
+Model Settings route called
+Visualizations route called
+Visualizations route called
+Model Settings route called
+Visualizations route called
+Visualizations route called
+Model Settings route called
+Login route called
+Login route called
+Attempting login for: admin
+Login successful for: admin
+Home route called, user is authenticated.
+FTP Access route called
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Sign Up route called
+Form validation failed
+Model Settings route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Model Settings route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Visualizations route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Visualizations route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Model Settings route called
+Visualizations route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Visualizations route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Home route called, user is authenticated.
+Michigan route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+FTP Access route called
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+FTP Access route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+FTP Access route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Visualizations route called
+Model Settings route called
+Home route called, user is authenticated.
+Model Settings route called
+Login route called
+Login route called
+Attempting login for: admin
+Login successful for: admin
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Login route called
+Login route called
+Attempting login for: admin
+Login successful for: admin
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Home route called, user is authenticated.
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Login route called
+Login route called
+Attempting login for: admin
+Login successful for: admin
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Home route called, user is authenticated.
+Visualizations route called
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (43.830234, 44.508407), (-85.532048, -84.147106)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (43.830234, 44.508407), (-85.532048, -84.147106)
+Data fetched for range: {'number of cells': 134532, 'median': 20.729999542236328, 'max': 123.22000122070312, 'min': 6.130000114440918, 'mean': 22.309999465942383, 'std': 8.739999771118164}
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+Home route called, user is authenticated.
+Model Settings route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Michigan route called
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
