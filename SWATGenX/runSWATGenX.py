@@ -48,11 +48,11 @@ if __name__ == "__main__":
     
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", filename=logfile_path)
 
-    LEVEL = "huc8"
+    LEVEL = "huc12"
 
     MODEL_NAME = "SWAT_MODEL"
 
-    station_names = ['04166000', '04166300', '04161540' ,'04167000', '04166100' ,'04161000']
+    station_names = ['04166000']#, '04166300', '04161540' ,'04167000', '04166100' ,'04161000']
 
     huc8_list = [
         '04050001', '04050002', '04050003', '04050004', '04050005', '04050006', '04050007', 
