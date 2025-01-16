@@ -1,143 +1,232 @@
-from multiprocessing import Process
+from SWATGenX.core import SWATGenXCore
+import geopandas as gpd
+from SWATGenX.SWATGenXLogging import LoggerSetup
 import os
 import pandas as pd
 from functools import partial
-from SWATGenX.core import SWATGenXCore
-import logging
-import geopandas as gpd
+from multiprocessing import Process
+#from app.models import User  # Assuming User is defined in app.models
 
+class SWATGenXCommand:
+	def __init__(self, swatgenx_config):
+		"""
+		Initializes the SWATGenXCommand class with the provided configuration.
 
-def find_VPUID(station_no, LEVEL="huc12"):
-	if LEVEL == "huc8":
-		return f"0{int(station_no)[:3]}"
+		This class handles the extraction and processing of hydrological data based on the specified configuration. It supports different levels of data processing, including HUC12, HUC4, and HUC8.
 
-	CONUS_streamflow_data = pd.read_csv("/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv", dtype={'site_no': str,'huc_cd': str})
-	return CONUS_streamflow_data[
-		CONUS_streamflow_data.site_no == station_no
-	].huc_cd.values[0][:4]
+		Args:
+			swatgenx_config (dict): Configuration settings for the SWATGenX command.
+		"""
+		self.config = swatgenx_config
+		self.logger = self.setup_logger()
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", filename="/data/SWATGenXApp/codes/SWATGenX.log")
-def generate_huc12_list(HUC8, VPUID):
+	def setup_logger(self):
+		"""Sets up the logger for the SWATGenXCommand."""
+		logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/SWATGenX/", verbose=True, rewrite=True)
+		return logger.setup_logger("SWATGenXCommand")
 
-	path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/"
-	gdb = os.listdir(path)
-	gdb = [g for g in gdb if g.endswith('.gdb')]
-	path = os.path.join(path, gdb[0])
-	huc12 = gpd.read_file(path, driver='FileGDB', layer='WBDHU12').to_crs('EPSG:4326')
-	huc8 = gpd.read_file(path, driver='FileGDB', layer='WBDHU8').to_crs('EPSG:4326')
-	## intersect huc8 with huc12
-	huc12 = gpd.overlay(huc12, huc8, how='intersection')
-	## make the huc8 to HUC8 if it is not
-	if "huc8" in huc12.columns:
-		huc12.rename(columns={"huc8": "HUC8"}, inplace=True)
-		## make sure its 8 digits and string
-		huc12['HUC8'] = huc12[huc12.HUC8 == HUC8].HUC8.astype(str).str.zfill(8)
-	huc12 = huc12[huc12.HUC8 == HUC8]
-	
-	if "huc12" in huc12.columns:
-		huc12.rename(columns={"huc12": "HUC12"}, inplace=True)
+	def find_VPUID(self, station_no, level="huc12"):
+		"""
+		Finds the VPUID for a given station number.
 
-	huc12_grouped = huc12.groupby('HUC8')
-	return {huc8: group['HUC12'].values for huc8, group in huc12_grouped}
+		This method retrieves the VPUID based on the specified level. It reads from a CSV file containing streamflow station data.
 
+		Args:
+			station_no (str): The station number to find the VPUID for.
+			level (str): The level of detail for the VPUID (default is "huc12").
 
-def return_list_of_huc12s(BASE_PATH, station_name, MAX_AREA):
-	VPUID = find_VPUID(station_name)	
-	streamflow_metadata = os.path.join(BASE_PATH,f"USGS/streamflow_stations/VPUID/{VPUID}/meta_{VPUID}.csv")
-	streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
+		Returns:
+			str: The corresponding VPUID.
+		"""
+		if level == "huc8":
+			return f"0{int(station_no)[:3]}"
 
-	drainage_area = streamflow_metadata[streamflow_metadata.site_no == station_name].drainage_area_sqkm.values[0]
+		conus_streamflow_data = pd.read_csv("/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv", dtype={'site_no': str, 'huc_cd': str})
+		return conus_streamflow_data[conus_streamflow_data.site_no == station_no].huc_cd.values[0][:4]
+	def generate_huc12_list(self, huc8, vpuid):
+		"""
+		Generates a list of HUC12s for a given HUC8 and VPUID.
 
-	eligible_stations = streamflow_metadata[streamflow_metadata.drainage_area_sqkm < MAX_AREA]
-	if len(eligible_stations) == 0:
-		logging.error(f"Station {station_name} does not meet the maximum drainage area criteria: {MAX_AREA} sqkm")
-		return None
+		This method reads the relevant geospatial data from a File Geodatabase and intersects HUC12 with HUC8 to extract the corresponding HUC12s.
 
-	if len(eligible_stations[eligible_stations.site_no == station_name]) == 0:
-		logging.error(f"Station {drainage_area} sqkm is greater than the maximum drainage area criteria: {MAX_AREA} sqkm")
-		return None
+		Args:
+			huc8 (str): The HUC8 code to filter by.
+			vpuid (str): The VPUID to use for data retrieval.
 
-	list_of_huc12s = eligible_stations[eligible_stations.site_no == station_name].list_of_huc12s.values[0]
-	print(f"station name : {station_name}, VPUIID: {VPUID}")
+		Returns:
+			dict: A dictionary mapping HUC8 codes to their corresponding HUC12 values.
+		"""
+		path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{vpuid}/unzipped_NHDPlusVPU/"
+		gdb_files = [g for g in os.listdir(path) if g.endswith('.gdb')]
+		
+		if not gdb_files:
+			raise FileNotFoundError(f"No .gdb files found in the directory: {path}")
 
-	return list_of_huc12s, VPUID
+		path = os.path.join(path, gdb_files[0])
+		huc12 = gpd.read_file(path, driver='FileGDB', layer='WBDHU12').to_crs('EPSG:4326')
+		huc8_layer = gpd.read_file(path, driver='FileGDB', layer='WBDHU8').to_crs('EPSG:4326')
 
+		# Intersect HUC8 with HUC12
+		huc12 = gpd.overlay(huc12, huc8_layer, how='intersection')
 
-def SWATGenXCommand(swatgenx_config):
+		if "huc8" in huc12.columns:
+			huc12.rename(columns={"huc8": "HUC8"}, inplace=True)
+			huc12['HUC8'] = huc12['HUC8'].astype(str).str.zfill(8)
 
-	LEVEL = swatgenx_config.get("LEVEL")
-	MAX_AREA = swatgenx_config.get("MAX_AREA")
-	MIN_AREA = swatgenx_config.get("MIN_AREA")
-	GAP_percent = swatgenx_config.get("GAP_percent")
-	single_model = swatgenx_config.get("single_model", True)
+		# Filter HUC12 based on the provided HUC8
+		huc12_filtered = huc12[huc12['HUC8'] == huc8]
 
-	if LEVEL == "huc12":
-		logging.info(f'LEVEL: {LEVEL}, station_name: {swatgenx_config.get("station_name")}, single_model: {single_model}')
-		if single_model:
+		if "huc12" in huc12_filtered.columns:
+			huc12_filtered.rename(columns={"huc12": "HUC12"}, inplace=True)
 
-			station_name = swatgenx_config.get("station_name")
-			list_of_huc12s, VPUID = return_list_of_huc12s(swatgenx_config.get("BASE_PATH"), swatgenx_config.get("station_name"), MAX_AREA)
+		if huc12_filtered.empty:
+			self.logger.warning(f"No HUC12s found for HUC8: {huc8} and VPUID: {vpuid}")
+			return {}
 
-			# Correct way to update the dictionary
-			swatgenx_config.update(
-				{
-					"site_no": station_name,
-					"VPUID": VPUID,
-					"LEVEL": LEVEL,
-					"list_of_huc12s": list_of_huc12s,
-				}
-			)
-			SWATGenXCore(swatgenx_config)
+		huc12_grouped = huc12_filtered.groupby('HUC8')
+		return {huc8: group['HUC12'].values for huc8, group in huc12_grouped}
 
-			return os.path.join(swatgenx_config.get("BASE_PATH"), f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{station_name}/")
+	def return_list_of_huc12s(self, base_path, station_name, max_area):
+		"""
+		Returns a list of HUC12s for a given station name and maximum drainage area.
 
-	elif LEVEL == "huc4":
-		VPUID = swatgenx_config.get("target_VPUID")
-		streamflow_metadata = os.path.join(swatgenx_config.get("BASE_PATH"), f"USGS/streamflow_stations/VPUID/{VPUID}/meta_{VPUID}.csv")
+		This method checks the drainage area of the specified station and retrieves eligible HUC12s based on the maximum area criteria.
+
+		Args:
+			base_path (str): The base path for data files.
+			station_name (str): The name of the station to retrieve HUC12s for.
+			max_area (float): The maximum drainage area allowed.
+
+		Returns:
+			tuple: A tuple containing the list of HUC12s and the corresponding VPUID.
+		"""
+		vpuid = self.find_VPUID(station_name)
+		streamflow_metadata = os.path.join(base_path, f"USGS/streamflow_stations/VPUID/{vpuid}/meta_{vpuid}.csv")
 		streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
-		eligible_stations = streamflow_metadata[(streamflow_metadata.drainage_area_sqkm < MAX_AREA) & (streamflow_metadata.drainage_area_sqkm > MIN_AREA)]
-		eligible_stations = eligible_stations[eligible_stations.GAP_percent < GAP_percent]
-		print(f"eligible_stations: {eligible_stations.site_no}")
+
+		drainage_area = streamflow_metadata[streamflow_metadata.site_no == station_name].drainage_area_sqkm.values[0]
+
+		eligible_stations = streamflow_metadata[streamflow_metadata.drainage_area_sqkm < max_area]
 		if len(eligible_stations) == 0:
-			logging.error(f"No eligible stations found for VPUID: {VPUID}")
+			self.logger.error(f"Station {station_name} does not meet the maximum drainage area criteria: {max_area} sqkm")
 			return None
+
+		if len(eligible_stations[eligible_stations.site_no == station_name]) == 0:
+			self.logger.error(f"Station {drainage_area} sqkm is greater than the maximum drainage area criteria: {max_area} sqkm")
+			return None
+
+		list_of_huc12s = eligible_stations[eligible_stations.site_no == station_name].list_of_huc12s.values[0]
+		print(f"Station name: {station_name}, VPUID: {vpuid}")
+
+		return list_of_huc12s, vpuid
+	def execute(self):
+		"""
+		Executes the SWATGenX command based on the provided configuration.
+
+		This method processes the configuration to determine the level of data extraction and initiates the appropriate data handling procedures.
+
+		Returns:
+			str: The path to the processed data output.
+		"""
+		level = self.config.get("LEVEL")
+
+		if level == "huc12":
+			return self.handle_huc12()
+
+		elif level == "huc4":
+			return self.handle_huc4()
+
+		elif level == "huc8":
+			return self.handle_huc8()
+
+	def handle_huc12(self):
+		"""Handles the HUC12 level processing."""
+		self.logger.info(f'LEVEL: huc12, station_name: {self.config.get("station_name")}')
+		station_name = self.config.get("station_name")
+		list_of_huc12s, vpuid = self.return_list_of_huc12s(self.config.get("BASE_PATH"), station_name, self.config.get("MAX_AREA"))
+
+		# Update the configuration dictionary
+		self.config.update({
+			"site_no": station_name,
+			"VPUID": vpuid,
+			"LEVEL": "huc12",
+			"list_of_huc12s": list_of_huc12s,
+		})
+		core = SWATGenXCore(self.config)
+		core.process()
+		return os.path.join(self.config.get("BASE_PATH"), f"SWATplus_by_VPUID/{vpuid}/huc12/{station_name}/")
+
+	def handle_huc4(self):
+		"""Handles the HUC4 level processing."""
+		from SWATGenX.read_VPUID import get_all_VPUIDs
+		vpuid_list = get_all_VPUIDs()
 		processes = []
-		for site_no in eligible_stations.site_no:
 
-			# Correct way to update the dictionary
-			swatgenx_config.update(
-				{
-					"site_no": site_no,
-					"VPUID": VPUID,
-					"list_of_huc12s": eligible_stations[eligible_stations.site_no == site_no].list_of_huc12s.values[0],
-				}
-			)
-			wrapped_SWATGenXCore = partial(SWATGenXCore, config=swatgenx_config)
+		for vpuid in vpuid_list:
+			if vpuid[:2] != "02":
+				continue
+			eligible_stations = self.get_eligible_stations(vpuid)
 
-			p = Process(target=wrapped_SWATGenXCore, args=(site_no,))
-			p.start()
-			processes.append(p)
-			if len(processes) == 1:
-				for p in processes:
-					p.join()
-				processes = []
+			if len(eligible_stations) == 0:
+				self.logger.error(f"No eligible stations found for VPUID: {vpuid}")
+				return None
+
+			for site_no in eligible_stations.site_no:
+				self.process_station(site_no, vpuid, eligible_stations)
 
 		for p in processes:
 			p.join()
 
-	elif LEVEL == "huc8":
-		VPUID = swatgenx_config.get("station_name")[:4]
-		HUC8_NAME = swatgenx_config.get("station_name")
-		list_of_huc12s = generate_huc12_list(HUC8_NAME, VPUID)
-		# Correct way to update the dictionary
-		swatgenx_config.update(
-			{
-				"site_no": HUC8_NAME,
-				"VPUID": VPUID,
-				"LEVEL": LEVEL,
-				"list_of_huc12s": list_of_huc12s,
-			}
-		)
+	def handle_huc8(self):
+		"""Handles the HUC8 level processing."""
+		vpuid, huc8_name = self.extract_vpuid_and_huc8_name()
+		list_of_huc12s = self.generate_huc12_list(huc8_name, vpuid)
+		self.config.update({
+			"site_no": huc8_name,
+			"VPUID": vpuid,
+			"LEVEL": "huc8",
+			"list_of_huc12s": list_of_huc12s,
+		})
 
-		SWATGenXCore(swatgenx_config)
-		return os.path.join(swatgenx_config.get("BASE_PATH"), f"SWATplus_by_VPUID/{swatgenx_config.get('VPUID')}/{LEVEL}/{HUC8_NAME}/")
+		core = SWATGenXCore(self.config)
+		core.process()
+
+		return os.path.join(self.config.get("BASE_PATH"), f"SWATplus_by_VPUID/{vpuid}/huc8/{huc8_name}/")
+
+	def get_eligible_stations(self, vpuid):
+		"""Retrieves eligible stations based on drainage area criteria."""
+		streamflow_metadata = os.path.join(self.config.get("BASE_PATH"), f"USGS/streamflow_stations/VPUID/{vpuid}/meta_{vpuid}.csv")
+		streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
+		eligible_stations = streamflow_metadata[
+			(streamflow_metadata.drainage_area_sqkm < self.config.get("MAX_AREA")) &
+			(streamflow_metadata.drainage_area_sqkm > self.config.get("MIN_AREA"))
+		]
+		eligible_stations = eligible_stations[eligible_stations.GAP_percent < self.config.get("GAP_percent")]
+		return eligible_stations
+
+	def process_station(self, site_no, vpuid, eligible_stations):
+		"""Processes a single station by updating the configuration and starting a new process."""
+		print(f"site_no: {site_no}")
+		self.config.update({
+			"site_no": site_no,
+			"VPUID": vpuid,
+			"list_of_huc12s": eligible_stations[eligible_stations.site_no == site_no].list_of_huc12s.values[0],
+		})
+		wrapped_SWATGenXCore = partial(SWATGenXCore, self.config)
+
+		p = Process(target=wrapped_SWATGenXCore)
+		p.start()
+		return p
+
+	def extract_vpuid_and_huc8_name(self):
+		"""
+		Extracts the VPUID and HUC8 name from the configuration.
+
+		This method retrieves the VPUID and HUC8 name based on the station name provided in the configuration.
+
+		Returns:
+			tuple: A tuple containing the VPUID and HUC8 name.
+		"""
+		vpuid = self.config.get("station_name")[:4]
+		huc8_name = self.config.get("station_name")
+		return vpuid, huc8_name

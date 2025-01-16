@@ -1,18 +1,16 @@
  Processing SWATGenX 
-2025-01-16 00:33:56,059 [ERROR] Site number 04100013 is not among FPS lists
-2025-01-16 00:33:57,443 [INFO] Logging setup for 04100013
-2025-01-16 00:33:57,737 [INFO] SWATGenXCore: Beginning the extraction of the model for 04100013
-2025-01-16 00:33:57,737 [ERROR] The model extraction has failed for 04100013 before (PRISM extracted but streamflow shapefile does not exist)
-2025-01-16 00:34:02,343 [INFO] Created 112 records
-2025-01-16 00:34:05,495 [INFO] Created 3,509 records
-2025-01-16 00:34:05,577 [INFO] Created 3,509 records
-2025-01-16 00:34:05,601 [INFO] Created 233 records
-2025-01-16 00:34:09,413 [INFO] Created 86 records
-2025-01-16 00:34:09,472 [INFO] Created 3,509 records
-2025-01-16 00:34:09,554 [INFO] Created 3,509 records
-2025-01-16 00:34:09,575 [INFO] Created 1 records
-2025-01-16 00:34:10,205 [INFO] First Stage completed for 04100013, 0410
-2025-01-16 00:36:50,623 [INFO] QSWAT+ processes are completed for 04100013, 0410
-2025-01-16 00:45:20,757 [INFO] Created 0 records
-2025-01-16 00:45:22,649 [INFO] Model successfully copied to SWAT_input for 04100013
-2025-01-16 00:45:22,649 [INFO] Model already exists for 04100013 in SWAT_input
+2025-01-16 11:36:52,830 [ERROR] Site number 04090004 is not among FPS lists
+2025-01-16 11:36:52,831 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+2025-01-16 11:36:53,592 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+2025-01-16 11:36:53,592 [INFO] SWATGenXCore: Starting the SWATGenX model for 04090004
+2025-01-16 11:36:53,780 [INFO] SWATGenXCore: Beginning the extraction of the model for 04090004
+2025-01-16 11:36:56,709 [INFO] Created 13 records
+2025-01-16 11:36:59,354 [INFO] Created 3,320 records
+2025-01-16 11:36:59,423 [INFO] Created 3,320 records
+2025-01-16 11:36:59,444 [INFO] Created 168 records
+2025-01-16 11:37:02,854 [INFO] Created 49 records
+2025-01-16 11:37:02,914 [INFO] Created 3,320 records
+2025-01-16 11:37:02,979 [INFO] Created 3,320 records
+2025-01-16 11:37:03,077 [INFO] Created 1 records
+2025-01-16 11:37:03,579 [INFO] First Stage completed for 04090004, 0409
+2025-01-16 11:38:39,510 [INFO] QSWAT+ processes are completed for 04090004, 0409

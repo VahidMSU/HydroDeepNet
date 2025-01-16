@@ -67,7 +67,7 @@ if __name__ == "__main__":
     if not single_model:
         selected_list = huc8_list if LEVEL == "huc8" else station_names
     else:
-        selected_list = ['04100013'] if LEVEL == "huc8" else ['04292000']
+        selected_list = ['04090004'] if LEVEL == "huc8" else ['04292000']
 
     for station_name in selected_list:
         check_station(station_name)
@@ -84,6 +84,9 @@ if __name__ == "__main__":
             "MAX_AREA": 3500,
             "MIN_AREA": 50,
             "GAP_percent": 10,
+           # "target_VPUID": get_all_VPUIDs()
         }
 
-        SWATGenXCommand(swatgenx_config)
+        #SWATGenXCommand(swatgenx_config)
+        swat_commander = SWATGenXCommand(swatgenx_config)
+        swat_commander.execute()
