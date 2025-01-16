@@ -12,8 +12,10 @@ import geopandas as gpd
 
 try:
     from SWATGenX.sa import sa
+    from SWATGenX.sa import align_rasters
 except ImportError:
     from sa import sa
+    from sa import align_rasters
 
 
 def generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution):
@@ -71,6 +73,23 @@ def generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_pro
     soil_raster = sa().ExtractByMask(original_soil_path, watershed_boundary_path)
     soil_raster.save(swatplus_soil_output)
 
+    sa().snap_rasters(swatplus_landuse_output, swatplus_soil_output)
+
+    #def resample_dem(path):
+    #    assert os.path.exists(path), f"Raster not found: {path}"
+    #    ## resample to 25m
+    #    os.system(f"gdalwarp -tr 250 250 -r near {path} {path.replace('.tif', '_resampled.tif')}")
+    #    print("Done!")
+    #    os.remove(path)
+    #    os.rename(path.replace('.tif', '_resampled.tif'), path)
+
+    #resample_dem(swatplus_dem_output)
+
+    #sa().snap_rasters(swatplus_dem_output, swatplus_soil_output)
+
+    #align_rasters(swatplus_landuse_output, swatplus_dem_output, swatplus_soil_output)
+
+
     # Replace invalid soil cells with the most common value using NumPy and `rasterio`
     with rasterio.open(swatplus_soil_output) as src:
         soil_array = src.read(1)  # Read the first band
@@ -85,17 +104,24 @@ def generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_pro
     path = "/data/SWATGenXApp/GenXAppData/Soil/SWAT_gssurgo.csv"
     df = pd.read_csv(path)
     mask_value = df.muid.values
+    print(f"mask value data type: {type(mask_value)}")
+
+    assert most_common_value in mask_value, f"Most common value {most_common_value} is not in SWAT_gssurgo.csv"
+    
+    ## make it integer
+    mask_value = [int(i) for i in mask_value]
+
+
     print(f"Number of unique values in SWAT_gssurgo.csv: {len(mask_value)}")
     print(f"Number of unique values in soil raster: {len(np.unique(soil_array))}")
     print(f"Number of unique soil rasters not found in mask:{len(set(np.unique(soil_array)) - set(mask_value))} ")
     assert most_common_value in mask_value, f"Most common value {most_common_value} is not in SWAT_gssurgo.csv"
-    ### fist find out which soil does not exist in the SWAT_gssurgo.csv
+    print(f"Most common value: {most_common_value}")
 
-    for i in range(soil_array.shape[0]):
-        for j in range(soil_array.shape[1]):
-            if soil_array[i, j] not in mask_value:
-                #print(f"Replacing {soil_array[i, j]} with {most_common_value}")
-                soil_array[i, j] = most_common_value
+    soil_array = np.where(soil_array == 2147483647, most_common_value, soil_array)
+    soil_array = np.where(np.isin(soil_array, mask_value), soil_array, most_common_value)
+    #soil_array = np.where(soil_array == 2673731, most_common_value, soil_array)
+
 
     # Write the updated soil_array back to a raster
     with rasterio.open(swatplus_soil_output) as src:

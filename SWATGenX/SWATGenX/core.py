@@ -67,7 +67,7 @@ def SWATGenXCore(config):
 	## we need to run a batch file to create the SWAT+ model
 	try:
 		runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME)
-		hru2_path = f"{BASE_PATH}/SWATplus_by_VPUID/{VPUID}/huc12/{NAME}/{MODEL_NAME}/Watershed/Shapes/hrus2.shp"
+		hru2_path = f"{BASE_PATH}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/Watershed/Shapes/hrus2.shp"
 		if not os.path.exists(hru2_path):
 			logging.error(f"HRU2 shapefile does not exist for {NAME} after running QSWAT+")
 			return None

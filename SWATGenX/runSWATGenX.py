@@ -42,13 +42,13 @@ def check_station(station_name):
 if __name__ == "__main__":
 
     logfile_path = "/data/SWATGenXApp/codes/SWATGenX.log"
-    
+
     with open(logfile_path, 'w') as file:
         file.write(" Processing SWATGenX \n")
-    
+
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", filename=logfile_path)
 
-    LEVEL = "huc12"
+    LEVEL = "huc8"
 
     MODEL_NAME = "SWAT_MODEL"
 
@@ -65,25 +65,15 @@ if __name__ == "__main__":
     single_model = True
 
     if not single_model:
-        if LEVEL == "huc8":
-            selected_list = huc8_list   
-        else:
-            selected_list = station_names
+        selected_list = huc8_list if LEVEL == "huc8" else station_names
     else:
-        if LEVEL == "huc8":
-            selected_list = ['04100001']
-        else:
-            selected_list = ['04292000']
-    
+        selected_list = ['04100013'] if LEVEL == "huc8" else ['04292000']
 
     for station_name in selected_list:
         check_station(station_name)
         swatgenx_config = {
             "BASE_PATH": "/data/SWATGenXApp/GenXAppData/",
             "LEVEL": LEVEL,
-            "MAX_AREA": 3500,
-            "MIN_AREA": 50,
-            "GAP_percent": 10,
             "landuse_product": "NLCD",
             "landuse_epoch": "2021",
             "ls_resolution": "250",
@@ -97,4 +87,3 @@ if __name__ == "__main__":
         }
 
         SWATGenXCommand(swatgenx_config)
-          

@@ -2,31 +2,108 @@ import contextlib
 import rasterio
 import os
 from rasterio.mask import mask
-from rasterio.warp import calculate_default_transform, reproject
 from shapely.geometry import mapping
 import fiona
 import geopandas as gpd
-from rasterio.enums import Resampling
 from rasterio.warp import calculate_default_transform, reproject, Resampling
 from rasterio.warp import transform_geom
-import rasterio
-import fiona
-from rasterio.mask import mask
-from shapely.geometry import mapping
+from osgeo import gdal
+from rasterio.windows import Window
+from shapely.geometry import shape, mapping
+from shapely.affinity import scale
+from shapely.geometry import box
+def align_rasters(landuse, dem, soil):
+    """Align rasters to the smallest common shape and save them."""
 
-import fiona
-import os
-import rasterio
-from rasterio.warp import calculate_default_transform, reproject
+    assert os.path.exists(landuse), f"Landuse raster not found: {landuse}"
+    assert os.path.exists(dem), f"DEM raster not found: {dem}"
+    assert os.path.exists(soil), f"Soil raster not found: {soil}"
 
-from rasterio.warp import calculate_default_transform, reproject, Resampling
-import rasterio
-import fiona
-from rasterio.mask import mask
-from shapely.geometry import mapping
+    def get_valid_bounds(raster_path):
+        with rasterio.open(raster_path, 'r') as src:
+            data = src.read(1)
+            mask = data != src.nodata
+            rows, cols = mask.any(axis=1), mask.any(axis=0)
+            row_start, row_end = rows.argmax(), len(rows) - rows[::-1].argmax()
+            col_start, col_end = cols.argmax(), len(cols) - cols[::-1].argmax()
+            return row_start, row_end, col_start, col_end
+
+    # Get bounds for each raster
+    landuse_bounds = get_valid_bounds(landuse)
+    dem_bounds = get_valid_bounds(dem)
+    soil_bounds = get_valid_bounds(soil)
+
+    # Determine the smallest common shape
+    min_row_start = max(landuse_bounds[0], dem_bounds[0], soil_bounds[0])
+    min_row_end = min(landuse_bounds[1], dem_bounds[1], soil_bounds[1])
+    min_col_start = max(landuse_bounds[2], dem_bounds[2], soil_bounds[2])
+    min_col_end = min(landuse_bounds[3], dem_bounds[3], soil_bounds[3])
+
+    # Clip all rasters to this size
+    common_window = Window(
+        col_off=min_col_start,
+        row_off=min_row_start,
+        width=min_col_end - min_col_start,
+        height=min_row_end - min_row_start,
+    )
+
+    # Clip and save rasters
+    output_dir = "/data/SWATGenXApp/codes/clipped_rasters"
+    os.makedirs(output_dir, exist_ok=True)
+
+    for raster_path, name in zip([landuse, dem, soil], ["landuse", "dem", "soil"]):
+        with rasterio.open(raster_path, 'r') as src:
+            profile = src.profile
+            profile.update({
+                'height': common_window.height,
+                'width': common_window.width,
+                'transform': src.window_transform(common_window)
+            })
+            clipped_path = os.path.join(output_dir, f"{name}_clipped.tif")
+            with rasterio.open(clipped_path, 'w', **profile) as dst:
+                dst.write(src.read(1, window=common_window), 1)
+        print(f"Clipped {name} raster saved to {clipped_path}")
+
+    ### now copy to the original location with the original name
+    os.system(f"mv {output_dir}/landuse_clipped.tif {landuse}")
+    os.system(f"mv {output_dir}/dem_clipped.tif {dem}")
+    os.system(f"mv {output_dir}/soil_clipped.tif {soil}")
 
 
+# Step 2: Extract metadata from the reference raster
+def get_raster_metadata(raster_path):
+    """Extract resolution and extent from a raster."""
+    print(f"Extracting metadata from raster: {raster_path}")
+    ds = gdal.Open(raster_path)
+    if not ds:
+        raise RuntimeError(f"Failed to open raster: {raster_path}")
+    
+    transform = ds.GetGeoTransform()
+    xres, yres = transform[1], transform[5]
+    xmin, ymax = transform[0], transform[3]
+    xmax = xmin + (ds.RasterXSize * xres)
+    ymin = ymax + (ds.RasterYSize * yres)
+    
+    ds = None  # Close dataset
+    return xres, yres, xmin, ymin, xmax, ymax
 
+
+# Step 3: Snap the landuse raster to the soil raster grid
+def snap_raster(input_path, output_path, xres, yres, xmin, ymin, xmax, ymax):
+    """Snap a raster to a reference grid."""
+    print(f"Snapping raster: {input_path} to grid")
+    options = gdal.WarpOptions(
+        outputBounds=(xmin, ymin, xmax, ymax),
+        xRes=xres,
+        yRes=abs(yres),  # yRes is negative, take absolute
+        resampleAlg="near"
+    )
+    result = gdal.Warp(output_path, input_path, options=options)
+    if not result:
+        raise RuntimeError(f"Failed to snap raster: {input_path}")
+    
+    result.FlushCache()
+    print(f"Snapped raster saved to: {output_path}")
 
 class sa:
     def __init__(self, in_raster=None, in_mask_data=None):
@@ -52,6 +129,14 @@ class sa:
         self.env.workspace = workspace_path  # Changed from sa._workspace to self.env.workspace
         print(f"Workspace set to: {workspace_path}")
 
+    def snap_rasters(self, input_path, reference_path):
+        output_path = input_path.replace(".tif", "_snapped.tif")
+        xres, yres, xmin, ymin, xmax, ymax = get_raster_metadata(reference_path)
+        snap_raster(input_path, output_path, xres, yres, xmin, ymin, xmax, ymax)
+        ## remove initial landuse
+        os.remove(input_path)
+        os.rename(output_path, input_path)
+        print("Done!")
 
 
     def ListRasters(self):
@@ -81,9 +166,8 @@ class sa:
             except Exception as e:
                 raise RuntimeError(f"Error listing rasters: {e}") from e
 
-
     def ExtractByMask(self, in_raster, in_mask_data):
-        """Extracts the cells of a raster that correspond to the areas defined by a mask, with proper CRS handling."""
+        """Extracts the cells of a raster that correspond to the areas defined by a mask, retaining all touched cells."""
         try:
             self.in_raster = in_raster
             self.in_mask_data = in_mask_data
@@ -115,6 +199,7 @@ class sa:
         except Exception as e:
             raise RuntimeError(f"Error during raster extraction: {e}") from e
         return self  # Enable chaining with save()
+
 
     def save(self, path):
         """Saves the extracted raster to the specified path."""
@@ -281,6 +366,7 @@ class sa:
                     # Use the extent (bounding box) of the mask data as the clipping geometry
                     with fiona.open(in_mask_data, "r") as shapefile:
                         bounds = shapefile.bounds
+
                         extent_geom = box(bounds[0], bounds[1], bounds[2], bounds[3])
                         reprojected_shapes = [mapping(extent_geom)]
                     print(f"Using the extent of {in_mask_data} for clipping.")
