@@ -15,8 +15,9 @@ def generate_swatplus_shapes(list_of_huc12s, BASE_PATH, VPUID, LEVEL, NAME, EPSG
 		os.makedirs(SWAT_MODEL_directory, exist_ok=True)
 
 	print("SWAT_MODEL_directory:", SWAT_MODEL_directory)
-	list_of_huc12s = list(list_of_huc12s)
 	print("list_of_huc12s:", list_of_huc12s)
+	### make it a list from a set
+	list_of_huc12s = list(list_of_huc12s)
 	## get the type of list_of_huc12s
 	if isinstance(list_of_huc12s[0], str):
 		print("list_of_huc12s is a list of strings")
