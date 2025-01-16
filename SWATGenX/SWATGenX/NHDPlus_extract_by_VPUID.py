@@ -1,6 +1,6 @@
 import os
 import geopandas as gpd
-from SWATGenX.NHD_SWAT_fun import *
+from SWATGenX.NHDPlusExtractor import *
 import zipfile
 import glob
 import os 

@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import time
-from SWATGenX.NHD_SWAT_fun import start_extracting, incorporate_lakes, include_lakes_in_streams, write_output, creating_modified_inputs
+from SWATGenX.NHDPlusExtractor import NHDPlusExtractor
 
 def generate_swatplus_shapes(list_of_huc12s, BASE_PATH, VPUID, LEVEL, NAME, EPSG, MODEL_NAME):
 
@@ -23,26 +23,16 @@ def generate_swatplus_shapes(list_of_huc12s, BASE_PATH, VPUID, LEVEL, NAME, EPSG
 		print("list_of_huc12s is a list of strings")
 		list_of_huc12s = [int(huc12) for huc12 in list_of_huc12s]
 
-	streams = start_extracting(BASE_PATH, list_of_huc12s, LEVEL, VPUID)
+	extractor = NHDPlusExtractor(BASE_PATH, list_of_huc12s, LEVEL, VPUID, MODEL_NAME, NAME)
+	streams = extractor.extract_initial_streams()
 
-	### test if the streams are dataframe, otherwise exit
+	streams = extractor.incorporate_lakes(streams)  # Remove unused variable "Lakes"
 
-	if not isinstance(streams, pd.DataFrame):
-		print("The streams are not a dataframe")
-		time.sleep(100)
-	else:
-		print("The streams are a dataframe")
-	streams = incorporate_lakes(BASE_PATH, streams, VPUID)  # Remove unused variable "Lakes"
 
-	if not isinstance(streams, pd.DataFrame):
-		print("The streams are not a dataframe")
-		time.sleep(100)
-	else:
-		print("The streams are a dataframe")
-	streams = include_lakes_in_streams(streams)
+	streams = extractor.include_lakes_in_streams(streams)
 
-	write_output(BASE_PATH, streams, LEVEL, NAME, VPUID, EPSG, MODEL_NAME)
+	extractor.write_output(streams, EPSG)
 
-	creating_modified_inputs(BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME)
+	extractor.creating_modified_inputs()
 
 	print(f"SWATPlus shapes are generated for {NAME}")
