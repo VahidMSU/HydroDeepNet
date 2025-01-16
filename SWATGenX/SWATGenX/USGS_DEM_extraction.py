@@ -69,13 +69,12 @@ class DEMProcessor:
             temp_path (str): Path to the shapefile or vector file defining the clipping boundary.
             output_raster (str): Path to the output clipped raster file.
         """
-        print("Clipping the DEM mosaic to the extent of the boundary...")
-
-        # Open the vector file (clipping geometry)
-        clipping_layer = ogr.Open(temp_path)
-        if not clipping_layer:
-            raise FileNotFoundError(f"Unable to open vector file: {temp_path}")
-
+        clipping_layer = self._extracted_from_resampling_13(
+            "Clipping the DEM mosaic to the extent of the boundary...",
+            ogr,
+            temp_path,
+            'Unable to open vector file: ',
+        )
         # Get the first layer of the vector file
         layer = clipping_layer.GetLayer()
 
@@ -88,7 +87,7 @@ class DEMProcessor:
         xmin, xmax, ymin, ymax = extent
         ## create a bounding box
 
-        import geopandas 
+        import geopandas
         from shapely.geometry import box
         bbox = box(xmin, ymin, xmax, ymax)
         ## get the crs of the temp_path
@@ -102,7 +101,7 @@ class DEMProcessor:
 
         # Set options for gdal.Warp with temp_path as the clipping layer
         warp_options = gdal.WarpOptions(
-     
+
             cutlineDSName=temp_path,
             cutlineLayer=str(layer.GetName()),
             cutlineWhere=None,
@@ -302,18 +301,15 @@ class DEMProcessor:
         vrt_options = gdal.BuildVRTOptions(resampleAlg='nearest', addAlpha=True)
         vrt = gdal.BuildVRT('/vsimem/temp_mosaic.vrt', src_files_to_mosaic, options=vrt_options)
 
-        # Write the mosaic to a new raster file with BIGTIFF=YES
-        mosaic = gdal.Translate(
+        if mosaic := gdal.Translate(
             output_mosaic_path,
             vrt,
             format='GTiff',
-            creationOptions=['COMPRESS=LZW', 'BIGTIFF=YES']  # Include BIGTIFF=YES
-        )
-
-        if not mosaic:
+            creationOptions=['COMPRESS=LZW', 'BIGTIFF=YES'],  # Include BIGTIFF=YES
+        ):
+            print(f"Mosaic created successfully at {output_mosaic_path}")
+        else:
             raise RuntimeError("Failed to create mosaic.")
-
-        print(f"Mosaic created successfully at {output_mosaic_path}")
 
 
 
@@ -344,13 +340,12 @@ class DEMProcessor:
         :param output_raster_projected: Path to the input raster file to be resampled.
         :param output_resampled_raster_path: Path where the resampled raster will be saved.
         """
-        print("Resampling the raster...")
-
-        # Open the input raster
-        src_ds = gdal.Open(output_raster_projected)
-        if not src_ds:
-            raise FileNotFoundError(f"Unable to open raster file: {output_raster_projected}")
-
+        src_ds = self._extracted_from_resampling_13(
+            "Resampling the raster...",
+            gdal,
+            output_raster_projected,
+            'Unable to open raster file: ',
+        )
         # Get the current spatial reference and extent
         geotransform = src_ds.GetGeoTransform()
         projection = src_ds.GetProjection()
@@ -383,6 +378,14 @@ class DEMProcessor:
             print(f"Resampling complete. Resampled raster saved to {output_resampled_raster_path}")
         else:
             raise RuntimeError("Resampling failed.")
+
+    # TODO Rename this here and in `clip_vpuid_mosaic` and `resampling`
+    def _extracted_from_resampling_13(self, arg0, arg1, arg2, arg3):
+        print(arg0)
+        if result := arg1.Open(arg2):
+            return result
+        else:
+            raise FileNotFoundError(f"{arg3}{arg2}")
 
         
     def clean_directory(self, path, not_delete_pattern):
