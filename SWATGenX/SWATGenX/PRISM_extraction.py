@@ -37,8 +37,6 @@ def clip_PRISM_by_VPUID(VPUID):
 
     return output_path
 
-
-# TODO Rename this here and in `clip_PRISM_by_VPUID`
 def _extracted_from_clip_PRISM_by_VPUID_7(VPUID, output_path):
     print(f"Clipping PRISM data for {VPUID}...")
     WBDHU8 = pd.read_pickle(fr"{NHDPlusData_path}/SWATPlus_NHDPlus/{VPUID}/WBDHU8.pkl").to_crs("EPSG:4326")
@@ -218,6 +216,7 @@ def extract_PRISM_parallel(VPUID, list_of_huc12s=None, SWAT_MODEL_PRISM_path=Non
     end = time.time()
 
     print(f"Time taken for the extraction of PRISM temperature data is {end - start} seconds.")
+    
 if __name__ == "__main__":
     VPUIDs = get_all_VPUIDs()
     processes = []
