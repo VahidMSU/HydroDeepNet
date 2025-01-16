@@ -1,11 +1,13 @@
 ### the purpose of this code is to extract the SWAT PRISM locations for NSRDB extractionimport pandas as pd
+import os
 import numpy as np
 import pandas as pd
 import geopandas as gpd
 import h5pyd
-import os
 from functools import partial
 from multiprocessing import Process
+import os
+
 def find_VPUID(station_no):
 	CONUS_streamflow_data = pd.read_csv("/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv", dtype={'site_no': str,'huc_cd': str})
 	return CONUS_streamflow_data[
@@ -21,7 +23,6 @@ def extract_SWAT_PRISM_locations(swat_prism_shape_path):
 	NSRDB_SWAT['NSRDB_index'] = NSRDB_SWAT['NSRDB_index'].astype(int)
 	print(f"NSRDB_SWAT colums: {NSRDB_SWAT.columns.values}")
 	return np.unique(NSRDB_SWAT.sort_values(by ='NSRDB_index').NSRDB_index.values), NSRD_PRISM[NSRD_PRISM.NSRDB_index.isin(np.unique(NSRDB_SWAT.NSRDB_index.values))]
-
 
 def fetch_nsrdb(year, variable, NSRDB_index_SWAT):
     file_path = f'/nrel/nsrdb/v3/nsrdb_{year}.h5'
@@ -44,8 +45,8 @@ def fetch_nsrdb(year, variable, NSRDB_index_SWAT):
         elif variable in ['wind_speed', 'relative_humidity']:
             daily_data = data.reshape(-1, 48, data.shape[1]).mean(axis=1)
     print(f"scale factor: {scale}")
-    return daily_data
 
+    return daily_data
 
 def write_to_file(variable, NSRDB_index_SWAT, years, data_all, swat_prism_path , NSRD_PRISM):
 	swat_dict = {'ghi':'slr',
@@ -73,7 +74,7 @@ def write_to_file(variable, NSRDB_index_SWAT, years, data_all, swat_prism_path ,
 				f.write(f"{date_Range[i].year}\t{date_Range[i].dayofyear}\t{data_all[i,j]:.2f}\n")
 
 
-import os
+
 
 def write_cli_file(swat_prism_path, NSRD_PRISM, variable):
     swat_dict = {
@@ -116,7 +117,18 @@ def NSRDB_extract(VPUID,NAME,LEVEL):
 
 	swat_prism_path = os.path.join(DIC, f"{LEVEL}/{NAME}/PRISM/")
 	swat_prism_shape_path = os.path.join(swat_prism_path,"PRISM_grid.shp")
-	NSRDB_index_SWAT,NSRD_PRISM = extract_SWAT_PRISM_locations(swat_prism_shape_path)
+	print(f"Locations to be extracted: {swat_prism_shape_path}")
+	### plot the locations 
+	#plotted_data = gpd.read_file(swat_prism_shape_path)
+	#plotted_data.plot()
+	# savve
+	#import matplotlib.pyplot as plt
+	#plt.savefig("/data/SWATGenXApp/codes/SWATGenX/PRISM_grid.png")
+
+	#import time 
+	#time.sleep(100)
+
+	NSRDB_index_SWAT, NSRD_PRISM = extract_SWAT_PRISM_locations(swat_prism_shape_path)
 	processes = []
 	wrapped_extract_variable = partial(extract_SWAT_PRISM_variable, NSRDB_index_SWAT = NSRDB_index_SWAT, years = years, swat_prism_path = swat_prism_path, NSRD_PRISM = NSRD_PRISM)
 	for variable in variables:
@@ -129,13 +141,13 @@ def NSRDB_extract(VPUID,NAME,LEVEL):
 	print("All NSRDB variables have been extracted for SWAT locations")
 
 if __name__ == "__main__":
-	from multiprocessing import Process
-	from functools import partial
+
 	LEVEL = 'huc12'
-	VPUIDS = os.listdir(f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/")
+	VPUIDS = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/")
 	for VPUID in VPUIDS:
 		NAMES = os.listdir(f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/{LEVEL}")
-		NAMES.remove("log.txt")
+		if "log.txt" in NAMES:
+			NAMES.remove("log.txt")
 		processes = []
 		for NAME in NAMES:
 			VPUID = find_VPUID(NAME)

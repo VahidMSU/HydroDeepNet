@@ -773,3 +773,207 @@ Michigan route called
 Home route called, user is authenticated.
 Home route called, user is authenticated.
 Home route called, user is authenticated.
+FTP Access route called
+Contact route called
+Visualizations route called
+Model Settings route called
+Home route called, user is authenticated.
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Get Subvariables route called
+Received variable: EBK
+Subvariables for EBK: ['kriging_output_AQ_THK_1_250m', 'kriging_output_AQ_THK_2_250m', 'kriging_output_H_COND_1_250m', 'kriging_output_H_COND_2_250m', 'kriging_output_SWL_250m', 'kriging_output_TRANSMSV_1_250m', 'kriging_output_TRANSMSV_2_250m', 'kriging_output_V_COND_1_250m', 'kriging_output_V_COND_2_250m', 'kriging_stderr_AQ_THK_1_250m', 'kriging_stderr_AQ_THK_2_250m', 'kriging_stderr_H_COND_1_250m', 'kriging_stderr_H_COND_2_250m', 'kriging_stderr_SWL_250m', 'kriging_stderr_TRANSMSV_1_250m', 'kriging_stderr_TRANSMSV_2_250m', 'kriging_stderr_V_COND_1_250m', 'kriging_stderr_V_COND_2_250m']
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (37.577337, 40.270414), (-83.888758, -79.627393)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (37.577337, 40.270414), (-83.888758, -79.627393)
+Data fetched for range: {'number of cells': 2695842, 'median': 19.56999969482422, 'max': 194.89999389648438, 'min': 1.8600000143051147, 'mean': 21.3799991607666, 'std': 9.390000343322754}
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Form submitted
+Form validated successfully
+Received range: (40.503961, 40.852382), (-86.385654, -85.073952)
+Fetching data for EBK/kriging_output_AQ_THK_1_250m in range (40.503961, 40.852382), (-86.385654, -85.073952)
+Data fetched for range: {'number of cells': 2695842, 'median': 19.56999969482422, 'max': 194.89999389648438, 'min': 1.8600000143051147, 'mean': 21.3799991607666, 'std': 9.390000343322754}
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Model Settings route called
+Home route called, user is authenticated.
+Model Settings route called
+Get Station Characteristics route called
+Station number: 06609000
+Station 06609000 found
+characteristics: {}
+Search site route called
+Get Station Characteristics route called
+Station number: 01376520
+Station 01376520 found
+characteristics: {}
+Search site route called
+Get Station Characteristics route called
+Station number: 11416620
+Station 11416620 found
+characteristics: {}
+Get Station Characteristics route called
+Station number: 05413443
+Station 05413443 found
+characteristics: {}
+Get Station Characteristics route called
+Station number: 0424906215
+Station 0424906215 found
+characteristics: {'SiteNumber': '0424906215', 'Drainage area (sqkm)': 221.07, 'Number of expected records (1999-2022)': 8402, 'Streamflow records gap (1999-2022) (%)': 100.0, 'SiteName': '---', 'Status': '---', 'USGSFunding': '---', 'HUC12 id of the station': '041401020903', 'HUC12 ids of the watershed': "['041401020901', '041401020902', '041401020903']", 'site_no': '0424906215', 'Latitude': 43.52, 'Longitude': -76.26, 'huc_cd': 4140102.0}
+Get Station Characteristics route called
+Station number: 11416585
+Station 11416585 found
+characteristics: {}
+Get Station Characteristics route called
+Station number: 05413443
+Station 05413443 found
+characteristics: {}
+Get Station Characteristics route called
+Station number: 13303000
+Station 13303000 found
+characteristics: {}
+Get Station Characteristics route called
+Station number: 09107500
+Station 09107500 found
+characteristics: {}
+Get Station Characteristics route called
+Station number: 11416585
+Station 11416585 found
+characteristics: {}
+Model Settings route called
+Home route called, user is authenticated.
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+FTP Access route called
+Contact route called
+About route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+FTP Access route called
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
+Model Settings route called
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+Model Settings route called
+Home route called, user is authenticated.
+Model Settings route called
+Model Settings route called
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Visualizations route called
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Model Settings route called
+Model Settings route called
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+Visualizations route called
+Visualizations route called
+Model Settings route called
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+FTP Access route called
+FTP Access route called
+Contact route called
+About route called
+Sign Up route called
+Form validation failed
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Michigan route called
+Home route called, user is authenticated.
+Model Settings route called
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Visualizations route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+FTP Access route called
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Michigan route called
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Visualizations route called
+Visualizations route called
+Michigan route called
+Home route called, user is authenticated.
+Home route called, user is authenticated.
+Model Settings route called
+Visualizations route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+FTP Access route called
