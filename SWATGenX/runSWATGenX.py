@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", filename=logfile_path)
 
-    LEVEL = "huc8"
+    LEVEL = "huc12"
 
     MODEL_NAME = "SWAT_MODEL"
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     if not single_model:
         selected_list = huc8_list if LEVEL == "huc8" else station_names
     else:
-        selected_list = ['04090004'] if LEVEL == "huc8" else ['04292000']
+        selected_list = ['04161540'] if LEVEL == "huc8" else ['04292000']
 
     for station_name in selected_list:
         check_station(station_name)

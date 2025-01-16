@@ -1,16 +1,163 @@
  Processing SWATGenX 
-2025-01-16 11:36:52,830 [ERROR] Site number 04090004 is not among FPS lists
-2025-01-16 11:36:52,831 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
-2025-01-16 11:36:53,592 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
-2025-01-16 11:36:53,592 [INFO] SWATGenXCore: Starting the SWATGenX model for 04090004
-2025-01-16 11:36:53,780 [INFO] SWATGenXCore: Beginning the extraction of the model for 04090004
-2025-01-16 11:36:56,709 [INFO] Created 13 records
-2025-01-16 11:36:59,354 [INFO] Created 3,320 records
-2025-01-16 11:36:59,423 [INFO] Created 3,320 records
-2025-01-16 11:36:59,444 [INFO] Created 168 records
-2025-01-16 11:37:02,854 [INFO] Created 49 records
-2025-01-16 11:37:02,914 [INFO] Created 3,320 records
-2025-01-16 11:37:02,979 [INFO] Created 3,320 records
-2025-01-16 11:37:03,077 [INFO] Created 1 records
-2025-01-16 11:37:03,579 [INFO] First Stage completed for 04090004, 0409
-2025-01-16 11:38:39,510 [INFO] QSWAT+ processes are completed for 04090004, 0409
+2025-01-16 13:16:35,732 [ERROR] Site number 04292000 is not among FPS lists
+2025-01-16 13:16:35,733 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+2025-01-16 13:16:35,733 [INFO] LEVEL: huc12, station_name: 04292000
+2025-01-16 13:16:35,776 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+2025-01-16 13:16:35,777 [INFO] SWATGenXCore: Starting the SWATGenX model for 04292000
+2025-01-16 13:16:36,120 [INFO] SWATGenXCore: Beginning the extraction of the model for 04292000
+2025-01-16 13:16:36,120 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+2025-01-16 13:16:36,327 [INFO] Number of streams loaded: 83838
+2025-01-16 13:16:36,327 [INFO] list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+2025-01-16 13:16:36,327 [INFO] stream['LEVEL']:huc12
+2025-01-16 13:16:36,364 [INFO] Number of streams extracted: 3554
+2025-01-16 13:16:36,368 [INFO] Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+2025-01-16 13:16:36,369 [INFO] Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+2025-01-16 13:16:37,336 [INFO] Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+2025-01-16 13:16:37,338 [INFO] Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+2025-01-16 13:16:37,339 [INFO] Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+2025-01-16 13:16:38,180 [INFO] Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+2025-01-16 13:16:38,183 [INFO] Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+2025-01-16 13:16:38,185 [INFO] Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+2025-01-16 13:16:38,299 [INFO] Total number of lakes added: 20024
+2025-01-16 13:16:38,299 [INFO] ################# minimum area of lakes to be considered: 0.1 SqKm ################
+2025-01-16 13:16:38,308 [INFO] Lakes more than 0.1 SqKm: 295
+2025-01-16 13:16:38,313 [INFO] start traversing downstream to find LakeIn ids
+2025-01-16 13:16:38,314 [INFO] NUMBER OF HEAD WATERS: 970
+2025-01-16 13:16:38,506 [INFO] start finding the lakeOuts
+2025-01-16 13:16:38,588 [INFO]  %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+2025-01-16 13:16:38,635 [INFO] NHDPluIDs of lakes renamed to LakeId
+2025-01-16 13:16:38,635 [INFO] lakes are loaded
+2025-01-16 13:16:38,653 [INFO] 
+mapping waterbodies
+
+2025-01-16 13:16:38,681 [INFO] Created 13 records
+2025-01-16 13:16:38,681 [INFO] Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+2025-01-16 13:16:38,681 [INFO] Final Number of lakes: 13
+2025-01-16 13:16:38,681 [INFO] 
+REPORTING LAKES AREAS:
+
+2025-01-16 13:16:38,682 [INFO] Max area: 3,197,474.84
+2025-01-16 13:16:38,682 [INFO] 95th area: 2,719,608.71
+2025-01-16 13:16:38,682 [INFO] 50th area: 448,030.48
+2025-01-16 13:16:38,683 [INFO] 2.5th area: 102,228.25
+2025-01-16 13:16:38,683 [INFO] Min area: 101,703.69
+2025-01-16 13:16:38,691 [INFO] All lakes have main outlets
+2025-01-16 13:16:38,691 [INFO] All lakes outlets repeated in LakeId
+2025-01-16 13:16:38,692 [INFO] All lakes inlets repeated in LakeId
+2025-01-16 13:16:38,693 [INFO] All lakes Within repeated in LakeId
+2025-01-16 13:16:39,333 [INFO] 
+REPORTING Watersheds AREAS:
+
+2025-01-16 13:16:39,337 [INFO] Max area: 4,807,070.87
+2025-01-16 13:16:39,340 [INFO] 95th area: 1,006,271.62
+2025-01-16 13:16:39,342 [INFO] 50th area: 69,765.87
+2025-01-16 13:16:39,344 [INFO] 2.5th area: 600.09
+2025-01-16 13:16:39,346 [INFO] Min area: 100.02
+2025-01-16 13:16:39,352 [INFO] Subbasins number are added to the subbasins shapefile
+
+2025-01-16 13:16:39,352 [INFO] Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 4, 3, 5, 6, 7, 8, 9, 10, 11, 12]
+Length: 13, dtype: Int64
+2025-01-16 13:16:39,362 [INFO] SWAT Plus watersheds are created based on the proccesesed streams data
+2025-01-16 13:16:39,364 [INFO] SWAT Plus subbasins are created based on the proccesesed streams data
+2025-01-16 13:16:39,430 [INFO] Created 3,554 records
+2025-01-16 13:16:39,431 [INFO] 
+SWAT+ streams shapefile is created
+2025-01-16 13:16:39,431 [INFO] SWAT Plus streams are created
+2025-01-16 13:16:39,497 [INFO] Created 3,554 records
+2025-01-16 13:16:39,497 [INFO] 
+SWAT+ watersheds shapefile is created
+2025-01-16 13:16:39,498 [INFO] SWAT Plus watersheds are created
+2025-01-16 13:16:39,501 [INFO] Created 0 records
+2025-01-16 13:16:39,501 [INFO] 
+SWAT+ subbasins shapefile is created
+2025-01-16 13:16:39,501 [INFO] SWAT Plus Subbasins are created
+2025-01-16 13:16:39,501 [INFO] writing process completed
+2025-01-16 13:16:39,557 [ERROR] all watersheds have a stream
+2025-01-16 13:16:39,558 [ERROR] all subbasinss have a stream
+2025-01-16 13:16:39,558 [ERROR] all streams have a watershed
+2025-01-16 13:16:39,559 [INFO] ALL LAKES HAVE OUTLET
+2025-01-16 13:16:39,559 [INFO] subbasins area stats (sqkm):
+2025-01-16 13:16:39,560 [INFO] count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+2025-01-16 13:16:39,563 [INFO] watersheds area stats (sqkm):
+2025-01-16 13:16:39,566 [INFO] count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+2025-01-16 13:16:39,568 [INFO] Number of initial subbasins: 198
+2025-01-16 13:16:39,583 [WARNING] ################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,594 [WARNING] ################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,597 [WARNING] ################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,599 [WARNING] ################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,613 [WARNING] ################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,623 [WARNING] ################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,625 [WARNING] ################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,642 [WARNING] ################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,649 [WARNING] ################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,650 [WARNING] ################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,655 [WARNING] ################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,691 [WARNING] ################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,701 [WARNING] ################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,705 [WARNING] ################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,744 [WARNING] ################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,747 [WARNING] ################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,749 [WARNING] ################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,757 [WARNING] ################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,759 [WARNING] ################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,761 [WARNING] ################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,763 [WARNING] ################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,764 [WARNING] ################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,768 [WARNING] ################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,781 [WARNING] ################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,788 [WARNING] ################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,795 [WARNING] ################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,807 [WARNING] ################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,834 [WARNING] ################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-16 13:16:39,904 [INFO] Number of final subbasins: 34
+2025-01-16 13:16:39,904 [INFO] max number of subbasinss: 34
+2025-01-16 13:16:39,907 [INFO] number of new streams 3554
+2025-01-16 13:16:39,907 [INFO] number of new watersheds 3554
+2025-01-16 13:16:39,907 [INFO] number of unique basins in new streams 34
+2025-01-16 13:16:39,907 [INFO] number of  unique basins in  new watersheds 34
+2025-01-16 13:16:39,907 [INFO] number of unique basins in new streams 34
+2025-01-16 13:16:39,907 [INFO] number of  unique basins in  new watersheds 34
+2025-01-16 13:16:42,640 [INFO] subbasins area stats  (sqkm):
+2025-01-16 13:16:42,642 [INFO] count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+2025-01-16 13:16:42,650 [INFO] Created 34 records
+2025-01-16 13:16:42,709 [INFO] Created 3,554 records
+2025-01-16 13:16:42,776 [INFO] Created 3,554 records
+2025-01-16 13:16:42,776 [INFO] success
+2025-01-16 13:16:42,779 [INFO] watersheds area stats  (sqkm):
+2025-01-16 13:16:42,782 [INFO] count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+2025-01-16 13:16:42,797 [INFO] Created 1 records
+2025-01-16 13:16:43,302 [INFO] First Stage completed for 04292000, 0415
+2025-01-16 13:17:54,811 [INFO] QSWAT+ processes are completed for 04292000, 0415

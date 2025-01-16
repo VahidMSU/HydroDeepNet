@@ -1,0 +1,1362 @@
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+LakeId added to streams based on the WBArea_Permanent_Identifier of streams and Permanent_Identifier of lakes
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+
+REPORTING LAKES AREAS:
+
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Subbasins number are added to the subbasins shapefile
+
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+LakeId added to streams based on the WBArea_Permanent_Identifier of streams and Permanent_Identifier of lakes
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+
+REPORTING LAKES AREAS:
+
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Subbasins number are added to the subbasins shapefile
+
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+LakeId added to streams based on the WBArea_Permanent_Identifier of streams and Permanent_Identifier of lakes
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+
+REPORTING LAKES AREAS:
+
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Subbasins number are added to the subbasins shapefile
+
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 34
+max number of subbasinss: 34
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+LakeId added to streams based on the WBArea_Permanent_Identifier of streams and Permanent_Identifier of lakes
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+
+REPORTING LAKES AREAS:
+
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Subbasins number are added to the subbasins shapefile
+
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Number of initial subbasins: 198
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 34
+max number of subbasinss: 34
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+LakeId added to streams based on the WBArea_Permanent_Identifier of streams and Permanent_Identifier of lakes
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+
+REPORTING LAKES AREAS:
+
+Max area: 3,197,474.84
+95th area: 2,719,608.71
+50th area: 448,030.48
+2.5th area: 102,228.25
+Min area: 101,703.69
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,807,070.87
+95th area: 1,006,271.62
+50th area: 69,765.87
+2.5th area: 600.09
+Min area: 100.02
+Subbasins number are added to the subbasins shapefile
+
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Number of initial subbasins: 198
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 34
+max number of subbasinss: 34
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+LakeId added to streams based on the WBArea_Permanent_Identifier of streams and Permanent_Identifier of lakes
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 13
+
+REPORTING LAKES AREAS:
+
+Max area: 3,197,474.84
+95th area: 2,719,608.71
+50th area: 448,030.48
+2.5th area: 102,228.25
+Min area: 101,703.69
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,807,070.87
+95th area: 1,006,271.62
+50th area: 69,765.87
+2.5th area: 600.09
+Min area: 100.02
+Subbasins number are added to the subbasins shapefile
+
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Number of initial subbasins: 198
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 34
+max number of subbasinss: 34
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+LakeId added to streams based on the WBArea_Permanent_Identifier of streams and Permanent_Identifier of lakes
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 13
+
+REPORTING LAKES AREAS:
+
+Max area: 3,197,474.84
+95th area: 2,719,608.71
+50th area: 448,030.48
+2.5th area: 102,228.25
+Min area: 101,703.69
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,807,070.87
+95th area: 1,006,271.62
+50th area: 69,765.87
+2.5th area: 600.09
+Min area: 100.02
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 4, 3, 5, 6, 7, 8, 9, 10, 11, 12]
+Length: 13, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Number of initial subbasins: 198
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 34
+max number of subbasinss: 34
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+LakeId added to streams based on the WBArea_Permanent_Identifier of streams and Permanent_Identifier of lakes
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 13
+
+REPORTING LAKES AREAS:
+
+Max area: 3,197,474.84
+95th area: 2,719,608.71
+50th area: 448,030.48
+2.5th area: 102,228.25
+Min area: 101,703.69
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,807,070.87
+95th area: 1,006,271.62
+50th area: 69,765.87
+2.5th area: 600.09
+Min area: 100.02
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 4, 3, 5, 6, 7, 8, 9, 10, 11, 12]
+Length: 13, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Number of initial subbasins: 198
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 34
+max number of subbasinss: 34
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 13
+
+REPORTING LAKES AREAS:
+
+Max area: 3,197,474.84
+95th area: 2,719,608.71
+50th area: 448,030.48
+2.5th area: 102,228.25
+Min area: 101,703.69
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,807,070.87
+95th area: 1,006,271.62
+50th area: 69,765.87
+2.5th area: 600.09
+Min area: 100.02
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 4, 3, 5, 6, 7, 8, 9, 10, 11, 12]
+Length: 13, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Number of initial subbasins: 198
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 34
+max number of subbasinss: 34
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83838
+list of huc12 requested: [41504050101, 41504050102, 41504050103, 41504050104, 41504050105, 41504050106, 41504050107]
+stream['LEVEL']:huc12
+Number of streams extracted: 3554
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 2, 3: 3, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1, 116: 1, 117: 1, 118: 1, 119: 1, 120: 1, 121: 1, 122: 1, 123: 1, 124: 1, 125: 1, 126: 1, 127: 1, 128: 1, 129: 1, 130: 1, 131: 1, 132: 1, 133: 1, 134: 1, 135: 1, 136: 1, 137: 1, 138: 1, 139: 1, 140: 1, 141: 1, 142: 1, 143: 1, 144: 1, 145: 1, 146: 1, 147: 1, 148: 1, 149: 1, 150: 1, 151: 1, 152: 1, 153: 1, 154: 1, 155: 1, 156: 1, 157: 1, 158: 1, 159: 1, 160: 1, 161: 1, 162: 1, 163: 1, 164: 1, 165: 1, 166: 1, 167: 1, 168: 1, 169: 1, 170: 1, 171: 1, 172: 1, 173: 1, 174: 1, 175: 1, 176: 1, 177: 1, 178: 1, 179: 1, 180: 1, 181: 1, 182: 1, 183: 1, 184: 1, 185: 1, 186: 1, 187: 1, 188: 1, 189: 1, 190: 1, 191: 1, 192: 1, 193: 1, 194: 1, 195: 1, 196: 1, 197: 1, 198: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 20024
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 295
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 970
+start finding the lakeOuts
+ %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['{512318D5-873E-4607-992F-9A8F95627C02}']    %%%%%%%%%%%   
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 13
+
+REPORTING LAKES AREAS:
+
+Max area: 3,197,474.84
+95th area: 2,719,608.71
+50th area: 448,030.48
+2.5th area: 102,228.25
+Min area: 101,703.69
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,807,070.87
+95th area: 1,006,271.62
+50th area: 69,765.87
+2.5th area: 600.09
+Min area: 100.02
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 4, 3, 5, 6, 7, 8, 9, 10, 11, 12]
+Length: 13, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    0.0
+mean     NaN
+std      NaN
+min      NaN
+25%      NaN
+50%      NaN
+75%      NaN
+max      NaN
+dtype: float64
+watersheds area stats (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64
+Number of initial subbasins: 198
+################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 34 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 25 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 30 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 29 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 31 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 23 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 27 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 21 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 14 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 22 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 26 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 32 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 34
+max number of subbasinss: 34
+number of new streams 3554
+number of new watersheds 3554
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+number of unique basins in new streams 34
+number of  unique basins in  new watersheds 34
+subbasins area stats  (sqkm):
+count     34.00
+mean      23.61
+std       51.10
+min        0.01
+25%        0.21
+50%        0.62
+75%        1.35
+max      159.88
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    3554.00
+mean        0.23
+std         0.39
+min         0.00
+25%         0.01
+50%         0.07
+75%         0.27
+max         4.81
+dtype: float64

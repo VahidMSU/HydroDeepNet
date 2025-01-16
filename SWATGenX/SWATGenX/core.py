@@ -2,7 +2,7 @@ import os
 import shutil
 import pandas as pd
 from SWATGenX.Process_raster import generate_raster_files
-from SWATGenX.NHD_SWAT_fun import writing_swatplus_cli_files
+from SWATGenX.NHDPlusExtractor import writing_swatplus_cli_files
 from SWATGenX.PRISM_extraction import extract_PRISM_parallel
 from SWATGenX.configuration import check_configuration
 from SWATGenX.write_swatplus_shapes import generate_swatplus_shapes
@@ -149,7 +149,7 @@ class SWATGenXCore:
 					if "Execution successfully completed" in line:
 						print(f"Model already exists and successfully executed for {self.NAME}")
 						excited_successfully = True
-						self.copy_to_swat_input(self.NAME)
+						self.copy_to_swat_input()
 
 		if sim_file_exists and not excited_successfully:
 			raise ValueError(f"Model already exists but did not execute successfully for {self.NAME}")
