@@ -22,8 +22,6 @@ class SoilExtraction:
         self.original_RESOLUTION = 30
         self.resolutions = [100, 250, 500, 1000, 2000]
 
-
-
     def print_raster_crs(self):
         raster = gdal.Open(self.gSSURGO_raster)
         self.spatial_ref = raster.GetProjection()
@@ -208,7 +206,7 @@ if __name__ == "__main__":
     VPUIDs = get_all_VPUIDs()
     for VPUID in VPUIDs:
         try:
-            check_gSSURGO_by_VPUID(VPUID)   
+            gSSURGO_check_by_VPUID(VPUID)   
             print(f"NLCD data exists for {VPUID}")
         except Exception as e:
             #gSSURGO_extract_by_VPUID(VPUID)

@@ -598,10 +598,10 @@ class NHD_SWATPlus_Extractor:
             self.logger.error("THERE ARE LAKES WITH NO OUTLET")
         else:
             self.logger.info('ALL LAKES HAVE OUTLET')
-        self._extracted_from_creating_modified_inputs_23(
+        self.report_watersheds_stats(
             subbasins, 'subbasins area stats (sqkm):'
         )
-        self._extracted_from_creating_modified_inputs_23(
+        self.report_watersheds_stats(
             watersheds, 'watersheds area stats (sqkm):'
         )
         watersheds_m = watersheds.merge(streams[['WSNO','LINKNO','DSLINKNO','BasinNo']], left_on='PolygonId', right_on='WSNO')
@@ -674,12 +674,12 @@ class NHD_SWATPlus_Extractor:
         watersheds_m[['PolygonId','Subbasin','geometry']].to_file(swatplus_watersheds_path)
         self.logger.info('success')
 
-        self._extracted_from_creating_modified_inputs_23(
+        self.report_watersheds_stats(
             watersheds_m, 'watersheds area stats  (sqkm):'
         )
         return streams_m
 
-    def _extracted_from_creating_modified_inputs_23(self, arg0, arg1):
+    def report_watersheds_stats(self, arg0, arg1):
         #subbasins = self.calculate_outlets_and_warn(streams, subbasins)  #### you will see warning if there is more than one outlet for any subbasin
         arg0['Area'] = arg0.area
         self.logger.info(arg1)
