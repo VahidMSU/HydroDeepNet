@@ -39,6 +39,12 @@ class NHD_SWATPlus_Extractor:
         self.logger = LoggerSetup(report_path=self.report_path, rewrite=False, verbose=True)
         self.logger = self.logger.setup_logger("NHDPlusExtractor")
         self.no_value = -9999
+        self.swatplus_shape_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes"
+        self.swatplus_subbasins_path = os.path.join(self.swatplus_shape_path,'SWAT_plus_subbasins.shp')
+        self.swatplus_streams_path = os.path.join(self.swatplus_shape_path,'SWAT_plus_streams.shp')
+        self.swatplus_watersheds_path = os.path.join(self.swatplus_shape_path,'SWAT_plus_watersheds.shp')
+        self.streams_pickle_path = f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/streams.pkl'
+        self.lakes_pickle_path = f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/NHDWaterbody.pkl'
 
 
     def creating_unique_subbasin(self, df, first_criteria, second_criteria):
@@ -128,7 +134,7 @@ class NHD_SWATPlus_Extractor:
         return streams
     
     def load_and_clean_lakes(self, criteria=0.1):
-        Lakes_path = os.path.join(self.BASE_PATH,f'NHDPlusData/SWATPlus_NHDPlus/{self.VPUID}/NHDWaterbody.pkl')
+        Lakes_path = f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/NHDWaterbody.pkl'
         Lakes = gpd.GeoDataFrame(pd.read_pickle(Lakes_path), geometry='geometry')
         self.logger.info(f"Total number of lakes added: {len(Lakes)}")
         Lakes ['LakeId'] = Lakes.Permanent_Identifier
@@ -169,13 +175,8 @@ class NHD_SWATPlus_Extractor:
 
     def extract_initial_streams(self):
         # Load data and select the area of interest
-        os.makedirs(os.path.join(self.BASE_PATH,'SWATplus_by_VPUID',self.VPUID, self.LEVEL), exist_ok=True)
-
-        streams = gpd.GeoDataFrame(pd.read_pickle(os.path.join(self.BASE_PATH,  f'NHDPlusData/SWATPlus_NHDPlus/{self.VPUID}/streams.pkl' )))
-        problematic_watersheds = [60001800008141, 60002600018915]
-        streams = streams[~streams.NHDPlusID.isin(problematic_watersheds)].reset_index(drop=True)
-        problematic_huc12 = [40900010502,40900040502,40900040603,40900040602,40900040703, 40900040503, 40900040601,40900040501,40900010502,40900010501,40900010504,40900010503]  ### these are those huc12 outside the scope of the reseaech
-        streams = streams[~streams.huc12.isin(problematic_huc12)].reset_index(drop=True)
+        os.makedirs(os.path.join(SWATGenXPaths.swatgenx_outlet_path, self.VPUID, self.LEVEL), exist_ok=True)
+        streams = gpd.GeoDataFrame(pd.read_pickle(self.streams_pickle_path), geometry='geometry')
         streams = streams[~streams.huc12.isna()].reset_index(drop=True)
         self.logger.info(f"Number of streams loaded: {streams.shape[0]}")
         self.logger.info(f"list of huc12 requested: {self.list_of_HUC}")
@@ -197,8 +198,7 @@ class NHD_SWATPlus_Extractor:
 
 
     def loading_and_adding_lake_ids(self, streams): 
-        Lakes_path = os.path.join(self.BASE_PATH, f'NHDPlusData/SWATPlus_NHDPlus/{self.VPUID}/NHDWaterbody.pkl')
-        Lakes = gpd.GeoDataFrame(pd.read_pickle(Lakes_path), geometry='geometry')
+        Lakes = gpd.GeoDataFrame(pd.read_pickle(self.lakes_pickle_path), geometry='geometry')
         self.logger.info('NHDPluIDs of lakes renamed to LakeId')
         self.logger.info('lakes are loaded')
 
@@ -301,29 +301,21 @@ class NHD_SWATPlus_Extractor:
     def _extracted_from_formating_stream_data_type_and_saving_4(self, arg0, arg1, arg2, arg3):
         arg0[arg1] = arg0[arg1].astype('Int64')
         arg0[arg2] = arg0[arg2].astype('Int64')
-        swatplus_shape_path = os.path.join(
-            self.BASE_PATH,
-            'SWATplus_by_VPUID',
-            f'{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes/',
-        )
-        os.makedirs(swatplus_shape_path, exist_ok=True)
-        return os.path.join(swatplus_shape_path, arg3)
+        
+        os.makedirs(self.swatplus_shape_path, exist_ok=True)
+        return os.path.join(self.swatplus_shape_path, arg3)
 
     def formating_watersheds_data_type_and_saving(self, df):
         df = df.copy()  # Work on a copy to avoid SettingWithCopyWarning
         df.PolygonId = df.PolygonId.astype('Int64')
-        swatplus_shape_path = os.path.join(self.BASE_PATH,'SWATplus_by_VPUID' ,f'{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes/')
-        swatplus_watersheds_path = os.path.join(swatplus_shape_path,'SWAT_plus_watersheds.shp')
-        df[['PolygonId','geometry']].reset_index(drop=True).to_file(swatplus_watersheds_path)
+        df[['PolygonId','geometry']].reset_index(drop=True).to_file(self.swatplus_watersheds_path)
         self.logger.info('\nSWAT+ watersheds shapefile is created')
 
     def formating_basins_data_type_and_saving(self, df):
         df = df.copy()  # Work on a copy to avoid SettingWithCopyWarning
         df.PolygonId = df.PolygonId.astype('Int64')
         df.Subbasin = df.Subbasin.astype('Int64')
-        swatplus_shape_path = os.path.join(self.BASE_PATH,'SWATplus_by_VPUID' ,f'{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes/')
-        swatplus_subbasins_path = os.path.join(swatplus_shape_path,'SWAT_plus_subbasins.shp')
-        df[['PolygonId','Subbasin','geometry']].reset_index(drop=True).to_file(swatplus_subbasins_path)
+        df[['PolygonId','Subbasin','geometry']].reset_index(drop=True).to_file(self.swatplus_subbasins_path)
         self.logger.info('\nSWAT+ subbasins shapefile is created')
 
 
@@ -370,7 +362,7 @@ class NHD_SWATPlus_Extractor:
         self.process_lakes(streams)
 
 
-        watersheds = gpd.GeoDataFrame(pd.read_pickle(os.path.join(self.BASE_PATH,f'NHDPlusData/SWATPlus_NHDPlus/{self.VPUID}/watersheds.pkl')), geometry='geometry', crs=EPSG)
+        watersheds = gpd.GeoDataFrame(pd.read_pickle(f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/watersheds.pkl'), geometry='geometry', crs=EPSG)
 
         watersheds = watersheds.merge(streams[['Subbasin','huc12','huc8','Subbasin_level_1','NHDPlusID']]).reset_index(drop=True)
         self.report_area(watersheds,title='Watersheds')
@@ -518,20 +510,14 @@ class NHD_SWATPlus_Extractor:
             #### final check
             lakes_without_outlets=streams[~streams.LakeId.isin(streams.LakeOut)].LakeId.unique()
             if list(lakes_without_outlets):
-                self.logger.info(
-                    '#######################################################################################################################'
-                )
-                self.logger.info(f'######## ERROR ERROR ERROR     THE FOLLOWING LAKES DOES NOT HAVE OUTLETS:  {list(lakes_without_outlets)}   ERROR ERROR ERROR #####'  )
-                self.logger.info(
-                    '#######################################################################################################################'
-                )
+                self.logger.error(f'######## THE FOLLOWING LAKES DOES NOT HAVE OUTLETS:  {list(lakes_without_outlets)} #####')
             streams['LakeId']=np.where(streams.LakeId.isin(lakes_without_outlets), np.nan, streams['LakeId'])
             streams['LakeIn']=np.where(streams.LakeIn.isin(lakes_without_outlets), np.nan, streams['LakeIn'])
             streams['LakeWithin']=np.where(streams.LakeWithin.isin(lakes_without_outlets), np.nan, streams['LakeWithin'])
 
         lakes_without_inlets=streams[~streams.LakeId.isin(streams.LakeIn)].LakeId.unique()
         if len(lakes_without_inlets)>0:
-            self.logger.info(f' %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  {list(lakes_without_inlets)}    %%%%%%%%%%%   '  )
+            self.logger.warning(f' %%%%%%%  THE FOLLOWING LAKES DOES NOT HAVE INTLET:  {list(lakes_without_inlets)}    %%%%%%%%%%%   '  )
         idx_max_stream_order = streams.groupby('LakeOut')['StreamOrde'].idxmax()
         streams['LakeMain'] = streams['LakeMain'].astype(object)
 
@@ -584,13 +570,9 @@ class NHD_SWATPlus_Extractor:
         return subbasins
     def creating_modified_inputs(self):
 
-        swatplus_shape_path = os.path.join(self.BASE_PATH,'SWATplus_by_VPUID' ,f'{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes/')
-        swatplus_subbasins_path = os.path.join(swatplus_shape_path,'SWAT_plus_subbasins.shp')
-        swatplus_watersheds_path = os.path.join(swatplus_shape_path,'SWAT_plus_watersheds.shp')
-        swatplus_streams_path = os.path.join(swatplus_shape_path, 'SWAT_plus_streams.shp')
-        subbasins= gpd.read_file(swatplus_subbasins_path) ## columns: PolygonId, Subbasin
-        watersheds= gpd.read_file(swatplus_watersheds_path)  ## column PolygonId
-        streams= gpd.read_file(swatplus_streams_path)      ## columns: 'DSLINKNO' (donstream id), 'LINKNO' (current stream id), 'BasinNo', 'WSNO'
+        subbasins= gpd.read_file(self.swatplus_subbasins_path) ## columns: PolygonId, Subbasin
+        watersheds= gpd.read_file(self.swatplus_watersheds_path)  ## column PolygonId
+        streams= gpd.read_file(self.swatplus_streams_path)      ## columns: 'DSLINKNO' (donstream id), 'LINKNO' (current stream id), 'BasinNo', 'WSNO'
 
 
         ### CHECKING ALL watersheds and streams being each other
@@ -669,14 +651,11 @@ class NHD_SWATPlus_Extractor:
         self.logger.info('subbasins area stats  (sqkm):')
         self.logger.info((new_subbasins.area * 1e-6).describe().round(2))
 
-        swatplus_shape_path = os.path.join(self.BASE_PATH,'SWATplus_by_VPUID',f"{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes")
-        swatplus_subbasins_path = os.path.join(swatplus_shape_path,'SWAT_plus_subbasins.shp')
-        swatpplus_streams_path = os.path.join(swatplus_shape_path,'SWAT_plus_streams.shp')
-        swatplus_watersheds_path = os.path.join(swatplus_shape_path,'SWAT_plus_watersheds.shp')
-        new_subbasins[['PolygonId','geometry']].to_file(swatplus_subbasins_path)
-        streams_m.to_file(swatpplus_streams_path)
+
+        new_subbasins[['PolygonId','geometry']].to_file(self.swatplus_subbasins_path)
+        streams_m.to_file(self.swatplus_streams_path)
         watersheds_m.rename(columns={'BasinNo':'Subbasin'}, inplace=True)
-        watersheds_m[['PolygonId','Subbasin','geometry']].to_file(swatplus_watersheds_path)
+        watersheds_m[['PolygonId','Subbasin','geometry']].to_file(self.swatplus_watersheds_path)
         self.logger.info('success')
 
         self.report_watersheds_stats(
@@ -692,8 +671,8 @@ class NHD_SWATPlus_Extractor:
 
 
 
-def writing_swatplus_cli_files(BASE_PATH, VPUID, LEVEL, NAME):  
-    SWAT_MODEL_PRISM_path = os.path.join(BASE_PATH,f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/PRISM/')
+def writing_swatplus_cli_files(VPUID, LEVEL, NAME):  
+    SWAT_MODEL_PRISM_path = f'{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/'
     ## get the name of files
     files = os.listdir(SWAT_MODEL_PRISM_path)
     tmp_files = [file for file in files if 'tmp' in file]

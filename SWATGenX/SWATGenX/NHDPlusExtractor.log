@@ -131,3 +131,4688 @@ min        0.00
 75%        0.37
 max        7.12
 dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83566
+list of huc12 requested: [102701030401, 102701030402, 102701030403, 102701030404, 102701030405, 102701030406, 102701030407, 102701030408, 102701030301, 102701030302, 102701030303, 102701030304, 102701030305, 102701030306, 102701030307, 102701030308, 102701030201, 102701030202, 102701030203, 102701030204, 102701030205, 102701030101, 102701030102, 102701030103, 102701030104, 102701030105, 102701030106, 102701030107, 102701030108, 102701030109, 102701030110, 102701030501, 102701030502, 102701030503]
+stream['LEVEL']:huc12
+Number of streams extracted: 5140
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 2, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 2, 14: 1, 15: 1, 16: 2, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 62659
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 309
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 1359
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1027/huc12/06890500/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 9
+
+REPORTING LAKES AREAS:
+
+Max area: 1,976,347.02
+95th area: 1,796,386.71
+50th area: 509,778.20
+2.5th area: 107,538.45
+Min area: 103,662.89
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83566
+list of huc12 requested: [102701030401, 102701030402, 102701030403, 102701030404, 102701030405, 102701030406, 102701030407, 102701030408, 102701030301, 102701030302, 102701030303, 102701030304, 102701030305, 102701030306, 102701030307, 102701030308, 102701030201, 102701030202, 102701030203, 102701030204, 102701030205, 102701030101, 102701030102, 102701030103, 102701030104, 102701030105, 102701030106, 102701030107, 102701030108, 102701030109, 102701030110, 102701030501, 102701030502, 102701030503]
+stream['LEVEL']:huc12
+Number of streams extracted: 5140
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 2, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 2, 14: 1, 15: 1, 16: 2, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 62659
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 309
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 1359
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1027/huc12/06890500/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 9
+
+REPORTING LAKES AREAS:
+
+Max area: 1,976,347.02
+95th area: 1,796,386.71
+50th area: 509,778.20
+2.5th area: 107,538.45
+Min area: 103,662.89
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 5,855,640.58
+95th area: 1,397,550.78
+50th area: 239,874.04
+2.5th area: 4,406.38
+Min area: 200.28
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 3, 4, 5, 8, 6, 7, 9]
+Length: 10, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count     75.00
+mean      28.21
+std       37.58
+min        0.03
+25%        1.22
+50%        5.70
+75%       46.69
+max      148.83
+dtype: float64
+watersheds area stats (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Number of initial subbasins: 75
+Number of final subbasins: 16
+max number of subbasinss: 16
+number of new streams 5140
+number of new watersheds 5140
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+subbasins area stats  (sqkm):
+count     16.00
+mean     132.24
+std       88.18
+min       63.65
+25%       82.00
+50%      111.97
+75%      142.07
+max      433.64
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83566
+list of huc12 requested: [102701030401, 102701030402, 102701030403, 102701030404, 102701030405, 102701030406, 102701030407, 102701030408, 102701030301, 102701030302, 102701030303, 102701030304, 102701030305, 102701030306, 102701030307, 102701030308, 102701030201, 102701030202, 102701030203, 102701030204, 102701030205, 102701030101, 102701030102, 102701030103, 102701030104, 102701030105, 102701030106, 102701030107, 102701030108, 102701030109, 102701030110, 102701030501, 102701030502, 102701030503]
+stream['LEVEL']:huc12
+Number of streams extracted: 5140
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 2, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 2, 14: 1, 15: 1, 16: 2, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 62659
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 309
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 1359
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1027/huc12/06890500/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 9
+
+REPORTING LAKES AREAS:
+
+Max area: 1,976,347.02
+95th area: 1,796,386.71
+50th area: 509,778.20
+2.5th area: 107,538.45
+Min area: 103,662.89
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 5,855,640.58
+95th area: 1,397,550.78
+50th area: 239,874.04
+2.5th area: 4,406.38
+Min area: 200.28
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 3, 4, 5, 8, 6, 7, 9]
+Length: 10, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83566
+list of huc12 requested: [102701030401, 102701030402, 102701030403, 102701030404, 102701030405, 102701030406, 102701030407, 102701030408, 102701030301, 102701030302, 102701030303, 102701030304, 102701030305, 102701030306, 102701030307, 102701030308, 102701030201, 102701030202, 102701030203, 102701030204, 102701030205, 102701030101, 102701030102, 102701030103, 102701030104, 102701030105, 102701030106, 102701030107, 102701030108, 102701030109, 102701030110, 102701030501, 102701030502, 102701030503]
+stream['LEVEL']:huc12
+Number of streams extracted: 5140
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 2, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 2, 14: 1, 15: 1, 16: 2, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 62659
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 309
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 1359
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1027/huc12/06890500/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 9
+
+REPORTING LAKES AREAS:
+
+Max area: 1,976,347.02
+95th area: 1,796,386.71
+50th area: 509,778.20
+2.5th area: 107,538.45
+Min area: 103,662.89
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 5,855,640.58
+95th area: 1,397,550.78
+50th area: 239,874.04
+2.5th area: 4,406.38
+Min area: 200.28
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 3, 4, 5, 8, 6, 7, 9]
+Length: 10, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count     75.00
+mean      28.21
+std       37.58
+min        0.03
+25%        1.22
+50%        5.70
+75%       46.69
+max      148.83
+dtype: float64
+watersheds area stats (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Number of initial subbasins: 75
+Number of final subbasins: 16
+max number of subbasinss: 16
+number of new streams 5140
+number of new watersheds 5140
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+subbasins area stats  (sqkm):
+count     16.00
+mean     132.24
+std       88.18
+min       63.65
+25%       82.00
+50%      111.97
+75%      142.07
+max      433.64
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83566
+list of huc12 requested: [102701030401, 102701030402, 102701030403, 102701030404, 102701030405, 102701030406, 102701030407, 102701030408, 102701030301, 102701030302, 102701030303, 102701030304, 102701030305, 102701030306, 102701030307, 102701030308, 102701030201, 102701030202, 102701030203, 102701030204, 102701030205, 102701030101, 102701030102, 102701030103, 102701030104, 102701030105, 102701030106, 102701030107, 102701030108, 102701030109, 102701030110, 102701030501, 102701030502, 102701030503]
+stream['LEVEL']:huc12
+Number of streams extracted: 5140
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 2, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 2, 14: 1, 15: 1, 16: 2, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 62659
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 309
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 1359
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1027/huc12/06890500/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 9
+
+REPORTING LAKES AREAS:
+
+Max area: 1,976,347.02
+95th area: 1,796,386.71
+50th area: 509,778.20
+2.5th area: 107,538.45
+Min area: 103,662.89
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 5,855,640.58
+95th area: 1,397,550.78
+50th area: 239,874.04
+2.5th area: 4,406.38
+Min area: 200.28
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 3, 4, 5, 8, 6, 7, 9]
+Length: 10, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count     75.00
+mean      28.21
+std       37.58
+min        0.03
+25%        1.22
+50%        5.70
+75%       46.69
+max      148.83
+dtype: float64
+watersheds area stats (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Number of initial subbasins: 75
+Number of final subbasins: 16
+max number of subbasinss: 16
+number of new streams 5140
+number of new watersheds 5140
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+subbasins area stats  (sqkm):
+count     16.00
+mean     132.24
+std       88.18
+min       63.65
+25%       82.00
+50%      111.97
+75%      142.07
+max      433.64
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83566
+list of huc12 requested: [102701030401, 102701030402, 102701030403, 102701030404, 102701030405, 102701030406, 102701030407, 102701030408, 102701030301, 102701030302, 102701030303, 102701030304, 102701030305, 102701030306, 102701030307, 102701030308, 102701030201, 102701030202, 102701030203, 102701030204, 102701030205, 102701030101, 102701030102, 102701030103, 102701030104, 102701030105, 102701030106, 102701030107, 102701030108, 102701030109, 102701030110, 102701030501, 102701030502, 102701030503]
+stream['LEVEL']:huc12
+Number of streams extracted: 5140
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 2, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 2, 14: 1, 15: 1, 16: 2, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 62659
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 309
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 1359
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1027/huc12/06890500/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 9
+
+REPORTING LAKES AREAS:
+
+Max area: 1,976,347.02
+95th area: 1,796,386.71
+50th area: 509,778.20
+2.5th area: 107,538.45
+Min area: 103,662.89
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 5,855,640.58
+95th area: 1,397,550.78
+50th area: 239,874.04
+2.5th area: 4,406.38
+Min area: 200.28
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 3, 4, 5, 8, 6, 7, 9]
+Length: 10, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count     75.00
+mean      28.21
+std       37.58
+min        0.03
+25%        1.22
+50%        5.70
+75%       46.69
+max      148.83
+dtype: float64
+watersheds area stats (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Number of initial subbasins: 75
+Number of final subbasins: 16
+max number of subbasinss: 16
+number of new streams 5140
+number of new watersheds 5140
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+subbasins area stats  (sqkm):
+count     16.00
+mean     132.24
+std       88.18
+min       63.65
+25%       82.00
+50%      111.97
+75%      142.07
+max      433.64
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 83566
+list of huc12 requested: [102701030401, 102701030402, 102701030403, 102701030404, 102701030405, 102701030406, 102701030407, 102701030408, 102701030301, 102701030302, 102701030303, 102701030304, 102701030305, 102701030306, 102701030307, 102701030308, 102701030201, 102701030202, 102701030203, 102701030204, 102701030205, 102701030101, 102701030102, 102701030103, 102701030104, 102701030105, 102701030106, 102701030107, 102701030108, 102701030109, 102701030110, 102701030501, 102701030502, 102701030503]
+stream['LEVEL']:huc12
+Number of streams extracted: 5140
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 2, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 2, 14: 1, 15: 1, 16: 2, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 62659
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 309
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 1359
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1027/huc12/06890500/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 9
+
+REPORTING LAKES AREAS:
+
+Max area: 1,976,347.02
+95th area: 1,796,386.71
+50th area: 509,778.20
+2.5th area: 107,538.45
+Min area: 103,662.89
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 5,855,640.58
+95th area: 1,397,550.78
+50th area: 239,874.04
+2.5th area: 4,406.38
+Min area: 200.28
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2, 3, 4, 5, 8, 6, 7, 9]
+Length: 10, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count     75.00
+mean      28.21
+std       37.58
+min        0.03
+25%        1.22
+50%        5.70
+75%       46.69
+max      148.83
+dtype: float64
+watersheds area stats (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Number of initial subbasins: 75
+Number of final subbasins: 16
+max number of subbasinss: 16
+number of new streams 5140
+number of new watersheds 5140
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+number of unique basins in new streams 16
+number of  unique basins in  new watersheds 16
+subbasins area stats  (sqkm):
+count     16.00
+mean     132.24
+std       88.18
+min       63.65
+25%       82.00
+50%      111.97
+75%      142.07
+max      433.64
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    5140.00
+mean        0.41
+std         0.52
+min         0.00
+25%         0.08
+50%         0.24
+75%         0.55
+max         5.86
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 34802
+list of huc12 requested: [20600030403, 20600030404, 20600030405]
+stream['LEVEL']:huc12
+Number of streams extracted: 456
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 1, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 13572
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 602
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 164
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+#########################  WARNING:        No lakes to process. Exiting function   ###############################
+
+REPORTING Watersheds AREAS:
+
+Max area: 4,502,284.24
+95th area: 1,677,998.31
+50th area: 302,337.61
+2.5th area: 2,349.44
+Min area: 199.96
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>]
+Length: 1, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count      3.00
+mean      73.90
+std       34.96
+min       50.67
+25%       53.80
+50%       56.93
+75%       85.52
+max      114.11
+dtype: float64
+watersheds area stats (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Number of initial subbasins: 3
+Number of final subbasins: 2
+max number of subbasinss: 2
+number of new streams 456
+number of new watersheds 456
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+number of unique basins in new streams 2
+number of  unique basins in  new watersheds 2
+subbasins area stats  (sqkm):
+count      2.00
+mean     110.86
+std       76.26
+min       56.93
+25%       83.89
+50%      110.86
+75%      137.82
+max      164.78
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    456.00
+mean       0.49
+std        0.61
+min        0.00
+25%        0.11
+50%        0.30
+75%        0.58
+max        4.50
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 73100
+list of huc12 requested: [20200070204]
+stream['LEVEL']:huc12
+Number of streams extracted: 233
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 1, 3: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 26289
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 642
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 30
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//0202/huc12/01369500/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 1
+
+REPORTING LAKES AREAS:
+
+Max area: 1,363,172.02
+95th area: 1,363,172.02
+50th area: 1,363,172.02
+2.5th area: 1,363,172.02
+Min area: 1,363,172.02
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 3,697,723.56
+95th area: 1,407,672.35
+50th area: 83,039.15
+2.5th area: 2,298.32
+Min area: 99.93
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1]
+Length: 2, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count     7.00
+mean     10.35
+std      12.32
+min       0.95
+25%       1.59
+50%       4.80
+75%      15.29
+max      32.91
+dtype: float64
+watersheds area stats (sqkm):
+count    233.00
+mean       0.31
+std        0.50
+min        0.00
+25%        0.01
+50%        0.08
+75%        0.43
+max        3.70
+dtype: float64
+Number of initial subbasins: 7
+################### WARNING: THE SUBBASIN 1 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 5 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 6 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 4
+max number of subbasinss: 4
+number of new streams 233
+number of new watersheds 233
+number of unique basins in new streams 4
+number of  unique basins in  new watersheds 4
+number of unique basins in new streams 4
+number of  unique basins in  new watersheds 4
+subbasins area stats  (sqkm):
+count     4.00
+mean     18.11
+std      28.33
+min       1.52
+25%       1.62
+50%       5.31
+75%      21.79
+max      60.28
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    233.00
+mean       0.31
+std        0.50
+min        0.00
+25%        0.01
+50%        0.08
+75%        0.43
+max        3.70
+dtype: float64
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+Number of streams loaded: 172637
+list of huc12 requested: [140801040704, 140801040801, 140801040701, 140801040702, 140801040703]
+stream['LEVEL']:huc12
+Number of streams extracted: 2826
+Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+Subbasin outlet count: {1: 2, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1}
+Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+Total number of lakes added: 15213
+################# minimum area of lakes to be considered: 0.1 SqKm ################
+Lakes more than 0.1 SqKm: 127
+start traversing downstream to find LakeIn ids
+NUMBER OF HEAD WATERS: 1259
+start finding the lakeOuts
+NHDPluIDs of lakes renamed to LakeId
+lakes are loaded
+
+mapping waterbodies
+
+Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1408/huc12/09363050/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+Final Number of lakes: 2
+
+REPORTING LAKES AREAS:
+
+Max area: 2,044,579.76
+95th area: 1,950,476.88
+50th area: 1,103,550.94
+2.5th area: 209,573.55
+Min area: 162,522.11
+All lakes have main outlets
+All lakes outlets repeated in LakeId
+All lakes inlets repeated in LakeId
+All lakes Within repeated in LakeId
+
+REPORTING Watersheds AREAS:
+
+Max area: 5,005,838.61
+95th area: 386,757.25
+50th area: 51,869.25
+2.5th area: 1,602.28
+Min area: 100.13
+Subbasins number are added to the subbasins shapefile
+
+Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2]
+Length: 3, dtype: Int64
+SWAT Plus watersheds are created based on the proccesesed streams data
+SWAT Plus subbasins are created based on the proccesesed streams data
+
+SWAT+ streams shapefile is created
+SWAT Plus streams are created
+
+SWAT+ watersheds shapefile is created
+SWAT Plus watersheds are created
+
+SWAT+ subbasins shapefile is created
+SWAT Plus Subbasins are created
+writing process completed
+all watersheds have a stream
+all subbasinss have a stream
+all streams have a watershed
+all streams have a basin
+ALL LAKES HAVE OUTLET
+subbasins area stats (sqkm):
+count    115.00
+mean       2.87
+std       11.24
+min        0.02
+25%        0.10
+50%        0.24
+75%        0.73
+max       86.83
+dtype: float64
+watersheds area stats (sqkm):
+count    2826.00
+mean        0.12
+std         0.26
+min         0.00
+25%         0.02
+50%         0.05
+75%         0.11
+max         5.01
+dtype: float64
+Number of initial subbasins: 115
+################### WARNING: THE SUBBASIN 60 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 57 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 58 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 59 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 48 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 50 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 49 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 40 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 46 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 62 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 52 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 35 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 66 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 65 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 53 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 54 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 41 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 68 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+################### WARNING: THE SUBBASIN 1 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+Number of final subbasins: 28
+max number of subbasinss: 28
+number of new streams 2826
+number of new watersheds 2826
+number of unique basins in new streams 28
+number of  unique basins in  new watersheds 28
+number of unique basins in new streams 28
+number of  unique basins in  new watersheds 28
+subbasins area stats  (sqkm):
+count     28.00
+mean      11.77
+std       28.76
+min        0.03
+25%        0.16
+50%        0.47
+75%        1.41
+max      106.04
+dtype: float64
+success
+watersheds area stats  (sqkm):
+count    2826.00
+mean        0.12
+std         0.26
+min         0.00
+25%         0.02
+50%         0.05
+75%         0.11
+max         5.01
+dtype: float64

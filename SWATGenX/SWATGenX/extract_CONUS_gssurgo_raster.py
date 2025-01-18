@@ -13,7 +13,8 @@ def extract_CONUS_gssurgo_raster():
 
     if not gSSURGO_raster.endswith(".tif"):
         # Input and output paths
-        input_raster = "OpenFileGDB:/data/SWATGenXApp/GenXAppData/Soil/gSSURGO_CONUS/gSSURGO_CONUS.gdb:MapunitRaster_30m"
+        gSSURGO_CONUS_gdb_path = SWATGenXPaths.gSSURGO_CONUS_gdb_path 
+        input_raster = f"OpenFileGDB:{gSSURGO_CONUS_gdb_path}:MapunitRaster_30m"
 
         gdal.Translate(gSSURGO_raster, input_raster)
         print(f"Raster exported to {gSSURGO_raster}")

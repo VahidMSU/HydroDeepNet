@@ -131,8 +131,6 @@ def adding_huc12_to_stations(stations, VPUID):
     return stations_nhplus, WBDHU12
 
 
-
-
 def get_streamflow_by_VPUID(VPUID, start_date, end_date) -> pd.DataFrame:
     """ Generate the streamflow stations data for a specific VPUID
 

@@ -1,62 +1,62 @@
+from dataclasses import dataclass
 import pandas as pd
 import geopandas as gpd
 from pathlib import Path
-import distutils.dir_util
-import distutils.file_util
+import shutil
 import os
 import matplotlib.pyplot as plt
-
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
     from SWATGenXConfigPars import SWATGenXPaths
+def fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MODEL_NAME):
+    paths = SWATGenXPaths()
 
-def fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MDOEL_NAME):
-    streamflow_path = SWATGenXPaths.streamflow_path
-    model_base = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/"
-    swatplus_stations_shp = Path(model_base,"streamflow_data/stations.shp")
+    model_base = paths.construct_path(paths.swatgenx_outlet_path, VPUID, LEVEL, NAME)
+    swatplus_stations_shp = Path(paths.construct_path(model_base, "streamflow_data", "stations.shp"))
 
-    meta_data = os.path.join(streamflow_path,f"VPUID/{VPUID}/meta_{VPUID}.csv")
-    streamflow_stations_shp = os.path.join(streamflow_path,f"VPUID/{VPUID}/streamflow_stations_{VPUID}.shp")
-    swatplus_lsus2_shp = os.path.join(model_base,f"{MDOEL_NAME}/Watershed/Shapes/lsus2.shp")
-    swatplus_stations_shp = os.path.join(model_base,"streamflow_data/stations.shp")
-    target_path = os.path.join(model_base,"streamflow_data/")
+    meta_data_path = paths.construct_path(paths.streamflow_path, "VPUID", VPUID, f"meta_{VPUID}.csv")
+    streamflow_stations_shp = paths.construct_path(paths.streamflow_path, "VPUID", VPUID, f"streamflow_stations_{VPUID}.shp")
+    swatplus_lsus2_shp = paths.construct_path(model_base, MODEL_NAME, "Watershed", "Shapes", "lsus2.shp")
+    target_path = paths.construct_path(model_base, "streamflow_data")
 
     # Read data
     stations = gpd.read_file(streamflow_stations_shp).to_crs("EPSG:4326")
     swatplus_lsus2 = gpd.read_file(swatplus_lsus2_shp).to_crs("EPSG:4326")
-    meta_data = pd.read_csv(meta_data, dtype={"site_no": str})
+    meta_data = pd.read_csv(meta_data_path, dtype={"site_no": str})
 
     # Create directories
-    Path(swatplus_stations_shp).parent.mkdir(parents=True, exist_ok=True)
+    swatplus_stations_shp.parent.mkdir(parents=True, exist_ok=True)
 
     # Spatial join
     subbasins_stations = gpd.sjoin(stations, swatplus_lsus2, how="inner", predicate="intersects")
-    subbasins_stations[['site_no','geometry']].to_file(swatplus_stations_shp)
+    subbasins_stations[["site_no", "geometry"]].to_file(swatplus_stations_shp)
 
     # Copy streamflow data
     for channel, site_no in zip(subbasins_stations["Channel"], subbasins_stations["site_no"]):
-        try:
-            source_jpeg = os.path.join(streamflow_path,f"VPUID/{VPUID}/streamflow_{site_no}.jpeg")
-            distutils.file_util.copy_file(source_jpeg, target_path)
+        source_jpeg = paths.construct_path(paths.streamflow_path, "VPUID", VPUID, f"streamflow_{site_no}.jpeg")
+        if os.path.exists(source_jpeg):
+            shutil.copy(source_jpeg, target_path)
             print(f"Streamflow data for {site_no} is copied to {target_path}")
-        except Exception as e:
-            print(f"Error. site {site_no}: {e}")
-        try:
-            source_record_jpeg = os.path.join(streamflow_path,f"VPUID/{VPUID}/streamflow_record_{site_no}.jpeg")
-            distutils.file_util.copy_file(source_record_jpeg, target_path)
-        except Exception as e:
-            print(f"Error. site {site_no}: {e}")
-        try:
-            source_csv = os.path.join(streamflow_path,f"VPUID/{VPUID}/streamflow_{site_no}.csv")
-            target_csv = os.path.join(target_path , f"{channel}_{site_no}.csv")
-            distutils.file_util.copy_file(source_csv, target_csv)
-        except Exception as e:
-            print(f"Error. site {site_no}: {e}")
+        else:
+            print(f"JPEG file for site {site_no} does not exist.")
+
+        source_record_jpeg = paths.construct_path(paths.streamflow_path, "VPUID", VPUID, f"streamflow_record_{site_no}.jpeg")
+        if os.path.exists(source_record_jpeg):
+            shutil.copy(source_record_jpeg, target_path)
+        else:
+            print(f"Record JPEG for site {site_no} does not exist.")
+
+        source_csv = paths.construct_path(paths.streamflow_path, "VPUID", VPUID, f"streamflow_{site_no}.csv")
+        target_csv = paths.construct_path(target_path, f"{channel}_{site_no}.csv")
+        if os.path.exists(source_csv):
+            shutil.copy(source_csv, target_csv)
+        else:
+            print(f"CSV file for site {site_no} does not exist.")
 
 if __name__ == "__main__":
-    VPUID = "0407"
+    VPUID = "0206"
     LEVEL = "huc12"
-    NAME = "04127997"
-    MDOEL_NAME = "SWAT_MODEL"
-    fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MDOEL_NAME)
+    NAME = "01583570"
+    MODEL_NAME = "SWAT_MODEL"
+    fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MODEL_NAME)
