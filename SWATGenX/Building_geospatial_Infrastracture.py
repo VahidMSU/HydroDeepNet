@@ -1,5 +1,8 @@
 from SWATGenX.geospatial_infrastructure_builder import geospatial_infrastructure_builder
-from SWATGenX.read_VPUID import get_all_VPUIDs
+from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+from SWATGenX.utils import get_all_VPUIDs
+
+
 from multiprocessing import Pool
 
 def process_VPUID(VPUID):

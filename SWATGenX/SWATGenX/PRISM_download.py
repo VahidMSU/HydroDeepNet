@@ -25,20 +25,23 @@ def download_and_unzip_data(TYPE, YEAR, MONTH, DAY, zip_dir, extract_dir):
     else:
         print(f"{extract_path} exists")
 
+
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenXConfigPars import SWATGenXPaths
+
 if __name__ == "__main__":
     TYPES = ['ppt', 'tmax', 'tmin']
     YEARS = range(1990, 2023)
     MONTHS = range(1, 13)
 
     processes = []
-
-    zip_dir = "/data/SWATGenXApp/GenXAppData/PRISM/zipped_daily"
-    extract_dir = "/data/SWATGenXApp/GenXAppData/PRISM/unzipped_daily"
-
+    
     for TYPE, YEAR, MONTH in itertools.product(TYPES, YEARS, MONTHS):
         _, last_day = calendar.monthrange(YEAR, MONTH)
         for DAY in range(1, last_day + 1):
-            process = Process(target=download_and_unzip_data, args=(TYPE, YEAR, MONTH, DAY, zip_dir, extract_dir))
+            process = Process(target=download_and_unzip_data, args=(TYPE, YEAR, MONTH, DAY, SWATGenXPaths.PRISM_zipped_path, SWATGenXPaths.PRISM_unzipped_path))
             processes.append(process)
             process.start()
 

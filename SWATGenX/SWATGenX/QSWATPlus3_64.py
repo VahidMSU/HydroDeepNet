@@ -23,8 +23,11 @@
 ##### VAHID NOTE; We have not changed anything in the source code.
 ##### we just modified runHUC.py to create a predefine project.
 import sys
-#sys.path.append('C:/Users/rafieiva/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/QSWATPlus3_9/')
-sys.path.append('/home/rafieiva/.local/share/QGIS/QGIS3/profiles/default/python/plugins/QSWATPlusLinux3_64/')
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenXConfigPars import SWATGenXPaths
+sys.path.append(SWATGenXPaths.QSWATPlus_env_path)
 
 from qgis.core import QgsApplication, QgsProject, QgsRasterLayer, QgsVectorLayer, QgsExpression,  QgsFeatureRequest # @UnresolvedImport
 #from PyQt5.QtCore import * # @UnusedWildImport
@@ -148,7 +151,7 @@ class runHUC():
         print(' %###% debug: landuseFile {0}'.format(self.hrus.landuseFile), ' ###')
         hrudlg.SSURGOButton.setChecked(True)
         hrudlg.usersoilButton.setChecked(True)
-        self.LanduseTable = '/data/SWATGenXApp/GenXAppData/LandUse/landuse_lookup.csv'
+        self.LanduseTable = SWATGenXPaths.landuse_lookup
         gv.db.importCsv('landuse_lookup', "landuse", self.LanduseTable)
         gv.db.useSSURGO = True
         gv.db.slopeLimits = [3,9]
@@ -197,17 +200,17 @@ def main(VPUID,LEVEL,NAME, MODEL_NAME):
     app = QgsApplication([], True)
     QgsApplication.initQgis()
     atexit.register(QgsApplication.exitQgis)
-    direc = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{MODEL_NAME}.qgs"
+    direc = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{MODEL_NAME}.qgs"
     ## delete the database file if it exists
-    if os.path.exists(f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"):
+    if os.path.exists(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"):
         ### remove all files and no directories
-        files = glob.glob(f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/*")
+        files = glob.glob(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/*")
         for f in files:
             ## do not remove directories
             if os.path.isfile(f):
                 os.remove(f)
     else:
-        os.makedirs(f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/")
+        os.makedirs(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/")
     dataDir = "H:/Data"
     scale = 8
     minHRUha = 0.00

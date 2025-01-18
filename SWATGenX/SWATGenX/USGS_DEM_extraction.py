@@ -15,7 +15,12 @@ import multiprocessing
 import time
 import sys
 from osgeo import gdal, ogr
-
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from utils import get_all_VPUIDs
 from osgeo import gdal, osr
 class DEMProcessor:
     def __init__(self, VPUID, download_path=None, output_mosaic_path=None, url_download_path = None):
@@ -194,8 +199,8 @@ class DEMProcessor:
 
     def get_EPSG(self, VPUID):
         import pandas as pd 
-        base_input_raster = f'/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}/'
-        streams_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl')
+        base_input_raster = f'{SWATGenXPaths.DEM_path}/VPUID/{VPUID}/'
+        streams_path = os.path.join(f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{VPUID}/streams.pkl')
         streams = gpd.GeoDataFrame(pd.read_pickle(streams_path))
         zone = streams.crs.to_string().split(' ')[1].split('=')[-1]
         return f"326{zone[-2:]}"
@@ -266,13 +271,13 @@ class DEMProcessor:
 
             filename = os.path.basename(url)
             
-            ## if filename exist in /data/SWATGenXApp/GenXAppData/DEM/CONUS
-            list_of_already_downloaded_files = os.listdir("/data/SWATGenXApp/GenXAppData/DEM/CONUS")
+            ## if filename exist in {SWATGenXPaths.DEM_path}/CONUS
+            list_of_already_downloaded_files = os.listdir(f"{SWATGenXPaths.DEM_path}/CONUS")
             if filename in list_of_already_downloaded_files:
                 print(f"{filename} already downloaded, continue...")
-                ## copy to /data/SWATGenXApp/GenXAppData/DEM/VPUID/
+                ## copy to {SWATGenXPaths.DEM_path}/VPUID/
                 import shutil
-                shutil.copy(f"/data/SWATGenXApp/GenXAppData/DEM/CONUS/{filename}", path_to_download)
+                shutil.copy(f"{SWATGenXPaths.DEM_path}/CONUS/{filename}", path_to_download)
                 continue
             
             print(f"Downloading {filename}...")
@@ -433,10 +438,10 @@ def warrper_NHDPlus_DEM(VPUID) -> None:
 
 
 def DEM_extract_by_VPUID(VPUID) -> None:
-    dem_base_path = "/data/SWATGenXApp/GenXAppData/DEM/VPUID"
-    unzipped_nhdplus_base_path = os.path.join("/data/SWATGenXApp/GenXAppData/NHDPlusData",f"SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/")
-    download_path = fr"/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}"
-    output_mosaic_path = f"/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}/Mosaic.tif"
+    dem_base_path = f"{SWATGenXPaths.DEM_path}/VPUID"
+    unzipped_nhdplus_base_path = f"{SWATGenXPaths.extracted_nhd_swatplus_path}/{VPUID}/unzipped_NHDPlusVPU/"
+    download_path = fr"{SWATGenXPaths.DEM_path}/VPUID/{VPUID}"
+    output_mosaic_path = f"{SWATGenXPaths.DEM_path}/VPUID/{VPUID}/Mosaic.tif"
     temp_path = os.path.join(dem_base_path, f"{VPUID}/temp.shp")
     input_raster = os.path.join(dem_base_path, f"{VPUID}/Mosaic.tif")
     output_raster = os.path.join(dem_base_path, f"{VPUID}/Mosaic_clip.tif")
@@ -463,8 +468,8 @@ def DEM_extract_by_VPUID(VPUID) -> None:
 
 
     import pandas as pd 
-    base_input_raster = f'/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}/'
-    streams_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl')
+    base_input_raster = f'{SWATGenXPaths.DEM_path}/VPUID/{VPUID}/'
+    streams_path = os.path.join(f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{VPUID}/streams.pkl')
     input_raster = os.path.join(base_input_raster, "USGS_DEM_30m.tif")
     streams = gpd.GeoDataFrame(pd.read_pickle(streams_path))
     print('Loaded streams CRS',streams.crs)
@@ -482,22 +487,8 @@ def DEM_extract_by_VPUID(VPUID) -> None:
     dem_processor.clean_directory(download_path, not_delete_pattern)
 
 
-
-    
-def get_all_VPUIDs(base_directory):
-    
-    path = os.path.join(base_directory, "NHDPlus_VPU_National")
-    print("path", path) 
-    files = [f for f in os.listdir(path) if f.endswith('.zip')]
-    VPUIDs = [file.split('_')[2] for file in files]
-    print(VPUIDs)
-    return VPUIDs
-
-
-#sys.path.insert(0, '/data/SWATGenXApp/GenXAppData/codes')
-
 def check_DEM_by_VPUID(VPUID):
-    dem_base_path = "/data/SWATGenXApp/GenXAppData/DEM/VPUID"
+    dem_base_path = "{SWATGenXPaths.DEM_path}/VPUID"
     RESOLUTIONS = ["30", "100", "250", "500", "1000", "2000"]
     for RESOLUTION in RESOLUTIONS:
         
@@ -508,7 +499,7 @@ def check_DEM_by_VPUID(VPUID):
     print(f"## USGS DEM for VPUID {VPUID} exists. #####")
 
 if __name__ == "__main__":
-    VPUIDs = get_all_VPUIDs("/data/SWATGenXApp/GenXAppData/NHDPlusData")
+    VPUIDs = get_all_VPUIDs()
     processes = []
     for VPUID in VPUIDs:
         try:

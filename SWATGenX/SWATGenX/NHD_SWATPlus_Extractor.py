@@ -5,6 +5,11 @@ import os
 import numpy as np
 import os
 from SWATGenX.SWATGenXLogging import LoggerSetup
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenXConfigPars import SWATGenXPaths
+
 class NHD_SWATPlus_Extractor:
     """
     The start_extracting function takes three parameters:
@@ -22,15 +27,15 @@ class NHD_SWATPlus_Extractor:
 
     It returns the processed and refined streams GeoDataFrame.
     """
-    def __init__(self, BASE_PATH, list_of_HUC,  LEVEL, VPUID, MODEL_NAME, NAME):
+    def __init__(self, list_of_HUC, LEVEL, VPUID, MODEL_NAME, NAME):
         
-        self.BASE_PATH = BASE_PATH  
+        self.BASE_PATH = SWATGenXPaths.database_dir  
         self.list_of_HUC = list_of_HUC
         self.LEVEL = LEVEL  
         self.VPUID = VPUID
         self.MODEL_NAME = MODEL_NAME
         self.NAME = NAME
-        self.report_path = os.path.join('/data/SWATGenXApp/codes/SWATGenX/')
+        self.report_path = SWATGenXPaths.report_path
         self.logger = LoggerSetup(report_path=self.report_path, rewrite=False, verbose=True)
         self.logger = self.logger.setup_logger("NHDPlusExtractor")
         self.no_value = -9999

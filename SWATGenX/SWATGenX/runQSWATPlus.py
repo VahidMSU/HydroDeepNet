@@ -1,9 +1,15 @@
 import subprocess
 import os
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from utils import get_all_VPUIDs
 def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME):
     
     print(f"Running QSWATPlus for {NAME}")
-    runQSWATPlus_path = "/data/SWATGenXApp/codes/SWATGenX/runQSWATPlus.sh"
+    runQSWATPlus_path = SWATGenXPaths.runQSWATPlus_path
     assert os.path.exists(runQSWATPlus_path), f"File {runQSWATPlus_path} does not exist"
     ## now read the last line of the batch file and insert arguments
     with open(runQSWATPlus_path, "r") as f:
@@ -12,7 +18,7 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME):
         print(lines[-1])
 
     ## now write it back to a new batch file
-    runQSWATPlus_path_new = f"/data/SWATGenXApp/codes/SWATGenX/{NAME}_runHUCProject.sh"
+    runQSWATPlus_path_new = f"{os.path.basename(runQSWATPlus_path)}/{NAME}_runHUCProject.sh"
     with open(runQSWATPlus_path_new, "w") as f:
         f.writelines(lines)
     

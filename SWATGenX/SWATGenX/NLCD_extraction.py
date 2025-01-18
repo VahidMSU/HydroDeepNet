@@ -10,29 +10,33 @@ import geopandas as gpd
 import numpy as np
 from osgeo import gdal, ogr, osr
 from shapely.geometry import box
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenXConfigPars import SWATGenXPaths
 
 def check_NLCD_by_VPUID(VPUID, epoch):
-    basedirectory = "/data/SWATGenXApp/GenXAppData/LandUse/NLCD_CONUS/"
-    #"Y:\SWATGenXApp\GenXAppData\LandUse\NLCD_CONUS\0206\NLCD_0206_2021_500m.tif"
+    NLCD_path = SWATGenXPaths.NLCD_path
     RESOLUTIONS = [30, 100, 250, 500, 1000, 2000]
     for resolution in RESOLUTIONS:
-        if not os.path.exists(f"{basedirectory}{VPUID}/NLCD_{VPUID}_{epoch}_{resolution}m.tif"):
-            raise ValueError(f"{basedirectory}{VPUID}/NLCD_{VPUID}_{epoch}_{resolution}m.tif does not exist")
+        if not os.path.exists(f"{NLCD_path}{VPUID}/NLCD_{VPUID}_{epoch}_{resolution}m.tif"):
+            raise ValueError(f"{NLCD_path}{VPUID}/NLCD_{VPUID}_{epoch}_{resolution}m.tif does not exist")
     print(f"#### NLCD data exists for {VPUID} #####")
 
 class NLCDExtractor:
     def __init__(self, VPUID, epoch):
         self.VPUID = VPUID
         self.epoch = epoch
-        self.base_path = "/data/SWATGenXApp/GenXAppData"
-        
-        self.NLCD_all_files_path = (
-            "{self.base_path}/LandUse/NLCD_landcover_2021_release_all_files_20230630/"
-        )
-        self.HUC4_base_path = fr"{self.base_path}/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/"
-        self.temp_path = fr"{self.base_path}/LandUse/NLCD_CONUS/{VPUID}/rect.shp"
-        self.original_out_raster = fr"{self.base_path}/LandUse/NLCD_CONUS/{VPUID}/NLCD_{VPUID}_{epoch}.tif"
-        self.VPUID_DEM_base = f"{self.base_path}/DEM/VPUID/{VPUID}"
+        self.database_dir = SWATGenXPaths.database_dir
+        self.extracted_nhd_swatplus_path = SWATGenXPaths.extracted_nhd_swatplus_path
+        self.NLCD_path = SWATGenXPaths.NLCD_path
+        self.DEM_path = SWATGenXPaths.DEM_path
+        self.NHDPlus_path = SWATGenXPaths.NHDPlus_path
+        self.NLCD_release_path = SWATGenXPaths.NLCD_release_path
+        self.HUC4_base_path = fr"{self.extracted_nhd_swatplus_path}/{VPUID}/unzipped_NHDPlusVPU/"
+        self.temp_path = fr"{self.NLCD_path}/{VPUID}/rect.shp"
+        self.original_out_raster = fr"{self.NLCD_path}/{VPUID}/NLCD_{VPUID}_{epoch}.tif"
+        self.VPUID_DEM_base = f"{self.DEM_path}/VPUID/{VPUID}"
         self.NLCD_path = None
         self.spatial_ref = None
         self.HUC4_path = None
@@ -53,10 +57,8 @@ class NLCDExtractor:
     
     def get_EPSG(self):
         import pandas as pd 
-        base_input_raster = f'{self.base_path}/DEM/VPUID/{self.VPUID}/'
-        streams_path = os.path.join(f'{self.base_path}/NHDPlusData/SWATPlus_NHDPlus/{self.VPUID}/streams.pkl')
+        streams_path = os.path.join(f'{self.NHDPlus_path}/{self.VPUID}/streams.pkl')
         streams = gpd.GeoDataFrame(pd.read_pickle(streams_path))
-        
         # Extract the UTM zone
         zone = streams.crs.to_string().split(' ')[1].split('=')[-1]
         epsg_code = int(f"326{zone[-2:]}")
@@ -79,11 +81,11 @@ class NLCDExtractor:
 
 
     def NLCD_extract_by_VPUID(self):
-        NLCD_all_files = os.listdir(self.NLCD_all_files_path)
+        NLCD_all_files = os.listdir(self.NLCD_release_path)
         for file in NLCD_all_files:
             if file.endswith(".img") and str(self.epoch) == file.split("_")[1]:
                 self.NLCD_name = file
-                self.NLCD_path = os.path.join(self.NLCD_all_files_path, self.NLCD_name)
+                self.NLCD_path = os.path.join(self.NLCD_release_path, self.NLCD_name)
                 break
 
         raster = gdal.Open(self.NLCD_path)
@@ -124,7 +126,7 @@ class NLCDExtractor:
         target_crs = self.get_DEM_crs(DEM_path)
         self.get_EPSG()
         ### now project the original_out_raster to the target_crs and save it
-        output_path = fr"{self.base_path}/LandUse/NLCD_CONUS/{self.VPUID}/NLCD_{self.VPUID}_{self.epoch}_30m.tif"
+        output_path = fr"{self.NLCD_path}/{self.VPUID}/NLCD_{self.VPUID}_{self.epoch}_30m.tif"
         gdal.Warp(output_path, self.original_out_raster, dstSRS=target_crs)
 
         self.reprojection(output_path, EPSG=self.EPSG)
@@ -132,14 +134,15 @@ class NLCDExtractor:
         ### now resample the raster to 100m, 200m, 500m, 1000m, 2000m
         resolutions = [100, 250, 500, 1000, 2000]
         for resolution in resolutions:
-            output_path = fr"{self.base_path}/LandUse/NLCD_CONUS/{self.VPUID}/NLCD_{self.VPUID}_{self.epoch}_{resolution}m.tif"
+            output_path = fr"{self.NLCD_path}/{self.VPUID}/NLCD_{self.VPUID}_{self.epoch}_{resolution}m.tif"
             if not os.path.exists(output_path):
                 gdal.Warp(output_path, self.original_out_raster, xRes=resolution, yRes=resolution, resampleAlg=gdal.GRA_NearestNeighbour)
                 self.reprojection(output_path, EPSG=self.EPSG)
 
 # Usage
 def NLCD_extract_by_VPUID(VPUID, epoch):
-    original_out_raster = fr"/data/SWATGenXApp/GenXAppData/LandUse/NLCD_CONUS/{VPUID}/NLCD_{VPUID}_{epoch}.tif"
+    NLCD_path = SWATGenXPaths.NLCD_path
+    original_out_raster = fr"{NLCD_path}/{VPUID}/NLCD_{VPUID}_{epoch}.tif"
     if not os.path.exists(original_out_raster):
         extractor = NLCDExtractor(VPUID, epoch)
         extractor.NLCD_extract_by_VPUID()
@@ -148,4 +151,5 @@ def NLCD_extract_by_VPUID(VPUID, epoch):
 if __name__ == "__main__":
     VPUID = "1206"
     epoch = 2021
-    NLCD_extract_by_VPUID(VPUID, epoch)
+    #NLCD_extract_by_VPUID(VPUID, epoch)    
+    check_NLCD_by_VPUID(VPUID, epoch)

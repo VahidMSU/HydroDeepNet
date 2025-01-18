@@ -266,7 +266,9 @@ def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_fl
     logging.info(f"Starting model creation for site_no: {site_no}")
     
     BASE_PATH = os.getenv('BASE_PATH', '/data/SWATGenXApp/GenXAppData/')
-    
+    from SWATGenX.SWATGenXLogging import LoggerSetup
+    logger = LoggerSetup('/data/SWATGenXApp/codes/web_application/logs/', verbose=True, rewrite=False)
+    logger.setup_logger(name="WebAppLogger")
     config = {
         "BASE_PATH": BASE_PATH,
         "LEVEL": "huc12",
@@ -303,8 +305,10 @@ def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_fl
         "verification_samples": verification_samples
     }
 
+    logger.info(f"Configuration: {config}")
     # Model creation
-    model_path = SWATGenXCommand(config)
+    commander = SWATGenXCommand(config)
+    model_path = commander.execute()
 
     # Calibration, validation, sensitivity analysis
     #if calibration_flag or validation_flag or sensitivity_flag:
@@ -313,8 +317,11 @@ def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_fl
     # Output archive
     output_path = os.path.join("/data/Generated_models", f"{site_no}")
     os.makedirs("/data/Generated_models", exist_ok=True)
-    shutil.make_archive(output_path, 'zip', model_path)
-    logging.info(f"Model creation successful for site_no: {site_no}")
+    try:
+        shutil.make_archive(output_path, 'zip', model_path)
+    except Exception as e:
+        logging.error(f"Model creation failed for site_no: {site_no}")
+    logger.info(f"Model creation successful for site_no: {site_no}")
     
     return f"{output_path}.zip"
 
@@ -335,12 +342,8 @@ def get_huc12_geometries(list_of_huc12s):
 
 
 def find_station(search_term='metal'):
-    governmental_boundries_path =  "/data/SWATGenXApp/GenXAppData/USGS/GovernmentUnits_National_GDB/GovernmentUnits_National_GDB.gdb"
-    #USGS_stations_path = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv"
-    USGS_CONUS_shp = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.shp"
-    df = find_station_region(search_term, governmental_boundries_path, USGS_CONUS_shp)
 
-    ## columns in df: SiteNumber, SiteName, VPUID, State, County, Coordinates
+    df = find_station_region(search_term)
 
     print(df)
     return df

@@ -11,10 +11,13 @@ from hydrofunctions import NWIS
 import seaborn as sns
 ## set the base directory
 
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+
 
 ## use all states
-
-
 def fetching_streamflow_stations(base_directory,VPUID) -> pd.DataFrame:
     """ Get the streamflow stations for a specific VPUID
     return a dataframe"""
@@ -46,7 +49,7 @@ def find_upstrean_huc12s(huc12, WBDHU12):
 def get_nhdplus_huc12(VPUID) -> gpd.GeoDataFrame:
     """ Get the NHDPlus catchments for a specific VPUID
     return a dataframe"""
-    base_directory = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/"
+    base_directory = f"{SWATGenXPaths.NHDPlus_path}/{VPUID}/unzipped_NHDPlusVPU/"
 
     ## raise error if the directory does not exist
     if not os.path.exists(base_directory):
@@ -81,7 +84,7 @@ def process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, base_dire
 
     stations_nhplus[stations_nhplus.huc12==huc12].plot(ax=ax, color='red')
 
-    save_path = os.path.join(base_directory, f"streamflow_stations/VPUID/{VPUID}/streamflow_{site_no}.csv")
+    save_path = f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/streamflow_{site_no}.csv"
 
     print(site_no)
 
@@ -149,12 +152,12 @@ def get_streamflow_by_VPUID(VPUID, start_date, end_date) -> pd.DataFrame:
 
     # Initialize a list to store row data"""""
 
-    base_directory = "/data/SWATGenXApp/GenXAppData/USGS/"
-    meta_data_directory = os.path.join(base_directory, f"streamflow_stations/VPUID/{VPUID}/meta_{VPUID}.csv")
+    USGS_path = SWATGenXPaths.USGS_path
+    meta_data_directory = f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/meta_{VPUID}.csv"
     if not os.path.exists(meta_data_directory):
         data = []
         total_expected_days = (pd.to_datetime(end_date) - pd.to_datetime(start_date)).days + 1
-        stations = fetching_streamflow_stations(base_directory, VPUID)
+        stations = fetching_streamflow_stations(USGS_path, VPUID)
         stations_nhplus, WBDHU12 = adding_huc12_to_stations(stations, VPUID)
         huc12s = stations_nhplus.huc12.values
 
@@ -162,9 +165,7 @@ def get_streamflow_by_VPUID(VPUID, start_date, end_date) -> pd.DataFrame:
 
         for huc12 in huc12s:
             try:
-                site_no, first_huc, drainage_area_sqkm, list_of_huc12s, number_of_streamflow_data = process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, base_directory,start_date , end_date)
-                #print(f"site_no: {site_no}, first_huc: {first_huc}, drainage_area_sqkm: {drainage_area_sqkm}, list_of_huc12s: {list_of_huc12s}, number_of_streamflow_data: {number_of_streamflow_data}")
-
+                site_no, first_huc, drainage_area_sqkm, list_of_huc12s, number_of_streamflow_data = process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, USGS_path,start_date , end_date)
                 # Append a tuple (or list) of the data to the data list
                 data.append((site_no, first_huc, drainage_area_sqkm, list_of_huc12s, number_of_streamflow_data, total_expected_days))
 
@@ -210,7 +211,7 @@ def plot_streamflow_data(meta_data_df, VPUID, start_date, end_date):
 
         if GAP_percent < 5:
 
-            station = pd.read_csv(f"/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/VPUID/{VPUID}/streamflow_{site_no}.csv")
+            station = pd.read_csv(f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/streamflow_{site_no}.csv")
 
             sns.set_style("whitegrid")
 
@@ -240,7 +241,7 @@ def plot_streamflow_data(meta_data_df, VPUID, start_date, end_date):
                 ax.annotate(f"Av Annual Median: {median_average_annual.values[0]:.2f}", xy=(0.8,0.9), xycoords='axes fraction', fontsize=12)
 
                 # Save the plot
-                plt.savefig(f"/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/VPUID/{VPUID}/streamflow_record_{site_no}.jpeg", dpi=300)
+                plt.savefig(f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/streamflow_record_{site_no}.jpeg", dpi=300)
                 plt.close()
             except Exception as e:
                 print(f"Error: {e}")
@@ -250,7 +251,7 @@ def USGS_streamflow_retrieval_by_VPUID(VPUID, start_date = '2000-01-01' , end_da
 
     print(f"Retrieving streamflow data foe VPUID:{VPUID}...")
 
-    meta_data_path = fr"/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/VPUID/{VPUID}/meta_{VPUID}.csv"
+    meta_data_path = fr"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/meta_{VPUID}.csv"
 
     if not os.path.exists(meta_data_path):
         meta_data_df = get_streamflow_by_VPUID(VPUID, start_date, end_date)

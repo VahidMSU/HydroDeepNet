@@ -6,6 +6,16 @@ import pandas as pd
 from functools import partial
 from multiprocessing import Process
 #from app.models import User  # Assuming User is defined in app.models
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from utils import get_all_VPUIDs
+try:
+	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+	from SWATGenXConfigPars import SWATGenXPaths
 
 class SWATGenXCommand:
 	def __init__(self, swatgenx_config):
@@ -18,12 +28,7 @@ class SWATGenXCommand:
 			swatgenx_config (dict): Configuration settings for the SWATGenX command.
 		"""
 		self.config = swatgenx_config
-		self.logger = self.setup_logger()
-
-	def setup_logger(self):
-		"""Sets up the logger for the SWATGenXCommand."""
-		logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/SWATGenX/", verbose=True, rewrite=True)
-		return logger.setup_logger("SWATGenXCommand")
+		self.logger = LoggerSetup(verbose=True, rewrite=True).setup_logger("SWATGenXCommand")
 
 	def find_VPUID(self, station_no, level="huc12"):
 		"""
@@ -41,7 +46,7 @@ class SWATGenXCommand:
 		if level == "huc8":
 			return f"0{int(station_no)[:3]}"
 
-		conus_streamflow_data = pd.read_csv("/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv", dtype={'site_no': str, 'huc_cd': str})
+		conus_streamflow_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={'site_no': str, 'huc_cd': str})
 		return conus_streamflow_data[conus_streamflow_data.site_no == station_no].huc_cd.values[0][:4]
 	def generate_huc12_list(self, huc8, vpuid):
 		"""
@@ -56,7 +61,7 @@ class SWATGenXCommand:
 		Returns:
 			dict: A dictionary mapping HUC8 codes to their corresponding HUC12 values.
 		"""
-		path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{vpuid}/unzipped_NHDPlusVPU/"
+		path = f"{SWATGenXPaths.extracted_nhd_swatplus_path}/{vpuid}/unzipped_NHDPlusVPU/"
 		gdb_files = [g for g in os.listdir(path) if g.endswith('.gdb')]
 		
 		if not gdb_files:
@@ -86,14 +91,13 @@ class SWATGenXCommand:
 		huc12_grouped = huc12_filtered.groupby('HUC8')
 		return {huc8: group['HUC12'].values for huc8, group in huc12_grouped}
 
-	def return_list_of_huc12s(self, base_path, station_name, max_area):
+	def return_list_of_huc12s(self, station_name, max_area):
 		"""
 		Returns a list of HUC12s for a given station name and maximum drainage area.
 
 		This method checks the drainage area of the specified station and retrieves eligible HUC12s based on the maximum area criteria.
 
 		Args:
-			base_path (str): The base path for data files.
 			station_name (str): The name of the station to retrieve HUC12s for.
 			max_area (float): The maximum drainage area allowed.
 
@@ -101,7 +105,7 @@ class SWATGenXCommand:
 			tuple: A tuple containing the list of HUC12s and the corresponding VPUID.
 		"""
 		vpuid = self.find_VPUID(station_name)
-		streamflow_metadata = os.path.join(base_path, f"USGS/streamflow_stations/VPUID/{vpuid}/meta_{vpuid}.csv")
+		streamflow_metadata = f"{SWATGenXPaths.streamflow_path}/VPUID/{vpuid}/meta_{vpuid}.csv"
 		streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
 
 		drainage_area = streamflow_metadata[streamflow_metadata.site_no == station_name].drainage_area_sqkm.values[0]
@@ -143,7 +147,7 @@ class SWATGenXCommand:
 		"""Handles the HUC12 level processing."""
 		self.logger.info(f'LEVEL: huc12, station_name: {self.config.get("station_name")}')
 		station_name = self.config.get("station_name")
-		list_of_huc12s, vpuid = self.return_list_of_huc12s(self.config.get("BASE_PATH"), station_name, self.config.get("MAX_AREA"))
+		list_of_huc12s, vpuid = self.return_list_of_huc12s(station_name, self.config.get("MAX_AREA"))
 
 		# Update the configuration dictionary
 		self.config.update({
@@ -154,11 +158,10 @@ class SWATGenXCommand:
 		})
 		core = SWATGenXCore(self.config)
 		core.process()
-		return os.path.join(self.config.get("BASE_PATH"), f"SWATplus_by_VPUID/{vpuid}/huc12/{station_name}/")
+		return os.path.join(SWATGenXPaths.database_dir, f"SWATplus_by_VPUID/{vpuid}/huc12/{station_name}/")
 
 	def handle_huc4(self):
 		"""Handles the HUC4 level processing."""
-		from SWATGenX.read_VPUID import get_all_VPUIDs
 		vpuid_list = get_all_VPUIDs()
 		processes = []
 
@@ -191,11 +194,11 @@ class SWATGenXCommand:
 		core = SWATGenXCore(self.config)
 		core.process()
 
-		return os.path.join(self.config.get("BASE_PATH"), f"SWATplus_by_VPUID/{vpuid}/huc8/{huc8_name}/")
+		return os.path.join(SWATGenXPaths.database_dir, f"SWATplus_by_VPUID/{vpuid}/huc8/{huc8_name}/")
 
 	def get_eligible_stations(self, vpuid):
 		"""Retrieves eligible stations based on drainage area criteria."""
-		streamflow_metadata = os.path.join(self.config.get("BASE_PATH"), f"USGS/streamflow_stations/VPUID/{vpuid}/meta_{vpuid}.csv")
+		streamflow_metadata = f"{SWATGenXPaths.streamflow_path}/VPUID/{vpuid}/meta_{vpuid}.csv"
 		streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
 		eligible_stations = streamflow_metadata[
 			(streamflow_metadata.drainage_area_sqkm < self.config.get("MAX_AREA")) &
