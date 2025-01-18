@@ -5,7 +5,7 @@ import os
 import numpy as np
 import os
 from SWATGenX.SWATGenXLogging import LoggerSetup
-class NHDPlusExtractor:
+class NHD_SWATPlus_Extractor:
     """
     The start_extracting function takes three parameters:
     - BASE_PATH: Directory path for loading stream data.
@@ -33,7 +33,7 @@ class NHDPlusExtractor:
         self.report_path = os.path.join('/data/SWATGenXApp/codes/SWATGenX/')
         self.logger = LoggerSetup(report_path=self.report_path, rewrite=False, verbose=True)
         self.logger = self.logger.setup_logger("NHDPlusExtractor")
-        self.no_value = self.no_value
+        self.no_value = -9999
 
 
     def creating_unique_subbasin(self, df, first_criteria, second_criteria):

@@ -1,0 +1,38 @@
+import os
+def download_USGS_DEM():
+    path = "/data/SWATGenXApp/GenXAppData/DEM/VPUID/DEM_13_arc_second.USGS"
+
+    with open(path, 'r') as file:
+        lines = file.readlines()
+        urls = [line.strip() for line in lines]
+
+    output_path = "/data/SWATGenXApp/GenXAppData/DEM/CONUS/"
+    downloaded_files = os.listdir(output_path)
+    downloaded_files = [file.split(".")[0] for file in downloaded_files]
+    if len(downloaded_files) == len(urls):
+        print("All files are already downloaded")
+        return
+    else:
+        #raise ValueError("Some files are missing")
+    
+        os.makedirs(output_path, exist_ok=True)
+
+        ## donwload all the files in parallel
+        import requests
+        from concurrent.futures import ThreadPoolExecutor
+
+        def download_file(url):
+            filename = url.split('/')[-1]
+            output_file = os.path.join(output_path, filename)
+            if not os.path.exists(output_file):
+                print(f"Downloading {url} to {output_file}")
+                r = requests.get(url)
+                with open(output_file, 'wb') as f:
+                    f.write(r.content)
+            else:
+                print(f"File already exists: {output_file}")
+
+        with ThreadPoolExecutor(10) as executor:
+            executor.map(download_file, urls)
+
+        ## Reproject the downloaded files

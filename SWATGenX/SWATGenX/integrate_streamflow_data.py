@@ -7,29 +7,48 @@ def get_all_VPUIDs():
     files = glob.glob(f"{path}*.zip")
     return [os.path.basename(file).split('_')[2] for file in files]
 
+
+def write_all_station_data(VPUIDs, usgs_data_base, rewrite=False):
+
+	if not os.path.exists(os.path.join(usgs_data_base, "all_VPUIDs.csv")) or rewrite:
+		all_stations = []
+		for VPUID in VPUIDs:
+			print(f"Processing VPUID: {VPUID}")
+			#if VPUID[:2] != "04":
+			#	continue
+			
+			streamflow_metadata_path = os.path.join(usgs_data_base, f"streamflow_stations/VPUID/{VPUID}/meta_{VPUID}.csv")
+		
+			if not os.path.exists(streamflow_metadata_path):
+				print(f"File not found: {streamflow_metadata_path}")
+				continue
+				
+			station_data = pd.read_csv(streamflow_metadata_path, dtype={'site_no': str, "first_huc": str})	
+
+			all_stations.append(station_data)
+
+		all_stations = pd.concat(all_stations)
+		all_stations['site_no'] = all_stations['site_no'].astype(str)  # Convert 'site_no' to object type
+		all_stations.to_csv(os.path.join(usgs_data_base, "all_VPUIDs.csv"), index=False)
+	else:
+		all_stations = pd.read_csv(os.path.join(usgs_data_base, "all_VPUIDs.csv"), dtype={'site_no': str})
+
+	return all_stations
+
 def integrate_streamflow_data(usgs_data_base):
+
+#	if not rewrite and os.path.exists(os.path.join(usgs_data_base, "FPS_all_stations.csv")):
+#		print("Reading existing streamflow data")
+#		return pd.read_csv(os.path.join(usgs_data_base, "FPS_all_stations.csv"), dtype={'site_no': str})
+	
+	rewrite=False
+
 	print("Integrating streamflow data")
 	VPUIDs = get_all_VPUIDs()
 	all_stations = []
-
-	for VPUID in VPUIDs:
-		print(f"Processing VPUID: {VPUID}")
-		#if VPUID[:2] != "04":
-		#	continue
-		
-		streamflow_metadata_path = os.path.join(usgs_data_base, f"streamflow_stations/VPUID/{VPUID}/meta_{VPUID}.csv")
 	
-		if not os.path.exists(streamflow_metadata_path):
-			print(f"File not found: {streamflow_metadata_path}")
-			continue
-			
-		station_data = pd.read_csv(streamflow_metadata_path, dtype={'site_no': str, "first_huc": str})	
-
-		all_stations.append(station_data)
-
-	all_stations = pd.concat(all_stations)
-	all_stations['site_no'] = all_stations['site_no'].astype(str)  # Convert 'site_no' to object type
-	all_stations.to_csv(os.path.join(usgs_data_base, "all_VPUIDs.csv"), index=False)
+	all_stations = write_all_station_data(VPUIDs, usgs_data_base, rewrite=rewrite)
+	
 	fps = pd.read_csv(os.path.join(usgs_data_base, "FPS_States_and_Territories.csv"), skiprows=1, dtype={'SiteNumber': str})	
 
 	fps_all_stations = pd.merge(all_stations, fps, left_on="site_no", right_on="SiteNumber", how="left")

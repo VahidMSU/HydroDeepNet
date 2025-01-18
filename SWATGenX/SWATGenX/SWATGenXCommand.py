@@ -163,7 +163,7 @@ class SWATGenXCommand:
 		processes = []
 
 		for vpuid in vpuid_list:
-			if vpuid[:2] != "02":
+			if vpuid[:2] != self.config.get("region"):
 				continue
 			eligible_stations = self.get_eligible_stations(vpuid)
 

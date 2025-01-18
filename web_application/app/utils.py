@@ -336,9 +336,9 @@ def get_huc12_geometries(list_of_huc12s):
 
 def find_station(search_term='metal'):
     governmental_boundries_path =  "/data/SWATGenXApp/GenXAppData/USGS/GovernmentUnits_National_GDB/GovernmentUnits_National_GDB.gdb"
-    USGS_stations_path = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv"
+    #USGS_stations_path = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv"
     USGS_CONUS_shp = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.shp"
-    df = find_station_region(search_term, governmental_boundries_path, USGS_stations_path, USGS_CONUS_shp)
+    df = find_station_region(search_term, governmental_boundries_path, USGS_CONUS_shp)
 
     ## columns in df: SiteNumber, SiteName, VPUID, State, County, Coordinates
 
