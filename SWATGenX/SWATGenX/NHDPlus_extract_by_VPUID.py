@@ -1,24 +1,20 @@
+import contextlib
 import os
 import geopandas as gpd
-from SWATGenX.NHDPlusExtractor import *
+#from SWATGenX.NHDPlusExtractor import *
 import zipfile
 import glob
-import os 
-import utm 
+import os
+import utm
 import pyproj
-def get_all_VPUIDs(base_directory):
-    path = os.path.join(base_directory, "NHDPlus_VPU_National")
-    files = glob.glob(f"{path}*.zip")
-    VPUIDs = [os.path.basename(file).split('_')[2] for file in files]
-    print(VPUIDs)
-    return VPUIDs
+
 
 def NHDPlus_extract_by_VPUID(VPUID):
     ### setting the base directory
-    
+    rewrite = True  
     nhdplus_unzipped_files = f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl'
     
-    if not os.path.exists(nhdplus_unzipped_files):
+    if not os.path.exists(nhdplus_unzipped_files) or rewrite:
         extracted_nhd_path = f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/'
 
         if not os.path.exists(extracted_nhd_path):
@@ -119,14 +115,14 @@ def NHDPlus_extract_by_VPUID(VPUID):
 def read_project_filter(VPUID, layer, gdf_path, utm_zone):
 
     gdf = gpd.read_file(gdf_path, layer=layer)
-    
+
     fields_to_exclude = ['Resolution', 'FDate', 'Enabled', 'GNIS_ID', 'GNIS_Name', 'Shape_Length', 
                         'ElevFixed', 'MaxElevRaw', 'RtnDiv', 'ToMeas', 'LevelPathI', 'InNetwork',
                         'ReachCode', 'VisibilityFilter', 'Elevation', 'Shape_Area', 'GapDistKm', 
                         'DnLevelPat', 'DnLevel', 'Thinner', 'VPUIn', 'VPUOut', 'DivDASqKm', 'StatusFlag', 
                         'FlowDir', 'loaddate']
-    
-        
+
+
     column_name_map = {
         'ftype': 'FType',
         'fcode': 'FCode',
@@ -155,19 +151,20 @@ def read_project_filter(VPUID, layer, gdf_path, utm_zone):
         if col.lower() in column_name_map:
             print(f'##### Mapping {col} to {column_name_map[col.lower()]} #####')
             gdf.rename(columns={col: column_name_map[col.lower()]}, inplace=True)
-    
+
     gdf = gdf[[col for col in gdf.columns if col not in fields_to_exclude]]
-    
+
     if 'VAA' in layer:
-        gdf = gdf.drop(columns='geometry')
+        with contextlib.suppress(Exception):
+            gdf = gdf.drop(columns='geometry')
     else:
         gdf = gdf.to_crs(f"{utm_zone}")
         print(f'##### {layer} for {VPUID} projected to {utm_zone} #####')
-    
+
     if 'WBD' in layer:
         gdf.columns = gdf.columns.str.lower()
         gdf['VPUID'] = VPUID
-        
+
     # if huc12 or huc8 or huc4 are in capital letters, convert them to lower case
     if 'huc12' in gdf.columns:
         gdf.rename(columns={'huc12': 'huc12'}, inplace=True)
@@ -178,28 +175,58 @@ def read_project_filter(VPUID, layer, gdf_path, utm_zone):
 
     if 'tohuc' in gdf.columns:
         gdf.rename(columns={'tohuc': 'tohuc'}, inplace=True)
-        
+
     if layer == 'WBDHU8':
         selected_columns = ['huc8', 'name', 'VPUID', 'geometry']
         gdf = gdf[~gdf['huc8'].isna()][selected_columns].explode(index_parts=False)
         gdf['area'] = gdf['geometry'].area
         gdf = gdf.sort_values(by='area', ascending=False).drop_duplicates(subset=["huc8"]).drop(columns='area')
-        
+
     if layer == 'WBDHU12':
         selected_columns = ['huc12','tohuc',  'name', 'VPUID', 'geometry']
         gdf = gdf[~gdf['huc12'].isna()][selected_columns].explode(index_parts=False)
         gdf['area'] = gdf['geometry'].area
         gdf = gdf.sort_values(by='area', ascending=False).drop_duplicates(subset=["huc12"]).drop(columns='area')
-    
-    
+
+
     return gdf
 
 
+def NHDPlus_infra_check_by_VPUID(VPUID):
+    extracted_nhd_path = f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/'
+    files = os.listdir(extracted_nhd_path)
+    if len(files) == 0:
+        print(f'##### No extracted files found for {VPUID} #####')
+    else:
+        ### check if all the files are extracted as in the NHDPlus_extract_by_VPUID
+        layers = ['WBDHU8', 'WBDHU12', 'NHDPlusFlowlineVAA', 'NHDFlowline', 'NHDPlusCatchment', 'NHDWaterbody']
+        for layer in layers:
+            if not os.path.exists(os.path.join(extracted_nhd_path, f'{layer}.pkl')):
+                print(f'##### {layer} not found for {VPUID} #####')
+                raise ValueError(f'##### {layer} not found for {VPUID} #####')
+            else:
+                print(f'##### {layer} found for {VPUID} #####')
+
+def get_all_VPUIDs():
+    path = "/data/SWATGenXApp/GenXAppData/NHDPlusData/NHDPlus_VPU_National/"
+    ## get all file names ending with .zip
+    files = glob.glob(f"{path}*.zip")
+
+    VPUIDs = [os.path.basename(file).split('_')[2] for file in files]
+
+    print(VPUIDs)
+    return VPUIDs
 ## run a test with NHDPlus_extract_by_VPUID
 if __name__ == "__main__":
-    BASE_PATH = r"/data/SWATGenXApp/GenXAppData/NHDPlusData"
-    
-    #VPUIDs = get_all_VPUIDs(BASE_PATH)
+
+
+    VPUIDs = get_all_VPUIDs()
     #print("VPUIDs", VPUIDs)
-    VPUID = "0202"
-    NHDPlus_extract_by_VPUID(VPUID ) 
+    for VPUID in VPUIDs:
+        print(f"Processing VPUID: {VPUID}")
+        #print(f"Processing VPUID: {VPUID}")
+        #NHDPlus_extract_by_VPUID(VPUID ) 
+        try:
+            NHDPlus_infra_check_by_VPUID(VPUID)
+        except Exception as e:
+            NHDPlus_extract_by_VPUID(VPUID)

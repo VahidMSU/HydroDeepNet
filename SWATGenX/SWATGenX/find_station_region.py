@@ -10,12 +10,14 @@ from shapely.geometry import Point
 # Set up loggings
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-def find_station_region(search_term, governmental_boundries_path, USGS_stations_path, USGS_CONUS_shp):
+def find_station_region(search_term, governmental_boundries_path, USGS_CONUS_shp):
 
     US_BOUNDARIES = gpd.read_file(governmental_boundries_path, layer="GU_CountyOrEquivalent")
-    usgs_stations = pd.read_csv(USGS_stations_path, dtype={'site_no': str})
     USGS_CONUS = gpd.read_file(USGS_CONUS_shp)
-
+    available_sites_path = "/data/SWATGenXApp/GenXAppData/USGS/all_VPUIDs.csv"
+    available_sites = pd.read_csv(available_sites_path, dtype={"site_no": str})
+    USGS_CONUS = USGS_CONUS[USGS_CONUS.site_no.isin(available_sites.site_no)]
+    
     countries = []
     states = []
     site_numbers = []
@@ -23,14 +25,13 @@ def find_station_region(search_term, governmental_boundries_path, USGS_stations_
     VPUIDs = []
     coordinates = []
 
-
     counter = 1
     # Loop through unique site names in usgs_stations
-    for name in usgs_stations.station_nm.unique():
+    for name in USGS_CONUS.station_nm.unique():
         if search_term in name.lower():
             logging.info("=========================================")
             logging.info(f"{counter}-Site name: {name}")
-            site_number = usgs_stations[usgs_stations.station_nm == name].site_no.values[0]
+            site_number = USGS_CONUS[USGS_CONUS.station_nm == name].site_no.values[0]
             logging.info(f"{counter}-Site number: {site_number}")
             # Find VPUID
             VPUID = find_VPUID(site_number)
@@ -53,6 +54,9 @@ def find_station_region(search_term, governmental_boundries_path, USGS_stations_
             VPUIDs.append(VPUID)
             coordinates.append(f"{x:.2f}, {y:.2f}")
 
+
+
+
     return pd.DataFrame(
         {
             "SiteNumber": site_numbers,
@@ -65,8 +69,8 @@ def find_station_region(search_term, governmental_boundries_path, USGS_stations_
     )
 
 if __name__ == "__main__":
-    governmental_boundries_path =  "/data2/MyDataBase/GenXAppData/USGS/GovernmentUnits_National_GDB/GovernmentUnits_National_GDB.gdb"
-    USGS_stations_path = "/data2/MyDataBase/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv"
-    USGS_CONUS_shp = "/data2/MyDataBase/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.shp"
+    governmental_boundries_path =  "/data/SWATGenXApp/GenXAppData/USGS/GovernmentUnits_National_GDB/GovernmentUnits_National_GDB.gdb"
+    USGS_stations_path = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv"
+    USGS_CONUS_shp = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.shp"
     search_term = "metal"
     df = find_station_region(search_term, governmental_boundries_path, USGS_stations_path, USGS_CONUS_shp)

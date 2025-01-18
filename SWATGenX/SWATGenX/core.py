@@ -2,10 +2,10 @@ import os
 import shutil
 import pandas as pd
 from SWATGenX.Process_raster import generate_raster_files
-from SWATGenX.NHDPlusExtractor import writing_swatplus_cli_files
+from SWATGenX.NHD_SWATPlus_Extractor import writing_swatplus_cli_files
 from SWATGenX.PRISM_extraction import extract_PRISM_parallel
 from SWATGenX.configuration import check_configuration
-from SWATGenX.write_swatplus_shapes import generate_swatplus_shapes
+from SWATGenX.generate_swatplus_shapes import generate_swatplus_shapes
 from SWATGenX.model_precipitation_info import plot_annual_precipitation
 from SWATGenX.runQSWATPlus import runQSWATPlus
 from SWATGenX.run_swatplusEditor import run_swatplusEditor

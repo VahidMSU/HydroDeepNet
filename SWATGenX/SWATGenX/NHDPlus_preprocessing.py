@@ -1,16 +1,10 @@
 import os
 import geopandas as gpd
 import pandas as pd
-import os
 import datetime
-from multiprocessing import Process
 import numpy as np
 import concurrent.futures
-import time
-import utm
-import zipfile
-import glob
-
+from tqdm import tqdm
 
 def loginfo(logfile, info):
     with open(logfile, 'a') as f:
@@ -197,14 +191,27 @@ def removing_isolated_streams(df,watersheds, save_path):
     # Print the number of removed isolated streams
     num_removed = len(isolated_streams)
     print('Number of removed isolated streams:', num_removed)
-    # Save the isolated streams to a file
-    isolated_streams.to_file(os.path.join(save_path,'isolated_streams'))
+    save_file(
+        save_path, 'isolated_streams/isolated_streams.shp', isolated_streams
+    )
     # Save the isolated streams to a file
     isolated_watersheds = watersheds.merge(isolated_streams[['NHDPlusID']], on='NHDPlusID')
-    isolated_watersheds.to_file(os.path.join(save_path,'isolated_watersheds'))
+    save_file(
+        save_path,
+        'isolated_watersheds/isolated_watersheds.shp',
+        isolated_watersheds,
+    )
     # Remove isolated streams from the main dataframe
     df = df[~((df.UpHydroSeq == 0) & (df.DnHydroSeq == 0))].reset_index(drop=True)
     return df
+
+def save_file(save_path, arg1, arg2):
+    # Save the isolated streams to a file
+    isolated_stream_path = os.path.join(save_path, arg1)
+    ## remove if the file already exists
+    os.remove(isolated_stream_path) if os.path.exists(isolated_stream_path) else None
+    os.makedirs(os.path.dirname(isolated_stream_path), exist_ok=True)
+    arg2.to_file(isolated_stream_path)
 
 def setting_data_type(streams):
     
@@ -225,7 +232,7 @@ def setting_data_type(streams):
     return streams
 
 def creating_watershed_dissolving_divergence (watersheds):
-    from tqdm import tqdm
+    
     divergence_2 = watersheds[watersheds.Divergence == 2]
     # Step 2: Create a mapping of HydroSeq to DnHydroSeq for these rows
     hydroseq_dn_mapping = divergence_2.set_index('HydroSeq')['DnHydroSeq'].to_dict()
@@ -249,108 +256,138 @@ def creating_watershed_dissolving_divergence (watersheds):
 def NHDPlus_preprocessing(VPUID):
     BASE_PATH = '/data/SWATGenXApp/GenXAppData/'
     database_name = f'SWATPlus_NHDPlus/{VPUID}'
-    outpath = os.path.join(BASE_PATH,'NHDPlusData',f'{database_name}/streams.pkl') 
+    outpath = os.path.join(BASE_PATH,'NHDPlusData',f'{database_name}/streams.pkl')
     if not os.path.exists(outpath):
         
         
-        output_base = os.path.join(BASE_PATH, 'NHDPlusData', database_name)
-        
-        logfile = os.path.join(output_base, 'log.txt')
-        if os.path.exists(logfile):
-            os.remove(logfile)
-            # write the first entry
-        loginfo(logfile, f"Start time: {datetime.datetime.now()}")
-        
-        stage = "loading data"
-        loginfo(logfile, f"stage: {stage}")
-        WBDHU12 = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/WBDHU12.pkl')))
-        WBDHU8 = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/WBDHU8.pkl')))
-        NHDPlusCatchment = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/NHDPlusCatchment.pkl')))
-        NHDWaterbody = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/NHDWaterbody.pkl')))
-        NHDFlowline = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/NHDFlowline.pkl')))
-        NHDPlusFlowlineVAA = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/NHDPlusFlowlineVAA.pkl')))
-        ### add VAA 
-        print('Data loaded')
-        print(f"NHDPlusFlowlineVAA columns: {NHDPlusFlowlineVAA.columns}")  
-        print(f"NHDPlusCatchment columns: {NHDPlusCatchment.columns}")
-        print(f"NHDFlowline columns: {NHDFlowline.columns}")
-        print(f"NHDWaterbody columns: {NHDWaterbody.columns}")
-        print(f"WBDHU8 columns: {WBDHU8.columns}")
-        print(f"WBDHU12 columns: {WBDHU12.columns}")
-        
-        ### in some cases the VPUID is in lower case, we need to change to upper case
-    
-        
-        NHDPlusCatchment = NHDPlusCatchment.merge(NHDPlusFlowlineVAA.drop(columns=['VPUID','AreaSqKm']), on='NHDPlusID')
-        NHDFlowline = NHDFlowline.merge(NHDPlusFlowlineVAA.drop(columns=['VPUID']), on='NHDPlusID')
-        
-        streams = NHDFlowline.copy()[
-                                    [
-                                    'NHDPlusID','StreamOrde','UpHydroSeq','HydroSeq',
-                                    'DnHydroSeq','WBArea_Permanent_Identifier',
-                                    'StartFlag','TerminalFl','Divergence','VPUID',
-                                    'Permanent_Identifier','MaxElevSmo','MinElevSmo',
-                                    'AreaSqKm','LengthKM','TotDASqKm', 'geometry'
-                                    ]
-                                    ]
-
-                                    
-        watersheds = NHDPlusCatchment.copy()[['NHDPlusID','UpHydroSeq','HydroSeq','DnHydroSeq','StartFlag','TerminalFl','Divergence','VPUID','geometry']]
-        # process dat huc8 and huc12"
-        stage = "processing huc8 and huc12"
-        loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")  
-        streams = process_huc_and_merge(watersheds, WBDHU8, streams, 'huc8')
-        streams = process_huc_and_merge(watersheds, WBDHU12, streams, 'huc12')
-        
-        stage = "resetting length unit"
-        loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
-        streams = converting_length_unit_of_streams(streams)
-        streams = calculating_drop(streams)
-        
-        stage = "removing second divergence"
-        loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
-        save_divergence_2_streams(streams,watersheds,output_base)
-        streams = removing_second_divergence(streams)
-        streams = remove_streams_without_drainage(streams,watersheds)
-        streams = remove_coastal_lines(streams)
-        streams = setting_zero_for_outlets_and_headwaters(streams)
-        
-        stage = "removing isolated streams"
-        loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
-        isolated_path = os.path.join(
-            BASE_PATH, 'NHDPlusData/', database_name)
-        streams = removing_isolated_streams(streams,watersheds, isolated_path)
-        
-        stage = "resetting start and terminal flags"
-        loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
-        streams = resetting_start_terminate_flags(streams)
-        outlets_upstream_dict = generate_hydroseq_upstream_dict(streams)
-        streams = adding_subbasins_level_one(streams,outlets_upstream_dict)
-        
-        stage = "setting data type"
-        loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
-        streams = setting_data_type(streams)
-
-        stage = "removing huc12 with nan"
-        loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
-        streams = streams[~streams.huc12.isna()].reset_index(drop=True)
-
-        stage = "creating watersheds"
-        loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
-        watersheds = creating_watershed_dissolving_divergence (watersheds)
-        ###### SAVING THE PROCESSES STREAMS AND WATERSHEDS TO PICKLE FORMAT FOR FURTHER analysis
-
-        stage = "saving the processed data"
-        loginfo(logfile, f"stage: {stage}")
-        watersheds.to_pickle(os.path.join(BASE_PATH,'NHDPlusData',f'{database_name}/watersheds.pkl'))
-        streams.to_pickle(os.path.join(BASE_PATH,'NHDPlusData',f'{database_name}/streams.pkl'))
-        
-        # save the log file
-        loginfo(logfile, f"End time: {datetime.datetime.now()}")
-    
+        execute_processes(BASE_PATH, database_name)
     else:
-        print(f'#### NHDPlus for {VPUID} is already processed ####') 
+        print(f'#### NHDPlus for {VPUID} is already processed ####')
+
+def execute_processes(BASE_PATH, database_name):
+    output_base = os.path.join(BASE_PATH, 'NHDPlusData', database_name)
+
+    logfile = os.path.join(output_base, 'log.txt')
+    if os.path.exists(logfile):
+        os.remove(logfile)
+        # write the first entry
+    loginfo(logfile, f"Start time: {datetime.datetime.now()}")
+
+    stage = "loading data"
+    loginfo(logfile, f"stage: {stage}")
+    WBDHU12 = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/WBDHU12.pkl')))
+    WBDHU8 = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/WBDHU8.pkl')))
+    NHDPlusCatchment = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/NHDPlusCatchment.pkl')))
+    NHDWaterbody = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/NHDWaterbody.pkl')))
+    NHDFlowline = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/NHDFlowline.pkl')))
+    NHDPlusFlowlineVAA = gpd.GeoDataFrame(pd.read_pickle(os.path.join(BASE_PATH, 'NHDPlusData', f'{database_name}/NHDPlusFlowlineVAA.pkl')))
+    ### add VAA 
+    print('Data loaded')
+    print(f"NHDPlusFlowlineVAA columns: {NHDPlusFlowlineVAA.columns}")
+    print(f"NHDPlusCatchment columns: {NHDPlusCatchment.columns}")
+    print(f"NHDFlowline columns: {NHDFlowline.columns}")
+    print(f"NHDWaterbody columns: {NHDWaterbody.columns}")
+    print(f"WBDHU8 columns: {WBDHU8.columns}")
+    print(f"WBDHU12 columns: {WBDHU12.columns}")
+
+    ### in some cases the VPUID is in lower case, we need to change to upper case
+
+
+    NHDPlusCatchment = NHDPlusCatchment.merge(NHDPlusFlowlineVAA.drop(columns=['VPUID','AreaSqKm']), on='NHDPlusID')
+    NHDFlowline = NHDFlowline.merge(NHDPlusFlowlineVAA.drop(columns=['VPUID']), on='NHDPlusID')
+
+    streams = NHDFlowline.copy()[
+                                [
+                                'NHDPlusID','StreamOrde','UpHydroSeq','HydroSeq',
+                                'DnHydroSeq','WBArea_Permanent_Identifier',
+                                'StartFlag','TerminalFl','Divergence','VPUID',
+                                'Permanent_Identifier','MaxElevSmo','MinElevSmo',
+                                'AreaSqKm','LengthKM','TotDASqKm', 'geometry'
+                                ]
+                                ]
+
+
+    watersheds = NHDPlusCatchment.copy()[['NHDPlusID','UpHydroSeq','HydroSeq','DnHydroSeq','StartFlag','TerminalFl','Divergence','VPUID','geometry']]
+    # process dat huc8 and huc12"
+    stage = "processing huc8 and huc12"
+    loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    streams = process_huc_and_merge(watersheds, WBDHU8, streams, 'huc8')
+    streams = process_huc_and_merge(watersheds, WBDHU12, streams, 'huc12')
+
+    stage = "resetting length unit"
+    loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    streams = converting_length_unit_of_streams(streams)
+    streams = calculating_drop(streams)
+
+    stage = "removing second divergence"
+    loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    save_divergence_2_streams(streams,watersheds,output_base)
+    streams = removing_second_divergence(streams)
+    streams = remove_streams_without_drainage(streams,watersheds)
+    streams = remove_coastal_lines(streams)
+    streams = setting_zero_for_outlets_and_headwaters(streams)
+
+    stage = "removing isolated streams"
+    loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    isolated_path = os.path.join(
+        BASE_PATH, 'NHDPlusData/', database_name)
+    streams = removing_isolated_streams(streams,watersheds, isolated_path)
+
+    stage = "resetting start and terminal flags"
+    loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    streams = resetting_start_terminate_flags(streams)
+    outlets_upstream_dict = generate_hydroseq_upstream_dict(streams)
+    streams = adding_subbasins_level_one(streams,outlets_upstream_dict)
+
+    stage = "setting data type"
+    loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    streams = setting_data_type(streams)
+
+    stage = "removing huc12 with nan"
+    loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    streams = streams[~streams.huc12.isna()].reset_index(drop=True)
+
+    stage = "creating watersheds"
+    loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    watersheds = creating_watershed_dissolving_divergence (watersheds)
+    ###### SAVING THE PROCESSES STREAMS AND WATERSHEDS TO PICKLE FORMAT FOR FURTHER analysis
+
+    stage = "saving the processed data"
+    loginfo(logfile, f"stage: {stage}")
+    watersheds.to_pickle(os.path.join(BASE_PATH,'NHDPlusData',f'{database_name}/watersheds.pkl'))
+    streams.to_pickle(os.path.join(BASE_PATH,'NHDPlusData',f'{database_name}/streams.pkl'))
+
+    # save the log file
+    loginfo(logfile, f"End time: {datetime.datetime.now()}")
     
+
+def check_NHDPlus_preprocessed_by_VPUID(VPUID):
+    BASE_PATH = '/data/SWATGenXApp/GenXAppData/'
+    database_name = f'SWATPlus_NHDPlus/{VPUID}'
+    output_names = ['watersheds.pkl', 'streams.pkl']
+
+    for output_name in output_names:
+        if not os.path.exists(os.path.join(BASE_PATH, 'NHDPlusData', database_name, output_name)):
+            print(f'#### NHDPlus for {VPUID} is not preprocessed ####')
+            raise ValueError(f'#### NHDPlus for {VPUID} is not preprocessed ####')
+def get_all_VPUIDs():
+    import glob
+    path = "/data/SWATGenXApp/GenXAppData/NHDPlusData/NHDPlus_VPU_National/"
+    ## get all file names ending with .zip
+    files = glob.glob(f"{path}*.zip")
+
+    VPUIDs = [os.path.basename(file).split('_')[2] for file in files]
+
+    print(VPUIDs)
+    return VPUIDs
+
 if __name__ == "__main__":
     VPUID = '0202'
-    NHDPlus_preprocessing(VPUID)
+    VPUIDs = get_all_VPUIDs()
+
+    for VPUID in VPUIDs:
+        try:
+            check_NHDPlus_preprocessed_by_VPUID(VPUID)
+        except:
+            print(f'Error in {VPUID}')  
+        #    NHDPlus_preprocessing(VPUID)

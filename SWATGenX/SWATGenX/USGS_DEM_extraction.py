@@ -69,6 +69,9 @@ class DEMProcessor:
             temp_path (str): Path to the shapefile or vector file defining the clipping boundary.
             output_raster (str): Path to the output clipped raster file.
         """
+        if os.path.exists(output_raster):
+            print(f"Output raster {output_raster} already exists, continue...")
+            return
         clipping_layer = self._extracted_from_resampling_13(
             "Clipping the DEM mosaic to the extent of the boundary...",
             ogr,
@@ -134,8 +137,6 @@ class DEMProcessor:
         """
         print("Projecting the clipped raster to the original UTM zone...")
 
-        # Extract EPSG code from the utm_zone parameter
-        EPSG = int(utm_zone.split(":")[1])
 
         # Open the input raster
         src_ds = gdal.Open(output_raster)
@@ -145,10 +146,10 @@ class DEMProcessor:
         # Get the source spatial reference
         src_srs = osr.SpatialReference()
         src_srs.ImportFromWkt(src_ds.GetProjection())
-
+        print("##### utm_zone", utm_zone)   
         # Define the target spatial reference
         dst_srs = osr.SpatialReference()
-        dst_srs.ImportFromEPSG(EPSG)
+        dst_srs.ImportFromEPSG(int(utm_zone))
 
         # Perform the reprojection using gdal.Warp
         warp_options = gdal.WarpOptions(
@@ -191,13 +192,14 @@ class DEMProcessor:
             except Exception as e:
                 print(f"Failed to delete {output_raster}: {e}")
 
-
-    def get_EPSG(self, unzipped_nhdplus_base_path):
-        watershed_bounds = self.get_watershed_bounds(unzipped_nhdplus_base_path)
-        lat_center = (watershed_bounds["max_lat"] + watershed_bounds["min_lat"]) / 2
-        lon_center = (watershed_bounds["max_lon"] + watershed_bounds["min_lon"]) / 2
-        utm_zone = self.get_utm_zone(lat_center, lon_center)
-        return int(utm_zone.split(":")[1]), utm_zone
+    def get_EPSG(self, VPUID):
+        import pandas as pd 
+        base_input_raster = f'/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}/'
+        streams_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl')
+        streams = gpd.GeoDataFrame(pd.read_pickle(streams_path))
+        zone = streams.crs.to_string().split(' ')[1].split('=')[-1]
+        return f"326{zone[-2:]}"
+    
 
     def get_watershed_bounds(self,unzipped_nhdplus_base_path):
         gdb_base = unzipped_nhdplus_base_path
@@ -258,6 +260,25 @@ class DEMProcessor:
             path_to_download = os.path.join(path, filename)
             downloaded_files.append(path_to_download)
 
+            print(f"Processing DEM file: {filename}")
+            print(f"path_to_download path: {path_to_download}")
+            print(f"URL: {url}")
+
+            filename = os.path.basename(url)
+            
+            ## if filename exist in /data/SWATGenXApp/GenXAppData/DEM/CONUS
+            list_of_already_downloaded_files = os.listdir("/data/SWATGenXApp/GenXAppData/DEM/CONUS")
+            if filename in list_of_already_downloaded_files:
+                print(f"{filename} already downloaded, continue...")
+                ## copy to /data/SWATGenXApp/GenXAppData/DEM/VPUID/
+                import shutil
+                shutil.copy(f"/data/SWATGenXApp/GenXAppData/DEM/CONUS/{filename}", path_to_download)
+                continue
+            
+            print(f"Downloading {filename}...")
+            import time 
+
+            time.sleep(15)
             if os.path.exists(path_to_download):
                 print(f"{filename} already downloaded, continue...")
                 continue
@@ -280,6 +301,7 @@ class DEMProcessor:
 
         
     def create_mosaic(self, downloaded_files, output_mosaic_path):
+
         """
         Creates a mosaic from multiple DEM files using GDAL.
 
@@ -288,6 +310,10 @@ class DEMProcessor:
         """
         print("Creating mosaic from DEM files...")
 
+        if os.path.exists(output_mosaic_path):
+            print(f"Mosaic already exists at {output_mosaic_path}, continue...")
+            return
+        
         # Open all input files and add them to a list
         src_files_to_mosaic = []
         for dem in downloaded_files:
@@ -416,33 +442,48 @@ def DEM_extract_by_VPUID(VPUID) -> None:
     output_raster = os.path.join(dem_base_path, f"{VPUID}/Mosaic_clip.tif")
     url_download_path= os.path.join(dem_base_path, "DEM_13_arc_second.USGS")
     output_raster_projected = os.path.join(dem_base_path, f"{VPUID}/USGS_DEM_30m.tif")
+    dem_processor = DEMProcessor(VPUID, download_path, output_mosaic_path,url_download_path)
+    EPSG = dem_processor.get_EPSG(VPUID)
 
     if not os.path.exists(output_raster_projected):
-        dem_processor = DEMProcessor(VPUID, download_path, output_mosaic_path,url_download_path)
+        
+        dem_processor.process_dem(unzipped_nhdplus_base_path)    
+        dem_processor.VPUID_HUC4_bounds(temp_path, EPSG, unzipped_nhdplus_base_path)
+        dem_processor.clip_vpuid_mosaic(input_raster, temp_path, output_raster)
+        dem_processor.project_clipped_raster(output_raster, EPSG, dem_base_path, output_raster_projected)
+        dem_processor.delete_temp_files(temp_path, output_raster)
 
-        EPSG, utm_zone = dem_processor.get_EPSG(unzipped_nhdplus_base_path)
-
-        if not os.path.exists(output_raster_projected):
+        RESOLUTIONS = [100, 250, 500, 1000, 2000]
+        
+        for RESOLUTION in RESOLUTIONS:
             
-            dem_processor.process_dem(unzipped_nhdplus_base_path)    
-            dem_processor.VPUID_HUC4_bounds(temp_path, utm_zone, unzipped_nhdplus_base_path)
-            dem_processor.clip_vpuid_mosaic(input_raster, temp_path, output_raster)
-            dem_processor.project_clipped_raster(output_raster, utm_zone, dem_base_path, output_raster_projected)
-            dem_processor.delete_temp_files(temp_path, output_raster)
-
-            RESOLUTIONS = [100, 250, 500, 1000, 2000]
-            
-            for RESOLUTION in RESOLUTIONS:
-                
-                output_resampled_raster_path = os.path.join(dem_base_path, f"{VPUID}/USGS_DEM_{RESOLUTION}m.tif")
-                if not os.path.exists(output_resampled_raster_path):
-                    dem_processor.resampling(RESOLUTION, output_raster_projected,output_resampled_raster_path)
-            not_delete_pattern = "USGS_DEM"
-            dem_processor.clean_directory(download_path, not_delete_pattern)
-        else:
-            print(f"{os.path.basename(output_raster_projected)} exists, continue...")
+            output_resampled_raster_path = os.path.join(dem_base_path, f"{VPUID}/USGS_DEM_{RESOLUTION}m.tif")
+            if not os.path.exists(output_resampled_raster_path):
+                dem_processor.resampling(RESOLUTION, output_raster_projected,output_resampled_raster_path)
 
 
+    import pandas as pd 
+    base_input_raster = f'/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}/'
+    streams_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl')
+    input_raster = os.path.join(base_input_raster, "USGS_DEM_30m.tif")
+    streams = gpd.GeoDataFrame(pd.read_pickle(streams_path))
+    print('Loaded streams CRS',streams.crs)
+
+    with rasterio.open(input_raster) as src:
+        print('Loaded raster CRS',src.crs)
+        EPSG = src.crs.to_string()
+
+    if streams.crs.to_string().split(' ')[1].split('=')[-1] != EPSG.split(':')[-1][-2:]:
+        print('streams crs:',streams.crs.to_string().split(' ')[1].split('=')[-1])
+        print('DEM crs:',EPSG.split(':')[-1])
+        raise ValueError("CRS of the DEM raster and the streams are different")
+    print(f"DEM for VPUID {VPUID} is ready")
+    not_delete_pattern = "USGS_DEM"
+    dem_processor.clean_directory(download_path, not_delete_pattern)
+
+
+
+    
 def get_all_VPUIDs(base_directory):
     
     path = os.path.join(base_directory, "NHDPlus_VPU_National")
@@ -455,23 +496,39 @@ def get_all_VPUIDs(base_directory):
 
 #sys.path.insert(0, '/data/SWATGenXApp/GenXAppData/codes')
 
+def check_DEM_by_VPUID(VPUID):
+    dem_base_path = "/data/SWATGenXApp/GenXAppData/DEM/VPUID"
+    RESOLUTIONS = ["30", "100", "250", "500", "1000", "2000"]
+    for RESOLUTION in RESOLUTIONS:
+        
+        output_raster_projected = os.path.join(dem_base_path, f"{VPUID}/USGS_DEM_{RESOLUTION}m.tif")    
+        if not os.path.exists(output_raster_projected):
+            raise FileNotFoundError(f"USGS DEM {RESOLUTION}m for VPUID {VPUID} not found.")
+        
+    print(f"## USGS DEM for VPUID {VPUID} exists. #####")
+
 if __name__ == "__main__":
     VPUIDs = get_all_VPUIDs("/data/SWATGenXApp/GenXAppData/NHDPlusData")
     processes = []
-    #VPUIDs = ['0202']
-    print("VPUIDs", VPUIDs)
-    for i, VPUID in enumerate(VPUIDs):
-        ## only if the first two letter is 02
-        if VPUID[:2] not in ['02', '04', '01']:
-            continue
-        print(f"Starting process {i}", VPUID)   
-        process = multiprocessing.Process(target=warrper_NHDPlus_DEM, args=(VPUID,))
-        processes.append(process)
-        process.start()
-        if i%10 == 0 and i != 0:
-            time.sleep(200)
-    for process in processes:
-        process.join()
-    print("All processes have been completed")
+    for VPUID in VPUIDs:
+        try:
+            check_DEM_by_VPUID(VPUID)
+        except FileNotFoundError as e:
+            print(f"DEM not found for {VPUID}. Processing...")
+
+   # for i, VPUID in enumerate(VPUIDs):
+   #     ## only if the first two letter is 02
+   #     if VPUID != "1206":
+   #         continue
+   #     print(f"Starting process {i}", VPUID)   #
+#
+#        process = multiprocessing.Process(target=warrper_NHDPlus_DEM, args=(VPUID,))
+#        processes.append(process)
+#        process.start()
+#        if i%10 == 0 and i != 0:
+#            time.sleep(200)
+#    for process in processes:
+#        process.join()
+#    print("All processes have been completed")
     
     

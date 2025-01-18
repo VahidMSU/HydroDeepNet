@@ -67,7 +67,7 @@ if __name__ == "__main__":
     if not single_model:
         selected_list = huc8_list if LEVEL == "huc8" else station_names
     else:
-        selected_list = ['04161540'] if LEVEL == "huc8" else ['04292000']
+        selected_list = ['04161540'] if LEVEL == "huc8" else ['08088000']
 
     for station_name in selected_list:
         check_station(station_name)
@@ -81,9 +81,10 @@ if __name__ == "__main__":
             "station_name": station_name,
             "MODEL_NAME": MODEL_NAME,
             "single_model": True,
-            "MAX_AREA": 3500,
+            "MAX_AREA": 85000,
             "MIN_AREA": 50,
             "GAP_percent": 10,
+            "region": "12",
            # "target_VPUID": get_all_VPUIDs()
         }
 
