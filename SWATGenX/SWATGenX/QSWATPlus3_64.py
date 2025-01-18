@@ -29,18 +29,16 @@ except ImportError:
     from SWATGenXConfigPars import SWATGenXPaths
 sys.path.append(SWATGenXPaths.QSWATPlus_env_path)
 
-from qgis.core import QgsApplication, QgsProject, QgsRasterLayer, QgsVectorLayer, QgsExpression,  QgsFeatureRequest # @UnresolvedImport
-#from PyQt5.QtCore import * # @UnusedWildImport
+from qgis.core import QgsApplication, QgsProject, QgsRasterLayer
 import atexit
 import sys
 import os
 import glob
-from osgeo import gdal, ogr  # type: ignore
-from multiprocessing import Pool
+from osgeo import gdal, ogr
 
-from QSWATPlus.QSWATPlusMain import QSWATPlus  # @UnresolvedImport
-from QSWATPlus.delineation import Delineation  # @UnresolvedImport
-from QSWATPlus.hrus import HRUs  # @UnresolvedImport
+from QSWATPlus.QSWATPlusMain import QSWATPlus  
+from QSWATPlus.delineation import Delineation 
+from QSWATPlus.hrus import HRUs 
 import traceback
 
 class DummyInterface(object):
@@ -75,7 +73,7 @@ class runHUC():
         self.proj = QgsProject.instance()
         projName = os.path.split(self.projDir)[1]
         self.proj.write(self.projDir + '/{0}.qgs'.format(projName))
-       # self.proj.read(self.projDir + '/{0}.qgs'.format(projName))
+        self.proj.read(self.projDir + '/{0}.qgs'.format(projName))
         self.plugin.setupProject(self.proj, True, isHUC=False, logFile=logFile)
         print(' %###% debug: projDir {0}'.format(self.projDir), ' ###')
         print(' %###% debug: projName {0}'.format(projName), ' ###')
@@ -151,7 +149,7 @@ class runHUC():
         print(' %###% debug: landuseFile {0}'.format(self.hrus.landuseFile), ' ###')
         hrudlg.SSURGOButton.setChecked(True)
         hrudlg.usersoilButton.setChecked(True)
-        self.LanduseTable = SWATGenXPaths.landuse_lookup
+        self.LanduseTable = SWATGenXPaths.LanduseTable
         gv.db.importCsv('landuse_lookup', "landuse", self.LanduseTable)
         gv.db.useSSURGO = True
         gv.db.slopeLimits = [3,9]

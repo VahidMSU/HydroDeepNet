@@ -13,8 +13,9 @@ def download_USGS_DEM():
         lines = file.readlines()
         urls = [line.strip() for line in lines]
 
-    output_path = "/data/SWATGenXApp/GenXAppData/DEM/CONUS/"
-    downloaded_files = os.listdir(output_path)
+    Downloaded_CONUS_DEM_path = SWATGenXPaths.Downloaded_CONUS_DEM_path 
+
+    downloaded_files = os.listdir(Downloaded_CONUS_DEM_path)
     downloaded_files = [file.split(".")[0] for file in downloaded_files]
     if len(downloaded_files) == len(urls):
         print("All files are already downloaded")
@@ -22,7 +23,7 @@ def download_USGS_DEM():
     else:
         #raise ValueError("Some files are missing")
     
-        os.makedirs(output_path, exist_ok=True)
+        os.makedirs(Downloaded_CONUS_DEM_path, exist_ok=True)
 
         ## donwload all the files in parallel
         import requests
@@ -30,7 +31,7 @@ def download_USGS_DEM():
 
         def download_file(url):
             filename = url.split('/')[-1]
-            output_file = os.path.join(output_path, filename)
+            output_file = os.path.join(Downloaded_CONUS_DEM_path, filename)
             if not os.path.exists(output_file):
                 print(f"Downloading {url} to {output_file}")
                 r = requests.get(url)

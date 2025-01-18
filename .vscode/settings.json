@@ -11,5 +11,6 @@
         "/data/SWATGenXApp/codes/SWATGenX",
         "/data/SWATGenXApp/codes/ModelProcessing",
         "/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api",
+        "/home/rafieiva/.local/share/QGIS/QGIS3/profiles/default/python/plugins/QSWATPlusLinux3_64/"
     ]
 }

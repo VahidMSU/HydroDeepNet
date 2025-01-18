@@ -35,7 +35,7 @@ for TYPE in TYPES:
         for MONTH in MONTHS:
             _, last_day = calendar.monthrange(YEAR, MONTH)
             for DAY in range(1, last_day + 1):
-                extract_path = f"{SWATGenXPaths.PRISM_path}/unzipped_daily/{TYPE}/{YEAR}/PRISM_{TYPE}_stable_4kmD2_{YEAR}{MONTH:02}{DAY:02}_bil/PRISM_{TYPE}_stable_4kmD2_{YEAR}{MONTH:02}{DAY:02}_bil.bil"
+                extract_path = f"{SWATGenXPaths.PRISM_unzipped_path}/{TYPE}/{YEAR}/PRISM_{TYPE}_stable_4kmD2_{YEAR}{MONTH:02}{DAY:02}_bil/PRISM_{TYPE}_stable_4kmD2_{YEAR}{MONTH:02}{DAY:02}_bil.bil"
                 # now create the NetCDF file using all of the bil files for a type
                 with rasterio.open(extract_path) as src:
                     array = src.read(1)
