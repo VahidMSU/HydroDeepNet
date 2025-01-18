@@ -18,7 +18,7 @@ except ImportError:
     from sa import align_rasters
 
 
-def generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution):
+def generate_swatplus_rasters(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution):
     print(f"################## Generating raster files for {NAME} {LEVEL} {VPUID} ##################")
     original_landuse_path = os.path.join(BASE_PATH, f"LandUse/{landuse_product}_CONUS/{VPUID}/{landuse_product}_{VPUID}_{landuse_epoch}_{ls_resolution}m.tif")
     original_soil_path = os.path.join(BASE_PATH, f"Soil/gSSURGO_CONUS/{VPUID}/gSSURGO_{VPUID}_{ls_resolution}m.tif")
@@ -57,23 +57,23 @@ def generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_pro
     watershed_boundary = gpd.GeoDataFrame(geometry=[watershed_boundary], crs=gdf.crs)
     watershed_boundary = watershed_boundary.buffer(250)
     watershed_boundary.to_file(watershed_boundary_path)
-
+    spatial_analysis = sa()
     # Set Coordinate System using `sa.Describe`
-    desc = sa().Describe(watershed_boundary_path)
+    desc = spatial_analysis.Describe(watershed_boundary_path)
 
     # Extract and save DEM using `rasterio` and `mask`
-    dem_raster = sa().ExtractByMask(original_dem_path, watershed_boundary_path)
+    dem_raster = spatial_analysis.ExtractByMask(original_dem_path, watershed_boundary_path)
     dem_raster.save(swatplus_dem_output)
 
     # Extract and save Landuse
-    landuse_raster = sa().ExtractByMask(original_landuse_path, watershed_boundary_path)
+    landuse_raster = spatial_analysis.ExtractByMask(original_landuse_path, watershed_boundary_path)
     landuse_raster.save(swatplus_landuse_output)
 
     # Extract and save Soil
-    soil_raster = sa().ExtractByMask(original_soil_path, watershed_boundary_path)
+    soil_raster = spatial_analysis.ExtractByMask(original_soil_path, watershed_boundary_path)
     soil_raster.save(swatplus_soil_output)
 
-    sa().snap_rasters(swatplus_landuse_output, swatplus_soil_output)
+    spatial_analysis.snap_rasters(swatplus_landuse_output, swatplus_soil_output)
 
     #def resample_dem(path):
     #    assert os.path.exists(path), f"Raster not found: {path}"
@@ -162,4 +162,4 @@ if __name__ == "__main__":
     dem_resolution = "30"
     MODEL_NAME = "SWAT_MODEL"
     BASE_PATH = r'/data/SWATGenXApp/GenXAppData/'
-    generate_raster_files(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution)
+    generate_swatplus_rasters(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution)

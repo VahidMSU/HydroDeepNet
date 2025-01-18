@@ -27,3 +27,13 @@ Error in 1711: Unable to open raster file: /data/SWATGenXApp/GenXAppData/DEM/VPU
 Error in 19020800: Received a NULL pointer.
 Error in 0512: Layer 'WBDHU4' could not be opened
 Error in 2201: Received a NULL pointer.
+Error in 19070402: Received a NULL pointer.
+Error in 19020602: Received a NULL pointer.
+Error in 2202: Received a NULL pointer.
+Error in 19060502: Received a NULL pointer.
+Error in 2002: Received a NULL pointer.
+Error in 2101: Received a NULL pointer.
+Error in 19060504: Received a NULL pointer.
+Error in 2008: Received a NULL pointer.
+Error in 2007: Received a NULL pointer.
+Error in 1710: Layer 'WBDHU4' could not be opened

@@ -1,7 +1,7 @@
 import os
 import shutil
 import pandas as pd
-from SWATGenX.Process_raster import generate_raster_files
+from SWATGenX.generate_swatplus_rasters import generate_swatplus_rasters
 from SWATGenX.NHD_SWATPlus_Extractor import writing_swatplus_cli_files
 from SWATGenX.PRISM_extraction import extract_PRISM_parallel
 from SWATGenX.configuration import check_configuration
@@ -63,7 +63,7 @@ class SWATGenXCore:
 		self.list_of_huc12s = self.prepare_huc12s()
 
 		generate_swatplus_shapes(self.list_of_huc12s, self.BASE_PATH, self.VPUID, self.LEVEL, self.NAME, self.EPSG, self.MODEL_NAME)
-		generate_raster_files(self.BASE_PATH, self.VPUID, self.NAME, self.LEVEL, self.MODEL_NAME, self.landuse_product, self.landuse_epoch, self.ls_resolution, self.dem_resolution)
+		generate_swatplus_rasters(self.BASE_PATH, self.VPUID, self.NAME, self.LEVEL, self.MODEL_NAME, self.landuse_product, self.landuse_epoch, self.ls_resolution, self.dem_resolution)
 		self.logger.info(f"First Stage completed for {self.NAME}, {self.VPUID}")
 
 		self.list_of_huc12s = [f'{huc12:012d}' for huc12 in self.list_of_huc12s]
