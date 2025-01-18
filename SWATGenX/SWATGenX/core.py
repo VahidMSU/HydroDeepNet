@@ -10,9 +10,14 @@ from SWATGenX.model_precipitation_info import plot_annual_precipitation
 from SWATGenX.runQSWATPlus import runQSWATPlus
 from SWATGenX.run_swatplusEditor import run_swatplusEditor
 from SWATGenX.SWATplus_streamflow import fetch_streamflow_for_watershed
-from SWATGenX.extract_SWAT_NSRDB import NSRDB_extract
+from SWATGenX.NSRDB_SWATplus_extraction import NSRDB_extract
 from SWATGenX.SWATGenXLogging import LoggerSetup
 from functools import partial
+
+try:
+	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+	from SWATGenXConfigPars import SWATGenXPaths
 
 class SWATGenXCore:
 	def __init__(self, config):
@@ -27,7 +32,6 @@ class SWATGenXCore:
 		
 		self.config = config
 		self.site_no = config.get("site_no")
-		self.BASE_PATH = config.get("BASE_PATH")
 		self.VPUID = config.get("VPUID")
 		self.LEVEL = config.get("LEVEL")
 		self.landuse_product = config.get("landuse_product")
@@ -42,7 +46,6 @@ class SWATGenXCore:
 	def setup_logger(self):
 		"""Sets up the logger for the SWATGenXCore."""
 		logger = LoggerSetup(
-			report_path="/data/SWATGenXApp/codes/SWATGenX/",
 			rewrite=False,
 			verbose=True,
 		)
@@ -53,17 +56,17 @@ class SWATGenXCore:
 		self.EPSG = check_configuration(self.VPUID, self.landuse_epoch)
 		self.logger.info(f"SWATGenXCore: Beginning the extraction of the model for {self.site_no}")
 		self.NAME = self.site_no
-		self.SWAT_MODEL_PRISM_path = f'{self.BASE_PATH}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/PRISM/'
+		self.SWAT_MODEL_PRISM_path = f'{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/PRISM/'
 
-		streamflow_shape = f"{self.BASE_PATH}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/streamflow_data/stations.shp"
+		streamflow_shape = f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/streamflow_data/stations.shp"
 
 		if not os.path.exists(streamflow_shape) and os.path.exists(self.SWAT_MODEL_PRISM_path):
 			self.logger.error(f"The model extraction has failed for {self.NAME} before (PRISM extracted but streamflow shapefile does not exist)")
 
 		self.list_of_huc12s = self.prepare_huc12s()
 
-		generate_swatplus_shapes(self.list_of_huc12s, self.BASE_PATH, self.VPUID, self.LEVEL, self.NAME, self.EPSG, self.MODEL_NAME)
-		generate_swatplus_rasters(self.BASE_PATH, self.VPUID, self.NAME, self.LEVEL, self.MODEL_NAME, self.landuse_product, self.landuse_epoch, self.ls_resolution, self.dem_resolution)
+		generate_swatplus_shapes(self.list_of_huc12s, self.VPUID, self.LEVEL, self.NAME, self.EPSG, self.MODEL_NAME)
+		generate_swatplus_rasters(self.VPUID, self.NAME, self.LEVEL, self.MODEL_NAME, self.landuse_product, self.landuse_epoch, self.ls_resolution, self.dem_resolution)
 		self.logger.info(f"First Stage completed for {self.NAME}, {self.VPUID}")
 
 		self.list_of_huc12s = [f'{huc12:012d}' for huc12 in self.list_of_huc12s]
@@ -74,8 +77,11 @@ class SWATGenXCore:
 		SWAT_MODEL_PRISM_output = os.path.join(self.SWAT_MODEL_PRISM_path, "PRISM_grid.shp")
 		SWAT_MODEL_NSRDB_output = os.path.join(self.SWAT_MODEL_PRISM_path, "slr.cli")
 
-		if not os.path.exists(SWAT_MODEL_NSRDB_output) or not os.path.exists(SWAT_MODEL_PRISM_output):
+		if not os.path.exists(SWAT_MODEL_PRISM_output):
 			self.extract_prism_data()
+
+		if not os.path.exists(SWAT_MODEL_NSRDB_output):
+			self.extract_nsrdb_data()
 
 		run_swatplusEditor(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
 		self.write_meta_file()
@@ -95,7 +101,7 @@ class SWATGenXCore:
 		"""Runs the QSWAT+ model for the specified site."""
 		try:
 			runQSWATPlus(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
-			hru2_path = f"{self.BASE_PATH}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes/hrus2.shp"
+			hru2_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes/hrus2.shp"
 			if not os.path.exists(hru2_path):
 				self.logger.error(f"HRU2 shapefile does not exist for {self.NAME} after running QSWAT+")
 				return None
@@ -107,15 +113,17 @@ class SWATGenXCore:
 	def extract_prism_data(self):
 		"""Extracts PRISM data for the watershed."""
 		extract_PRISM_parallel(self.VPUID, self.list_of_huc12s, self.SWAT_MODEL_PRISM_path)
-		plot_annual_precipitation(self.BASE_PATH, self.VPUID, self.LEVEL, self.NAME)
-		writing_swatplus_cli_files(self.BASE_PATH, self.VPUID, self.LEVEL, self.NAME)
+		plot_annual_precipitation(SWATGenXPaths.database_dir, self.VPUID, self.LEVEL, self.NAME)
+		writing_swatplus_cli_files(SWATGenXPaths.database_dir, self.VPUID, self.LEVEL, self.NAME)
 		self.logger.info(f"Model extraction completed for {self.NAME}")
+
+	def extract_nsrdb_data(self):
 		NSRDB_extract(self.VPUID, self.NAME, self.LEVEL)
 		self.logger.info(f"NSRDB extraction completed for {self.NAME}")
 
 	def write_meta_file(self):
 		"""Writes model input characteristics to a meta file."""
-		meta_file_path = f"{self.BASE_PATH}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/meta.txt"
+		meta_file_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/meta.txt"
 		if not os.path.exists(meta_file_path):
 			with open(meta_file_path, "w") as f:
 				self.write_meta_data(f)
@@ -138,7 +146,7 @@ class SWATGenXCore:
 
 	def check_simulation_output(self):
 		"""Checks the simulation output for successful execution."""
-		execution_checkout_path = f"{self.BASE_PATH}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios/Default/TxtInOut/simulation.out"
+		execution_checkout_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios/Default/TxtInOut/simulation.out"
 		sim_file_exists = os.path.exists(execution_checkout_path)
 		excited_successfully = False
 
@@ -157,14 +165,14 @@ class SWATGenXCore:
 	def copy_to_swat_input(self):
 		"""Copies the model to the SWAT_input directory if applicable."""
 		if self.VPUID in ['0405', '0406', '0407', '0408', '0410']:
-			if not os.path.exists(f"{self.BASE_PATH}/SWAT_input/huc12/{self.NAME}"):
-				shutil.copytree(f"{self.BASE_PATH}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}", f"{self.BASE_PATH}/SWAT_input/huc12/{self.NAME}")
+			if not os.path.exists(f"{SWATGenXPaths.database_dir}/SWAT_input/huc12/{self.NAME}"):
+				shutil.copytree(f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}", f"{SWATGenXPaths.database_dir}/SWAT_input/huc12/{self.NAME}")
 				self.logger.info(f"Model successfully copied to SWAT_input for {self.NAME}")
 			else:
 				self.logger.info(f"Model already exists for {self.NAME} in SWAT_input")
 
-			if not os.path.exists(f"{self.BASE_PATH}/SWAT_input/huc12/{self.NAME}/{self.MODEL_NAME}"):
-				shutil.copytree(f"{self.BASE_PATH}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}", f"{self.BASE_PATH}/SWAT_input/huc12/{self.NAME}/{self.MODEL_NAME}")
+			if not os.path.exists(f"{SWATGenXPaths.database_dir}/SWAT_input/huc12/{self.NAME}/{self.MODEL_NAME}"):
+				shutil.copytree(f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}", f"{SWATGenXPaths.database_dir}/SWAT_input/huc12/{self.NAME}/{self.MODEL_NAME}")
 				self.logger.info(f"Model successfully copied to SWAT_input for {self.NAME}")
 			else:
 				self.logger.info(f"Model already exists for {self.NAME} in SWAT_input")

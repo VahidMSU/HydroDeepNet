@@ -7,10 +7,17 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-def plot_annual_precipitation(BASE_PATH, VPUID, LEVEL, NAME):
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from utils import get_all_VPUIDs
+
+def plot_annual_precipitation(VPUID, LEVEL, NAME):
 	pcps = []
 
-	PRISM_path = os.path.join(BASE_PATH, "SWATplus_by_VPUID", VPUID, LEVEL, NAME, 'PRISM')
+	PRISM_path = os.path.join(SWATGenXPaths.swatgenx_outlet_path, VPUID, LEVEL, NAME, 'PRISM')
 	#pcps_path = glob.glob(PRISM_path + '\\*.pcp')
 	pcps_path = os.listdir(PRISM_path)
 	pcps_path = [os.path.join(PRISM_path,pcp) for pcp in pcps_path if pcp.endswith('.pcp')]
@@ -64,8 +71,7 @@ def plot_annual_precipitation(BASE_PATH, VPUID, LEVEL, NAME):
 		'Average Monthly Precipitation ', NAME, 'Month'
 	)
 	plt.tight_layout()
-	plt.savefig(os.path.join(BASE_PATH,'SWATplus_by_VPUID',VPUID ,LEVEL, NAME,'PRISM','Annual_Precipitation.jpeg'), dpi=300)
-	plt.savefig(os.path.join(BASE_PATH,'Documentations','Annual_Precipitation',f'Annual_Precipitation_{NAME}.jpeg'), dpi=300)
+	plt.savefig(os.path.join(SWATGenXPaths.swatgenx_outlet_path, VPUID ,LEVEL, NAME,'PRISM','Annual_Precipitation.jpeg'), dpi=300)
 
 # TODO Rename this here and in `plot_annual_precipitation`
 def _extracted_from_plot_annual_precipitation_34(arg0, NAME, arg2):
@@ -74,8 +80,7 @@ def _extracted_from_plot_annual_precipitation_34(arg0, NAME, arg2):
 	plt.ylabel('mm')
 
 if __name__ == "__main__":
-	BASE_PATH = r'/data/SWATGenXApp/GenXAppData/'
 	VPUID = "0407"
 	LEVEL = "huc12"
 	NAME = "40700040303"
-	plot_annual_precipitation(BASE_PATH, VPUID, LEVEL, NAME)
+	plot_annual_precipitation(VPUID, LEVEL, NAME)

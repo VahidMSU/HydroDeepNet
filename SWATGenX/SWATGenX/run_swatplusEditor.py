@@ -5,15 +5,21 @@ from actions.run_all import RunAll
 from rest.setup import check_config
 import os
 
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from utils import get_all_VPUIDs
 
 def run_swatplusEditor(VPUID, LEVEL, NAME, MODEL_NAME):
-	base_model = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/"
+	base_model = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/"
 	assert os.path.exists(base_model), f"Model does not exist in {base_model}"
 	print(f"base_model: {base_model}")
 
 	project_db_file = os.path.join(base_model,f"{MODEL_NAME}/{MODEL_NAME}.sqlite")
-	wgn_db = "/data/SWATGenXApp/swatplus_installation/swatplus_wgn.sqlite"
-	swat_exe_file = "/data/SWATGenXApp/codes/bin/swatplus"
+	wgn_db = SWATGenXPaths.wgn_db
+	swat_exe_file = SWATGenXPaths.swat_exe_file
 	weather_dir = os.path.join(base_model,"PRISM")
 	print(f"weather_dir: {weather_dir}")
 

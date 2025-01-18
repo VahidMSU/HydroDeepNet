@@ -7,9 +7,15 @@ import h5pyd
 from functools import partial
 from multiprocessing import Process
 import os
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from utils import get_all_VPUIDs
 
 def find_VPUID(station_no):
-	CONUS_streamflow_data = pd.read_csv("/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv", dtype={'site_no': str,'huc_cd': str})
+	CONUS_streamflow_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={'site_no': str,'huc_cd': str})
 	return CONUS_streamflow_data[
 		CONUS_streamflow_data.site_no == station_no
 	].huc_cd.values[0][:4]
@@ -17,7 +23,7 @@ def find_VPUID(station_no):
 def extract_SWAT_PRISM_locations(swat_prism_shape_path):
 	PRISM_SWAT = gpd.read_file(swat_prism_shape_path)
 	PRISM_SWAT['ROWCOL'] = PRISM_SWAT['row'].astype(str) + PRISM_SWAT['col'].astype(str)
-	NSRD_PRISM = pd.read_pickle("/data/SWATGenXApp/GenXAppData/NSRDB/PRISM_NSRDB_CONUS.pkl")
+	NSRD_PRISM = pd.read_pickle(SWATGenXPaths.NSRDB_PRISM_path)
 	NSRD_PRISM['ROWCOL'] = NSRD_PRISM['row'].astype(str) + NSRD_PRISM['col'].astype(str)
 	NSRDB_SWAT = pd.merge(NSRD_PRISM.drop(columns=['row','col','geometry']), PRISM_SWAT, on = "ROWCOL", how = "inner")
 	NSRDB_SWAT['NSRDB_index'] = NSRDB_SWAT['NSRDB_index'].astype(int)
@@ -112,21 +118,8 @@ def extract_SWAT_PRISM_variable(variable, NSRDB_index_SWAT, years, swat_prism_pa
 
 def NSRDB_extract(VPUID,NAME,LEVEL):
 	years = range(2000, 2021)
-	DIC = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/"
 	variables = ['ghi','wind_speed','relative_humidity']
-
-	swat_prism_path = os.path.join(DIC, f"{LEVEL}/{NAME}/PRISM/")
-	swat_prism_shape_path = os.path.join(swat_prism_path,"PRISM_grid.shp")
-	print(f"Locations to be extracted: {swat_prism_shape_path}")
-	### plot the locations 
-	#plotted_data = gpd.read_file(swat_prism_shape_path)
-	#plotted_data.plot()
-	# savve
-	#import matplotlib.pyplot as plt
-	#plt.savefig("/data/SWATGenXApp/codes/SWATGenX/PRISM_grid.png")
-
-	#import time 
-	#time.sleep(100)
+	swat_prism_shape_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/PRISM_grid.shp"
 
 	NSRDB_index_SWAT, NSRD_PRISM = extract_SWAT_PRISM_locations(swat_prism_shape_path)
 	processes = []
@@ -143,9 +136,9 @@ def NSRDB_extract(VPUID,NAME,LEVEL):
 if __name__ == "__main__":
 
 	LEVEL = 'huc12'
-	VPUIDS = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/")
+	VPUIDS = os.listdir(f"{SWATGenXPaths.swatgenx_outlet_path}/")
 	for VPUID in VPUIDS:
-		NAMES = os.listdir(f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/{LEVEL}")
+		NAMES = os.listdir(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}")
 		if "log.txt" in NAMES:
 			NAMES.remove("log.txt")
 		processes = []
