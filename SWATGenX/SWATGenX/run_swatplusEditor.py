@@ -1,54 +1,49 @@
 import sys
-sys.path.append('/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api')
-#sys.path.append("/data/SWATGenXApp/swatplus_installation/swatplus-editor/src/api")
-from actions.run_all import RunAll
-from rest.setup import check_config
 import os
 
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from SWATGenX.utils import get_all_VPUIDs
-except Exception:
+except ImportError:
     from SWATGenXConfigPars import SWATGenXPaths
     from utils import get_all_VPUIDs
 
-def run_swatplusEditor(VPUID, LEVEL, NAME, MODEL_NAME):
-	base_model = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/"
-	assert os.path.exists(base_model), f"Model does not exist in {base_model}"
-	print(f"base_model: {base_model}")
+sys.path.append(SWATGenXPaths.SWATPlusEditor_path)
 
-	project_db_file = os.path.join(base_model,f"{MODEL_NAME}/{MODEL_NAME}.sqlite")
-	wgn_db = SWATGenXPaths.wgn_db
-	swat_exe_file = SWATGenXPaths.swat_exe_file
-	weather_dir = os.path.join(base_model,"PRISM")
-	print(f"weather_dir: {weather_dir}")
+from actions.run_all import RunAll
+from rest.setup import check_config
 
-	input_files_dir = os.path.join(base_model,f"{MODEL_NAME}/Scenarios/Default/TxtInOut")
-	weather_save_dir = os.path.join(base_model,f"{MODEL_NAME}/Scenarios/Default/TxtInOut")
-	weather_import_format = "plus"
-	wgn_import_method = "database"
-	wgn_table = "wgn_cfsr_world"
-	wgn_csv_sta_file = None
-	wgn_csv_mon_file = None
-	year_start = 2000
-	day_start = 1
-	year_end = 2001
-	day_end = 1
-	editor_version = "2.3.3"
+def run_swatplus_editor(vpuid: str, level: str, name: str, model_name: str) -> None:
+    """Run the SWAT+ Editor for the specified model."""
 
-	check_config(project_db_file)
-	RunAll(project_db_file, editor_version, swat_exe_file,
-			weather_dir, weather_save_dir, weather_import_format,
-			wgn_import_method, wgn_db, wgn_table, wgn_csv_sta_file, wgn_csv_mon_file,
-			year_start, day_start, year_end, day_end,
-			input_files_dir, swat_version="SWAT+")
+    base_model = os.path.join(SWATGenXPaths.swatgenx_outlet_path, vpuid, level, name)
+    assert os.path.exists(base_model), f"Model does not exist in {base_model}"
+    print(f"Base model: {base_model}")
 
+    project_db = os.path.join(base_model, model_name, f"{model_name}.sqlite")
+    input_files_dir = os.path.join(base_model, model_name, "Scenarios", "Default", "TxtInOut")
 
+    check_config(project_db=project_db)
 
+    RunAll(
+        project_db=project_db,
+        editor_version="2.3.3",
+        swat_exe=SWATGenXPaths.swat_exe,
+        weather_dir=os.path.join(base_model, "PRISM"),
+        weather_save_dir=input_files_dir,
+        weather_import_format="plus",
+        wgn_import_method="database",
+        wgn_db=SWATGenXPaths.wgn_db,
+        wgn_table="wgn_cfsr_world",
+        wgn_csv_sta_file=None,
+        wgn_csv_mon_file=None,
+        year_start=SWATGenXPaths.exe_start_year,
+        day_start=1,
+        year_end=SWATGenXPaths.exe_end_year,
+        day_end=1,
+        input_files_dir=input_files_dir,
+        swat_version="SWAT+"
+    )
 
 if __name__ == '__main__':
-	VPUID = "0407"
-	LEVEL = "huc12"
-	NAME = '04128990'
-	MODEL_NAME = "SWAT_MODEL_web_application"
-	run_swatplusEditor(VPUID, LEVEL, NAME, MODEL_NAME)
+    run_swatplus_editor("0407", "huc12", "04128990", "SWAT_MODEL_web_application")

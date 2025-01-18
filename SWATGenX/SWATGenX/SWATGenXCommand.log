@@ -1,14 +1,16 @@
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXCommand.log
-LEVEL: huc12, station_name: 04166000
+LEVEL: huc12, station_name: 09363050
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXCommand.log
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXCommand.log
-SWATGenXCore: Starting the SWATGenX model for 04166000
-SWATGenXCore: Starting the SWATGenX model for 04166000
-SWATGenXCore: Beginning the extraction of the model for 04166000
-SWATGenXCore: Beginning the extraction of the model for 04166000
-The model extraction has failed for 04166000 before (PRISM extracted but streamflow shapefile does not exist)
-The model extraction has failed for 04166000 before (PRISM extracted but streamflow shapefile does not exist)
-First Stage completed for 04166000, 0409
-First Stage completed for 04166000, 0409
-Error in running QSWAT+ for 04166000: [Errno 2] No such file or directory: 'runQSWATPlus.sh/04166000_runHUCProject.sh'
-Error in running QSWAT+ for 04166000: [Errno 2] No such file or directory: 'runQSWATPlus.sh/04166000_runHUCProject.sh'
+SWATGenXCore: Starting the SWATGenX model for 09363050
+SWATGenXCore: Starting the SWATGenX model for 09363050
+SWATGenXCore: Beginning the extraction of the model for 09363050
+SWATGenXCore: Beginning the extraction of the model for 09363050
+First Stage completed for 09363050, 1408
+First Stage completed for 09363050, 1408
+QSWAT+ processes are completed for 09363050, 1408
+QSWAT+ processes are completed for 09363050, 1408
+Model extraction completed for 09363050
+Model extraction completed for 09363050
+NSRDB extraction completed for 09363050
+NSRDB extraction completed for 09363050
