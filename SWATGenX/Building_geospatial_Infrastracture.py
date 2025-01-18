@@ -1,20 +1,18 @@
-from SWATGenX.wrapped_build_geospatial_infrastructure import wrapped_build_geospatial_infrastructure
+from SWATGenX.geospatial_infrastructure_builder import geospatial_infrastructure_builder
 from SWATGenX.read_VPUID import get_all_VPUIDs
-from multiprocessing import Process
+from multiprocessing import Pool
+
+def process_VPUID(VPUID):
+    landuse_epoch = "2021"
+    geospatial_infrastructure_builder(VPUID, landuse_epoch)
 
 if __name__ == "__main__":
-    VPUID = "0415"
+
+    with open("/data/SWATGenXApp/codes/SWATGenX/SWATGenX/critical_errors.txt", 'w') as file:
+        file.write("")
     VPUIDs = get_all_VPUIDs()
-    landuse_epoch = "2021"
-    processes = []
-    wrapped_build_geospatial_infrastructure(VPUID, landuse_epoch)
+    
+    #VPUIDs = [VPUID for VPUID in VPUIDs if VPUID[:2] in ["03"]]
 
-
-   # for VPUID in VPUIDs:
-   #     if VPUID not in ["1506"]:
-   #         continue
-   #     p = Process(target=wrapped_build_geospatial_infrastructure, args=(VPUID, landuse_epoch))
-   #     p.start()
-   #     processes.append(p)
-   # for p in processes:
-   #     p.join()
+    with Pool(processes=15) as pool:
+        pool.map(process_VPUID, VPUIDs)
