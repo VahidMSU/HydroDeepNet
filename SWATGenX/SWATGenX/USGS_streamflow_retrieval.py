@@ -105,8 +105,9 @@ def process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, base_dire
 
     streamflow_data.reset_index().to_csv(save_path, header = ['date','streamflow'], index = False)
     ## remove hrs from the date column example of now: 2015-01-01 00:00:00+00:00,230.0
-    streamflow_data.loc[:, 'date'] = streamflow_data.index
-    streamflow_data.loc[:, 'date'] = streamflow_data['date'].dt.date
+    streamflow_data_ = streamflow_data.copy()
+    streamflow_data['date'] = streamflow_data.index
+    streamflow_data['date'] = streamflow_data['date'].dt.date
     streamflow_data.to_csv(save_path, index = False,header = ['streamflow','date'])
     ## read the streamflow data
     streamflow_data = pd.read_csv(save_path)
@@ -253,8 +254,9 @@ def USGS_streamflow_retrieval_by_VPUID(VPUID, start_date = '2000-01-01' , end_da
 
     if not os.path.exists(meta_data_path):
         meta_data_df = get_streamflow_by_VPUID(VPUID, start_date, end_date)
+        plot_streamflow_data(meta_data_df, VPUID, start_date, end_date)
     else:
         print(f"Data for {VPUID} already exists")
         meta_data_df = pd.read_csv(meta_data_path, dtype={'site_no': str})
 
-    plot_streamflow_data(meta_data_df, VPUID, start_date, end_date)
+    

@@ -12,12 +12,14 @@ if __name__ == "__main__":
         VPUIDs = "0406"
         USGS_streamflow_retrieval_by_VPUID(VPUIDs, start_date, end_date)
         exit()
-    for VPUID in VPUIDs:
+    from multiprocessing import Pool
 
+    def process_VPUID(VPUID):
+        #if VPUID[:2] not in ["03"]:
+        #    return
         print(f"Processing VPUID: {VPUID}")
-        process = Process(target=USGS_streamflow_retrieval_by_VPUID, args=(VPUID, start_date, end_date))
-        process.start()
-        processes.append(process)
+        USGS_streamflow_retrieval_by_VPUID(VPUID, start_date, end_date)
 
-    for process in processes:
-        process.join()
+    with Pool() as pool:
+        pool.map(process_VPUID, VPUIDs)
+ 
