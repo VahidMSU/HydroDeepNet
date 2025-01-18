@@ -18,6 +18,7 @@ def find_station_region(search_term):
     USGS_CONUS = gpd.read_file(SWATGenXPaths.USGS_CONUS_stations_shape_path)
     available_sites = pd.read_csv(SWATGenXPaths.available_sites_path, dtype={"site_no": str})
     USGS_CONUS = USGS_CONUS[USGS_CONUS.site_no.isin(available_sites.site_no)]
+    
     logger = LoggerSetup()
     logger.setup_logger("find_station_region")
     

@@ -1,151 +1,793 @@
  Processing SWATGenX 
-2025-01-18 12:41:55,012 [ERROR] Site number 04166000 is not among FPS lists
-2025-01-18 12:41:55,013 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXCommand.log
-2025-01-18 12:41:55,013 [INFO] LEVEL: huc12, station_name: 04166000
-2025-01-18 12:41:55,057 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXCommand.log
-2025-01-18 12:41:55,057 [INFO] SWATGenXCore: Starting the SWATGenX model for 04166000
-2025-01-18 12:41:55,279 [INFO] SWATGenXCore: Beginning the extraction of the model for 04166000
-2025-01-18 12:41:55,280 [ERROR] The model extraction has failed for 04166000 before (PRISM extracted but streamflow shapefile does not exist)
-2025-01-18 12:41:55,280 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
-2025-01-18 12:41:55,372 [INFO] Number of streams loaded: 33963
-2025-01-18 12:41:55,372 [INFO] list of huc12 requested: [40900040401, 40900040402, 40900040403]
-2025-01-18 12:41:55,372 [INFO] stream['LEVEL']:huc12
-2025-01-18 12:41:55,382 [INFO] Number of streams extracted: 450
-2025-01-18 12:41:55,384 [INFO] Subbasin IDs created based on combination of huc12 and Subbasin_level_1
-2025-01-18 12:41:55,384 [INFO] Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
-2025-01-18 12:41:55,567 [INFO] Subbasin outlet count: {1: 1, 2: 1, 3: 2, 4: 1, 5: 2, 6: 1, 7: 1, 8: 2, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1}
-2025-01-18 12:41:55,568 [INFO] Subbasin IDs created based on combination of Subbasin and Subbasin_sub
-2025-01-18 12:41:55,569 [INFO] Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
-2025-01-18 12:41:55,687 [INFO] Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1}
-2025-01-18 12:41:55,688 [INFO] Subbasin IDs created based on combination of Subbasin and Subbasin_sub
-2025-01-18 12:41:55,688 [INFO] Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
-2025-01-18 12:41:55,707 [INFO] Total number of lakes added: 5678
-2025-01-18 12:41:55,707 [INFO] ################# minimum area of lakes to be considered: 0.1 SqKm ################
-2025-01-18 12:41:55,710 [INFO] Lakes more than 0.1 SqKm: 186
-2025-01-18 12:41:55,714 [INFO] start traversing downstream to find LakeIn ids
-2025-01-18 12:41:55,714 [INFO] NUMBER OF HEAD WATERS: 132
-2025-01-18 12:41:55,733 [INFO] start finding the lakeOuts
-2025-01-18 12:41:55,759 [INFO]  %%%%%%%   THE FOLLOWING LAKES DOES NOT HAVE INTLET:  ['149285665']    %%%%%%%%%%%   
-2025-01-18 12:41:55,781 [INFO] NHDPluIDs of lakes renamed to LakeId
-2025-01-18 12:41:55,781 [INFO] lakes are loaded
-2025-01-18 12:41:55,788 [INFO] 
+2025-01-18 17:24:46,512 [ERROR] Site number 09363050 is not among FPS lists
+2025-01-18 17:24:46,512 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXCommand.log
+2025-01-18 17:24:46,512 [INFO] LEVEL: huc12, station_name: 09363050
+2025-01-18 17:24:46,556 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXCommand.log
+2025-01-18 17:24:46,556 [INFO] SWATGenXCore: Starting the SWATGenX model for 09363050
+2025-01-18 17:24:47,144 [INFO] SWATGenXCore: Beginning the extraction of the model for 09363050
+2025-01-18 17:24:47,145 [INFO] Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenX/NHDPlusExtractor.log
+2025-01-18 17:24:47,546 [INFO] Number of streams loaded: 172637
+2025-01-18 17:24:47,546 [INFO] list of huc12 requested: [140801040704, 140801040801, 140801040701, 140801040702, 140801040703]
+2025-01-18 17:24:47,546 [INFO] stream['LEVEL']:huc12
+2025-01-18 17:24:47,636 [INFO] Number of streams extracted: 2826
+2025-01-18 17:24:47,640 [INFO] Subbasin IDs created based on combination of huc12 and Subbasin_level_1
+2025-01-18 17:24:47,640 [INFO] Subbasin IDs updated based on combination of huc12 and Subbasin_level_1
+2025-01-18 17:24:48,983 [INFO] Subbasin outlet count: {1: 2, 2: 1, 3: 1, 4: 1, 5: 2, 6: 2, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1}
+2025-01-18 17:24:48,985 [INFO] Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+2025-01-18 17:24:48,987 [INFO] Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+2025-01-18 17:24:49,493 [INFO] Subbasin outlet count: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1, 16: 1, 17: 1, 18: 1, 19: 1, 20: 1, 21: 1, 22: 1, 23: 1, 24: 1, 25: 1, 26: 1, 27: 1, 28: 1, 29: 1, 30: 1, 31: 1, 32: 1, 33: 1, 34: 1, 35: 1, 36: 1, 37: 1, 38: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1, 44: 1, 45: 1, 46: 1, 47: 1, 48: 1, 49: 1, 50: 1, 51: 1, 52: 1, 53: 1, 54: 1, 55: 1, 56: 1, 57: 1, 58: 1, 59: 1, 60: 1, 61: 1, 62: 1, 63: 1, 64: 1, 65: 1, 66: 1, 67: 1, 68: 1, 69: 1, 70: 1, 71: 1, 72: 1, 73: 1, 74: 1, 75: 1, 76: 1, 77: 1, 78: 1, 79: 1, 80: 1, 81: 1, 82: 1, 83: 1, 84: 1, 85: 1, 86: 1, 87: 1, 88: 1, 89: 1, 90: 1, 91: 1, 92: 1, 93: 1, 94: 1, 95: 1, 96: 1, 97: 1, 98: 1, 99: 1, 100: 1, 101: 1, 102: 1, 103: 1, 104: 1, 105: 1, 106: 1, 107: 1, 108: 1, 109: 1, 110: 1, 111: 1, 112: 1, 113: 1, 114: 1, 115: 1}
+2025-01-18 17:24:49,494 [INFO] Subbasin IDs created based on combination of Subbasin and Subbasin_sub
+2025-01-18 17:24:49,495 [INFO] Subbasin IDs updated based on combination of Subbasin and Subbasin_sub
+2025-01-18 17:24:49,525 [INFO] Total number of lakes added: 15213
+2025-01-18 17:24:49,525 [INFO] ################# minimum area of lakes to be considered: 0.1 SqKm ################
+2025-01-18 17:24:49,530 [INFO] Lakes more than 0.1 SqKm: 127
+2025-01-18 17:24:49,534 [INFO] start traversing downstream to find LakeIn ids
+2025-01-18 17:24:49,535 [INFO] NUMBER OF HEAD WATERS: 1259
+2025-01-18 17:24:49,672 [INFO] start finding the lakeOuts
+2025-01-18 17:24:49,742 [INFO] NHDPluIDs of lakes renamed to LakeId
+2025-01-18 17:24:49,742 [INFO] lakes are loaded
+2025-01-18 17:24:49,751 [INFO] 
 mapping waterbodies
 
-2025-01-18 12:41:55,817 [INFO] Created 6 records
-2025-01-18 12:41:55,817 [INFO] Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0409/huc12/04166000/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
-2025-01-18 12:41:55,817 [INFO] Final Number of lakes: 8
-2025-01-18 12:41:55,817 [INFO] 
+2025-01-18 17:24:49,779 [INFO] Created 2 records
+2025-01-18 17:24:49,779 [INFO] Lakes shapefile is created and saved in /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID//1408/huc12/09363050/SWAT_MODEL/Watershed/Shapes/SWAT_plus_lakes.shp
+2025-01-18 17:24:49,779 [INFO] Final Number of lakes: 2
+2025-01-18 17:24:49,779 [INFO] 
 REPORTING LAKES AREAS:
 
-2025-01-18 12:41:55,818 [INFO] Max area: 1,043,357.75
-2025-01-18 12:41:55,818 [INFO] 95th area: 947,784.81
-2025-01-18 12:41:55,819 [INFO] 50th area: 228,824.04
-2025-01-18 12:41:55,819 [INFO] 2.5th area: 116,290.37
-2025-01-18 12:41:55,819 [INFO] Min area: 113,613.63
-2025-01-18 12:41:55,827 [INFO] All lakes have main outlets
-2025-01-18 12:41:55,828 [INFO] All lakes outlets repeated in LakeId
-2025-01-18 12:41:55,828 [INFO] All lakes inlets repeated in LakeId
-2025-01-18 12:41:55,829 [INFO] All lakes Within repeated in LakeId
-2025-01-18 12:41:56,135 [INFO] 
+2025-01-18 17:24:49,780 [INFO] Max area: 2,044,579.76
+2025-01-18 17:24:49,780 [INFO] 95th area: 1,950,476.88
+2025-01-18 17:24:49,781 [INFO] 50th area: 1,103,550.94
+2025-01-18 17:24:49,781 [INFO] 2.5th area: 209,573.55
+2025-01-18 17:24:49,781 [INFO] Min area: 162,522.11
+2025-01-18 17:24:49,788 [INFO] All lakes have main outlets
+2025-01-18 17:24:49,789 [INFO] All lakes outlets repeated in LakeId
+2025-01-18 17:24:49,790 [INFO] All lakes inlets repeated in LakeId
+2025-01-18 17:24:49,790 [INFO] All lakes Within repeated in LakeId
+2025-01-18 17:24:51,432 [INFO] 
 REPORTING Watersheds AREAS:
 
-2025-01-18 12:41:56,136 [INFO] Max area: 7,119,619.39
-2025-01-18 12:41:56,137 [INFO] 95th area: 1,759,500.31
-2025-01-18 12:41:56,138 [INFO] 50th area: 76,255.26
-2025-01-18 12:41:56,138 [INFO] 2.5th area: 400.02
-2025-01-18 12:41:56,139 [INFO] Min area: 100.00
-2025-01-18 12:41:56,359 [INFO] Subbasins number are added to the subbasins shapefile
+2025-01-18 17:24:51,435 [INFO] Max area: 5,005,838.61
+2025-01-18 17:24:51,437 [INFO] 95th area: 386,757.25
+2025-01-18 17:24:51,438 [INFO] 50th area: 51,869.25
+2025-01-18 17:24:51,440 [INFO] 2.5th area: 1,602.28
+2025-01-18 17:24:51,441 [INFO] Min area: 100.13
+2025-01-18 17:24:52,528 [INFO] Subbasins number are added to the subbasins shapefile
 
-2025-01-18 12:41:56,360 [INFO] Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
-[<NA>, 1, 2, 3, 4, 5]
-Length: 6, dtype: Int64
-2025-01-18 12:41:56,364 [INFO] SWAT Plus watersheds are created based on the proccesesed streams data
-2025-01-18 12:41:56,367 [INFO] SWAT Plus subbasins are created based on the proccesesed streams data
-2025-01-18 12:41:56,383 [INFO] Created 450 records
-2025-01-18 12:41:56,383 [INFO] 
+2025-01-18 17:24:52,529 [INFO] Lakes unique LakeIn Ids. This is for debugging purposes (write_output function before renaming streams columns): <IntegerArray>
+[<NA>, 1, 2]
+Length: 3, dtype: Int64
+2025-01-18 17:24:52,537 [INFO] SWAT Plus watersheds are created based on the proccesesed streams data
+2025-01-18 17:24:52,540 [INFO] SWAT Plus subbasins are created based on the proccesesed streams data
+2025-01-18 17:24:52,588 [INFO] Created 2,826 records
+2025-01-18 17:24:52,588 [INFO] 
 SWAT+ streams shapefile is created
-2025-01-18 12:41:56,383 [INFO] SWAT Plus streams are created
-2025-01-18 12:41:56,394 [INFO] Created 450 records
-2025-01-18 12:41:56,394 [INFO] 
+2025-01-18 17:24:52,589 [INFO] SWAT Plus streams are created
+2025-01-18 17:24:52,633 [INFO] Created 2,826 records
+2025-01-18 17:24:52,633 [INFO] 
 SWAT+ watersheds shapefile is created
-2025-01-18 12:41:56,394 [INFO] SWAT Plus watersheds are created
-2025-01-18 12:41:56,399 [INFO] Created 57 records
-2025-01-18 12:41:56,399 [INFO] 
+2025-01-18 17:24:52,633 [INFO] SWAT Plus watersheds are created
+2025-01-18 17:24:52,641 [INFO] Created 115 records
+2025-01-18 17:24:52,641 [INFO] 
 SWAT+ subbasins shapefile is created
-2025-01-18 12:41:56,399 [INFO] SWAT Plus Subbasins are created
-2025-01-18 12:41:56,399 [INFO] writing process completed
-2025-01-18 12:41:56,417 [ERROR] all watersheds have a stream
-2025-01-18 12:41:56,417 [ERROR] all subbasinss have a stream
-2025-01-18 12:41:56,418 [ERROR] all streams have a watershed
-2025-01-18 12:41:56,418 [ERROR] all streams have a basin
-2025-01-18 12:41:56,418 [INFO] ALL LAKES HAVE OUTLET
-2025-01-18 12:41:56,419 [INFO] subbasins area stats (sqkm):
-2025-01-18 12:41:56,420 [INFO] count    57.00
-mean      2.92
-std       7.35
-min       0.00
-25%       0.09
-50%       0.45
-75%       1.10
-max      37.22
+2025-01-18 17:24:52,641 [INFO] SWAT Plus Subbasins are created
+2025-01-18 17:24:52,641 [INFO] writing process completed
+2025-01-18 17:24:52,684 [ERROR] all watersheds have a stream
+2025-01-18 17:24:52,684 [ERROR] all subbasinss have a stream
+2025-01-18 17:24:52,685 [ERROR] all streams have a watershed
+2025-01-18 17:24:52,685 [ERROR] all streams have a basin
+2025-01-18 17:24:52,686 [INFO] ALL LAKES HAVE OUTLET
+2025-01-18 17:24:52,686 [INFO] subbasins area stats (sqkm):
+2025-01-18 17:24:52,687 [INFO] count    115.00
+mean       2.87
+std       11.24
+min        0.02
+25%        0.10
+50%        0.24
+75%        0.73
+max       86.83
 dtype: float64
-2025-01-18 12:41:56,421 [INFO] watersheds area stats (sqkm):
-2025-01-18 12:41:56,422 [INFO] count    450.00
-mean       0.37
-std        0.81
-min        0.00
-25%        0.01
-50%        0.08
-75%        0.37
-max        7.12
+2025-01-18 17:24:52,690 [INFO] watersheds area stats (sqkm):
+2025-01-18 17:24:52,691 [INFO] count    2826.00
+mean        0.12
+std         0.26
+min         0.00
+25%         0.02
+50%         0.05
+75%         0.11
+max         5.01
 dtype: float64
-2025-01-18 12:41:56,424 [INFO] Number of initial subbasins: 57
-2025-01-18 12:41:56,428 [WARNING] ################### WARNING: THE SUBBASIN 11 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,429 [WARNING] ################### WARNING: THE SUBBASIN 0 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,431 [WARNING] ################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,434 [WARNING] ################### WARNING: THE SUBBASIN 15 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,435 [WARNING] ################### WARNING: THE SUBBASIN 12 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,439 [WARNING] ################### WARNING: THE SUBBASIN 17 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,443 [WARNING] ################### WARNING: THE SUBBASIN 7 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,445 [WARNING] ################### WARNING: THE SUBBASIN 20 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,448 [WARNING] ################### WARNING: THE SUBBASIN 9 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,456 [WARNING] ################### WARNING: THE SUBBASIN 16 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,468 [WARNING] ################### WARNING: THE SUBBASIN 10 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,472 [WARNING] ################### WARNING: THE SUBBASIN 18 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,481 [WARNING] ################### WARNING: THE SUBBASIN 19 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,512 [WARNING] ################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
-2025-01-18 12:41:56,514 [INFO] Number of final subbasins: 15
-2025-01-18 12:41:56,514 [INFO] max number of subbasinss: 15
-2025-01-18 12:41:56,516 [INFO] number of new streams 450
-2025-01-18 12:41:56,516 [INFO] number of new watersheds 450
-2025-01-18 12:41:56,516 [INFO] number of unique basins in new streams 15
-2025-01-18 12:41:56,516 [INFO] number of  unique basins in  new watersheds 15
-2025-01-18 12:41:56,516 [INFO] number of unique basins in new streams 15
-2025-01-18 12:41:56,516 [INFO] number of  unique basins in  new watersheds 15
-2025-01-18 12:41:56,872 [INFO] subbasins area stats  (sqkm):
-2025-01-18 12:41:56,873 [INFO] count    15.00
-mean     11.08
-std      23.90
-min       0.15
-25%       0.95
-50%       1.43
-75%       6.66
-max      89.07
+2025-01-18 17:24:52,694 [INFO] Number of initial subbasins: 115
+2025-01-18 17:24:52,696 [WARNING] ################### WARNING: THE SUBBASIN 60 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,698 [WARNING] ################### WARNING: THE SUBBASIN 57 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,700 [WARNING] ################### WARNING: THE SUBBASIN 13 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,701 [WARNING] ################### WARNING: THE SUBBASIN 58 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,703 [WARNING] ################### WARNING: THE SUBBASIN 8 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,705 [WARNING] ################### WARNING: THE SUBBASIN 59 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,706 [WARNING] ################### WARNING: THE SUBBASIN 48 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,708 [WARNING] ################### WARNING: THE SUBBASIN 50 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,710 [WARNING] ################### WARNING: THE SUBBASIN 49 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,713 [WARNING] ################### WARNING: THE SUBBASIN 40 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,720 [WARNING] ################### WARNING: THE SUBBASIN 46 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,755 [WARNING] ################### WARNING: THE SUBBASIN 62 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,806 [WARNING] ################### WARNING: THE SUBBASIN 52 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,822 [WARNING] ################### WARNING: THE SUBBASIN 35 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,851 [WARNING] ################### WARNING: THE SUBBASIN 66 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,861 [WARNING] ################### WARNING: THE SUBBASIN 65 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,864 [WARNING] ################### WARNING: THE SUBBASIN 53 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,866 [WARNING] ################### WARNING: THE SUBBASIN 54 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,868 [WARNING] ################### WARNING: THE SUBBASIN 28 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,871 [WARNING] ################### WARNING: THE SUBBASIN 33 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,875 [WARNING] ################### WARNING: THE SUBBASIN 41 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,876 [WARNING] ################### WARNING: THE SUBBASIN 24 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,878 [WARNING] ################### WARNING: THE SUBBASIN 68 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,882 [WARNING] ################### WARNING: THE SUBBASIN 1 IS ISOLATED & ITS AREA < THRESHOLD (12500000.0sqm:)
+2025-01-18 17:24:52,887 [INFO] Number of final subbasins: 28
+2025-01-18 17:24:52,887 [INFO] max number of subbasinss: 28
+2025-01-18 17:24:52,889 [INFO] number of new streams 2826
+2025-01-18 17:24:52,889 [INFO] number of new watersheds 2826
+2025-01-18 17:24:52,890 [INFO] number of unique basins in new streams 28
+2025-01-18 17:24:52,890 [INFO] number of  unique basins in  new watersheds 28
+2025-01-18 17:24:52,890 [INFO] number of unique basins in new streams 28
+2025-01-18 17:24:52,890 [INFO] number of  unique basins in  new watersheds 28
+2025-01-18 17:24:54,496 [INFO] subbasins area stats  (sqkm):
+2025-01-18 17:24:54,497 [INFO] count     28.00
+mean      11.77
+std       28.76
+min        0.03
+25%        0.16
+50%        0.47
+75%        1.41
+max      106.04
 dtype: float64
-2025-01-18 12:41:56,879 [INFO] Created 15 records
-2025-01-18 12:41:56,889 [INFO] Created 450 records
-2025-01-18 12:41:56,900 [INFO] Created 450 records
-2025-01-18 12:41:56,900 [INFO] success
-2025-01-18 12:41:56,900 [INFO] watersheds area stats  (sqkm):
-2025-01-18 12:41:56,901 [INFO] count    450.00
-mean       0.37
-std        0.81
-min        0.00
-25%        0.01
-50%        0.08
-75%        0.37
-max        7.12
+2025-01-18 17:24:54,503 [INFO] Created 28 records
+2025-01-18 17:24:54,548 [INFO] Created 2,826 records
+2025-01-18 17:24:54,594 [INFO] Created 2,826 records
+2025-01-18 17:24:54,594 [INFO] success
+2025-01-18 17:24:54,595 [INFO] watersheds area stats  (sqkm):
+2025-01-18 17:24:54,598 [INFO] count    2826.00
+mean        0.12
+std         0.26
+min         0.00
+25%         0.02
+50%         0.05
+75%         0.11
+max         5.01
 dtype: float64
-2025-01-18 12:41:56,913 [INFO] Created 1 records
-2025-01-18 12:41:57,710 [INFO] First Stage completed for 04166000, 0409
-2025-01-18 12:41:57,711 [ERROR] Error in running QSWAT+ for 04166000: [Errno 2] No such file or directory: 'runQSWATPlus.sh/04166000_runHUCProject.sh'
+2025-01-18 17:24:54,607 [INFO] Created 1 records
+2025-01-18 17:24:55,412 [INFO] First Stage completed for 09363050, 1408
+2025-01-18 17:25:24,730 [INFO] QSWAT+ processes are completed for 09363050, 1408
+2025-01-18 17:25:26,365 [INFO] Created 72 records
+2025-01-18 17:26:41,157 [INFO] Model extraction completed for 09363050
+2025-01-18 17:26:42,022 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:42,023 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2000.h5] timeout: 180
+2025-01-18 17:26:42,038 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:42,039 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2000.h5] timeout: 180
+2025-01-18 17:26:42,053 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:42,054 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2000.h5] timeout: 180
+2025-01-18 17:26:42,719 [INFO] status: 200
+2025-01-18 17:26:42,724 [INFO] got domain json: 41993 bytes
+2025-01-18 17:26:42,726 [INFO] using post select
+2025-01-18 17:26:42,726 [INFO] POST: /datasets/d-096b7930-5dc5b556-46e2-e3bbeb-8995a1/value [/nrel/nsrdb/v3/nsrdb_2000.h5]
+2025-01-18 17:26:42,726 [INFO] POST: /datasets/d-096b7930-5dc5b556-46e2-e3bbeb-8995a1/value
+2025-01-18 17:26:42,744 [INFO] status: 200
+2025-01-18 17:26:42,745 [INFO] status: 200
+2025-01-18 17:26:42,749 [INFO] got domain json: 41993 bytes
+2025-01-18 17:26:42,750 [INFO] got domain json: 41993 bytes
+2025-01-18 17:26:42,751 [INFO] using post select
+2025-01-18 17:26:42,751 [INFO] POST: /datasets/d-096b7930-5dc5b556-dbc8-00c5ad-8aca89/value [/nrel/nsrdb/v3/nsrdb_2000.h5]
+2025-01-18 17:26:42,751 [INFO] POST: /datasets/d-096b7930-5dc5b556-dbc8-00c5ad-8aca89/value
+2025-01-18 17:26:42,752 [INFO] using post select
+2025-01-18 17:26:42,752 [INFO] POST: /datasets/d-096b7930-5dc5b556-b57a-887f62-554688/value [/nrel/nsrdb/v3/nsrdb_2000.h5]
+2025-01-18 17:26:42,752 [INFO] POST: /datasets/d-096b7930-5dc5b556-b57a-887f62-554688/value
+2025-01-18 17:26:46,024 [INFO] returning binary content, length: 2529792
+2025-01-18 17:26:46,024 [INFO] binary response, 2529792 bytes
+2025-01-18 17:26:46,024 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:26:46,047 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:46,047 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2001.h5] timeout: 180
+2025-01-18 17:26:46,072 [INFO] returning binary content, length: 2529792
+2025-01-18 17:26:46,072 [INFO] binary response, 2529792 bytes
+2025-01-18 17:26:46,073 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:26:46,087 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:46,087 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2001.h5] timeout: 180
+2025-01-18 17:26:46,102 [INFO] returning binary content, length: 2529792
+2025-01-18 17:26:46,103 [INFO] binary response, 2529792 bytes
+2025-01-18 17:26:46,103 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:26:46,118 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:46,119 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2001.h5] timeout: 180
+2025-01-18 17:26:46,388 [INFO] status: 200
+2025-01-18 17:26:46,393 [INFO] got domain json: 39831 bytes
+2025-01-18 17:26:46,394 [INFO] using post select
+2025-01-18 17:26:46,394 [INFO] POST: /datasets/d-69e88f26-a53a62e8-ec53-f7e01d-5add69/value [/nrel/nsrdb/v3/nsrdb_2001.h5]
+2025-01-18 17:26:46,394 [INFO] POST: /datasets/d-69e88f26-a53a62e8-ec53-f7e01d-5add69/value
+2025-01-18 17:26:46,421 [INFO] status: 200
+2025-01-18 17:26:46,425 [INFO] got domain json: 39831 bytes
+2025-01-18 17:26:46,426 [INFO] using post select
+2025-01-18 17:26:46,426 [INFO] POST: /datasets/d-69e88f26-a53a62e8-4219-78acd9-e62024/value [/nrel/nsrdb/v3/nsrdb_2001.h5]
+2025-01-18 17:26:46,427 [INFO] POST: /datasets/d-69e88f26-a53a62e8-4219-78acd9-e62024/value
+2025-01-18 17:26:46,464 [INFO] status: 200
+2025-01-18 17:26:46,468 [INFO] got domain json: 39831 bytes
+2025-01-18 17:26:46,469 [INFO] using post select
+2025-01-18 17:26:46,469 [INFO] POST: /datasets/d-69e88f26-a53a62e8-e3b3-f22e9f-7c2ead/value [/nrel/nsrdb/v3/nsrdb_2001.h5]
+2025-01-18 17:26:46,469 [INFO] POST: /datasets/d-69e88f26-a53a62e8-e3b3-f22e9f-7c2ead/value
+2025-01-18 17:26:49,761 [INFO] returning binary content, length: 2522880
+2025-01-18 17:26:49,761 [INFO] binary response, 2522880 bytes
+2025-01-18 17:26:49,761 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:26:49,764 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:49,765 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2002.h5] timeout: 180
+2025-01-18 17:26:49,766 [INFO] returning binary content, length: 2522880
+2025-01-18 17:26:49,766 [INFO] binary response, 2522880 bytes
+2025-01-18 17:26:49,766 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:26:49,769 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:49,769 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2002.h5] timeout: 180
+2025-01-18 17:26:49,774 [INFO] returning binary content, length: 2522880
+2025-01-18 17:26:49,774 [INFO] binary response, 2522880 bytes
+2025-01-18 17:26:49,774 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:26:49,778 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:49,778 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2002.h5] timeout: 180
+2025-01-18 17:26:50,106 [INFO] status: 200
+2025-01-18 17:26:50,111 [INFO] got domain json: 41139 bytes
+2025-01-18 17:26:50,112 [INFO] using post select
+2025-01-18 17:26:50,112 [INFO] POST: /datasets/d-37f86c60-afd2c09f-b13a-ea04fc-5594ba/value [/nrel/nsrdb/v3/nsrdb_2002.h5]
+2025-01-18 17:26:50,112 [INFO] POST: /datasets/d-37f86c60-afd2c09f-b13a-ea04fc-5594ba/value
+2025-01-18 17:26:50,140 [INFO] status: 200
+2025-01-18 17:26:50,145 [INFO] got domain json: 41139 bytes
+2025-01-18 17:26:50,146 [INFO] using post select
+2025-01-18 17:26:50,146 [INFO] POST: /datasets/d-37f86c60-afd2c09f-6149-b06b0d-17fba0/value [/nrel/nsrdb/v3/nsrdb_2002.h5]
+2025-01-18 17:26:50,146 [INFO] POST: /datasets/d-37f86c60-afd2c09f-6149-b06b0d-17fba0/value
+2025-01-18 17:26:50,219 [INFO] status: 200
+2025-01-18 17:26:50,224 [INFO] got domain json: 41139 bytes
+2025-01-18 17:26:50,225 [INFO] using post select
+2025-01-18 17:26:50,225 [INFO] POST: /datasets/d-37f86c60-afd2c09f-036e-af6b4a-c232d9/value [/nrel/nsrdb/v3/nsrdb_2002.h5]
+2025-01-18 17:26:50,225 [INFO] POST: /datasets/d-37f86c60-afd2c09f-036e-af6b4a-c232d9/value
+2025-01-18 17:26:53,496 [INFO] returning binary content, length: 2522880
+2025-01-18 17:26:53,497 [INFO] binary response, 2522880 bytes
+2025-01-18 17:26:53,497 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:26:53,500 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:53,500 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2003.h5] timeout: 180
+2025-01-18 17:26:53,507 [INFO] returning binary content, length: 2522880
+2025-01-18 17:26:53,507 [INFO] binary response, 2522880 bytes
+2025-01-18 17:26:53,507 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:26:53,510 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:53,511 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2003.h5] timeout: 180
+2025-01-18 17:26:53,544 [INFO] returning binary content, length: 2522880
+2025-01-18 17:26:53,544 [INFO] binary response, 2522880 bytes
+2025-01-18 17:26:53,544 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:26:53,547 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:53,548 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2003.h5] timeout: 180
+2025-01-18 17:26:53,864 [INFO] status: 200
+2025-01-18 17:26:53,869 [INFO] got domain json: 40286 bytes
+2025-01-18 17:26:53,870 [INFO] status: 200
+2025-01-18 17:26:53,870 [INFO] using post select
+2025-01-18 17:26:53,870 [INFO] POST: /datasets/d-3e7005a0-39a78465-b4cb-d104c8-a49643/value [/nrel/nsrdb/v3/nsrdb_2003.h5]
+2025-01-18 17:26:53,870 [INFO] POST: /datasets/d-3e7005a0-39a78465-b4cb-d104c8-a49643/value
+2025-01-18 17:26:53,875 [INFO] got domain json: 40286 bytes
+2025-01-18 17:26:53,877 [INFO] using post select
+2025-01-18 17:26:53,877 [INFO] POST: /datasets/d-3e7005a0-39a78465-ed50-a97a4c-484bd1/value [/nrel/nsrdb/v3/nsrdb_2003.h5]
+2025-01-18 17:26:53,877 [INFO] POST: /datasets/d-3e7005a0-39a78465-ed50-a97a4c-484bd1/value
+2025-01-18 17:26:53,892 [INFO] status: 200
+2025-01-18 17:26:53,895 [INFO] got domain json: 40286 bytes
+2025-01-18 17:26:53,897 [INFO] using post select
+2025-01-18 17:26:53,897 [INFO] POST: /datasets/d-3e7005a0-39a78465-a1b2-8eaf1b-6e96c1/value [/nrel/nsrdb/v3/nsrdb_2003.h5]
+2025-01-18 17:26:53,897 [INFO] POST: /datasets/d-3e7005a0-39a78465-a1b2-8eaf1b-6e96c1/value
+2025-01-18 17:26:57,133 [INFO] returning binary content, length: 2522880
+2025-01-18 17:26:57,134 [INFO] binary response, 2522880 bytes
+2025-01-18 17:26:57,134 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:26:57,135 [INFO] returning binary content, length: 2522880
+2025-01-18 17:26:57,135 [INFO] binary response, 2522880 bytes
+2025-01-18 17:26:57,135 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:26:57,137 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:57,138 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2004.h5] timeout: 180
+2025-01-18 17:26:57,138 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:26:57,138 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2004.h5] timeout: 180
+2025-01-18 17:26:57,476 [INFO] status: 200
+2025-01-18 17:26:57,479 [INFO] status: 200
+2025-01-18 17:26:57,482 [INFO] got domain json: 41788 bytes
+2025-01-18 17:26:57,483 [INFO] got domain json: 41788 bytes
+2025-01-18 17:26:57,483 [INFO] using post select
+2025-01-18 17:26:57,483 [INFO] POST: /datasets/d-0a764ff5-f276cf93-f963-ac9bda-6e82c3/value [/nrel/nsrdb/v3/nsrdb_2004.h5]
+2025-01-18 17:26:57,483 [INFO] POST: /datasets/d-0a764ff5-f276cf93-f963-ac9bda-6e82c3/value
+2025-01-18 17:26:57,484 [INFO] using post select
+2025-01-18 17:26:57,484 [INFO] POST: /datasets/d-0a764ff5-f276cf93-641d-31c4ae-c1409b/value [/nrel/nsrdb/v3/nsrdb_2004.h5]
+2025-01-18 17:26:57,484 [INFO] POST: /datasets/d-0a764ff5-f276cf93-641d-31c4ae-c1409b/value
+2025-01-18 17:27:00,026 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:00,026 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:00,026 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:00,029 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:00,030 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2005.h5] timeout: 180
+2025-01-18 17:27:00,074 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:00,074 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:00,075 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:00,078 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:00,078 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2005.h5] timeout: 180
+2025-01-18 17:27:00,377 [INFO] status: 200
+2025-01-18 17:27:00,382 [INFO] got domain json: 40490 bytes
+2025-01-18 17:27:00,383 [INFO] using post select
+2025-01-18 17:27:00,383 [INFO] POST: /datasets/d-231a07c7-9d021c42-9641-ddba10-edd28f/value [/nrel/nsrdb/v3/nsrdb_2005.h5]
+2025-01-18 17:27:00,383 [INFO] POST: /datasets/d-231a07c7-9d021c42-9641-ddba10-edd28f/value
+2025-01-18 17:27:00,411 [INFO] status: 200
+2025-01-18 17:27:00,416 [INFO] got domain json: 40490 bytes
+2025-01-18 17:27:00,417 [INFO] using post select
+2025-01-18 17:27:00,418 [INFO] POST: /datasets/d-231a07c7-9d021c42-cb5d-d33735-42408c/value [/nrel/nsrdb/v3/nsrdb_2005.h5]
+2025-01-18 17:27:00,418 [INFO] POST: /datasets/d-231a07c7-9d021c42-cb5d-d33735-42408c/value
+2025-01-18 17:27:00,458 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:00,458 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:00,458 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:00,462 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:00,462 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2004.h5] timeout: 180
+2025-01-18 17:27:02,644 [INFO] status: 200
+2025-01-18 17:27:02,648 [INFO] got domain json: 41788 bytes
+2025-01-18 17:27:02,650 [INFO] using post select
+2025-01-18 17:27:02,650 [INFO] POST: /datasets/d-0a764ff5-f276cf93-3a0b-bb3d10-9e5ef6/value [/nrel/nsrdb/v3/nsrdb_2004.h5]
+2025-01-18 17:27:02,650 [INFO] POST: /datasets/d-0a764ff5-f276cf93-3a0b-bb3d10-9e5ef6/value
+2025-01-18 17:27:03,240 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:03,240 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:03,240 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:03,244 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:03,244 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2006.h5] timeout: 180
+2025-01-18 17:27:03,866 [INFO] status: 200
+2025-01-18 17:27:03,872 [INFO] got domain json: 40086 bytes
+2025-01-18 17:27:03,874 [INFO] using post select
+2025-01-18 17:27:03,874 [INFO] POST: /datasets/d-ccd96841-66b44e49-db66-ac3c78-4235db/value [/nrel/nsrdb/v3/nsrdb_2006.h5]
+2025-01-18 17:27:03,874 [INFO] POST: /datasets/d-ccd96841-66b44e49-db66-ac3c78-4235db/value
+2025-01-18 17:27:04,456 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:04,456 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:04,456 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:04,460 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:04,460 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2005.h5] timeout: 180
+2025-01-18 17:27:05,061 [INFO] status: 200
+2025-01-18 17:27:05,066 [INFO] got domain json: 40490 bytes
+2025-01-18 17:27:05,067 [INFO] using post select
+2025-01-18 17:27:05,067 [INFO] POST: /datasets/d-231a07c7-9d021c42-070e-45037a-b31dad/value [/nrel/nsrdb/v3/nsrdb_2005.h5]
+2025-01-18 17:27:05,067 [INFO] POST: /datasets/d-231a07c7-9d021c42-070e-45037a-b31dad/value
+2025-01-18 17:27:05,592 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:05,593 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:05,593 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:05,597 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:05,597 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2007.h5] timeout: 180
+2025-01-18 17:27:06,203 [INFO] status: 200
+2025-01-18 17:27:06,207 [INFO] got domain json: 40913 bytes
+2025-01-18 17:27:06,209 [INFO] using post select
+2025-01-18 17:27:06,209 [INFO] POST: /datasets/d-396f2d22-2b9856df-1d42-ebd2d0-a3337d/value [/nrel/nsrdb/v3/nsrdb_2007.h5]
+2025-01-18 17:27:06,209 [INFO] POST: /datasets/d-396f2d22-2b9856df-1d42-ebd2d0-a3337d/value
+2025-01-18 17:27:06,525 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:06,525 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:06,525 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:06,529 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:06,529 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2006.h5] timeout: 180
+2025-01-18 17:27:06,874 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:06,874 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:06,874 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:06,877 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:06,877 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2006.h5] timeout: 180
+2025-01-18 17:27:07,556 [INFO] status: 200
+2025-01-18 17:27:07,560 [INFO] got domain json: 40086 bytes
+2025-01-18 17:27:07,561 [INFO] using post select
+2025-01-18 17:27:07,561 [INFO] POST: /datasets/d-ccd96841-66b44e49-b3b7-30c075-48e1b7/value [/nrel/nsrdb/v3/nsrdb_2006.h5]
+2025-01-18 17:27:07,561 [INFO] POST: /datasets/d-ccd96841-66b44e49-b3b7-30c075-48e1b7/value
+2025-01-18 17:27:07,581 [INFO] status: 200
+2025-01-18 17:27:07,586 [INFO] got domain json: 40086 bytes
+2025-01-18 17:27:07,587 [INFO] using post select
+2025-01-18 17:27:07,587 [INFO] POST: /datasets/d-ccd96841-66b44e49-43aa-26a4ad-21e8c0/value [/nrel/nsrdb/v3/nsrdb_2006.h5]
+2025-01-18 17:27:07,587 [INFO] POST: /datasets/d-ccd96841-66b44e49-43aa-26a4ad-21e8c0/value
+2025-01-18 17:27:08,167 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:08,167 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:08,167 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:08,171 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:08,172 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2008.h5] timeout: 180
+2025-01-18 17:27:09,554 [INFO] status: 200
+2025-01-18 17:27:09,559 [INFO] got domain json: 42200 bytes
+2025-01-18 17:27:09,560 [INFO] using post select
+2025-01-18 17:27:09,560 [INFO] POST: /datasets/d-67b0f307-cfdb1e14-bda5-a0e8c2-6dfdcd/value [/nrel/nsrdb/v3/nsrdb_2008.h5]
+2025-01-18 17:27:09,560 [INFO] POST: /datasets/d-67b0f307-cfdb1e14-bda5-a0e8c2-6dfdcd/value
+2025-01-18 17:27:10,082 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:10,082 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:10,082 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:10,086 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:10,086 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2007.h5] timeout: 180
+2025-01-18 17:27:10,176 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:10,176 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:10,176 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:10,180 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:10,180 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2007.h5] timeout: 180
+2025-01-18 17:27:10,943 [INFO] status: 200
+2025-01-18 17:27:10,947 [INFO] status: 200
+2025-01-18 17:27:10,948 [INFO] got domain json: 40913 bytes
+2025-01-18 17:27:10,949 [INFO] using post select
+2025-01-18 17:27:10,949 [INFO] POST: /datasets/d-396f2d22-2b9856df-eab8-986d60-871881/value [/nrel/nsrdb/v3/nsrdb_2007.h5]
+2025-01-18 17:27:10,949 [INFO] POST: /datasets/d-396f2d22-2b9856df-eab8-986d60-871881/value
+2025-01-18 17:27:10,952 [INFO] got domain json: 40913 bytes
+2025-01-18 17:27:10,953 [INFO] using post select
+2025-01-18 17:27:10,953 [INFO] POST: /datasets/d-396f2d22-2b9856df-bb7a-085a1c-e71c18/value [/nrel/nsrdb/v3/nsrdb_2007.h5]
+2025-01-18 17:27:10,953 [INFO] POST: /datasets/d-396f2d22-2b9856df-bb7a-085a1c-e71c18/value
+2025-01-18 17:27:11,541 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:11,541 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:11,541 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:11,545 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:11,545 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2009.h5] timeout: 180
+2025-01-18 17:27:12,543 [INFO] status: 200
+2025-01-18 17:27:12,548 [INFO] got domain json: 41129 bytes
+2025-01-18 17:27:12,549 [INFO] using post select
+2025-01-18 17:27:12,549 [INFO] POST: /datasets/d-b5ad27b2-0f4a9771-1484-577f22-9bacff/value [/nrel/nsrdb/v3/nsrdb_2009.h5]
+2025-01-18 17:27:12,550 [INFO] POST: /datasets/d-b5ad27b2-0f4a9771-1484-577f22-9bacff/value
+2025-01-18 17:27:13,197 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:13,197 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:13,197 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:13,201 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:13,204 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2008.h5] timeout: 180
+2025-01-18 17:27:13,442 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:13,442 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:13,443 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:13,447 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:13,447 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2008.h5] timeout: 180
+2025-01-18 17:27:13,942 [INFO] status: 200
+2025-01-18 17:27:13,946 [INFO] got domain json: 42200 bytes
+2025-01-18 17:27:13,948 [INFO] using post select
+2025-01-18 17:27:13,948 [INFO] POST: /datasets/d-67b0f307-cfdb1e14-2677-31f321-fe3d1b/value [/nrel/nsrdb/v3/nsrdb_2008.h5]
+2025-01-18 17:27:13,948 [INFO] POST: /datasets/d-67b0f307-cfdb1e14-2677-31f321-fe3d1b/value
+2025-01-18 17:27:13,951 [INFO] status: 200
+2025-01-18 17:27:13,956 [INFO] got domain json: 42200 bytes
+2025-01-18 17:27:13,957 [INFO] using post select
+2025-01-18 17:27:13,957 [INFO] POST: /datasets/d-67b0f307-cfdb1e14-b715-92acc5-ac49fb/value [/nrel/nsrdb/v3/nsrdb_2008.h5]
+2025-01-18 17:27:13,957 [INFO] POST: /datasets/d-67b0f307-cfdb1e14-b715-92acc5-ac49fb/value
+2025-01-18 17:27:14,570 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:14,571 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:14,571 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:14,576 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:14,576 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2010.h5] timeout: 180
+2025-01-18 17:27:15,928 [INFO] status: 200
+2025-01-18 17:27:15,932 [INFO] got domain json: 40695 bytes
+2025-01-18 17:27:15,934 [INFO] using post select
+2025-01-18 17:27:15,934 [INFO] POST: /datasets/d-41eb3170-3117a298-3743-214412-32d918/value [/nrel/nsrdb/v3/nsrdb_2010.h5]
+2025-01-18 17:27:15,934 [INFO] POST: /datasets/d-41eb3170-3117a298-3743-214412-32d918/value
+2025-01-18 17:27:16,556 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:16,556 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:16,556 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:16,560 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:16,560 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2009.h5] timeout: 180
+2025-01-18 17:27:16,568 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:16,568 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:16,569 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:16,573 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:16,573 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2009.h5] timeout: 180
+2025-01-18 17:27:17,366 [INFO] status: 200
+2025-01-18 17:27:17,370 [INFO] got domain json: 41129 bytes
+2025-01-18 17:27:17,372 [INFO] using post select
+2025-01-18 17:27:17,372 [INFO] POST: /datasets/d-b5ad27b2-0f4a9771-be56-80d851-4338ce/value [/nrel/nsrdb/v3/nsrdb_2009.h5]
+2025-01-18 17:27:17,372 [INFO] POST: /datasets/d-b5ad27b2-0f4a9771-be56-80d851-4338ce/value
+2025-01-18 17:27:17,466 [INFO] status: 200
+2025-01-18 17:27:17,472 [INFO] got domain json: 41129 bytes
+2025-01-18 17:27:17,473 [INFO] using post select
+2025-01-18 17:27:17,473 [INFO] POST: /datasets/d-b5ad27b2-0f4a9771-3511-e426f1-0df054/value [/nrel/nsrdb/v3/nsrdb_2009.h5]
+2025-01-18 17:27:17,473 [INFO] POST: /datasets/d-b5ad27b2-0f4a9771-3511-e426f1-0df054/value
+2025-01-18 17:27:17,984 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:17,984 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:17,984 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:17,989 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:17,990 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2011.h5] timeout: 180
+2025-01-18 17:27:19,302 [INFO] status: 200
+2025-01-18 17:27:19,307 [INFO] got domain json: 40270 bytes
+2025-01-18 17:27:19,308 [INFO] using post select
+2025-01-18 17:27:19,308 [INFO] POST: /datasets/d-3b9f39bd-ba6816f2-127d-868784-65ba77/value [/nrel/nsrdb/v3/nsrdb_2011.h5]
+2025-01-18 17:27:19,308 [INFO] POST: /datasets/d-3b9f39bd-ba6816f2-127d-868784-65ba77/value
+2025-01-18 17:27:19,953 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:19,953 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:19,953 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:19,959 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:19,959 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2010.h5] timeout: 180
+2025-01-18 17:27:19,969 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:19,969 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:19,969 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:19,973 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:19,973 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2010.h5] timeout: 180
+2025-01-18 17:27:20,637 [INFO] status: 200
+2025-01-18 17:27:20,642 [INFO] got domain json: 40695 bytes
+2025-01-18 17:27:20,643 [INFO] using post select
+2025-01-18 17:27:20,643 [INFO] POST: /datasets/d-41eb3170-3117a298-a9f8-8d47d6-ead442/value [/nrel/nsrdb/v3/nsrdb_2010.h5]
+2025-01-18 17:27:20,643 [INFO] POST: /datasets/d-41eb3170-3117a298-a9f8-8d47d6-ead442/value
+2025-01-18 17:27:20,644 [INFO] status: 200
+2025-01-18 17:27:20,649 [INFO] got domain json: 40695 bytes
+2025-01-18 17:27:20,650 [INFO] using post select
+2025-01-18 17:27:20,650 [INFO] POST: /datasets/d-41eb3170-3117a298-bad5-20e31f-213c25/value [/nrel/nsrdb/v3/nsrdb_2010.h5]
+2025-01-18 17:27:20,650 [INFO] POST: /datasets/d-41eb3170-3117a298-bad5-20e31f-213c25/value
+2025-01-18 17:27:23,734 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:23,734 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:23,735 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:23,738 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:23,738 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2012.h5] timeout: 180
+2025-01-18 17:27:24,081 [INFO] status: 200
+2025-01-18 17:27:24,087 [INFO] got domain json: 40485 bytes
+2025-01-18 17:27:24,088 [INFO] using post select
+2025-01-18 17:27:24,088 [INFO] POST: /datasets/d-b497be84-938184fe-225e-5ec783-b8f3d3/value [/nrel/nsrdb/v3/nsrdb_2012.h5]
+2025-01-18 17:27:24,088 [INFO] POST: /datasets/d-b497be84-938184fe-225e-5ec783-b8f3d3/value
+2025-01-18 17:27:24,214 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:24,214 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:24,214 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:24,219 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:24,219 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2011.h5] timeout: 180
+2025-01-18 17:27:24,791 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:24,791 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:24,791 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:24,795 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:24,795 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2011.h5] timeout: 180
+2025-01-18 17:27:25,238 [INFO] status: 200
+2025-01-18 17:27:25,242 [INFO] got domain json: 40270 bytes
+2025-01-18 17:27:25,243 [INFO] status: 200
+2025-01-18 17:27:25,243 [INFO] using post select
+2025-01-18 17:27:25,243 [INFO] POST: /datasets/d-3b9f39bd-ba6816f2-dcfc-d537bd-70c6f4/value [/nrel/nsrdb/v3/nsrdb_2011.h5]
+2025-01-18 17:27:25,243 [INFO] POST: /datasets/d-3b9f39bd-ba6816f2-dcfc-d537bd-70c6f4/value
+2025-01-18 17:27:25,248 [INFO] got domain json: 40270 bytes
+2025-01-18 17:27:25,249 [INFO] using post select
+2025-01-18 17:27:25,249 [INFO] POST: /datasets/d-3b9f39bd-ba6816f2-1203-2392cf-75ddde/value [/nrel/nsrdb/v3/nsrdb_2011.h5]
+2025-01-18 17:27:25,249 [INFO] POST: /datasets/d-3b9f39bd-ba6816f2-1203-2392cf-75ddde/value
+2025-01-18 17:27:25,783 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:25,783 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:25,783 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:25,789 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:25,789 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2013.h5] timeout: 180
+2025-01-18 17:27:27,211 [INFO] status: 200
+2025-01-18 17:27:27,216 [INFO] got domain json: 40904 bytes
+2025-01-18 17:27:27,217 [INFO] using post select
+2025-01-18 17:27:27,217 [INFO] POST: /datasets/d-9ad50492-41d72606-6400-739465-db1c22/value [/nrel/nsrdb/v3/nsrdb_2013.h5]
+2025-01-18 17:27:27,217 [INFO] POST: /datasets/d-9ad50492-41d72606-6400-739465-db1c22/value
+2025-01-18 17:27:27,833 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:27,833 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:27,833 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:27,836 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:27,836 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2012.h5] timeout: 180
+2025-01-18 17:27:27,846 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:27,846 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:27,846 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:27,849 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:27,849 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2012.h5] timeout: 180
+2025-01-18 17:27:28,555 [INFO] status: 200
+2025-01-18 17:27:28,555 [INFO] got domain json: 40485 bytes
+2025-01-18 17:27:28,556 [INFO] using post select
+2025-01-18 17:27:28,556 [INFO] POST: /datasets/d-b497be84-938184fe-737b-ffd4f3-96e0ab/value [/nrel/nsrdb/v3/nsrdb_2012.h5]
+2025-01-18 17:27:28,557 [INFO] POST: /datasets/d-b497be84-938184fe-737b-ffd4f3-96e0ab/value
+2025-01-18 17:27:29,131 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:29,131 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:29,131 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:29,137 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:29,137 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2014.h5] timeout: 180
+2025-01-18 17:27:29,819 [INFO] status: 200
+2025-01-18 17:27:29,824 [INFO] got domain json: 41777 bytes
+2025-01-18 17:27:29,825 [INFO] using post select
+2025-01-18 17:27:29,826 [INFO] POST: /datasets/d-cd40648f-524ab991-3498-975264-f12762/value [/nrel/nsrdb/v3/nsrdb_2014.h5]
+2025-01-18 17:27:29,826 [INFO] POST: /datasets/d-cd40648f-524ab991-3498-975264-f12762/value
+2025-01-18 17:27:30,437 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:30,437 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:30,437 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:30,444 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:30,444 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2013.h5] timeout: 180
+2025-01-18 17:27:30,980 [INFO] status: 200
+2025-01-18 17:27:30,985 [INFO] got domain json: 40904 bytes
+2025-01-18 17:27:30,986 [INFO] using post select
+2025-01-18 17:27:30,986 [INFO] POST: /datasets/d-9ad50492-41d72606-dbee-f6b932-f821fe/value [/nrel/nsrdb/v3/nsrdb_2013.h5]
+2025-01-18 17:27:30,986 [INFO] POST: /datasets/d-9ad50492-41d72606-dbee-f6b932-f821fe/value
+2025-01-18 17:27:31,009 [INFO] status: 200
+2025-01-18 17:27:31,015 [INFO] got domain json: 40485 bytes
+2025-01-18 17:27:31,016 [INFO] using post select
+2025-01-18 17:27:31,016 [INFO] POST: /datasets/d-b497be84-938184fe-ac75-63e1fc-86b6a7/value [/nrel/nsrdb/v3/nsrdb_2012.h5]
+2025-01-18 17:27:31,016 [INFO] POST: /datasets/d-b497be84-938184fe-ac75-63e1fc-86b6a7/value
+2025-01-18 17:27:31,649 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:31,649 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:31,650 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:31,655 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:31,655 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2015.h5] timeout: 180
+2025-01-18 17:27:33,040 [INFO] status: 200
+2025-01-18 17:27:33,045 [INFO] got domain json: 40923 bytes
+2025-01-18 17:27:33,046 [INFO] using post select
+2025-01-18 17:27:33,046 [INFO] POST: /datasets/d-1a3fde30-ab2d9d39-1ea0-f16793-38b80c/value [/nrel/nsrdb/v3/nsrdb_2015.h5]
+2025-01-18 17:27:33,046 [INFO] POST: /datasets/d-1a3fde30-ab2d9d39-1ea0-f16793-38b80c/value
+2025-01-18 17:27:33,559 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:33,560 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:33,560 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:33,567 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:33,567 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2014.h5] timeout: 180
+2025-01-18 17:27:33,628 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:33,628 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:33,628 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:33,633 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:33,633 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2013.h5] timeout: 180
+2025-01-18 17:27:34,295 [INFO] status: 200
+2025-01-18 17:27:34,300 [INFO] got domain json: 40904 bytes
+2025-01-18 17:27:34,301 [INFO] using post select
+2025-01-18 17:27:34,301 [INFO] POST: /datasets/d-9ad50492-41d72606-55b5-6d6fcd-db4747/value [/nrel/nsrdb/v3/nsrdb_2013.h5]
+2025-01-18 17:27:34,301 [INFO] POST: /datasets/d-9ad50492-41d72606-55b5-6d6fcd-db4747/value
+2025-01-18 17:27:34,318 [INFO] status: 200
+2025-01-18 17:27:34,324 [INFO] got domain json: 41777 bytes
+2025-01-18 17:27:34,325 [INFO] using post select
+2025-01-18 17:27:34,325 [INFO] POST: /datasets/d-cd40648f-524ab991-02bb-7a07aa-90d9ae/value [/nrel/nsrdb/v3/nsrdb_2014.h5]
+2025-01-18 17:27:34,325 [INFO] POST: /datasets/d-cd40648f-524ab991-02bb-7a07aa-90d9ae/value
+2025-01-18 17:27:34,932 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:34,932 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:34,933 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:34,939 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:34,939 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2016.h5] timeout: 180
+2025-01-18 17:27:36,332 [INFO] status: 200
+2025-01-18 17:27:36,333 [INFO] got domain json: 40694 bytes
+2025-01-18 17:27:36,334 [INFO] using post select
+2025-01-18 17:27:36,334 [INFO] POST: /datasets/d-becd9017-f12e2bf3-543a-85e961-995567/value [/nrel/nsrdb/v3/nsrdb_2016.h5]
+2025-01-18 17:27:36,334 [INFO] POST: /datasets/d-becd9017-f12e2bf3-543a-85e961-995567/value
+2025-01-18 17:27:36,931 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:36,931 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:36,931 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:36,936 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:36,936 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2014.h5] timeout: 180
+2025-01-18 17:27:36,943 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:36,943 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:36,943 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:36,948 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:36,948 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2015.h5] timeout: 180
+2025-01-18 17:27:37,576 [INFO] status: 200
+2025-01-18 17:27:37,581 [INFO] got domain json: 41777 bytes
+2025-01-18 17:27:37,582 [INFO] status: 200
+2025-01-18 17:27:37,583 [INFO] using post select
+2025-01-18 17:27:37,583 [INFO] POST: /datasets/d-cd40648f-524ab991-539b-b3e0db-4182f1/value [/nrel/nsrdb/v3/nsrdb_2014.h5]
+2025-01-18 17:27:37,583 [INFO] POST: /datasets/d-cd40648f-524ab991-539b-b3e0db-4182f1/value
+2025-01-18 17:27:37,587 [INFO] got domain json: 40923 bytes
+2025-01-18 17:27:37,588 [INFO] using post select
+2025-01-18 17:27:37,588 [INFO] POST: /datasets/d-1a3fde30-ab2d9d39-d291-cc7fa8-d69760/value [/nrel/nsrdb/v3/nsrdb_2015.h5]
+2025-01-18 17:27:37,588 [INFO] POST: /datasets/d-1a3fde30-ab2d9d39-d291-cc7fa8-d69760/value
+2025-01-18 17:27:38,207 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:38,207 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:38,207 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:38,213 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:38,213 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2017.h5] timeout: 180
+2025-01-18 17:27:39,553 [INFO] status: 200
+2025-01-18 17:27:39,559 [INFO] got domain json: 39183 bytes
+2025-01-18 17:27:39,560 [INFO] using post select
+2025-01-18 17:27:39,560 [INFO] POST: /datasets/d-3e46a64f-1efe3748-2647-867d9f-dce74d/value [/nrel/nsrdb/v3/nsrdb_2017.h5]
+2025-01-18 17:27:39,561 [INFO] POST: /datasets/d-3e46a64f-1efe3748-2647-867d9f-dce74d/value
+2025-01-18 17:27:40,238 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:40,238 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:40,238 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:40,247 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:40,247 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2016.h5] timeout: 180
+2025-01-18 17:27:40,305 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:40,305 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:40,305 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:40,310 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:40,310 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2015.h5] timeout: 180
+2025-01-18 17:27:40,913 [INFO] status: 200
+2025-01-18 17:27:40,918 [INFO] got domain json: 40694 bytes
+2025-01-18 17:27:40,919 [INFO] using post select
+2025-01-18 17:27:40,919 [INFO] POST: /datasets/d-becd9017-f12e2bf3-2e99-7d4e90-16797a/value [/nrel/nsrdb/v3/nsrdb_2016.h5]
+2025-01-18 17:27:40,919 [INFO] POST: /datasets/d-becd9017-f12e2bf3-2e99-7d4e90-16797a/value
+2025-01-18 17:27:40,929 [INFO] status: 200
+2025-01-18 17:27:40,935 [INFO] got domain json: 40923 bytes
+2025-01-18 17:27:40,936 [INFO] using post select
+2025-01-18 17:27:40,936 [INFO] POST: /datasets/d-1a3fde30-ab2d9d39-f219-99f785-41e1bf/value [/nrel/nsrdb/v3/nsrdb_2015.h5]
+2025-01-18 17:27:40,936 [INFO] POST: /datasets/d-1a3fde30-ab2d9d39-f219-99f785-41e1bf/value
+2025-01-18 17:27:41,640 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:41,640 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:41,640 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:41,665 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:41,665 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2018.h5] timeout: 180
+2025-01-18 17:27:42,558 [INFO] status: 200
+2025-01-18 17:27:42,562 [INFO] got domain json: 81663 bytes
+2025-01-18 17:27:42,565 [INFO] using post select
+2025-01-18 17:27:42,565 [INFO] POST: /datasets/d-ef2b5577-31ef3264-7678-69085e-3e760c/value [/nrel/nsrdb/v3/nsrdb_2018.h5]
+2025-01-18 17:27:42,565 [INFO] POST: /datasets/d-ef2b5577-31ef3264-7678-69085e-3e760c/value
+2025-01-18 17:27:44,065 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:44,065 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:44,065 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:44,070 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:44,070 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2017.h5] timeout: 180
+2025-01-18 17:27:44,109 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:44,109 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:44,109 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:44,114 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:44,114 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2016.h5] timeout: 180
+2025-01-18 17:27:44,486 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:44,486 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:44,486 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:44,493 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:44,493 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2019.h5] timeout: 180
+2025-01-18 17:27:44,555 [INFO] status: 200
+2025-01-18 17:27:44,560 [INFO] status: 200
+2025-01-18 17:27:44,561 [INFO] got domain json: 40694 bytes
+2025-01-18 17:27:44,562 [INFO] using post select
+2025-01-18 17:27:44,562 [INFO] POST: /datasets/d-becd9017-f12e2bf3-7279-5a5425-494c65/value [/nrel/nsrdb/v3/nsrdb_2016.h5]
+2025-01-18 17:27:44,562 [INFO] POST: /datasets/d-becd9017-f12e2bf3-7279-5a5425-494c65/value
+2025-01-18 17:27:44,565 [INFO] got domain json: 39183 bytes
+2025-01-18 17:27:44,566 [INFO] using post select
+2025-01-18 17:27:44,566 [INFO] POST: /datasets/d-3e46a64f-1efe3748-ec5c-defb09-046c85/value [/nrel/nsrdb/v3/nsrdb_2017.h5]
+2025-01-18 17:27:44,566 [INFO] POST: /datasets/d-3e46a64f-1efe3748-ec5c-defb09-046c85/value
+2025-01-18 17:27:44,831 [INFO] status: 200
+2025-01-18 17:27:44,837 [INFO] got domain json: 82722 bytes
+2025-01-18 17:27:44,840 [INFO] using post select
+2025-01-18 17:27:44,840 [INFO] POST: /datasets/d-8833513a-3ffcfdba-9b94-a5adc2-f962f8/value [/nrel/nsrdb/v3/nsrdb_2019.h5]
+2025-01-18 17:27:44,840 [INFO] POST: /datasets/d-8833513a-3ffcfdba-9b94-a5adc2-f962f8/value
+2025-01-18 17:27:47,896 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:47,896 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:47,896 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:47,902 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:47,902 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2020.h5] timeout: 180
+2025-01-18 17:27:47,983 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:47,983 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:47,983 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:47,988 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:47,988 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2017.h5] timeout: 180
+2025-01-18 17:27:48,251 [INFO] status: 200
+2025-01-18 17:27:48,256 [INFO] got domain json: 77178 bytes
+2025-01-18 17:27:48,259 [INFO] using post select
+2025-01-18 17:27:48,259 [INFO] POST: /datasets/d-d951bb36-10dec846-7b47-91b535-2e0bb4/value [/nrel/nsrdb/v3/nsrdb_2020.h5]
+2025-01-18 17:27:48,259 [INFO] POST: /datasets/d-d951bb36-10dec846-7b47-91b535-2e0bb4/value
+2025-01-18 17:27:48,324 [INFO] status: 200
+2025-01-18 17:27:48,328 [INFO] got domain json: 39183 bytes
+2025-01-18 17:27:48,330 [INFO] using post select
+2025-01-18 17:27:48,330 [INFO] POST: /datasets/d-3e46a64f-1efe3748-992d-10a9da-ad72cf/value [/nrel/nsrdb/v3/nsrdb_2017.h5]
+2025-01-18 17:27:48,330 [INFO] POST: /datasets/d-3e46a64f-1efe3748-992d-10a9da-ad72cf/value
+2025-01-18 17:27:50,826 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:50,826 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:50,826 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:50,836 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:50,836 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2018.h5] timeout: 180
+2025-01-18 17:27:50,853 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:50,853 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:50,853 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:51,183 [INFO] status: 200
+2025-01-18 17:27:51,188 [INFO] got domain json: 81663 bytes
+2025-01-18 17:27:51,191 [INFO] using post select
+2025-01-18 17:27:51,191 [INFO] POST: /datasets/d-ef2b5577-31ef3264-6c78-f76888-8dd099/value [/nrel/nsrdb/v3/nsrdb_2018.h5]
+2025-01-18 17:27:51,191 [INFO] POST: /datasets/d-ef2b5577-31ef3264-6c78-f76888-8dd099/value
+2025-01-18 17:27:51,240 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:51,240 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:51,240 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:51,245 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:51,245 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2018.h5] timeout: 180
+2025-01-18 17:27:52,495 [INFO] status: 200
+2025-01-18 17:27:52,501 [INFO] got domain json: 81663 bytes
+2025-01-18 17:27:52,504 [INFO] using post select
+2025-01-18 17:27:52,504 [INFO] POST: /datasets/d-ef2b5577-31ef3264-3b54-8e6e04-cf7ab2/value [/nrel/nsrdb/v3/nsrdb_2018.h5]
+2025-01-18 17:27:52,504 [INFO] POST: /datasets/d-ef2b5577-31ef3264-3b54-8e6e04-cf7ab2/value
+2025-01-18 17:27:53,610 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:53,610 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:53,610 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:53,620 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:53,620 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2019.h5] timeout: 180
+2025-01-18 17:27:53,961 [INFO] status: 200
+2025-01-18 17:27:53,966 [INFO] got domain json: 82722 bytes
+2025-01-18 17:27:53,968 [INFO] using post select
+2025-01-18 17:27:53,968 [INFO] POST: /datasets/d-8833513a-3ffcfdba-3332-bf7478-075068/value [/nrel/nsrdb/v3/nsrdb_2019.h5]
+2025-01-18 17:27:53,968 [INFO] POST: /datasets/d-8833513a-3ffcfdba-3332-bf7478-075068/value
+2025-01-18 17:27:54,340 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:54,340 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:54,340 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:54,345 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:54,346 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2019.h5] timeout: 180
+2025-01-18 17:27:55,166 [INFO] status: 200
+2025-01-18 17:27:55,237 [INFO] got domain json: 82722 bytes
+2025-01-18 17:27:55,242 [INFO] using post select
+2025-01-18 17:27:55,243 [INFO] POST: /datasets/d-8833513a-3ffcfdba-2999-db6bee-9faf82/value [/nrel/nsrdb/v3/nsrdb_2019.h5]
+2025-01-18 17:27:55,243 [INFO] POST: /datasets/d-8833513a-3ffcfdba-2999-db6bee-9faf82/value
+2025-01-18 17:27:55,669 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:55,669 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:55,669 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:55,675 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:55,675 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2020.h5] timeout: 180
+2025-01-18 17:27:56,403 [INFO] status: 200
+2025-01-18 17:27:56,474 [INFO] got domain json: 77178 bytes
+2025-01-18 17:27:56,476 [INFO] using post select
+2025-01-18 17:27:56,476 [INFO] POST: /datasets/d-d951bb36-10dec846-b83c-cc05d7-4d7f36/value [/nrel/nsrdb/v3/nsrdb_2020.h5]
+2025-01-18 17:27:56,476 [INFO] POST: /datasets/d-d951bb36-10dec846-b83c-cc05d7-4d7f36/value
+2025-01-18 17:27:56,954 [INFO] returning binary content, length: 2522880
+2025-01-18 17:27:56,954 [INFO] binary response, 2522880 bytes
+2025-01-18 17:27:56,954 [INFO] got arr: (17520, 72), cleaning up shape!
+2025-01-18 17:27:56,960 [INFO] HttpConn.init - timeout = 180
+2025-01-18 17:27:56,960 [INFO] GET: https://developer.nrel.gov/api/hsds/ [/nrel/nsrdb/v3/nsrdb_2020.h5] timeout: 180
+2025-01-18 17:27:57,748 [INFO] status: 200
+2025-01-18 17:27:57,817 [INFO] got domain json: 77178 bytes
+2025-01-18 17:27:57,819 [INFO] using post select
+2025-01-18 17:27:57,819 [INFO] POST: /datasets/d-d951bb36-10dec846-89f1-e859f4-a81df4/value [/nrel/nsrdb/v3/nsrdb_2020.h5]
+2025-01-18 17:27:57,819 [INFO] POST: /datasets/d-d951bb36-10dec846-89f1-e859f4-a81df4/value
+2025-01-18 17:27:58,283 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:58,284 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:58,284 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:27:59,444 [INFO] returning binary content, length: 2529792
+2025-01-18 17:27:59,444 [INFO] binary response, 2529792 bytes
+2025-01-18 17:27:59,444 [INFO] got arr: (17568, 72), cleaning up shape!
+2025-01-18 17:28:03,381 [INFO] NSRDB extraction completed for 09363050
+2025-01-18 17:29:54,435 [INFO] Created 3 records

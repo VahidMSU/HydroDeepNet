@@ -116,10 +116,14 @@ def extract_SWAT_PRISM_variable(variable, NSRDB_index_SWAT, years, swat_prism_pa
 	write_to_file(variable, NSRDB_index_SWAT, years, data_all, swat_prism_path, NSRD_PRISM)
 	write_cli_file(swat_prism_path, NSRD_PRISM, variable)
 
-def NSRDB_extract(VPUID,NAME,LEVEL):
+def NSRDB_extract(VPUID, LEVEL, NAME):
 	years = range(2000, 2021)
 	variables = ['ghi','wind_speed','relative_humidity']
-	swat_prism_shape_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/PRISM_grid.shp"
+
+	swat_prism_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/"
+
+	swat_prism_shape_path = os.path.join(swat_prism_path,"PRISM_grid.shp")
+	print(f"Locations to be extracted: {swat_prism_shape_path}")
 
 	NSRDB_index_SWAT, NSRD_PRISM = extract_SWAT_PRISM_locations(swat_prism_shape_path)
 	processes = []

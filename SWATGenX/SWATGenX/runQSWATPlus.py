@@ -2,10 +2,8 @@ import subprocess
 import os
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    from SWATGenX.utils import get_all_VPUIDs
-except Exception:
+except ImportError:
     from SWATGenXConfigPars import SWATGenXPaths
-    from utils import get_all_VPUIDs
 def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME):
     
     print(f"Running QSWATPlus for {NAME}")
@@ -18,7 +16,7 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME):
         print(lines[-1])
 
     ## now write it back to a new batch file
-    runQSWATPlus_path_new = f"{os.path.basename(runQSWATPlus_path)}/{NAME}_runHUCProject.sh"
+    runQSWATPlus_path_new = f"{SWATGenXPaths.codes_path}/{NAME}_runHUCProject.sh"
     with open(runQSWATPlus_path_new, "w") as f:
         f.writelines(lines)
     
