@@ -1,12 +1,14 @@
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
-LEVEL: huc12, station_name: 08088000
+LEVEL: huc12, station_name: 04166100
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
-SWATGenXCore: Starting the SWATGenX model for 08088000
-SWATGenXCore: Starting the SWATGenX model for 08088000
-SWATGenXCore: Beginning the extraction of the model for 08088000
-SWATGenXCore: Beginning the extraction of the model for 08088000
-First Stage completed for 08088000, 1206
-First Stage completed for 08088000, 1206
-HRU2 shapefile does not exist for 08088000 after running QSWAT+
-HRU2 shapefile does not exist for 08088000 after running QSWAT+
+SWATGenXCore: Starting the SWATGenX model for 04166100
+SWATGenXCore: Starting the SWATGenX model for 04166100
+SWATGenXCore: Beginning the extraction of the model for 04166100
+SWATGenXCore: Beginning the extraction of the model for 04166100
+The model extraction has failed for 04166100 before (PRISM extracted but streamflow shapefile does not exist)
+The model extraction has failed for 04166100 before (PRISM extracted but streamflow shapefile does not exist)
+First Stage completed for 04166100, 0409
+First Stage completed for 04166100, 0409
+QSWAT+ processes are completed for 04166100, 0409
+QSWAT+ processes are completed for 04166100, 0409

@@ -20,6 +20,6 @@ if __name__ == "__main__":
         print(f"Processing VPUID: {VPUID}")
         USGS_streamflow_retrieval_by_VPUID(VPUID, start_date, end_date)
 
-    with Pool() as pool:
+    with Pool(processes=15) as pool:
         pool.map(process_VPUID, VPUIDs)
  

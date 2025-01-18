@@ -24,13 +24,15 @@ class NLCDExtractor:
     def __init__(self, VPUID, epoch):
         self.VPUID = VPUID
         self.epoch = epoch
+        self.base_path = "/data/SWATGenXApp/GenXAppData"
+        
         self.NLCD_all_files_path = (
-            "/data/SWATGenXApp/GenXAppData/LandUse/NLCD_landcover_2021_release_all_files_20230630/"
+            "{self.base_path}/LandUse/NLCD_landcover_2021_release_all_files_20230630/"
         )
-        self.HUC4_base_path = fr"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/"
-        self.temp_path = fr"/data/SWATGenXApp/GenXAppData/LandUse/NLCD_CONUS/{VPUID}/rect.shp"
-        self.original_out_raster = fr"/data/SWATGenXApp/GenXAppData/LandUse/NLCD_CONUS/{VPUID}/NLCD_{VPUID}_{epoch}.tif"
-        self.VPUID_DEM_base = f"/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}"
+        self.HUC4_base_path = fr"{self.base_path}/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/"
+        self.temp_path = fr"{self.base_path}/LandUse/NLCD_CONUS/{VPUID}/rect.shp"
+        self.original_out_raster = fr"{self.base_path}/LandUse/NLCD_CONUS/{VPUID}/NLCD_{VPUID}_{epoch}.tif"
+        self.VPUID_DEM_base = f"{self.base_path}/DEM/VPUID/{VPUID}"
         self.NLCD_path = None
         self.spatial_ref = None
         self.HUC4_path = None
@@ -51,8 +53,8 @@ class NLCDExtractor:
     
     def get_EPSG(self):
         import pandas as pd 
-        base_input_raster = f'/data/SWATGenXApp/GenXAppData/DEM/VPUID/{self.VPUID}/'
-        streams_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{self.VPUID}/streams.pkl')
+        base_input_raster = f'{self.base_path}/DEM/VPUID/{self.VPUID}/'
+        streams_path = os.path.join(f'{self.base_path}/NHDPlusData/SWATPlus_NHDPlus/{self.VPUID}/streams.pkl')
         streams = gpd.GeoDataFrame(pd.read_pickle(streams_path))
         
         # Extract the UTM zone
@@ -122,7 +124,7 @@ class NLCDExtractor:
         target_crs = self.get_DEM_crs(DEM_path)
         self.get_EPSG()
         ### now project the original_out_raster to the target_crs and save it
-        output_path = fr"/data/SWATGenXApp/GenXAppData/LandUse/NLCD_CONUS/{self.VPUID}/NLCD_{self.VPUID}_{self.epoch}_30m.tif"
+        output_path = fr"{self.base_path}/LandUse/NLCD_CONUS/{self.VPUID}/NLCD_{self.VPUID}_{self.epoch}_30m.tif"
         gdal.Warp(output_path, self.original_out_raster, dstSRS=target_crs)
 
         self.reprojection(output_path, EPSG=self.EPSG)
@@ -130,7 +132,7 @@ class NLCDExtractor:
         ### now resample the raster to 100m, 200m, 500m, 1000m, 2000m
         resolutions = [100, 250, 500, 1000, 2000]
         for resolution in resolutions:
-            output_path = fr"/data/SWATGenXApp/GenXAppData/LandUse/NLCD_CONUS/{self.VPUID}/NLCD_{self.VPUID}_{self.epoch}_{resolution}m.tif"
+            output_path = fr"{self.base_path}/LandUse/NLCD_CONUS/{self.VPUID}/NLCD_{self.VPUID}_{self.epoch}_{resolution}m.tif"
             if not os.path.exists(output_path):
                 gdal.Warp(output_path, self.original_out_raster, xRes=resolution, yRes=resolution, resampleAlg=gdal.GRA_NearestNeighbour)
                 self.reprojection(output_path, EPSG=self.EPSG)
