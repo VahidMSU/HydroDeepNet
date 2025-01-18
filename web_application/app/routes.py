@@ -16,7 +16,7 @@ class AppManager:
 	def __init__(self, app):
 		self.app = app
 		self.init_routes()
-		self.logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/web_application/logs", verbose=True, rewrite=False)
+		self.logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/web_application/logs", verbose=True, rewrite=True)
 		self.logger = self.logger.setup_logger("WebAppLogger")
 
 	def init_routes(self):
@@ -177,6 +177,7 @@ class AppManager:
 				wrapped_single_model_creation = partial(single_model_creation, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
 				process = Process(target=wrapped_single_model_creation)
 				process.start()
+				self.logger.info("Model creation process started")
 
 				return redirect(url_for('model_confirmation'))
 

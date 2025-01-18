@@ -17,12 +17,21 @@ except ImportError:
     from sa import sa
     from sa import align_rasters
 
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
 
-def generate_swatplus_rasters(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution):
+
+def generate_swatplus_rasters(VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution):
     print(f"################## Generating raster files for {NAME} {LEVEL} {VPUID} ##################")
-    original_landuse_path = os.path.join(BASE_PATH, f"LandUse/{landuse_product}_CONUS/{VPUID}/{landuse_product}_{VPUID}_{landuse_epoch}_{ls_resolution}m.tif")
-    original_soil_path = os.path.join(BASE_PATH, f"Soil/gSSURGO_CONUS/{VPUID}/gSSURGO_{VPUID}_{ls_resolution}m.tif")
-    original_dem_path = os.path.join(BASE_PATH, f"DEM/VPUID/{VPUID}/")
+    gSSURGO_path = SWATGenXPaths.gSSURGO_path
+    NLCD_path = SWATGenXPaths.NLCD_path
+    DEM_path = SWATGenXPaths.DEM_path
+
+    original_landuse_path = f"{NLCD_path}/{VPUID}/{landuse_product}_{VPUID}_{landuse_epoch}_{ls_resolution}m.tif"
+    original_soil_path = f"{gSSURGO_path}/{VPUID}/gSSURGO_{VPUID}_{ls_resolution}m.tif"
+    original_dem_path = f"{DEM_path}/VPUID/{VPUID}/"
 
     # Find the correct DEM file based on the resolution
     dem_names = os.listdir(original_dem_path)
@@ -32,7 +41,7 @@ def generate_swatplus_rasters(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse
             break
 
     # Define paths for SWAT+ input
-    SOURCE = os.path.join(BASE_PATH, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}")
+    SOURCE = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}"
     swatplus_shapes_path = os.path.join(SOURCE, "Watershed/Shapes/")
     swatplus_landuse_path = os.path.join(SOURCE, "Watershed/Rasters/Landuse/")
     os.makedirs(swatplus_landuse_path, exist_ok=True)
@@ -100,9 +109,7 @@ def generate_swatplus_rasters(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse
     most_common_value = unique[np.argmax(counts)]
     print(f"Most common value: {most_common_value}")
 
-    # Read Soil CSV for mask values
-    path = "/data/SWATGenXApp/GenXAppData/Soil/SWAT_gssurgo.csv"
-    df = pd.read_csv(path)
+    df = pd.read_csv(SWATGenXPaths.swatplus_gssurgo_csv)
     mask_value = df.muid.values
     print(f"mask value data type: {type(mask_value)}")
 
@@ -135,8 +142,6 @@ def generate_swatplus_rasters(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse
     with rasterio.open(swatplus_soil_temp, 'w', **profile) as dst:
         dst.write(soil_array, 1)
 
-
-
     # Clip the temp soil raster to watershed boundary and save it using `rasterio.mask.mask`
     with fiona.open(watershed_boundary_path, "r") as shapefile:
         shapes = [feature["geometry"] for feature in shapefile]
@@ -161,5 +166,4 @@ if __name__ == "__main__":
     ls_resolution = "250"
     dem_resolution = "30"
     MODEL_NAME = "SWAT_MODEL"
-    BASE_PATH = r'/data/SWATGenXApp/GenXAppData/'
-    generate_swatplus_rasters(BASE_PATH, VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution)
+    generate_swatplus_rasters(VPUID, NAME, LEVEL, MODEL_NAME, landuse_product, landuse_epoch, ls_resolution, dem_resolution)

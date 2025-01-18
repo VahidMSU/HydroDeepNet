@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import logging
-from SWATGenX.read_VPUID import find_VPUID
+from SWATGenX.utils import find_VPUID
 import geopandas as gpd
 from shapely.geometry import Point
 # Set up loggings

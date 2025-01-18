@@ -1,8 +1,21 @@
 import logging
 import os 
+try:
+	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+	from SWATGenXConfigPars import SWATGenXPaths
 
 class LoggerSetup:
-	def __init__(self, report_path, verbose=True, rewrite=False):
+	"""
+	Class to set up a logger for logging messages to a file and optionally to the console.
+
+	Attributes:
+		report_path (str): Path to the directory where the log file will be saved.
+		logger (logging.Logger): Configured logger.
+		verbose (bool): Whether to print logs to console.
+	"""
+	
+	def __init__(self, report_path=None, verbose=True, rewrite=False):
 		"""
 		Initialize the LoggerSetup class.
 
@@ -10,7 +23,7 @@ class LoggerSetup:
 			report_path (str): Path to the directory where the log file will be saved.
 			verbose (bool): Whether to print logs to console. Defaults to True.
 		"""
-		self.report_path = report_path
+		self.report_path = report_path or SWATGenXPaths.report_path
 		self.logger = None
 		self.verbose = verbose
 		self.rewrite = rewrite  

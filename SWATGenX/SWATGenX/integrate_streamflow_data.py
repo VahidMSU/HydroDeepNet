@@ -1,11 +1,16 @@
 import os
 import pandas as pd
 import glob
+try:
+	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+	from SWATGenXConfigPars import SWATGenXPaths
+
 
 def get_all_VPUIDs():
-    path = "/data/SWATGenXApp/GenXAppData/NHDPlusData/NHDPlus_VPU_National/"
-    files = glob.glob(f"{path}*.zip")
-    return [os.path.basename(file).split('_')[2] for file in files]
+	NHDPlus_VPU_National_path = SWATGenXPaths.NHDPlus_VPU_National_path
+	files = glob.glob(f"{NHDPlus_VPU_National_path}*.zip")
+	return [os.path.basename(file).split('_')[2] for file in files]
 
 
 def write_all_station_data(VPUIDs, usgs_data_base, rewrite=False):
@@ -16,8 +21,8 @@ def write_all_station_data(VPUIDs, usgs_data_base, rewrite=False):
 			print(f"Processing VPUID: {VPUID}")
 			#if VPUID[:2] != "04":
 			#	continue
-			
-			streamflow_metadata_path = os.path.join(usgs_data_base, f"streamflow_stations/VPUID/{VPUID}/meta_{VPUID}.csv")
+			streamflow_path = SWATGenXPaths.streamflow_path
+			streamflow_metadata_path = f"{streamflow_path}/VPUID/{VPUID}/meta_{VPUID}.csv"
 		
 			if not os.path.exists(streamflow_metadata_path):
 				print(f"File not found: {streamflow_metadata_path}")
@@ -92,6 +97,6 @@ def integrate_streamflow_data(usgs_data_base):
 	return fps_all_stations
 
 if __name__ == "__main__":
-	usgs_data_base = r"/data/SWATGenXApp/GenXAppData/USGS/"
+	usgs_data_base = "/data/SWATGenXApp/GenXAppData/USGS/"
 	fps_all_stations = integrate_streamflow_data(usgs_data_base)
 	print(fps_all_stations.head())

@@ -8,14 +8,20 @@ import os
 import utm
 import pyproj
 
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from utils import get_all_VPUIDs
 
 def NHDPlus_extract_by_VPUID(VPUID):
     ### setting the base directory
     rewrite = True  
-    nhdplus_unzipped_files = f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl'
+    nhdplus_unzipped_files = f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{VPUID}/streams.pkl'
     
     if not os.path.exists(nhdplus_unzipped_files) or rewrite:
-        extracted_nhd_path = f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/'
+        extracted_nhd_path = f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{VPUID}/'
 
         if not os.path.exists(extracted_nhd_path):
             os.makedirs(extracted_nhd_path)
@@ -96,9 +102,6 @@ def NHDPlus_extract_by_VPUID(VPUID):
 
         for layer in layers:
             print(f'Extracting {layer}')
-
-
-                        
 
             layer_data = read_project_filter(VPUID, layer, gdf_path, utm_zone)
 
@@ -193,7 +196,7 @@ def read_project_filter(VPUID, layer, gdf_path, utm_zone):
 
 
 def NHDPlus_infra_check_by_VPUID(VPUID):
-    extracted_nhd_path = f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/'
+    extracted_nhd_path = f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{VPUID}/'
     files = os.listdir(extracted_nhd_path)
     if len(files) == 0:
         print(f'##### No extracted files found for {VPUID} #####')
@@ -207,25 +210,12 @@ def NHDPlus_infra_check_by_VPUID(VPUID):
             else:
                 print(f'##### {layer} found for {VPUID} #####')
 
-def get_all_VPUIDs():
-    path = "/data/SWATGenXApp/GenXAppData/NHDPlusData/NHDPlus_VPU_National/"
-    ## get all file names ending with .zip
-    files = glob.glob(f"{path}*.zip")
 
-    VPUIDs = [os.path.basename(file).split('_')[2] for file in files]
-
-    print(VPUIDs)
-    return VPUIDs
-## run a test with NHDPlus_extract_by_VPUID
 if __name__ == "__main__":
-
 
     VPUIDs = get_all_VPUIDs()
     #print("VPUIDs", VPUIDs)
     for VPUID in VPUIDs:
-        print(f"Processing VPUID: {VPUID}")
-        #print(f"Processing VPUID: {VPUID}")
-        #NHDPlus_extract_by_VPUID(VPUID ) 
         try:
             NHDPlus_infra_check_by_VPUID(VPUID)
         except Exception as e:
