@@ -4,8 +4,11 @@ import os
 import requests
 from shapely.geometry import Point
 import warnings
-
-def get_streamflow_stations_for_state(base_directory, state_cds):
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenXConfigPars import SWATGenXPaths
+def get_streamflow_stations_for_state(state_cds):
 
 
     for state_cd in state_cds:
@@ -13,9 +16,9 @@ def get_streamflow_stations_for_state(base_directory, state_cds):
         """ Get the streamflow stations for each state and save it to a csv file, plus a shapefile"""
         try:
             url = f"https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd={state_cd}&siteStatus=all&siteType=ST&hasDataTypeCd=dv"
-            locations_file = os.path.join(base_directory, f"streamflow_stations/state/{state_cd}/streamflow_stations_{state_cd}.csv")
+            locations_file = SWATGenXPaths.USGS_CONUS_stations_path
             os.makedirs(os.path.dirname(locations_file), exist_ok=True)
-            shapefile = os.path.join(base_directory, f"streamflow_stations/state/{state_cd}/streamflow_stations_{state_cd}.shp")
+            shapefile = SWATGenXPaths.USGS_CONUS_stations_shape_path
             if os.path.exists(locations_file):
                 print(f"Data for {state_cd} already exists")
                 continue
@@ -47,29 +50,29 @@ def get_streamflow_stations_for_state(base_directory, state_cds):
 
 
 ### now read all csv files and make them one file
-def organizing_stations_into_CONUS(base_directory, state_cds):
+def organizing_stations_into_CONUS(state_cds):
     """ Read all the csv files and make them one file to represent CONUS"""
     print("Organizing stations into CONUS")
     all_data = pd.DataFrame()
-    for state_cd in state_cds:
-        locations_file = os.path.join(base_directory, f"streamflow_stations/state/{state_cd}/streamflow_stations_{state_cd}.csv")
+    for _ in state_cds:
+        locations_file = SWATGenXPaths.USGS_CONUS_stations_path
         if os.path.exists(locations_file):
             df = pd.read_csv(locations_file, skiprows=29, delimiter="\t", dtype={"site_no": str})
             df = df.drop(0)
             all_data = pd.concat([all_data, df])
 
     ## now save the in CONUS
-    os.makedirs(os.path.dirname(os.path.join(base_directory, "streamflow_stations/CONUS/streamflow_stations_CONUS.csv")), exist_ok=True)
-    all_data.to_csv(os.path.join(base_directory, "streamflow_stations/CONUS/streamflow_stations_CONUS.csv"), index=False)
+    os.makedirs(os.path.dirname(SWATGenXPaths.USGS_CONUS_stations_path), exist_ok=True)
+    all_data.to_csv(SWATGenXPaths.USGS_CONUS_stations_path, index=False)
     ## make the shapefile
     all_data['geometry'] = all_data.apply(lambda row: Point(row.dec_long_va, row.dec_lat_va), axis=1)
     gdf = gpd.GeoDataFrame(all_data, geometry='geometry', crs="EPSG:4326")
-    gdf.to_file(os.path.join(base_directory, "streamflow_stations/CONUS/streamflow_stations_CONUS.shp"))
+    gdf.to_file(SWATGenXPaths.USGS_CONUS_stations_shape_path)
 
-def organizing_CONUS_by_VPUID(base_directory):
+def organizing_CONUS_by_VPUID():
     """ organize the CONUS data based on VPUID """
     print("Organizing CONUS data by VPUID")
-    all_data = pd.read_csv(os.path.join(base_directory, "streamflow_stations/CONUS/streamflow_stations_CONUS.csv"), dtype={"site_no": str})
+    all_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={"site_no": str})
     ## convert huc_cd column to string
     all_data['huc_cd'] = all_data['huc_cd'].astype(str)
     ## filter out NaN values
@@ -92,10 +95,10 @@ def organizing_CONUS_by_VPUID(base_directory):
         print(f"Organizing CONUS by VPUID: {VPUID}")
         df = all_data[all_data['VPUID'] == VPUID]
 
-        os.makedirs(os.path.join(base_directory, f"streamflow_stations/VPUID/{VPUID}"), exist_ok=True)
-        df.to_csv(os.path.join(base_directory, f"streamflow_stations/VPUID/{VPUID}/streamflow_stations_{VPUID}.csv"), index=False)
+        os.makedirs(f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}", exist_ok=True)
+        df.to_csv(SWATGenXPaths.USGS_CONUS_stations_path, index=False)
         geometry = df.apply(lambda row: Point(row.dec_long_va, row.dec_lat_va), axis=1).copy()
         gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
 
         warnings.filterwarnings("ignore", message="Column names longer than 10 characters will be truncated when saved to ESRI Shapefile")
-        gdf.to_file(os.path.join(base_directory, f"streamflow_stations/VPUID/{VPUID}/streamflow_stations_{VPUID}.shp"))
+        gdf.to_file(f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/streamflow_stations_{VPUID}.shp")

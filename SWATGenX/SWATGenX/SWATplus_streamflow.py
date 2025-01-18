@@ -6,14 +6,18 @@ import distutils.file_util
 import os
 import matplotlib.pyplot as plt
 
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenXConfigPars import SWATGenXPaths
 
 def fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MDOEL_NAME):
-    base = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/"
-    model_base = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/"
+    streamflow_path = SWATGenXPaths.streamflow_path
+    model_base = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/"
     swatplus_stations_shp = Path(model_base,"streamflow_data/stations.shp")
 
-    meta_data = os.path.join(base,f"VPUID/{VPUID}/meta_{VPUID}.csv")
-    streamflow_stations_shp = os.path.join(base,f"VPUID/{VPUID}/streamflow_stations_{VPUID}.shp")
+    meta_data = os.path.join(streamflow_path,f"VPUID/{VPUID}/meta_{VPUID}.csv")
+    streamflow_stations_shp = os.path.join(streamflow_path,f"VPUID/{VPUID}/streamflow_stations_{VPUID}.shp")
     swatplus_lsus2_shp = os.path.join(model_base,f"{MDOEL_NAME}/Watershed/Shapes/lsus2.shp")
     swatplus_stations_shp = os.path.join(model_base,"streamflow_data/stations.shp")
     target_path = os.path.join(model_base,"streamflow_data/")
@@ -33,18 +37,18 @@ def fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MDOEL_NAME):
     # Copy streamflow data
     for channel, site_no in zip(subbasins_stations["Channel"], subbasins_stations["site_no"]):
         try:
-            source_jpeg = os.path.join(base,f"VPUID/{VPUID}/streamflow_{site_no}.jpeg")
+            source_jpeg = os.path.join(streamflow_path,f"VPUID/{VPUID}/streamflow_{site_no}.jpeg")
             distutils.file_util.copy_file(source_jpeg, target_path)
             print(f"Streamflow data for {site_no} is copied to {target_path}")
         except Exception as e:
             print(f"Error. site {site_no}: {e}")
         try:
-            source_record_jpeg = os.path.join(base,f"VPUID/{VPUID}/streamflow_record_{site_no}.jpeg")
+            source_record_jpeg = os.path.join(streamflow_path,f"VPUID/{VPUID}/streamflow_record_{site_no}.jpeg")
             distutils.file_util.copy_file(source_record_jpeg, target_path)
         except Exception as e:
             print(f"Error. site {site_no}: {e}")
         try:
-            source_csv = os.path.join(base,f"VPUID/{VPUID}/streamflow_{site_no}.csv")
+            source_csv = os.path.join(streamflow_path,f"VPUID/{VPUID}/streamflow_{site_no}.csv")
             target_csv = os.path.join(target_path , f"{channel}_{site_no}.csv")
             distutils.file_util.copy_file(source_csv, target_csv)
         except Exception as e:

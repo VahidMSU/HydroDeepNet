@@ -1,8 +1,15 @@
 import os
-def download_USGS_DEM():
-    path = "/data/SWATGenXApp/GenXAppData/DEM/VPUID/DEM_13_arc_second.USGS"
 
-    with open(path, 'r') as file:
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenXConfigPars import SWATGenXPaths
+
+def download_USGS_DEM():
+    DEM_13_arc_second_list = SWATGenXPaths.DEM_13_arc_second_list
+
+
+    with open(DEM_13_arc_second_list, 'r') as file:
         lines = file.readlines()
         urls = [line.strip() for line in lines]
 

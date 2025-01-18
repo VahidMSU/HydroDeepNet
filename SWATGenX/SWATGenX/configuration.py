@@ -33,25 +33,34 @@ class PRISMDataError(Exception):
     """Raised when PRISM data is not clipped."""
     pass
 
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenXConfigPars import SWATGenXPaths
 
 def check_configuration(VPUID, landuse_epoch) -> str:
-    base_path = "/data/SWATGenXApp/GenXAppData/"
+    gSSUGO_path = SWATGenXPaths.gSSURGO_path
+    NLCD_path = SWATGenXPaths.NLCD_path
+    DEM_path = SWATGenXPaths.DEM_path
+    extracted_nhd_swatplus_path = SWATGenXPaths.extracted_nhd_swatplus_path
+    streamflow_path = SWATGenXPaths.streamflow_path
+    PRISM_path = SWATGenXPaths.PRISM_path
 
-    streams_path = os.path.join(f'{base_path}/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl')
+    streams_path = os.path.join(f'{extracted_nhd_swatplus_path}/{VPUID}/streams.pkl')
     
-    base_input_raster = f'{base_path}/DEM/VPUID/{VPUID}/'
+    base_input_raster = f'{DEM_path}/VPUID/{VPUID}/'
     
-    streamflow_meta_data_directory = f"{base_path}/USGS/streamflow_stations/VPUID/{VPUID}/meta_{VPUID}.csv"
+    streamflow_meta_data_directory = f"{streamflow_path}/VPUID/{VPUID}/meta_{VPUID}.csv"
     
-    streamflow_stations_directory = f"{base_path}/USGS/streamflow_stations/VPUID/{VPUID}/streamflow_stations_{VPUID}.shp"
+    streamflow_stations_directory = f"{streamflow_path}/VPUID/{VPUID}/streamflow_stations_{VPUID}.shp"
     
     if not os.path.exists(streamflow_meta_data_directory) or not os.path.exists(streamflow_stations_directory):
         print(f"######### Building monitoring infrastructure: {VPUID} ###########")
         raise MonitoringInfrastructureError("Monitoring infrastructure is not built. Please run Building_monitoring_infrastructure.py")
 
     input_raster = os.path.join(base_input_raster, "USGS_DEM_30m.tif")
-    landuse_raster = f"{base_path}/LandUse/NLCD_CONUS/{VPUID}/NLCD_{VPUID}_{landuse_epoch}_250m.tif"
-    soil_raster = f"{base_path}/Soil/gSSURGO_CONUS/{VPUID}/soil_{VPUID}.tif"
+    landuse_raster = f"{NLCD_path}/{VPUID}/NLCD_{VPUID}_{landuse_epoch}_250m.tif"
+    soil_raster = f"{gSSUGO_path}/{VPUID}/soil_{VPUID}.tif"
     
     if not os.path.exists(input_raster) or not os.path.exists(landuse_raster) or not os.path.exists(soil_raster):
         print(f"######### Building geospatial infrastructure: {VPUID} ###########")
@@ -76,7 +85,7 @@ def check_configuration(VPUID, landuse_epoch) -> str:
     if not os.path.exists(streamflow_stations_directory):
         raise StreamflowDataError("Streamflow data is not downloaded. Please run Building_monitoring_infrastructure.py")
     
-    SWAT_MODEL_PRISM_path = f'{base_path}/PRISM/VPUID/{VPUID}/PRISM_grid.shp'
+    SWAT_MODEL_PRISM_path = f'{PRISM_path}/VPUID/{VPUID}/PRISM_grid.shp'
     if not os.path.exists(SWAT_MODEL_PRISM_path):
         raise PRISMDataError("PRISM data is not clipped. Please run Building_climate_infrastructure.py")
 

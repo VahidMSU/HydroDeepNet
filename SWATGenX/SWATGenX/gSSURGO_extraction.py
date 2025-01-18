@@ -6,11 +6,14 @@ import os
 import geopandas as gpd
 from osgeo import gdal, ogr, osr
 from shapely.geometry import box
-
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
 class SoilExtraction:
     def __init__(self, soil_configuration):
         self.VPUID = soil_configuration.get("VPUID")
-        self.gSSURGO_raster = soil_configuration.get("gSSURGO_path")
+        self.gSSURGO_raster = soil_configuration.get("gSSURGO_raster")
         self.spatial_ref = None
         self.HUC4 = None
         self.extent = None
@@ -21,6 +24,7 @@ class SoilExtraction:
         self.target_crs = None
         self.original_RESOLUTION = 30
         self.resolutions = [100, 250, 500, 1000, 2000]
+        self.gSSURGO_path = SWATGenXPaths.gSSURGO_path
 
     def print_raster_crs(self):
         raster = gdal.Open(self.gSSURGO_raster)
@@ -34,7 +38,6 @@ class SoilExtraction:
         self.HUC4 = gpd.read_file(HUC4_path, driver="FileGDB", layer="WBDHU4")
         print('HUC4 CRS before conversion:', self.HUC4.crs)
 
-
     def convert_HUC4_crs(self):
         self.HUC4 = self.HUC4.to_crs(self.spatial_ref)
         print('HUC4 CRS after conversion:', self.HUC4.crs)
@@ -44,11 +47,11 @@ class SoilExtraction:
         print('HUC4 extent after conversion:', self.extent)
 
     def create_rectangular_object(self):
-        self.extracted_gSSURGO_path = fr"/data/SWATGenXApp/GenXAppData/Soil/gSSURGO_CONUS/{self.VPUID}/"
+        self.extracted_gSSURGO_path = fr"{self.gSSURGO_path}/{self.VPUID}/"
         os.makedirs(self.extracted_gSSURGO_path, exist_ok=True)
         bounds = self.HUC4.total_bounds
         rect = gpd.GeoDataFrame(geometry=[box(*bounds)], crs=self.spatial_ref)
-        self.temp_path = fr"/data/SWATGenXApp/GenXAppData/Soil/gSSURGO_CONUS/{self.VPUID}/rect.shp"
+        self.temp_path = fr"{self.gSSURGO_path}/{self.VPUID}/rect.shp"
         rect.to_file(self.temp_path)
         
     def clip_raster(self):
@@ -117,8 +120,11 @@ class SoilExtraction:
 
     def get_EPSG(self, VPUID):
         import pandas as pd 
-        base_input_raster = f'/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}/'
-        streams_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl')
+        DEM_path = SWATGenXPaths.DEM_path
+        extracted_NHD_path = SWATGenXPaths.extracted_nhd_swatplus_path
+        
+        base_input_raster = f'{DEM_path}/VPUID/{VPUID}/'
+        streams_path = os.path.join(f'{extracted_NHD_path}/{VPUID}/streams.pkl')
         streams = gpd.GeoDataFrame(pd.read_pickle(streams_path))
         
         # Extract the UTM zone
@@ -144,60 +150,58 @@ class SoilExtraction:
 
 
 def gSSURGO_extract_by_VPUID(VPUID):
-
-    if not os.path.exists(f"/data/SWATGenXApp/GenXAppData/Soil/gSSURGO_CONUS/{VPUID}/soil_{VPUID}.tif"):
-        gSSURGO_path = "/data/SWATGenXApp/GenXAppData/Soil/gSSURGO_CONUS/MapunitRaster_30m.tif"
-        HUC4_path = fr"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/"
-        HUC4_name = os.listdir(HUC4_path)
-        for name in HUC4_name:
-            if name.endswith(".gdb"):
-                HUC4_path = os.path.join(HUC4_path, name)
-                break
-
-        VPUID_DEM_base = f"/data/SWATGenXApp/GenXAppData/DEM/VPUID/{VPUID}"
-
-        soil_configuration = {
-            "VPUID": VPUID,
-            "gSSURGO_path": gSSURGO_path,
-            "HUC4_path": HUC4_path,
-            "VPUID_DEM_base": VPUID_DEM_base,
-        }
-
-        soil_extraction = SoilExtraction(soil_configuration)
-        soil_extraction.print_raster_crs()
-        soil_extraction.read_HUC4_shapefile(HUC4_path)
-        soil_extraction.convert_HUC4_crs()
-        soil_extraction.get_HUC4_extent()
-        soil_extraction.create_rectangular_object()
-        soil_extraction.clip_raster()
-        soil_extraction.get_EPSG(VPUID)
-        soil_extraction.project_raster()
-        soil_extraction.resample_raster()
+    gSSURGO_path = SWATGenXPaths.gSSURGO_path
+    DEM_path = SWATGenXPaths.DEM_path
+    if not os.path.exists(f"{gSSURGO_path}/{VPUID}/soil_{VPUID}.tif"):
+        run(VPUID, DEM_path)
     else:
         print(f"gSSURGO Data already exists for {VPUID}")
 
+def run(VPUID, DEM_path):
+    
+    gSSURGO_raster = SWATGenXPaths.gSSURGO_raster
+    extracted_nhd_swatplus_path = SWATGenXPaths.extracted_nhd_swatplus_path
+    HUC4_path = f"{extracted_nhd_swatplus_path}/{VPUID}/unzipped_NHDPlusVPU/"
+    HUC4_name = os.listdir(HUC4_path)
 
+    for name in HUC4_name:
+        if name.endswith(".gdb"):
+            HUC4_path = os.path.join(HUC4_path, name)
+            break
 
+    VPUID_DEM_base = f"{DEM_path}/VPUID/{VPUID}"
 
-def get_all_VPUIDs():
-    import glob
-    path = "/data/SWATGenXApp/GenXAppData/NHDPlusData/NHDPlus_VPU_National/"
-    ## get all file names ending with .zip
-    files = glob.glob(f"{path}*.zip")
+    soil_configuration = {
+        "VPUID": VPUID,
+        "gSSURGO_raster": gSSURGO_raster,
+        "HUC4_path": HUC4_path,
+        "VPUID_DEM_base": VPUID_DEM_base,
+    }
 
-    VPUIDs = [os.path.basename(file).split('_')[2] for file in files]
-
-    print(VPUIDs)
-    return VPUIDs
+    soil_extraction = SoilExtraction(soil_configuration)
+    soil_extraction.print_raster_crs()
+    soil_extraction.read_HUC4_shapefile(HUC4_path)
+    soil_extraction.convert_HUC4_crs()
+    soil_extraction.get_HUC4_extent()
+    soil_extraction.create_rectangular_object()
+    soil_extraction.clip_raster()
+    soil_extraction.get_EPSG(VPUID)
+    soil_extraction.project_raster()
+    soil_extraction.resample_raster()
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from utils import get_all_VPUIDs
 
 
 def gSSURGO_check_by_VPUID(VPUID):
-    basedirectory = "/data/SWATGenXApp/GenXAppData/Soil/gSSURGO_CONUS/"
-    #"Y:\SWATGenXApp\GenXAppData\LandUse\NLCD_CONUS\0206\NLCD_0206_2021_500m.tif"
+    gSSURGO_path = SWATGenXPaths.gSSURGO_path
     RESOLUTIONS = [30, 100, 250, 500, 1000, 2000]
     for resolution in RESOLUTIONS:
-        if not os.path.exists(f"{basedirectory}{VPUID}/gSSURGO_{VPUID}_{resolution}m.tif"):
-            raise ValueError(f"{basedirectory}{VPUID}/gSSURGO_{VPUID}_{resolution}m.tif does not exist")
+        if not os.path.exists(f"{gSSURGO_path}{VPUID}/gSSURGO_{VPUID}_{resolution}m.tif"):
+            raise ValueError(f"{gSSURGO_path}{VPUID}/gSSURGO_{VPUID}_{resolution}m.tif does not exist")
     print(f"### gSSURGO data exists for {VPUID} #####")
 
 

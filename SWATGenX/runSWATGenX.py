@@ -67,12 +67,12 @@ if __name__ == "__main__":
     if not single_model:
         selected_list = huc8_list if LEVEL == "huc8" else station_names
     else:
-        selected_list = ['04161540'] if LEVEL == "huc8" else ['04166100']
+        selected_list = ['04161540'] if LEVEL == "huc8" else ['04166000']
 
     for station_name in selected_list:
         check_station(station_name)
         swatgenx_config = {
-            "BASE_PATH": "/data/SWATGenXApp/GenXAppData/",
+            "database_dir": "/data/SWATGenXApp/GenXAppData/",
             "LEVEL": LEVEL,
             "landuse_product": "NLCD",
             "landuse_epoch": "2021",
