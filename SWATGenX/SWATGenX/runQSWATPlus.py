@@ -3,7 +3,7 @@ import os
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME):
     
     print(f"Running QSWATPlus for {NAME}")

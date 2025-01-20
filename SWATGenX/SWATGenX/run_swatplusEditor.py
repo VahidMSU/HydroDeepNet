@@ -5,7 +5,7 @@ try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from SWATGenX.utils import get_all_VPUIDs
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from utils import get_all_VPUIDs
 
 sys.path.append(SWATGenXPaths.SWATPlusEditor_path)

@@ -6,7 +6,7 @@ from SWATGenX.NHD_SWATPlus_Extractor import NHD_SWATPlus_Extractor
 try:
 	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-	from SWATGenXConfigPars import SWATGenXPaths
+	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 def generate_swatplus_shapes(list_of_huc12s, VPUID, LEVEL, NAME, EPSG, MODEL_NAME):
 

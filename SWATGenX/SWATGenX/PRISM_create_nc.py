@@ -8,7 +8,7 @@ import pandas as pd
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 
 PRISM_path = SWATGenXPaths.PRISM_path

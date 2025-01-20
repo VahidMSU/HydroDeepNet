@@ -7,12 +7,15 @@ import h5pyd
 from functools import partial
 from multiprocessing import Process
 import os
+import h5py
 try:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    from SWATGenX.utils import get_all_VPUIDs
+	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+	from SWATGenX.SWATGenXLogging import LoggerSetup
+	from SWATGenX.utils import get_all_VPUIDs
 except Exception:
-    from SWATGenXConfigPars import SWATGenXPaths
-    from utils import get_all_VPUIDs
+	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+	from SWATGenXLogging import LoggerSetup
+	from utils import get_all_VPUIDs
 
 def find_VPUID(station_no):
 	CONUS_streamflow_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={'site_no': str,'huc_cd': str})
@@ -20,114 +23,151 @@ def find_VPUID(station_no):
 		CONUS_streamflow_data.site_no == station_no
 	].huc_cd.values[0][:4]
 
-def extract_SWAT_PRISM_locations(swat_prism_shape_path):
-	PRISM_SWAT = gpd.read_file(swat_prism_shape_path)
-	PRISM_SWAT['ROWCOL'] = PRISM_SWAT['row'].astype(str) + PRISM_SWAT['col'].astype(str)
-	NSRD_PRISM = pd.read_pickle(SWATGenXPaths.NSRDB_PRISM_path)
-	NSRD_PRISM['ROWCOL'] = NSRD_PRISM['row'].astype(str) + NSRD_PRISM['col'].astype(str)
-	NSRDB_SWAT = pd.merge(NSRD_PRISM.drop(columns=['row','col','geometry']), PRISM_SWAT, on = "ROWCOL", how = "inner")
-	NSRDB_SWAT['NSRDB_index'] = NSRDB_SWAT['NSRDB_index'].astype(int)
-	print(f"NSRDB_SWAT colums: {NSRDB_SWAT.columns.values}")
-	return np.unique(NSRDB_SWAT.sort_values(by ='NSRDB_index').NSRDB_index.values), NSRD_PRISM[NSRD_PRISM.NSRDB_index.isin(np.unique(NSRDB_SWAT.NSRDB_index.values))]
 
-def fetch_nsrdb(year, variable, NSRDB_index_SWAT):
-    file_path = f'/nrel/nsrdb/v3/nsrdb_{year}.h5'
-    print(f"Extracting {variable} for year {year}... ")
-    with h5pyd.File(file_path, mode='r') as f:
-        data = f[variable][:, NSRDB_index_SWAT]
-        print(f"NSRDB data shape before getting attr: {data.shape}")
-        scale = f[variable].attrs['psm_scale_factor']
-        print("rescaling data....")
-        data = np.divide(data, scale)
-        data = np.array(data)  # data shape is (17568, len(NSRDB_index_SWAT))
-        print(f"NSRDB data shape after scaling: {data.shape}")
-        if variable == 'ghi':
-            # convert the unit from W/m^2 (30min) to MJ/m^2/day
-            data = data.reshape(-1, 48, data.shape[1])  # Reshape to (days, intervals per day, indices)
-            data = data * 1800  # Multiply by interval duration in seconds to get energy in J/m²
-            daily_data = data.sum(axis=1)  # Sum over intervals to get daily energy
-            converter = 1 / 1e6  # Convert J to MJ
-            daily_data = daily_data * converter
-        elif variable in ['wind_speed', 'relative_humidity']:
-            daily_data = data.reshape(-1, 48, data.shape[1]).mean(axis=1)
-    print(f"scale factor: {scale}")
-
-    return daily_data
-
-def write_to_file(variable, NSRDB_index_SWAT, years, data_all, swat_prism_path , NSRD_PRISM):
-	swat_dict = {'ghi':'slr',
-	'wind_speed':'wnd',
-	'relative_humidity':'hmd',
-	}
-	for NSRDB_index in NSRDB_index_SWAT:
-		row = NSRD_PRISM[NSRD_PRISM.NSRDB_index == NSRDB_index].row.values[0]
-		col = NSRD_PRISM[NSRD_PRISM.NSRDB_index == NSRDB_index].col.values[0]
-		print(f"NSRDB_index: {NSRDB_index}, row: {row}, col: {col}")
-		with open(os.path.join(swat_prism_path, f"r{row}_c{col}.{swat_dict[variable]}"), 'w') as f:
-			f.write(f"NSRDB(/nrel/nsrdb/v3/nsrdb_{years[0]}-{years[-1]}).INDEX:{NSRDB_index}, obtained by h5pyd\n")
-			## write lat lon of the SWAT locations
-			lat = NSRD_PRISM[NSRD_PRISM.NSRDB_index == NSRDB_index].latitude.values[0]
-			lon = NSRD_PRISM[NSRD_PRISM.NSRDB_index == NSRDB_index].longitude.values[0]
-			#print(f"{variable},NSRDB_index: {NSRDB_index}, lat: {lat}, lon: {lon}")
-			## format: year, day, value
-			f.write("nbyr nstep lat, lon elev\n")
-			elev = 200
-			f.write(f"{len(years)}\t0\t{lat:.2f}\t{lon:.2f}\t{elev:.2f}\n")
-			#f.write(f"year\tday\t{variable}\n")
-			date_Range = pd.date_range(start = f"{years[0]}-01-01", end = f"{years[-1]}-12-31")
-			for i in range(data_all.shape[0]):
-				j = np.where(NSRDB_index_SWAT == NSRDB_index)[0][0]
-				f.write(f"{date_Range[i].year}\t{date_Range[i].dayofyear}\t{data_all[i,j]:.2f}\n")
+def nsrdb_contructor_wrapper(variable, VPUID, LEVEL, NAME):
+	
+	output_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/"
+	shaefile_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/PRISM_grid.shp"
+	
+	contructor = NSRDB_contructor(variable, output_path, shaefile_path)
+	contructor.run()
 
 
+class NSRDB_contructor:
+	def __init__(self, variable, output_path, shaefile_path):
+		self.output_path = output_path
+		self.shapefile_path = shaefile_path
+		
+		self.years  = range(2000, 2021)
+		self.variable = variable
+
+		self.data_all = None
+		
+		self.swat_dict = {
+			'ghi': 'slr',
+			'wind_speed': 'wnd',
+			'relative_humidity': 'hmd',
+		}
+		self.logger = LoggerSetup(verbose=True, rewrite=True).setup_logger("NSRDB_contructor")
+
+	def extract_SWAT_PRISM_locations(self):
+		prism_shape = gpd.read_file(self.shapefile_path)
+		prism_shape['ROWCOL'] = prism_shape['row'].astype(str) + prism_shape['col'].astype(str)
+		NSRD_PRISM = pd.read_pickle(SWATGenXPaths.NSRDB_PRISM_path)
+		NSRD_PRISM['ROWCOL'] = NSRD_PRISM['row'].astype(str) + NSRD_PRISM['col'].astype(str)
+		NSRDB_SWAT = pd.merge(NSRD_PRISM.drop(columns=['row','col','geometry']), prism_shape, on = "ROWCOL", how = "inner")
+		NSRDB_SWAT['NSRDB_index'] = NSRDB_SWAT['NSRDB_index'].astype(int)
+		self.logger.info(f"NSRDB_SWAT colums: {NSRDB_SWAT.columns.values}")
+
+		self.nsrdb_indexes = np.unique(NSRDB_SWAT.sort_values(by ='NSRDB_index').NSRDB_index.values)
+		self.NSRD_PRISM = NSRD_PRISM[NSRD_PRISM.NSRDB_index.isin(np.unique(NSRDB_SWAT.NSRDB_index.values))]
+
+	@staticmethod
+	def get_elev(row, col):
+		import rasterio
+		with rasterio.open(SWATGenXPaths.PRISM_dem_path) as src:
+			elev_data = src.read(1)
+		return elev_data[row, col]
 
 
-def write_cli_file(swat_prism_path, NSRD_PRISM, variable):
-    swat_dict = {
-        'ghi': 'slr',
-        'wind_speed': 'wnd',
-        'relative_humidity': 'hmd',
-    }
-    cli_name = os.path.join(swat_prism_path, f"{swat_dict[variable]}.cli")
+	def extract_from_file(self,f):
+		data = f[self.variable][:, self.nsrdb_indexes]
+		print(f"NSRDB data shape before getting attr: {data.shape}")
+		scale = f[self.variable].attrs['psm_scale_factor']
+		print("scale factor: ", scale)
+		data = np.divide(data, scale)
+		data = np.array(data)  # data shape is (17568, len(NSRDB_index_SWAT))
+		print(f"NSRDB data shape after scaling: {data.shape}")
+		if self.variable == 'ghi':
+			# convert the unit from W/m^2 (30min) to MJ/m^2/day
+			data = data.reshape(-1, 48, data.shape[1])  # Reshape to (days, intervals per day, indices)
+			data = data * 1800  # Multiply by interval duration in seconds to get energy in J/m²
+			daily_data = data.sum(axis=1)  # Sum over intervals to get daily energy
+			converter = 1 / 1e6  # Convert J to MJ
+			daily_data = daily_data * converter
+		elif self.variable in ['wind_speed', 'relative_humidity']:
+			daily_data = data.reshape(-1, 48, data.shape[1]).mean(axis=1)
 
-    written_rows_cols = set()
+		return daily_data
 
-    with open(cli_name, 'w') as f:
-        f.write("NSRDB(/nrel/nsrdb/v3/nsrdb_2000-2020).INDEX: obtained by h5pyd\n")
-        f.write(f"{variable} file\n")
-
-        for NSRDB_index, row, col in zip(NSRD_PRISM.NSRDB_index.values, NSRD_PRISM.row.values, NSRD_PRISM.col.values):
-            if (row, col) not in written_rows_cols:
-                written_rows_cols.add((row, col))
-                print(f"NSRDB_index: {NSRDB_index}, row: {row}, col: {col}, {variable}")
-                f.write(f"r{row}_c{col}.{swat_dict[variable]}\n")
-
-
-def extract_SWAT_PRISM_variable(variable, NSRDB_index_SWAT, years, swat_prism_path, NSRD_PRISM):
-	data_all = []
-	for year in years:
-		print(f"Extracting {variable} for year {year}")
-		daily_var = fetch_nsrdb(year,variable, NSRDB_index_SWAT)
-		if len(data_all) == 0:
-			data_all = daily_var
+	def fetch_nsrdb(self, year):
+		if os.path.exists(f'/data/NSRDB/nsrdb_{year}_full.h5'):
+			file_path = f'/data/NSRDB/nsrdb_{year}_full.h5'
+			with h5py.File(file_path, mode='r') as f:
+				print(f"Extracting {self.variable} for year {year} from CIWRE-BAE server... ")
+				daily_data = self.extract_from_file(f)
+		elif os.path.exists(f'/data2/NSRDB/nsrdb_{year}_full.h5'):
+			file_path = f'/data2/NSRDB/nsrdb_{year}_full.h5'
+			with h5py.File(file_path, mode='r') as f:
+				print(f"Extracting {self.variable} for year {year} from CIWRE-BAE-2 server... ")
+				daily_data = self.extract_from_file(f)
 		else:
-			data_all = np.concatenate((data_all, daily_var), axis = 0)
-	print(f"variable {variable} has been extracted for SWAT locations", data_all.shape)
-	write_to_file(variable, NSRDB_index_SWAT, years, data_all, swat_prism_path, NSRD_PRISM)
-	write_cli_file(swat_prism_path, NSRD_PRISM, variable)
+			file_path = f'/nrel/nsrdb/v3/nsrdb_{year}.h5'
+			with h5pyd.File(file_path, mode='r') as f:
+				print(f"Extracting {self.variable} for year {year} from NREL server... ")
+				daily_data = self.extract_from_file(f)
+				
+		return daily_data
+
+	def write_to_file(self,data_all):
+
+		for nsrdb_idx in self.nsrdb_indexes:
+			row = self.NSRD_PRISM[self.NSRD_PRISM.NSRDB_index == nsrdb_idx].row.values[0]
+			col = self.NSRD_PRISM[self.NSRD_PRISM.NSRDB_index == nsrdb_idx].col.values[0]
+			print(f"NSRDB_index: {nsrdb_idx}, row: {row}, col: {col}")
+			with open(os.path.join(self.output_path, f"r{row}_c{col}.{self.swat_dict[self.variable]}"), 'w') as f:
+				f.write(f"NSRDB(/nrel/nsrdb/v3/nsrdb_{self.years[0]}-{self.years[-1]}).INDEX:{nsrdb_idx}, obtained by h5pyd\n")
+				## write lat lon of the SWAT locations
+				lat = self.NSRD_PRISM[self.NSRD_PRISM.NSRDB_index == nsrdb_idx].latitude.values[0]
+				lon = self.NSRD_PRISM[self.NSRD_PRISM.NSRDB_index == nsrdb_idx].longitude.values[0]
+
+				f.write("nbyr nstep lat, lon elev\n")
+				elev = self.get_elev(row, col)
+				f.write(f"{len(self.years)}\t0\t{lat:.2f}\t{lon:.2f}\t{elev:.2f}\n")
+				date_Range = pd.date_range(start = f"{self.years[0]}-01-01", end = f"{self.years[-1]}-12-31")
+				for i in range(data_all.shape[0]):
+					j = np.where(self.nsrdb_indexes == nsrdb_idx)[0][0]
+					f.write(f"{date_Range[i].year}\t{date_Range[i].dayofyear}\t{data_all[i,j]:.2f}\n")
+
+
+	def write_cli_file(self):
+
+		cli_name = os.path.join(self.output_path, f"{self.swat_dict[self.variable]}.cli")
+
+		written_rows_cols = set()
+
+		with open(cli_name, 'w') as f:
+			f.write("NSRDB(/nrel/nsrdb/v3/nsrdb_2000-2020).INDEX: obtained by h5pyd\n")
+			f.write(f"{self.variable} file\n")
+
+			for NSRDB_index, row, col in zip(self.NSRD_PRISM.NSRDB_index.values, self.NSRD_PRISM.row.values, self.NSRD_PRISM.col.values):
+				if (row, col) not in written_rows_cols:
+					written_rows_cols.add((row, col))
+					print(f"NSRDB_index: {NSRDB_index}, row: {row}, col: {col}, {self.variable}")
+					f.write(f"r{row}_c{col}.{self.swat_dict[self.variable]}\n")
+
+	def run(self):
+		try:
+			self.extract_SWAT_PRISM_locations()
+			data_all = []
+			for year in self.years:
+				daily_var = self.fetch_nsrdb(year)
+				if len(data_all) == 0:
+					data_all = daily_var
+				else:
+					data_all = np.concatenate((data_all, daily_var), axis = 0)
+			self.logger.info(f"variable {self.variable} has been extracted for SWAT locations {data_all.shape}")
+			self.write_to_file(data_all)
+			self.write_cli_file()
+		except Exception as e:
+			with open(SWATGenXPaths.critical_error_file_path, 'e') as f:
+				f.write(f"Error in NSRDB_contructor: {e}")
 
 def NSRDB_extract(VPUID, LEVEL, NAME):
-	years = range(2000, 2021)
 	variables = ['ghi','wind_speed','relative_humidity']
 
-	swat_prism_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/"
-
-	swat_prism_shape_path = os.path.join(swat_prism_path,"PRISM_grid.shp")
-	print(f"Locations to be extracted: {swat_prism_shape_path}")
-
-	NSRDB_index_SWAT, NSRD_PRISM = extract_SWAT_PRISM_locations(swat_prism_shape_path)
 	processes = []
-	wrapped_extract_variable = partial(extract_SWAT_PRISM_variable, NSRDB_index_SWAT = NSRDB_index_SWAT, years = years, swat_prism_path = swat_prism_path, NSRD_PRISM = NSRD_PRISM)
+	wrapped_extract_variable = partial(nsrdb_contructor_wrapper, VPUID = VPUID, LEVEL = LEVEL, NAME = NAME)
 	for variable in variables:
 		print(f"Extracting {variable} for SWAT PRISM locations")
 		p = Process(target = wrapped_extract_variable, args = (variable,))
@@ -140,25 +180,33 @@ def NSRDB_extract(VPUID, LEVEL, NAME):
 if __name__ == "__main__":
 
 	LEVEL = 'huc12'
-	VPUIDS = os.listdir(f"{SWATGenXPaths.swatgenx_outlet_path}/")
-	for VPUID in VPUIDS:
-		NAMES = os.listdir(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}")
-		if "log.txt" in NAMES:
-			NAMES.remove("log.txt")
-		processes = []
-		for NAME in NAMES:
-			VPUID = find_VPUID(NAME)
-			#NSRDB_extract(VPUID,NAME,LEVEL)
-			partial_NSRDB_extract = partial(NSRDB_extract, VPUID = VPUID, NAME = NAME, LEVEL = LEVEL)
-			p = Process(target = partial_NSRDB_extract)
-			processes.append(p)
-			p.start()
-			if len(processes) == 10:
-				for p in processes:
-					p.join()
-				processes = []
-	for p in processes:
-		p.join()
+	VPUIDS = get_all_VPUIDs()
+	
+	VPUID = "0403"
+	NAME = "04057510"
+	NSRDB_extract(VPUID,LEVEL,NAME)
+
+	parallel = False
+
+	if parallel:
+		for VPUID in VPUIDS:
+			NAMES = os.listdir(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}")
+			if "log.txt" in NAMES:
+				NAMES.remove("log.txt")
+			processes = []
+			for NAME in NAMES:
+				VPUID = find_VPUID(NAME)
+				#NSRDB_extract(VPUID,NAME,LEVEL)
+				partial_NSRDB_extract = partial(NSRDB_extract, VPUID = VPUID, NAME = NAME, LEVEL = LEVEL)
+				p = Process(target = partial_NSRDB_extract)
+				processes.append(p)
+				p.start()
+				if len(processes) == 10:
+					for p in processes:
+						p.join()
+					processes = []
+		for p in processes:
+			p.join()
 
 	print("All NSRDB variables have been extracted for SWAT locations")
 

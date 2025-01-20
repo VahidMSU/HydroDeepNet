@@ -9,7 +9,7 @@ from shapely.geometry import box
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except Exception:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 class SoilExtraction:
     def __init__(self, soil_configuration):
         self.VPUID = soil_configuration.get("VPUID")
@@ -192,7 +192,7 @@ try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from SWATGenX.utils import get_all_VPUIDs
 except Exception:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from utils import get_all_VPUIDs
 
 

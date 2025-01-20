@@ -12,7 +12,7 @@ try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from SWATGenX.utils import get_all_VPUIDs
 except Exception:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from utils import get_all_VPUIDs
 
 def NHDPlus_extract_by_VPUID(VPUID):
