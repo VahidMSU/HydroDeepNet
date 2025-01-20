@@ -5,7 +5,7 @@ try:
     from SWATGenX.SWATGenXLogging import LoggerSetup
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except Exception:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from SWATGenXLogging import LoggerSetup
     from utils import find_VPUID
 

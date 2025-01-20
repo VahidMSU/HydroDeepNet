@@ -7,15 +7,19 @@ from functools import partial
 from multiprocessing import Process
 #from app.models import User  # Assuming User is defined in app.models
 try:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    from SWATGenX.utils import get_all_VPUIDs
+	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+	from SWATGenX.utils import get_all_VPUIDs
+	from SWATGenX.core import SWATGenXCore_run
 except Exception:
-    from SWATGenXConfigPars import SWATGenXPaths
-    from utils import get_all_VPUIDs
+	from SWATGenXConfigPars import SWATGenXPaths
+	from utils import get_all_VPUIDs
+	from core import SWATGenXCore_run
 try:
 	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
 	from SWATGenXConfigPars import SWATGenXPaths
+
+
 
 class SWATGenXCommand:
 	def __init__(self, swatgenx_config):
@@ -158,24 +162,42 @@ class SWATGenXCommand:
 		})
 		core = SWATGenXCore(self.config)
 		core.process()
-		return os.path.join(SWATGenXPaths.database_dir, f"SWATplus_by_VPUID/{vpuid}/huc12/{station_name}/")
+		return f"{SWATGenXPaths.swatgenx_outlet_path}/{vpuid}/huc12/{station_name}/"
 
 	def handle_huc4(self):
 		"""Handles the HUC4 level processing."""
 		vpuid_list = get_all_VPUIDs()
 		processes = []
+		print(f"VPUID list: {vpuid_list}")	
 
 		for vpuid in vpuid_list:
-			if vpuid[:2] != self.config.get("region"):
-				continue
 			eligible_stations = self.get_eligible_stations(vpuid)
 
 			if len(eligible_stations) == 0:
 				self.logger.error(f"No eligible stations found for VPUID: {vpuid}")
-				return None
+				continue	
 
-			for site_no in eligible_stations.site_no:
-				self.process_station(site_no, vpuid, eligible_stations)
+
+			for i, site_no in enumerate(eligible_stations.site_no):
+				
+				print(f"site_no: {site_no}")
+				self.config.update({
+					"site_no": site_no,
+					"VPUID": vpuid,
+					"LEVEL": "huc12",
+					"list_of_huc12s": eligible_stations[eligible_stations.site_no == site_no].list_of_huc12s.values[0],
+				})
+				wrapped_SWATGenXCore = partial(SWATGenXCore_run, self.config)
+
+				p = Process(target=wrapped_SWATGenXCore)
+				p.start()
+				processes.append(p)
+				if i > 1:
+					break
+			if len(processes) > 4:
+				for p in processes:
+					p.join()
+				processes = []
 
 		for p in processes:
 			p.join()
@@ -194,32 +216,22 @@ class SWATGenXCommand:
 		core = SWATGenXCore(self.config)
 		core.process()
 
-		return os.path.join(SWATGenXPaths.database_dir, f"SWATplus_by_VPUID/{vpuid}/huc8/{huc8_name}/")
+		return f"{SWATGenXPaths.swatgenx_outlet_path}/{vpuid}/huc8/{huc8_name}/"
 
 	def get_eligible_stations(self, vpuid):
 		"""Retrieves eligible stations based on drainage area criteria."""
 		streamflow_metadata = f"{SWATGenXPaths.streamflow_path}/VPUID/{vpuid}/meta_{vpuid}.csv"
-		streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
-		eligible_stations = streamflow_metadata[
-			(streamflow_metadata.drainage_area_sqkm < self.config.get("MAX_AREA")) &
-			(streamflow_metadata.drainage_area_sqkm > self.config.get("MIN_AREA"))
-		]
-		eligible_stations = eligible_stations[eligible_stations.GAP_percent < self.config.get("GAP_percent")]
+		if os.path.exists(streamflow_metadata):
+			streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
+			eligible_stations = streamflow_metadata[
+				(streamflow_metadata.drainage_area_sqkm < self.config.get("MAX_AREA")) &
+				(streamflow_metadata.drainage_area_sqkm > self.config.get("MIN_AREA"))
+			]
+			eligible_stations = eligible_stations[eligible_stations.GAP_percent < self.config.get("GAP_percent")]
+		else:
+			eligible_stations = pd.DataFrame()			
 		return eligible_stations
 
-	def process_station(self, site_no, vpuid, eligible_stations):
-		"""Processes a single station by updating the configuration and starting a new process."""
-		print(f"site_no: {site_no}")
-		self.config.update({
-			"site_no": site_no,
-			"VPUID": vpuid,
-			"list_of_huc12s": eligible_stations[eligible_stations.site_no == site_no].list_of_huc12s.values[0],
-		})
-		wrapped_SWATGenXCore = partial(SWATGenXCore, self.config)
-
-		p = Process(target=wrapped_SWATGenXCore)
-		p.start()
-		return p
 
 	def extract_vpuid_and_huc8_name(self):
 		"""

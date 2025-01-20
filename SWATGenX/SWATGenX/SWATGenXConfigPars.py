@@ -1,17 +1,20 @@
 from dataclasses import dataclass
 import os
+
 @dataclass
 class SWATGenXPaths:
     base_path: str = "/data/SWATGenXApp/GenXAppData/"
     codes_path: str = "/data/SWATGenXApp/codes/SWATGenX/"
     SWATPlusEditor_path: str = '/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api'
+    FPS_State_Territories: str = f'{base_path}USGS/FPS_States_and_Territories.csv'
+    FPS_all_stations: str = f'{base_path}USGS/FPS_all_stations.csv'
     # Data Sources
     USGS_path: str = f"{base_path}USGS/"
     NLCD_path: str = f"{base_path}LandUse/NLCD_CONUS/"
     gSSURGO_path: str = f"{base_path}Soil/gSSURGO_CONUS/"
     PRISM_path: str = f"{base_path}PRISM/"
     DEM_path: str = f"{base_path}DEM/"
-    Downloaded_CONUS_DEM_path: str = "/data/SWATGenXApp/GenXAppData/DEM/CONUS/"
+    Downloaded_CONUS_DEM_path: str = f"{base_path}DEM/CONUS/"
     NHDPlus_path: str = f"{base_path}NHDPlusData/"
     streamflow_path: str = f"{base_path}USGS/streamflow_stations/"
     database_dir: str = base_path
@@ -19,10 +22,10 @@ class SWATGenXPaths:
     # Output Paths
     swatgenx_outlet_path: str = f"{base_path}SWATplus_by_VPUID/"
     extracted_nhd_swatplus_path: str = f"{base_path}NHDPlusData/SWATPlus_NHDPlus/"
-    report_path: str = f"{codes_path}SWATGenX/"
+    report_path: str = codes_path
     
     # Specific Data Files
-    critical_error_file_path: str = f"{codes_path}SWATGenX/critical_errors.txt"
+    critical_error_file_path: str = f"{codes_path}critical_errors.txt"
     NLCD_release_path: str = f"{base_path}LandUse/NLCD_landcover_2021_release_all_files_20230630/"
     gSSURGO_raster: str = f"{base_path}Soil/gSSURGO_CONUS/MapunitRaster_30m.tif"
     swatplus_gssurgo_csv: str = f"{base_path}Soil/SWAT_gssurgo.csv"
@@ -51,8 +54,11 @@ class SWATGenXPaths:
     # Additional Paths
     LanduseTable: str = f"{base_path}LandUse/landuse_lookup.csv"
 
-    start_date: str = "2000-01-01"
-    end_date: str = "2021-01-01"
+    niws_start_date: str = "2000-01-01"
+    niws_end_date: str = "2021-01-01"
+
+    prism_start_year: int = 1990
+    prism_end_year: int = 2022
 
     start_year: int = 2000
     end_year: int = 2021
@@ -60,29 +66,6 @@ class SWATGenXPaths:
     exe_start_year: int = 2000
     exe_end_year: int = 2001
 
-
-    NHDPlus_column_name_map: dict = {
-        'ftype': 'FType',
-        'fcode': 'FCode',
-        'nhdplusid': 'NHDPlusID',
-        'uphydroseq': 'UpHydroSeq',
-        'hydroseq': 'HydroSeq',
-        'dnhydroseq': 'DnHydroSeq',
-        'startflag': 'StartFlag',
-        'terminalfl': 'TerminalFl',
-        'divergence': 'Divergence',
-        "streamorde": "StreamOrde",
-        "elevelev": "ElevElev", 
-        'vpuid': 'VPUID',
-        'permanent_identifier': 'Permanent_Identifier',
-        "wbarea_permanent_identifier": "WBArea_Permanent_Identifier",
-        'maxelevsmo': 'MaxElevSmo',
-        'minelevsmo': 'MinElevSmo',
-        'areasqkm': 'AreaSqKm',
-        'lengthkm': 'LengthKM',
-        'totdasqkm': 'TotDASqKm',
-        'geometry': 'geometry'
-    }
 
 
     def construct_path(self, *args) -> str:

@@ -5,12 +5,14 @@ import datetime
 import numpy as np
 import concurrent.futures
 from tqdm import tqdm
-
-def loginfo(logfile, info):
-    with open(logfile, 'a') as f:
-        f.write(info + '\n')
-        print(info)
-    print(info)
+try:
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXLogging import LoggerSetup
+    from SWATGenX.utils import get_all_VPUIDs
+except Exception:
+    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenXLogging import LoggerSetup
+    from utils import get_all_VPUIDs
 
 def generate_hydroseq_upstream_dict(streams):
     """ Generate a dictionary of HydroSeqs and their upstream HydroSeqs."""
@@ -174,7 +176,8 @@ def resetting_start_terminate_flags(df):
     print('number of headwaters:', len(df[df.StartFlag==1]) )
     return(df)
 
-def save_divergence_2_streams(df,df2, output_base):
+def save_divergence_2_streams(df,df2, database_name):
+    output_base = os.path.join(SWATGenXPaths.NHDPlus_path, database_name)
     divergence_2_streams = df[df.Divergence == 2]
     df2 = df2.merge(divergence_2_streams[['NHDPlusID','huc12','huc8']], on='NHDPlusID')
     output_path = os.path.join(output_base,"Divergence2Streams.shp")
@@ -262,16 +265,14 @@ def NHDPlus_preprocessing(VPUID):
         print(f'#### NHDPlus for {VPUID} is already processed ####')
 
 def execute_processes(database_name):
-    report_path = os.path.join(SWATGenXPaths.NHDPlus_path, database_name)
+    
 
     logger = LoggerSetup(
-        report_path=report_path,
         verbose=True, rewrite=True).setup_logger("NHDPlus_preprocessing")
 
     logger.info(f"Start time: {datetime.datetime.now()}")
 
     stage = "loading data"
-    #loginfo(logfile, f"stage: {stage}")
     logger.info(f"stage: {stage}")
     WBDHU12 = gpd.GeoDataFrame(pd.read_pickle(os.path.join(SWATGenXPaths.NHDPlus_path, f'{database_name}/WBDHU12.pkl')))
     WBDHU8 = gpd.GeoDataFrame(pd.read_pickle(os.path.join(SWATGenXPaths.NHDPlus_path, f'{database_name}/WBDHU8.pkl')))
@@ -319,7 +320,7 @@ def execute_processes(database_name):
 
     stage = "removing second divergence"
     logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")   
-    save_divergence_2_streams(streams,watersheds,report_path)
+    save_divergence_2_streams(streams,watersheds, database_name)
     streams = removing_second_divergence(streams)
     streams = remove_streams_without_drainage(streams,watersheds)
     streams = remove_coastal_lines(streams)
@@ -342,7 +343,6 @@ def execute_processes(database_name):
     streams = setting_data_type(streams)
 
     stage = "removing huc12 with nan"
-    #loginfo(logfile, f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
     logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")   
     streams = streams[~streams.huc12.isna()].reset_index(drop=True)
 
@@ -359,14 +359,7 @@ def execute_processes(database_name):
     # save the log file
     logger.info(f"End time: {datetime.datetime.now()}")
     
-try:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    from SWATGenX.SWATGenXLogging import LoggerSetup
-    from SWATGenX.utils import get_all_VPUIDs
-except Exception:
-    from SWATGenXConfigPars import SWATGenXPaths
-    from SWATGenXLogging import LoggerSetup
-    from utils import get_all_VPUIDs
+
 
 def check_NHDPlus_preprocessed_by_VPUID(VPUID):
     output_names = ['watersheds.pkl', 'streams.pkl']

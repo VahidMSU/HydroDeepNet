@@ -13,6 +13,18 @@ from SWATGenX.NSRDB_SWATplus_extraction import NSRDB_extract
 from SWATGenX.SWATGenXLogging import LoggerSetup
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
+
+def SWATGenXCore_run(swatgenx_config):
+	"""
+	Runs the SWATGenX model for the specified configuration.
+
+	Args:
+		swatgenx_config (dict): Configuration settings for the SWATGenX command.
+	"""
+	swatgenx = SWATGenXCore(swatgenx_config)
+	swatgenx.process()
+# Compare this snippet from SWATGenX/SWATGenX/SWATGenXConfigPars.py:
+
 class SWATGenXCore:
 	def __init__(self, config):
 		"""
@@ -58,56 +70,6 @@ class SWATGenXCore:
 		if not os.path.exists(slr_cli_path) or not os.path.exists(hmd_cli_path) or not os.path.exists(wnd_cli_path):
 			self.extract_nsrdb_data()
 
-	def process(self):
-		"""Core function to run the SWATGenX model for a given watershed."""
-		self.EPSG = check_configuration(self.VPUID, self.landuse_epoch)
-		self.logger.info(f"SWATGenXCore: Beginning the extraction of the model for {self.site_no}")
-		self.NAME = self.site_no
-
-		self.extracted_swat_prism_path = self.paths.construct_path(
-			self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "PRISM"
-		)
-
-		streamflow_shape = self.paths.construct_path(
-			self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "streamflow_data", "stations.shp"
-		)
-
-		if not os.path.exists(streamflow_shape) and os.path.exists(self.extracted_swat_prism_path):
-			self.logger.error(
-				f"The model extraction has failed for {self.NAME} before (PRISM extracted but streamflow shapefile does not exist)"
-			)
-
-		self.list_of_huc12s = self.prepare_huc12s()
-
-		generate_swatplus_shapes(
-			self.list_of_huc12s, self.VPUID, self.LEVEL, self.NAME, self.EPSG, self.MODEL_NAME
-		)
-		generate_swatplus_rasters(
-			self.VPUID,
-			self.LEVEL,
-			self.NAME,
-			self.MODEL_NAME,
-			self.landuse_product,
-			self.landuse_epoch,
-			self.ls_resolution,
-			self.dem_resolution,
-		)
-		self.logger.info(f"First Stage completed for {self.NAME}, {self.VPUID}")
-
-		self.list_of_huc12s = [f"{huc12:012d}" for huc12 in self.list_of_huc12s]
-		print("list_of_huc12s:", self.list_of_huc12s)
-
-		self.run_qswat_plus()
-
-		self.extract_metereological_data()
-
-		run_swatplus_editor(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
-
-		self.write_meta_file()
-
-		fetch_streamflow_for_watershed(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
-		
-		self.check_simulation_output()
 
 	def prepare_huc12s(self):
 		"""Prepares the list of HUC12s based on the specified level."""
@@ -142,7 +104,7 @@ class SWATGenXCore:
 
 	def extract_prism_data(self):
 		"""Extracts PRISM data for the watershed."""
-		extract_PRISM_parallel(self.VPUID, self.list_of_huc12s, self.extracted_swat_prism_path)
+		extract_PRISM_parallel(self.VPUID, self.LEVEL, self.NAME, self.list_of_huc12s)
 		plot_annual_precipitation(self.VPUID, self.LEVEL, self.NAME)
 		writing_swatplus_cli_files(self.VPUID, self.LEVEL, self.NAME)
 		self.logger.info(f"Model extraction completed for {self.NAME}")
@@ -195,7 +157,7 @@ class SWATGenXCore:
 			"simulation.out",
 		)
 		sim_file_exists = os.path.exists(execution_checkout_path)
-		excited_successfully = False
+		state = False
 
 		if sim_file_exists:
 			with open(execution_checkout_path, "r") as f:
@@ -203,7 +165,70 @@ class SWATGenXCore:
 				for line in lines:
 					if "Execution successfully completed" in line:
 						print(f"Model already exists and successfully executed for {self.NAME}")
-						excited_successfully = True
+						state = True
 
-		if sim_file_exists and not excited_successfully:
+		if sim_file_exists and not state:
 			raise ValueError(f"Model already exists but did not execute successfully for {self.NAME}")
+		
+		return state
+	
+
+	def path_setup(self):
+		"""Sets up the paths for the SWATGenX model."""
+		
+		self.extracted_swat_prism_path = self.paths.construct_path(
+		self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "PRISM"
+		)
+
+		streamflow_shape = self.paths.construct_path(
+			self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "streamflow_data", "stations.shp"
+		)
+
+		if not os.path.exists(streamflow_shape) and os.path.exists(self.extracted_swat_prism_path):
+			self.logger.error(
+				f"The model extraction has failed for {self.NAME} before (PRISM extracted but streamflow shapefile does not exist)"
+			)
+
+
+	def process(self):
+		"""Core function to run the SWATGenX model for a given watershed."""
+		self.EPSG = check_configuration(self.VPUID, self.landuse_epoch)
+		self.logger.info(f"SWATGenXCore: Beginning the extraction of the model for {self.site_no}")
+		self.NAME = self.site_no
+		if state := self.check_simulation_output():
+			return None
+		self.path_setup()
+		self.list_of_huc12s = self.prepare_huc12s()
+		
+
+		generate_swatplus_shapes(
+			self.list_of_huc12s, self.VPUID, self.LEVEL, self.NAME, self.EPSG, self.MODEL_NAME
+		)
+		
+		generate_swatplus_rasters(
+			self.VPUID,
+			self.LEVEL,
+			self.NAME,
+			self.MODEL_NAME,
+			self.landuse_product,
+			self.landuse_epoch,
+			self.ls_resolution,
+			self.dem_resolution,
+		)
+		
+		self.logger.info(f"First Stage completed for {self.NAME}, {self.VPUID}")
+
+		self.list_of_huc12s = [f"{huc12:012d}" for huc12 in self.list_of_huc12s]
+		print("list_of_huc12s:", self.list_of_huc12s)
+
+		self.run_qswat_plus()
+
+		self.extract_metereological_data()
+
+		run_swatplus_editor(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
+
+		self.write_meta_file()
+
+		fetch_streamflow_for_watershed(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
+
+		self.check_simulation_output()

@@ -29,7 +29,7 @@ def download_and_unzip_data(TYPE, YEAR, MONTH, DAY, zip_dir, extract_dir):
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 if __name__ == "__main__":
     TYPES = ['ppt', 'tmax', 'tmin']

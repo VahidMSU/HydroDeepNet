@@ -181,7 +181,7 @@ class AppManager:
 
 				return redirect(url_for('model_confirmation'))
 
-			station_data = integrate_streamflow_data(current_app.config['USGS_PATH'])
+			station_data = integrate_streamflow_data()
 			station_list = station_data.SiteNumber.unique()
 			return render_template('model_settings.html', form=form, output=output, station_list=station_list)
 
@@ -189,7 +189,7 @@ class AppManager:
 		def get_station_characteristics():
 			self.logger.info("Get Station Characteristics route called")
 			station_no = request.args.get('station')
-			station_data = integrate_streamflow_data(current_app.config['USGS_PATH'])
+			station_data = integrate_streamflow_data()
 			self.logger.info(f"Station number: {station_no}")
 
 			station_row = station_data[station_data.SiteNumber == station_no]

@@ -28,14 +28,12 @@ try:
 except ImportError:
     from SWATGenXConfigPars import SWATGenXPaths
 sys.path.append(SWATGenXPaths.QSWATPlus_env_path)
-
-from qgis.core import QgsApplication, QgsProject, QgsRasterLayer
+from qgis.core import QgsApplication, QgsProject, QgsRasterLayer # type: ignore 
 import atexit
 import sys
 import os
 import glob
 from osgeo import gdal, ogr
-
 from QSWATPlus.QSWATPlusMain import QSWATPlus  
 from QSWATPlus.delineation import Delineation 
 from QSWATPlus.hrus import HRUs 

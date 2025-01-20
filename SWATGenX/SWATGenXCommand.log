@@ -1,14 +1,44 @@
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
-LEVEL: huc12, station_name: 04166000
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
 Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
-SWATGenXCore: Starting the SWATGenX model for 04166000
-SWATGenXCore: Starting the SWATGenX model for 04166000
-SWATGenXCore: Beginning the extraction of the model for 04166000
-SWATGenXCore: Beginning the extraction of the model for 04166000
-The model extraction has failed for 04166000 before (PRISM extracted but streamflow shapefile does not exist)
-The model extraction has failed for 04166000 before (PRISM extracted but streamflow shapefile does not exist)
-First Stage completed for 04166000, 0409
-First Stage completed for 04166000, 0409
-Error in running QSWAT+ for 04166000: [Errno 2] No such file or directory: 'runQSWATPlus.sh/04166000_runHUCProject.sh'
-Error in running QSWAT+ for 04166000: [Errno 2] No such file or directory: 'runQSWATPlus.sh/04166000_runHUCProject.sh'
+SWATGenXCore: Starting the SWATGenX model for 04200500
+SWATGenXCore: Starting the SWATGenX model for 04200500
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+SWATGenXCore: Starting the SWATGenX model for 04201500
+SWATGenXCore: Starting the SWATGenX model for 04201500
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+No eligible stations found for VPUID: 1104
+SWATGenXCore: Starting the SWATGenX model for 04202000
+SWATGenXCore: Starting the SWATGenX model for 04202000
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+SWATGenXCore: Starting the SWATGenX model for 03574500
+SWATGenXCore: Starting the SWATGenX model for 03574500
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+SWATGenXCore: Starting the SWATGenX model for 03575830
+SWATGenXCore: Starting the SWATGenX model for 03575830
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+Logging to /data/SWATGenXApp/codes/SWATGenX/SWATGenXCommand.log
+SWATGenXCore: Starting the SWATGenX model for 03586500
+SWATGenXCore: Starting the SWATGenX model for 03586500
+SWATGenXCore: Beginning the extraction of the model for 04202000
+SWATGenXCore: Beginning the extraction of the model for 04202000
+SWATGenXCore: Beginning the extraction of the model for 04200500
+SWATGenXCore: Beginning the extraction of the model for 04200500
+SWATGenXCore: Beginning the extraction of the model for 04201500
+SWATGenXCore: Beginning the extraction of the model for 04201500
+The model extraction has failed for 04200500 before (PRISM extracted but streamflow shapefile does not exist)
+The model extraction has failed for 04200500 before (PRISM extracted but streamflow shapefile does not exist)
+SWATGenXCore: Beginning the extraction of the model for 03575830
+SWATGenXCore: Beginning the extraction of the model for 03575830
+SWATGenXCore: Beginning the extraction of the model for 03574500
+SWATGenXCore: Beginning the extraction of the model for 03574500
+SWATGenXCore: Beginning the extraction of the model for 03586500
+SWATGenXCore: Beginning the extraction of the model for 03586500
+First Stage completed for 04200500, 0411
+First Stage completed for 04200500, 0411
+QSWAT+ processes are completed for 04200500, 0411
+QSWAT+ processes are completed for 04200500, 0411
