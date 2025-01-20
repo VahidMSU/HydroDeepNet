@@ -287,8 +287,6 @@ def execute_processes(database_name):
     logger.info(f"NHDWaterbody columns: {NHDWaterbody.columns}")
     logger.info(f"WBDHU8 columns: {WBDHU8.columns}")
 
-
-
     ### in some cases the VPUID is in lower case, we need to change to upper case
 
 
