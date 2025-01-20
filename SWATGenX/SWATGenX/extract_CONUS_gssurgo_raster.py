@@ -2,7 +2,7 @@ from osgeo import gdal
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 def extract_CONUS_gssurgo_raster():
     """
         Extract the gSSURGO raster from the original geodatabase to a GeoTIFF file.

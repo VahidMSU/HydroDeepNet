@@ -7,7 +7,7 @@ import warnings
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 def get_streamflow_stations_for_state(state_cds):
 
 

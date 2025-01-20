@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 def fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MODEL_NAME):
     paths = SWATGenXPaths()
 

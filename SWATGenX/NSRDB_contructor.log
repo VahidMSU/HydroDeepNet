@@ -1,0 +1,4 @@
+Logging to /data/SWATGenXApp/codes/SWATGenX/NSRDB_contructor.log
+NSRDB_SWAT colums: ['lon_x' 'lat_x' 'index_right' 'NSRDB_index' 'latitude' 'longitude'
+ 'ROWCOL' 'col' 'row' 'lon_y' 'lat_y' 'geometry']
+variable relative_humidity has been extracted for SWAT locations (7671, 170)
