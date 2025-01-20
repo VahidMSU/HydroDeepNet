@@ -4,8 +4,6 @@ from SWATGenX.SWATGenXLogging import LoggerSetup
 import os
 import pandas as pd
 from functools import partial
-from multiprocessing import Process
-#from app.models import User  # Assuming User is defined in app.models
 try:
 	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 	from SWATGenX.utils import get_all_VPUIDs
@@ -14,12 +12,8 @@ except Exception:
 	from SWATGenXConfigPars import SWATGenXPaths
 	from utils import get_all_VPUIDs
 	from core import SWATGenXCore_run
-try:
-	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-except ImportError:
-	from SWATGenXConfigPars import SWATGenXPaths
 
-
+from concurrent.futures import ProcessPoolExecutor, as_completed, wait, FIRST_COMPLETED
 
 class SWATGenXCommand:
 	def __init__(self, swatgenx_config):
@@ -167,40 +161,63 @@ class SWATGenXCommand:
 	def handle_huc4(self):
 		"""Handles the HUC4 level processing."""
 		vpuid_list = get_all_VPUIDs()
-		processes = []
-		print(f"VPUID list: {vpuid_list}")	
+		print(f"VPUID list: {vpuid_list}")
 
-		for vpuid in vpuid_list:
-			eligible_stations = self.get_eligible_stations(vpuid)
+		# We'll process 3 models per HUC4, with a queue size of 10 parallel tasks max.
+		max_queue_size = 10
+		max_models_per_huc4 = 3
+		
+		# Create an executor with up to 10 workers
+		with ProcessPoolExecutor(max_workers=max_queue_size) as executor:
+			future_to_info = {}
+			futures = set()
 
-			if len(eligible_stations) == 0:
-				self.logger.error(f"No eligible stations found for VPUID: {vpuid}")
-				continue	
+			for vpuid in vpuid_list:
+				eligible_stations = self.get_eligible_stations(vpuid)
 
+				if len(eligible_stations) == 0:
+					self.logger.error(f"No eligible stations found for VPUID: {vpuid}")
+					continue
 
-			for i, site_no in enumerate(eligible_stations.site_no):
-				
-				print(f"site_no: {site_no}")
-				self.config.update({
-					"site_no": site_no,
-					"VPUID": vpuid,
-					"LEVEL": "huc12",
-					"list_of_huc12s": eligible_stations[eligible_stations.site_no == site_no].list_of_huc12s.values[0],
-				})
-				wrapped_SWATGenXCore = partial(SWATGenXCore_run, self.config)
+				# Submit up to 3 tasks (models) per VPUID
+				for i, site_no in enumerate(eligible_stations.site_no):
+					if i >= max_models_per_huc4:
+						break
 
-				p = Process(target=wrapped_SWATGenXCore)
-				p.start()
-				processes.append(p)
-				if i > 1:
-					break
-			if len(processes) > 4:
-				for p in processes:
-					p.join()
-				processes = []
+					list_of_huc12s = eligible_stations[
+						eligible_stations.site_no == site_no
+					].list_of_huc12s.values[0]
 
-		for p in processes:
-			p.join()
+					print(f"Queueing site_no: {site_no} for VPUID: {vpuid}")
+					self.config.update({
+						"site_no": site_no,
+						"VPUID": vpuid,
+						"LEVEL": "huc12",
+						"list_of_huc12s": list_of_huc12s,
+					})
+
+					# Prepare function call
+					wrapped_SWATGenXCore = partial(SWATGenXCore_run, self.config)
+
+					# If the queue is already full, wait until at least one finishes
+					while len(futures) >= max_queue_size:
+						done, futures = wait(futures, return_when=FIRST_COMPLETED)
+						# Optionally handle 'done' if needed (logging, etc.)
+
+					# Submit a new job
+					future = executor.submit(wrapped_SWATGenXCore)
+					future_to_info[future] = (vpuid, site_no)
+					futures.add(future)
+
+			# Now wait for all remaining tasks to complete
+			for future in as_completed(futures):
+				vpuid, site_no = future_to_info[future]
+				try:
+					future.result()  # Raises any exception that occurred in worker
+					print(f"Successfully processed site_no: {site_no} for VPUID: {vpuid}")
+				except Exception as e:
+					self.logger.error(f"Error processing site_no: {site_no} for VPUID: {vpuid} - {e}")
+
 
 	def handle_huc8(self):
 		"""Handles the HUC8 level processing."""
