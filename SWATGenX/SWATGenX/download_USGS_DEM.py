@@ -3,7 +3,7 @@ import os
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 def download_USGS_DEM():
     DEM_13_arc_second_list = SWATGenXPaths.DEM_13_arc_second_list

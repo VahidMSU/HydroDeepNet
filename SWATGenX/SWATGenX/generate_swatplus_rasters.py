@@ -13,7 +13,7 @@ try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
     from sa import sa
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 
 def generate_swatplus_rasters(vpuid: str, level: str, name: str, model_name: str, 
@@ -82,7 +82,42 @@ class SWATplusRasterGenerator:
         # Process soil raster
         self.process_soil_raster()
 
+        self.process_landuse_raster()
+
         print("################## Finished generating raster ##################")
+
+
+    def replace_invalid_landuse_cells(self, landuse_array: np.ndarray) -> int:
+        """Replace invalid landuse cells and return the most common value."""
+        unique, counts = np.unique(landuse_array[landuse_array != 0], return_counts=True)
+        most_common_value = unique[np.argmax(counts)]
+        print(f"Most common value: {most_common_value}")
+
+        # Replace invalid cells
+        landuse_array = np.where(landuse_array == 0, most_common_value, landuse_array)
+        return most_common_value, landuse_array
+
+    def process_landuse_raster(self) -> None:
+        """Process the landuse raster to replace invalid cells."""
+        with rasterio.open(self.swatplus_landuse_output) as src:
+            landuse_array = src.read(1)
+
+        # Find the most common value in the landuse array
+        most_common_value, landuse_array = self.replace_invalid_landuse_cells(landuse_array)
+
+        # Write the updated landuse_array back to a raster
+        self.write_updated_landuse_raster(landuse_array, most_common_value)
+
+    def write_updated_landuse_raster(self, landuse_array: np.ndarray, most_common_value: int) -> None:
+        """Write the updated landuse array back to a raster."""
+        with rasterio.open(self.swatplus_landuse_output) as src:
+            transform = src.transform
+            crs = src.crs
+            profile = src.profile
+            profile.update(dtype=rasterio.uint8, compress='lzw')
+
+        with rasterio.open(self.swatplus_landuse_output, 'w', **profile) as dst:
+            dst.write(landuse_array, 1)
 
     def create_watershed_boundary(self) -> None:
         """Create and save the watershed boundary."""
@@ -109,6 +144,8 @@ class SWATplusRasterGenerator:
         # Snap rasters
         spatial_analysis.snap_rasters(self.swatplus_landuse_output, self.swatplus_soil_output)
 
+
+
     def process_soil_raster(self) -> None:
         """Process the soil raster to replace invalid cells."""
         with rasterio.open(self.swatplus_soil_output) as src:
@@ -117,7 +154,7 @@ class SWATplusRasterGenerator:
             soil_array[soil_array == nodata_value] = nodata_value
 
         # Find the most common value in the soil array
-        most_common_value = self.replace_invalid_soil_cells(soil_array)
+        most_common_value, soil_array = self.replace_invalid_soil_cells(soil_array)
 
         # Write the updated soil_array back to a raster
         self.write_updated_soil_raster(soil_array, most_common_value)
@@ -125,19 +162,25 @@ class SWATplusRasterGenerator:
     def replace_invalid_soil_cells(self, soil_array: np.ndarray) -> int:
         """Replace invalid soil cells and return the most common value."""
         unique, counts = np.unique(soil_array[soil_array != 2147483647], return_counts=True)
-        most_common_value = unique[np.argmax(counts)]
-        print(f"Most common value: {most_common_value}")
-
+        
         df = pd.read_csv(self.paths.construct_path(self.paths.swatplus_gssurgo_csv))
         mask_value = df.muid.values.astype(int)
+        ### remove the uniques that are not in the mask
+        mask = np.isin(unique, mask_value)
+        unique = unique[mask]
+        counts = counts[mask]
 
-        assert most_common_value in mask_value, f"Most common value {most_common_value} is not in SWAT_gssurgo.csv"
-
+        ### if unique is not no
+        assert len(unique) > 2, "No valid soil cells found in the raster."
+        most_common_value = unique[np.argmax(counts)]
+        
+        print(f"Most common value: {most_common_value}")
+    
         # Replace invalid cells
         soil_array = np.where(soil_array == 2147483647, most_common_value, soil_array)
         soil_array = np.where(np.isin(soil_array, mask_value), soil_array, most_common_value)
-
-        return most_common_value
+    
+        return most_common_value, soil_array
 
     def write_updated_soil_raster(self, soil_array: np.ndarray, most_common_value: int) -> None:
         """Write the updated soil array back to a raster."""

@@ -14,7 +14,7 @@ import seaborn as sns
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except Exception:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 
 ## use all states
@@ -66,11 +66,10 @@ def get_nhdplus_huc12(VPUID) -> gpd.GeoDataFrame:
         layer="WBDHU12",
     ).to_crs("EPSG:4326").rename(columns={"HUC12": "huc12", "ToHUC": "tohuc"})
 
-def process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, base_directory, start_date='2000-01-01', end_date='2022-12-31'):
+def process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, base_directory):
     first_huc = huc12
     list_of_huc12s = find_upstrean_huc12s(huc12, WBDHU12)
     list_of_huc12s.append(huc12)
-    crs_proj = utm.from_latlon(stations_nhplus[stations_nhplus.huc12 == huc12].geometry.y.values[0], stations_nhplus[stations_nhplus.huc12 == huc12].geometry.x.values[0])
     EPSG = f"EPSG:{32700 - round((45 + stations_nhplus[stations_nhplus.huc12 == huc12].geometry.y.values[0])/90,0)*100 + round((183 + stations_nhplus[stations_nhplus.huc12 == huc12].geometry.x.values[0])/6,0)}"
     drainage_area = WBDHU12[WBDHU12.huc12.isin(list_of_huc12s)].to_crs(EPSG).geometry.area.sum()
     drainage_area_sqkm = drainage_area/1000000
@@ -91,7 +90,7 @@ def process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, base_dire
     # Create an instance of the NWIS class with the desired parameters
 
     try:
-        station = NWIS(site=site_no, start_date = start_date, end_date= end_date)
+        station = NWIS(site=site_no, start_date = SWATGenXPaths.niws_start_date, end_date= SWATGenXPaths.niws_end_date)
     except Exception as e:
         print(f"Error: {e}")
         return site_no, first_huc, drainage_area_sqkm, list_of_huc12s, 0
@@ -108,7 +107,6 @@ def process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, base_dire
 
     streamflow_data.reset_index().to_csv(save_path, header = ['date','streamflow'], index = False)
     ## remove hrs from the date column example of now: 2015-01-01 00:00:00+00:00,230.0
-    streamflow_data_ = streamflow_data.copy()
     streamflow_data['date'] = streamflow_data.index
     streamflow_data['date'] = streamflow_data['date'].dt.date
     streamflow_data.to_csv(save_path, index = False,header = ['streamflow','date'])
@@ -131,7 +129,7 @@ def adding_huc12_to_stations(stations, VPUID):
     return stations_nhplus, WBDHU12
 
 
-def get_streamflow_by_VPUID(VPUID, start_date, end_date) -> pd.DataFrame:
+def get_streamflow_by_VPUID(VPUID) -> pd.DataFrame:
     """ Generate the streamflow stations data for a specific VPUID
 
 
@@ -153,38 +151,61 @@ def get_streamflow_by_VPUID(VPUID, start_date, end_date) -> pd.DataFrame:
     USGS_path = SWATGenXPaths.USGS_path
     meta_data_directory = f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/meta_{VPUID}.csv"
     if not os.path.exists(meta_data_directory):
-        data = []
-        total_expected_days = (pd.to_datetime(end_date) - pd.to_datetime(start_date)).days + 1
-        stations = fetching_streamflow_stations(USGS_path, VPUID)
-        stations_nhplus, WBDHU12 = adding_huc12_to_stations(stations, VPUID)
-        huc12s = stations_nhplus.huc12.values
+        return extract_from_NWIS(
+            USGS_path, VPUID, meta_data_directory
+        )
+    print(f"Data for {VPUID} already exists")
+    return pd.read_csv(meta_data_directory)
+
+
+def extract_from_NWIS(USGS_path, VPUID, meta_data_directory):
+    data = []
+    total_expected_days = (pd.to_datetime(SWATGenXPaths.niws_end_date) - pd.to_datetime(SWATGenXPaths.niws_end_date)).days + 1
+    stations = fetching_streamflow_stations(USGS_path, VPUID)
+    stations_nhplus, WBDHU12 = adding_huc12_to_stations(stations, VPUID)
+    huc12s = stations_nhplus.huc12.values
 
 
 
-        for huc12 in huc12s:
-            try:
-                site_no, first_huc, drainage_area_sqkm, list_of_huc12s, number_of_streamflow_data = process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, USGS_path,start_date , end_date)
-                # Append a tuple (or list) of the data to the data list
-                data.append((site_no, first_huc, drainage_area_sqkm, list_of_huc12s, number_of_streamflow_data, total_expected_days))
+    for huc12 in huc12s:
+        try:
+            site_no, first_huc, drainage_area_sqkm, list_of_huc12s, number_of_streamflow_data = process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, USGS_path)
+            # Append a tuple (or list) of the data to the data list
+            data.append((site_no, first_huc, drainage_area_sqkm, list_of_huc12s, number_of_streamflow_data, total_expected_days))
 
-            except Exception as e:
-                print(f"Error: {e}")
-                continue
-
+        except Exception as e:
+            print(f"Error: {e}")
         # Once all data is collected, create the DataFrame
-        meta_data_df = pd.DataFrame(data, columns=['site_no', 'first_huc', 'drainage_area_sqkm', 'list_of_huc12s', 'number_of_streamflow_data','total_expected_days'])
-        meta_data_df = meta_data_df [['site_no', 'first_huc', 'drainage_area_sqkm', 'number_of_streamflow_data','total_expected_days', 'list_of_huc12s']]
+    result = pd.DataFrame(
+        data,
+        columns=[
+            'site_no',
+            'first_huc',
+            'drainage_area_sqkm',
+            'list_of_huc12s',
+            'number_of_streamflow_data',
+            'total_expected_days',
+        ],
+    )
+    result = result[
+        [
+            'site_no',
+            'first_huc',
+            'drainage_area_sqkm',
+            'number_of_streamflow_data',
+            'total_expected_days',
+            'list_of_huc12s',
+        ]
+    ]
         # Save to CSV
         # calculate the % of gaps in the data
-        meta_data_df['GAP_percent'] = (1 - meta_data_df['number_of_streamflow_data']/meta_data_df['total_expected_days'])*100
+    result['GAP_percent'] = (
+        1 - result['number_of_streamflow_data'] / result['total_expected_days']
+    ) * 100
 
-        meta_data_df = meta_data_df.drop_duplicates('site_no')
-        meta_data_df.to_csv(meta_data_directory, index=False)
-    else:
-        print(f"Data for {VPUID} already exists")
-        meta_data_df = pd.read_csv(meta_data_directory)
-
-    return meta_data_df
+    result = result.drop_duplicates('site_no')
+    result.to_csv(meta_data_directory, index=False)
+    return result
 
 
 
@@ -195,7 +216,7 @@ def get_all_VPUIDs(base_directory):
     return [file.split('_')[2] for file in files]
 
 
-def plot_streamflow_data(meta_data_df, VPUID, start_date, end_date):
+def plot_streamflow_data(meta_data_df, VPUID):
 
     print(meta_data_df)
 
@@ -245,15 +266,15 @@ def plot_streamflow_data(meta_data_df, VPUID, start_date, end_date):
                 print(f"Error: {e}")
                 continue
 
-def USGS_streamflow_retrieval_by_VPUID(VPUID, start_date = '2000-01-01' , end_date = '2023-06-31'):
+def USGS_streamflow_retrieval_by_VPUID(VPUID):
 
     print(f"Retrieving streamflow data foe VPUID:{VPUID}...")
 
     meta_data_path = fr"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/meta_{VPUID}.csv"
 
     if not os.path.exists(meta_data_path):
-        meta_data_df = get_streamflow_by_VPUID(VPUID, start_date, end_date)
-        plot_streamflow_data(meta_data_df, VPUID, start_date, end_date)
+        meta_data_df = get_streamflow_by_VPUID(VPUID)
+        plot_streamflow_data(meta_data_df, VPUID)
     else:
         print(f"Data for {VPUID} already exists")
         meta_data_df = pd.read_csv(meta_data_path, dtype={'site_no': str})

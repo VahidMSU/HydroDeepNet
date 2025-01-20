@@ -36,7 +36,7 @@ class PRISMDataError(Exception):
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 def check_configuration(VPUID, landuse_epoch) -> str:
     gSSUGO_path = SWATGenXPaths.gSSURGO_path

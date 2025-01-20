@@ -1,39 +1,12 @@
 Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
-Search site route called
-Get Station Characteristics route called
-Station number: 06890500
-Station 06890500 found
-characteristics: {'SiteNumber': '06890500', 'Drainage area (sqkm)': 2463.22, 'Number of expected records (1999-2022)': 8402, 'Streamflow records gap (1999-2022) (%)': 100.0, 'SiteName': '---', 'Status': '---', 'USGSFunding': '---', 'HUC12 id of the station': 102701030503, 'HUC12 ids of the watershed': "['102701030408', '102701030501', '102701030502', '102701030308', '102701030405', '102701030401', '102701030406', '102701030407', '102701030402', '102701030307', '102701030303', '102701030205', '102701030304', '102701030305', '102701030306', '102701030302', '102701030301', '102701030203', '102701030204', '102701030110', '102701030202', '102701030201', '102701030109', '102701030106', '102701030108', '102701030107', '102701030105', '102701030102', '102701030103', '102701030104', '102701030101', '102701030403', '102701030404', '102701030503']", 'site_no': '06890500', 'Latitude': 39.35, 'Longitude': -95.45, 'huc_cd': 10270103.0}
-Model Settings route called
-Form validated successfully
-Model settings received: 06890500, 250, 30, False, False, False, 50, 180, 1000, 10, 25, 25
-Model creation process started
-Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
-Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
-2025-01-18 00:01:28,975 - INFO - Configuration: {'BASE_PATH': '/data/SWATGenXApp/GenXAppData/', 'LEVEL': 'huc12', 'MAX_AREA': 5000, 'MIN_AREA': 10, 'GAP_percent': 10, 'landuse_product': 'NLCD', 'landuse_epoch': '2021', 'ls_resolution': 250, 'dem_resolution': 30, 'station_name': '06890500', 'MODEL_NAME': 'SWAT_MODEL_Web_Application', 'single_model': True, 'sensitivity_flag': False, 'calibration_flag': False, 'verification_flag': False, 'START_YEAR': 2015, 'END_YEAR': 2022, 'nyskip': 3, 'sen_total_evaluations': 1000, 'sen_pool_size': 180, 'num_levels': 10, 'cal_pool_size': 50, 'max_cal_iterations': 25, 'termination_tolerance': 10, 'epsilon': 0.0001, 'Ver_START_YEAR': 2004, 'Ver_END_YEAR': 2022, 'Ver_nyskip': 3, 'range_reduction_flag': False, 'pet': 2, 'cn': 1, 'no_value': 1000000.0, 'verification_samples': 25}
-2025-01-18 00:01:28,975 - INFO - Configuration: {'BASE_PATH': '/data/SWATGenXApp/GenXAppData/', 'LEVEL': 'huc12', 'MAX_AREA': 5000, 'MIN_AREA': 10, 'GAP_percent': 10, 'landuse_product': 'NLCD', 'landuse_epoch': '2021', 'ls_resolution': 250, 'dem_resolution': 30, 'station_name': '06890500', 'MODEL_NAME': 'SWAT_MODEL_Web_Application', 'single_model': True, 'sensitivity_flag': False, 'calibration_flag': False, 'verification_flag': False, 'START_YEAR': 2015, 'END_YEAR': 2022, 'nyskip': 3, 'sen_total_evaluations': 1000, 'sen_pool_size': 180, 'num_levels': 10, 'cal_pool_size': 50, 'max_cal_iterations': 25, 'termination_tolerance': 10, 'epsilon': 0.0001, 'Ver_START_YEAR': 2004, 'Ver_END_YEAR': 2022, 'Ver_nyskip': 3, 'range_reduction_flag': False, 'pet': 2, 'cn': 1, 'no_value': 1000000.0, 'verification_samples': 25}
-Model Confirmation route called
-Model Settings route called
-Search site route called
-Get Station Characteristics route called
-Station number: 13159800
-Station 13159800 found
-characteristics: {'SiteNumber': '13159800', 'Drainage area (sqkm)': 333.7, 'Number of expected records (1999-2022)': 8402, 'Streamflow records gap (1999-2022) (%)': 0.0, 'SiteName': '---', 'Status': '---', 'USGSFunding': '---', 'HUC12 id of the station': 170501011004, 'HUC12 ids of the watershed': "['170501011002', '170501011001', '170501011003', '170501011004']", 'site_no': '13159800', 'Latitude': 43.26, 'Longitude': -115.7, 'huc_cd': 17050101.0}
-Model Settings route called
-Form validated successfully
-Model settings received: 13159800, 250, 30, False, False, False, 50, 180, 1000, 10, 25, 25
-Model creation process started
-Model Confirmation route called
-Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
-Logging to /data/SWATGenXApp/codes/web_application/logs/WebAppLogger.log
-2025-01-18 00:05:41,061 - INFO - Configuration: {'BASE_PATH': '/data/SWATGenXApp/GenXAppData/', 'LEVEL': 'huc12', 'MAX_AREA': 5000, 'MIN_AREA': 10, 'GAP_percent': 10, 'landuse_product': 'NLCD', 'landuse_epoch': '2021', 'ls_resolution': 250, 'dem_resolution': 30, 'station_name': '13159800', 'MODEL_NAME': 'SWAT_MODEL_Web_Application', 'single_model': True, 'sensitivity_flag': False, 'calibration_flag': False, 'verification_flag': False, 'START_YEAR': 2015, 'END_YEAR': 2022, 'nyskip': 3, 'sen_total_evaluations': 1000, 'sen_pool_size': 180, 'num_levels': 10, 'cal_pool_size': 50, 'max_cal_iterations': 25, 'termination_tolerance': 10, 'epsilon': 0.0001, 'Ver_START_YEAR': 2004, 'Ver_END_YEAR': 2022, 'Ver_nyskip': 3, 'range_reduction_flag': False, 'pet': 2, 'cn': 1, 'no_value': 1000000.0, 'verification_samples': 25}
-2025-01-18 00:05:41,061 - INFO - Configuration: {'BASE_PATH': '/data/SWATGenXApp/GenXAppData/', 'LEVEL': 'huc12', 'MAX_AREA': 5000, 'MIN_AREA': 10, 'GAP_percent': 10, 'landuse_product': 'NLCD', 'landuse_epoch': '2021', 'ls_resolution': 250, 'dem_resolution': 30, 'station_name': '13159800', 'MODEL_NAME': 'SWAT_MODEL_Web_Application', 'single_model': True, 'sensitivity_flag': False, 'calibration_flag': False, 'verification_flag': False, 'START_YEAR': 2015, 'END_YEAR': 2022, 'nyskip': 3, 'sen_total_evaluations': 1000, 'sen_pool_size': 180, 'num_levels': 10, 'cal_pool_size': 50, 'max_cal_iterations': 25, 'termination_tolerance': 10, 'epsilon': 0.0001, 'Ver_START_YEAR': 2004, 'Ver_END_YEAR': 2022, 'Ver_nyskip': 3, 'range_reduction_flag': False, 'pet': 2, 'cn': 1, 'no_value': 1000000.0, 'verification_samples': 25}
-Home route called, user is authenticated.
 Index route called. Redirecting to /home.
 Home route called, user is authenticated.
+Visualizations route called
+Model Settings route called
+HydroGeoDataset route called
+Available groups: ['CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly', 'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population']
+Index route called. Redirecting to /home.
+Home route called, user is authenticated.
+Home route called, user is authenticated.
 Model Settings route called
 Search site route called
-Get Station Characteristics route called
-Station number: 02319800
-Station 02319800 found
-characteristics: {'SiteNumber': '02319800', 'Drainage area (sqkm)': 17504.51, 'Number of expected records (1999-2022)': 8402, 'Streamflow records gap (1999-2022) (%)': 0.0, 'SiteName': 'SUWANNEE RIVER AT DOWLING PARK, FLORIDA', 'Status': 'Active', 'USGSFunding': 'Full', 'HUC12 id of the station': 31102050105, 'HUC12 ids of the watershed': "['031102050102', '031102050103', '031102050104', '031102050101', '031102010905', '031102030908', '031102010904', '031102021208', '031102010902', '031102010901', '031102010804', '031102010802', '031102010803', '031102010704', '031102010606', '031102010702', '031102010703', '031102010605', '031102010602', '031102010603', '031102010604', '031102010505', '031102010105', '031102010202', '031102010305', '031102010402', '031102010502', '031102010503', '031102010504', '031102010101', '031102010102', '031102010103', '031102010104', '031102010201', '031102010303', '031102010304', '031102010302', '031102010301', '031102010401', '031102010501', '031102010701', '031102021206', '031102021003', '031102021102', '031102021205', '031102020903', '031102021002', '031102020902', '031102020901', '031102021001', '031102021101', '031102021204', '031102021202', '031102021203', '031102021201', '031102020705', '031102020803', '031102020704', '031102020703', '031102020702', '031102020701', '031102020403', '031102020604', '031102020402', '031102020401', '031102020305', '031102020106', '031102020205', '031102020301', '031102020302', '031102020304', '031102020104', '031102020105', '031102020102', '031102020103', '031102020101', '031102020202', '031102020204', '031102020201', '031102020203', '031102020303', '031102020503', '031102020603', '031102020501', '031102020502', '031102020601', '031102020602', '031102020801', '031102020802', '031102030902', '031102030905', '031102030901', '031102030804', '031102030803', '031102030802', '031102030603', '031102030703', '031102030404', '031102040505', '031102030801', '031102030302', '031102030403', '031102030301', '031102030402', '031102030204', '031102030401', '031102030104', '031102030202', '031102030203', '031102030201', '031102030101', '031102030102', '031102030103', '031102040502', '031102040503', '031102040504', '031102040405', '031102040501', '031102040403', '031102040404', '031102040108', '031102040307', '031102040401', '031102040402', '031102040105', '031102040106', '031102040107', '031102040104', '031102040102', '031102040103', '031102040101', '031102040205', '031102040306', '031102040204', '031102040203', '031102040201', '031102040202', '031102040303', '031102040304', '031102040305', '031102040301', '031102040302', '031102030504', '031102030601', '031102030602', '031102030503', '031102030502', '031102030501', '031102030702', '031102030701', '031102050105']", 'site_no': '02319800', 'Latitude': 30.24, 'Longitude': -83.25, 'huc_cd': 3110205.0}

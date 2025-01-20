@@ -14,7 +14,7 @@ from shapely.geometry import box
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 
 def check_NLCD_by_VPUID(VPUID, epoch):

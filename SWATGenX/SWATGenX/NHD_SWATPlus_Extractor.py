@@ -8,7 +8,7 @@ from SWATGenX.SWATGenXLogging import LoggerSetup
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 class NHD_SWATPlus_Extractor:
     """
@@ -404,7 +404,7 @@ class NHD_SWATPlus_Extractor:
 
         # Initialize new columns with self.no_value  (I found this an effective approach for handling nan and null values)
         self.logger.info('################################# Unique LAKEID',streams.LakeId.unique())
-        streams['LakeId'] = streams['LakeId'].fillna(self.no_value)
+        streams['LakeId'] = streams['LakeId'].fillna(self.no_value).infer_objects(copy=False) 
         streams['LakeIn'] = self.no_value
         streams['LakeOut'] = self.no_value
         streams['LakeMain'] = self.no_value
