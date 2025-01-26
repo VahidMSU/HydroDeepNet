@@ -83,23 +83,31 @@ block content %}
       <h4>Monthly SWAT+gwflow Models Performance</h4>
     </div>
 
-    <!-- 6. MODFLOW Performance -->
+    <!-- 6 MODFLOW model example -->
     <div class="image-item">
       <img
-        src="{{ url_for('static', filename='images/EBK_metrics.jpeg') }}"
-        alt="MODFLOW model performances"
+        src="{{ url_for('static', filename='images/MODFLOW_model_input_example.jpeg') }}"
+        alt="MODFLOW model example"
       />
-      <h4>Distribution of MODFLOW Model Performances</h4>
-    </div>
+      <h4>MODFLOW Model Example</h4>
+      <!-- 7. MODFLOW Performance -->
+      <div class="image-item">
+        <img
+          src="{{ url_for('static', filename='images/EBK_metrics.jpeg') }}"
+          alt="MODFLOW model performances"
+        />
+        <h4>Distribution of MODFLOW Model Performances</h4>
+      </div>
 
-    <!-- 7. Simulation Time -->
-    <div class="image-item">
-      <img
-        src="{{ url_for('static', filename='images/average_hours_vs_HRU_n_rivers.png') }}"
-        alt="Simulation time vs HRU and rivers"
-      />
-      <h4>Simulation Time vs. HRU and Rivers</h4>
+      <!-- 8. Simulation Time -->
+      <div class="image-item">
+        <img
+          src="{{ url_for('static', filename='images/average_hours_vs_HRU_n_rivers.png') }}"
+          alt="Simulation time vs HRU and rivers"
+        />
+        <h4>Simulation Time vs. HRU and Rivers</h4>
+      </div>
     </div>
   </div>
+  {% endblock %}
 </div>
-{% endblock %}
