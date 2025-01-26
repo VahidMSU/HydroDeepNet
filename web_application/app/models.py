@@ -1,13 +1,26 @@
 from app.extensions import db
+from app.extensions import bcrypt
 from flask_login import UserMixin
 
 class User(db.Model, UserMixin):
-    __tablename__ = 'user'
-    __table_args__ = {'extend_existing': True}  # Add this line
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+
+    @property
+    def password(self):
+        """Prevent reading raw password."""
+        raise AttributeError("password is not a readable attribute.")
+
+    @password.setter
+    def password(self, plain_password):
+        """Generate a password hash and store it."""
+        self.password_hash = bcrypt.generate_password_hash(plain_password).decode('utf-8')
+
+    def check_password(self, plain_password):
+        """Compare given password with the stored hash."""
+        return bcrypt.check_password_hash(self.password_hash, plain_password)
 
 class ContactMessage(db.Model):
     __tablename__ = 'contact_message'
