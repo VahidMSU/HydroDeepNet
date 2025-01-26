@@ -1,0 +1,9 @@
+{
+    "python.pythonPath": "/home/rafieiva/MyDataBase/codebase/ModelProcessing/.venv/bin/python",
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.profiles.linux": {
+        "bash": {
+            "path": "/bin/bash"
+        }
+    }
+}

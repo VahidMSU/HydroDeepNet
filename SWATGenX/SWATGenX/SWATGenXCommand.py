@@ -144,19 +144,81 @@ class SWATGenXCommand:
 	def handle_huc12(self):
 		"""Handles the HUC12 level processing."""
 		self.logger.info(f'LEVEL: huc12, station_name: {self.config.get("station_name")}')
-		station_name = self.config.get("station_name")
-		list_of_huc12s, vpuid = self.return_list_of_huc12s(station_name, self.config.get("MAX_AREA"))
 
-		# Update the configuration dictionary
-		self.config.update({
-			"site_no": station_name,
-			"VPUID": vpuid,
-			"LEVEL": "huc12",
-			"list_of_huc12s": list_of_huc12s,
-		})
-		core = SWATGenXCore(self.config)
-		core.process()
-		return f"{SWATGenXPaths.swatgenx_outlet_path}/{vpuid}/huc12/{station_name}/"
+		station_names = self.config.get("station_name")
+		# Ensure station_names is a list (in case user passes a single string)
+		if isinstance(station_names, str):
+			station_names = [station_names]
+
+		# If only one station, do the original single-process approach
+		if len(station_names) == 1:
+			station_name = station_names[0]
+			try:
+				list_of_huc12s, vpuid = self.return_list_of_huc12s(station_name, self.config.get("MAX_AREA"))
+			except Exception as e:
+				self.logger.error(f"Error processing station {station_name}: {e}")
+				return None
+
+			# Update the configuration dictionary for this single station
+			self.config.update({
+				"site_no": station_name,
+				"VPUID": vpuid,
+				"LEVEL": "huc12",
+				"list_of_huc12s": list_of_huc12s,
+			})
+			core = SWATGenXCore(self.config)
+			core.process()
+			return f"{SWATGenXPaths.swatgenx_outlet_path}/{vpuid}/huc12/{station_name}/"
+
+		# If multiple stations, do parallel processing
+		else:
+			max_queue_size = 5  # or however many you want in flight
+			futures = set()
+			future_to_station = {}
+
+			with ProcessPoolExecutor(max_workers=max_queue_size) as executor:
+				for station_name in station_names:
+					try:
+						list_of_huc12s, vpuid = self.return_list_of_huc12s(
+							station_name,
+							self.config.get("MAX_AREA")
+						)
+					except Exception as e:
+						self.logger.error(f"Error retrieving HUC12 list for {station_name}: {e}")
+						continue
+
+					# Create a copy of self.config to avoid collisions
+					config_copy = self.config.copy()
+					config_copy.update({
+						"site_no": station_name,
+						"VPUID": vpuid,
+						"LEVEL": "huc12",
+						"list_of_huc12s": list_of_huc12s
+					})
+
+					wrapped_SWATGenXCore = partial(SWATGenXCore_run, config_copy)
+
+					# Throttle if too many futures are already in flight
+					while len(futures) >= max_queue_size:
+						done, futures = wait(futures, return_when=FIRST_COMPLETED)
+						# Optionally log or handle completed tasks
+
+					# Submit a new job
+					future = executor.submit(wrapped_SWATGenXCore)
+					future_to_station[future] = (station_name, vpuid)
+					futures.add(future)
+
+				# Wait for all tasks to complete
+				for future in as_completed(futures):
+					station_name, vpuid = future_to_station[future]
+					try:
+						future.result()
+						self.logger.info(f"Successfully processed station {station_name} for VPUID {vpuid}")
+					except Exception as e:
+						self.logger.error(f"Error processing station {station_name} for VPUID {vpuid}: {e}")
+
+			return f"Parallel processing for {len(station_names)} stations complete."
+
 
 	def handle_huc4(self):
 		"""Handles the HUC4 level processing."""
