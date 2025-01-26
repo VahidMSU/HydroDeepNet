@@ -1,43 +1,58 @@
 {% extends "layout.html" %} {% block title %}Login{% endblock %} {% block
 content %}
-<div class="card mx-auto" style="max-width: 400px">
-  <div class="card-body">
-    <h2 class="card-title text-center mb-4">Login</h2>
-    <form method="post" action="{{ url_for('login') }}">
-      {{ form.hidden_tag() }}
 
-      <!-- Username Field -->
-      <div class="form-group mb-3">
-        <label for="username">Username</label>
-        {{ form.username(class="form-control", placeholder="Enter your
-        username") }} {% if form.username.errors %}
-        <small class="text-danger"> {{ form.username.errors[0] }} </small>
-        {% endif %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow">
+        <div class="card-body p-4">
+          <h2 class="card-title text-center mb-4">Login</h2>
+          <form method="post" action="{{ url_for('login') }}">
+            {{ form.hidden_tag() }}
+
+            <!-- Username Field -->
+            <div class="mb-3">
+              {{ form.username.label(class="form-label") }} {{
+              form.username(class="form-control", placeholder="Username") }} {%
+              for error in form.username.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-3">
+              {{ form.password.label(class="form-label") }} {{
+              form.password(class="form-control", placeholder="Password") }} {%
+              for error in form.password.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- Remember Me Checkbox -->
+            <div class="mb-3 form-check">
+              {{ form.remember_me(class="form-check-input") }} {{
+              form.remember_me.label(class="form-check-label") }}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+
+            <!-- Additional Links (Adjusted) -->
+            <div class="text-center mt-3">
+              <p>
+                Don't have an account?
+                <a href="{{ url_for('signup') }}">Sign up</a>
+              </p>
+              <p><a href="{{ url_for('home') }}">Return to Home</a></p>
+              <!-- Keep this if needed -->
+            </div>
+          </form>
+        </div>
       </div>
-
-      <!-- Password Field -->
-      <div class="form-group mb-3">
-        <label for="password">Password</label>
-        {{ form.password(class="form-control", placeholder="Enter your
-        password") }} {% if form.password.errors %}
-        <small class="text-danger"> {{ form.password.errors[0] }} </small>
-        {% endif %}
-      </div>
-
-      <!-- Submit Button -->
-      <div class="d-grid gap-2">
-        <button type="submit" class="btn btn-primary btn-block">Login</button>
-      </div>
-    </form>
-
-    <!-- Additional Links -->
-    <div class="text-center mt-4">
-      <p>
-        Don't have an account?
-        <a href="{{ url_for('signup') }}">Sign up here</a>.
-      </p>
-      <p><a href="{{ url_for('home') }}">Return to Home</a></p>
     </div>
   </div>
 </div>
+
 {% endblock %}
