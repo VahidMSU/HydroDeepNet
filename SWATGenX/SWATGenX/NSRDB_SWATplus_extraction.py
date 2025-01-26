@@ -69,7 +69,6 @@ class NSRDB_contructor:
 			elev_data = src.read(1)
 		return elev_data[row, col]
 
-
 	def extract_from_file(self,f):
 		data = f[self.variable][:, self.nsrdb_indexes]
 		print(f"NSRDB data shape before getting attr: {data.shape}")
