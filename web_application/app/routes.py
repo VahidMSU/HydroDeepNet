@@ -13,6 +13,7 @@ from app.utils import LoggerSetup, single_model_creation, hydrogeo_dataset_dict,
 import numpy as np
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import pandas as pd
+
 class AppManager:
 	def __init__(self, app):
 		self.app = app
@@ -22,15 +23,18 @@ class AppManager:
 
 	def init_routes(self):
 		@self.app.route('/')
+		@login_required
 		def index():
 			self.logger.info("Index route called. Redirecting to /home.")	
 			return redirect(url_for('home'))
 
 		@self.app.route('/dashboard')
+		@login_required
 		def dashboard():
 			return render_template('dashboard.html')
 
 		@self.app.route('/get_options', methods=['GET'])
+		@login_required
 		def get_options():
 			try:
 				names_path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
@@ -42,13 +46,13 @@ class AppManager:
 						names.remove("log.txt")
 				else:
 					names = []
-					
 				return jsonify({'names': names, 'variables': variables})
 			except Exception as e:
 				self.logger.error(f"Error fetching options: {e}")
 				return jsonify({"error": "Failed to fetch options"}), 500
 
 		@self.app.route('/visualizations', methods=['GET'])
+		@login_required
 		def visualizations():
 			self.logger.info("Visualizations route called")
 			name = request.args.get('NAME', default=None)
@@ -101,10 +105,10 @@ class AppManager:
 			if form.validate_on_submit():
 				username = form.username.data
 				password = form.password.data
-				self.logger.info(f"Attempting login for: {username}")	
+				self.logger.warning(f"############### Login for: {username}")	
 
 				user = User.query.filter_by(username=username).first()
-				if user and user.password == password:
+				if user and user.check_password(password):
 					login_user(user)
 					session.permanent = True
 					self.logger.info(f"Login successful for: {username}")
@@ -121,9 +125,12 @@ class AppManager:
 			form = RegistrationForm()
 			if form.validate_on_submit():
 				self.logger.info("Form validated successfully")	
-				user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+				new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
+				new_user.password = form.password.data
+				db.session.add(new_user)
+				db.session.commit()
 				try:
-					db.session.add(user)
+					db.session.add(new_user)
 					db.session.commit()
 					self.logger.info("User added to the database successfully")
 					flash('Account created successfully! You can now log in.')
@@ -147,11 +154,13 @@ class AppManager:
 			return redirect(url_for('login'))
 
 		@self.app.route('/home')
+		@login_required
 		def home():
 			self.logger.info("Home route called, user is authenticated.")	
 			return render_template('home.html')
 
 		@self.app.route('/model-settings', methods=['GET', 'POST'])
+		@login_required
 		def model_settings():
 			self.logger.info("Model Settings route called")	
 			form = ModelSettingsForm()
@@ -173,7 +182,7 @@ class AppManager:
 					verification_samples = min(int(form.verification_samples.data), 50)
 				except ValueError:
 					self.logger.error("Invalid input received for model settings")
-				
+
 				self.logger.info(f"Model settings received: {site_no}, {ls_resolution}, {dem_resolution}, {calibration_flag}, {validation_flag}, {sensitivity_flag}, {cal_pool_size}, {sen_pool_size}, {sen_total_evaluations}, {num_levels}, {max_cal_iterations}, {verification_samples}")	
 				wrapped_single_model_creation = partial(single_model_creation, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
 				process = Process(target=wrapped_single_model_creation)
@@ -181,7 +190,7 @@ class AppManager:
 				self.logger.info("Model creation process started")
 
 				return redirect(url_for('model_confirmation'))
-			
+
 			#station_data = integrate_streamflow_data()
 			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
 			station_list = station_data.SiteNumber.unique()
@@ -194,7 +203,7 @@ class AppManager:
 			#station_data = integrate_streamflow_data()
 			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
 			self.logger.info(f"Station number: {station_no}")
-			
+
 			station_row = station_data[station_data.SiteNumber == station_no]
 			characteristics_list = station_row.to_dict(orient='records')
 			characteristics = characteristics_list[0] if characteristics_list else {}
@@ -211,7 +220,7 @@ class AppManager:
 					self.logger.error(f"No geometries found for HUC12s: {huc12_list}")
 				if not streams_geometries:
 					self.logger.error(f"No streams geometries found for HUC12s: {huc12_list}")
-					
+
 				characteristics['geometries'] = geometries
 				characteristics['streams_geometries'] = streams_geometries
 				return jsonify(characteristics)
@@ -219,16 +228,19 @@ class AppManager:
 				return jsonify({"error": "Station not found"}), 404
 
 		@self.app.route('/about')
+		
 		def about():
 			self.logger.info("About route called")
 			return render_template('about.html')
 
 		@self.app.route('/model-confirmation')
+		@login_required
 		def model_confirmation():
 			self.logger.info("Model Confirmation route called")
 			return render_template('model_confirmation.html')
 
 		@self.app.route('/contact', methods=['GET', 'POST'])
+		@login_required
 		def contact():
 			self.logger.info("Contact route called")
 			form = ContactForm()
@@ -250,11 +262,13 @@ class AppManager:
 			return render_template('contact.html', form=form)
 
 		@self.app.route('/infrastructure')
+		@login_required
 		def infrastructure():
 			self.logger.info("Infrastructure route called")
 			return render_template('infrastructure.html')
 
 		@self.app.route('/hydro_geo_dataset', methods=['GET', 'POST'])
+		@login_required
 		def hydro_geo_dataset():
 			self.logger.info("HydroGeoDataset route called")
 			form = HydroGeoDatasetForm()
@@ -347,6 +361,7 @@ class AppManager:
 			return render_template('HydroGeoDataset.html', form=form)
 
 		@self.app.route('/get_subvariables', methods=['POST'])
+		@login_required
 		def get_subvariables():
 			self.logger.info("Get Subvariables route called")
 			variable = request.form.get('variable')
@@ -362,7 +377,7 @@ class AppManager:
 			return jsonify({"subvariables": subvariables})
 
 		@self.app.route('/ftp-access')
-		#@login_required
+		@login_required
 		def ftp_access():
 			self.logger.info("FTP Access route called")
 			#return render_template('redirect.html')
@@ -374,7 +389,7 @@ class AppManager:
 			return render_template('DeepLearning.html')
 		
 		@self.app.route('/vision_system')
-		#@login_required
+		@login_required
 		def vision_system():
 			return render_template('VisionSystem.html')
 
@@ -389,7 +404,6 @@ class AppManager:
 			search_term = request.args.get('search_term', '').lower()
 			if not search_term:
 				return jsonify({"error": "Search term is required"}), 400
-			
 			try:
 				results = find_station(search_term)
 				if results.empty:
