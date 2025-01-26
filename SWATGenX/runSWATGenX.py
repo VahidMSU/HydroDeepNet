@@ -1,8 +1,10 @@
 from SWATGenX.SWATGenXCommand import SWATGenXCommand
+from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import time
 import pandas as pd
 import os
 import logging
+import time 
 
 """
 /***************************************************************************
@@ -48,18 +50,18 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", filename=logfile_path)
 
-    LEVEL = "huc4"
+    LEVEL = "huc12"
 
     MODEL_NAME = "SWAT_MODEL"
 
+    if LEVEL == "huc12":
 
-    single_model = True
+        print("Reading the station names from the camel_hydro.txt")
+        time.sleep(5)
+        station_names = gauge_id = pd.read_csv(SWATGenXPaths.camel_hydro_path, sep=";", dtype={"gauge_id": str})['gauge_id'].values
 
-    if single_model and LEVEL in {"huc12", "huc8"}:
-        selected_list = ['04161540'] if LEVEL == "huc8" else ['11345500']
-    elif not single_model and LEVEL in {"huc12", "huc8"}:
-        station_names = ['04166000', '04166300', '04161540' ,'04167000', '04166100' ,'04161000']
-
+    elif LEVEL == "huc8":
+        
         huc8_list = [
             '04050001', '04050002', '04050003', '04050004', '04050005', '04050006', '04050007', 
             '04060101', '04060102', '04060103', '04060104', '04060105', '04070003', '04070004', 
@@ -67,28 +69,25 @@ if __name__ == "__main__":
             '04080201', '04080202', '04080203', '04080204', '04080205', '04080206', '04090001', 
             '04090003', '04090004', '04100001', '04100002', '04100013'
         ]
-        selected_list = huc8_list if LEVEL == "huc8" else station_names
+        
     else:
-        selected_list = ["None"]
+        selected_list = ["HUC4"]
 
+    swatgenx_config = {
 
-    for station_name in selected_list:
-        check_station(station_name)
-        swatgenx_config = {
-            "database_dir": "/data/SWATGenXApp/GenXAppData/",
-            "LEVEL": LEVEL,
-            "landuse_product": "NLCD",
-            "landuse_epoch": "2021",
-            "ls_resolution": "250",
-            "dem_resolution": "30",
-            "station_name": station_name,
-            "MODEL_NAME": MODEL_NAME,
-            "single_model": True,
-            "MAX_AREA": 1500,
-            "MIN_AREA": 500,
-            "GAP_percent": 10,
-        }
+        "database_dir": "/data/SWATGenXApp/GenXAppData/",
+        "LEVEL": LEVEL,
+        "landuse_product": "NLCD",
+        "landuse_epoch": "2021",
+        "ls_resolution": "250",
+        "dem_resolution": "30",
+        "station_name": station_names,
+        "MODEL_NAME": MODEL_NAME,
+        "MAX_AREA": 1500,
+        "MIN_AREA": 500,
+        "GAP_percent": 10,
 
-        #SWATGenXCommand(swatgenx_config)
-        swat_commander = SWATGenXCommand(swatgenx_config)
-        swat_commander.execute()
+    }
+
+    swat_commander = SWATGenXCommand(swatgenx_config)
+    swat_commander.execute()
