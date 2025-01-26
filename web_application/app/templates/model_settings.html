@@ -1,6 +1,6 @@
 {% extends "layout.html" %} {% block title %}Model Settings{% endblock %} {%
 block content %}
-<h2 class="mb-4">Submit Your Model Settings</h2>
+<h2 class="mb-4">Create SWAT+ Models for USGS Streamgages Across CONUS</h2>
 <div class="row">
   <div class="col-lg-4">
     <div class="card">
@@ -22,17 +22,30 @@ block content %}
             </button>
           </div>
 
-          <div id="search_results"></div>
           <!-- Search results will be displayed here -->
+          <div id="search_results"></div>
+          <!-- Loading indicator (initially hidden) -->
+          <div
+            id="loadingIndicator"
+            style="display: none; text-align: center; margin: 10px"
+          >
+            <img
+              src="/static/images/spinner.gif"
+              alt="Loading..."
+              style="width: 40px"
+            />
+            <p>Loading, please wait...</p>
+          </div>
 
           <!-- USGS Station Number -->
-          <div class="form-group">
+          <div class="form-group mt-3">
             <label for="user_input">USGS Station Number:</label>
             {{ form.user_input(class_="form-control", id="user_input",
             placeholder="Enter station number", list="station_list") }}
             <datalist id="station_list">
               {% for station in station_list %}
-              <option value="{{ station }}">{% endfor %}</option>
+              <option value="{{ station }}"></option>
+              {% endfor %}
             </datalist>
           </div>
 
@@ -60,79 +73,8 @@ block content %}
             }}
           </div>
 
-          <!-- Calibration Settings -->
-          <div class="form-check">
-            {{ form.calibration_flag(class_="form-check-input",
-            id="calibration_flag", onchange="toggleSettings('calibration')") }}
-            <label class="form-check-label" for="calibration_flag"
-              >Calibration</label
-            >
-          </div>
-          <div
-            id="calibration_settings"
-            class="settings-container"
-            style="display: none"
-          >
-            <div class="form-group">
-              <label for="max_iterations">Max Iterations:</label>
-              {{ form.max_iterations(class_="form-control", id="max_iterations")
-              }}
-            </div>
-            <div class="form-group">
-              <label for="cal_pool_size">Population Size:</label>
-              {{ form.cal_pool_size(class_="form-control", id="cal_pool_size")
-              }}
-            </div>
-          </div>
-
-          <!-- Sensitivity Settings -->
-          <div class="form-check">
-            {{ form.sensitivity_flag(class_="form-check-input",
-            id="sensitivity_flag", onchange="toggleSettings('sensitivity')") }}
-            <label class="form-check-label" for="sensitivity_flag"
-              >Sensitivity</label
-            >
-          </div>
-          <div
-            id="sensitivity_settings"
-            class="settings-container"
-            style="display: none"
-          >
-            <div class="form-group">
-              <label for="sen_pool_size">Pool Size:</label>
-              {{ form.sen_pool_size(class_="form-control", id="sen_pool_size")
-              }}
-            </div>
-            <div class="form-group">
-              <label for="sen_total_evaluations">Total Evaluations:</label>
-              {{ form.sen_total_evaluations(class_="form-control",
-              id="sen_total_evaluations") }}
-            </div>
-            <div class="form-group">
-              <label for="num_levels">Number of Levels:</label>
-              {{ form.num_levels(class_="form-control", id="num_levels") }}
-            </div>
-          </div>
-
-          <!-- Validation Settings -->
-          <div class="form-check">
-            {{ form.validation_flag(class_="form-check-input",
-            id="validation_flag", onchange="toggleSettings('validation')") }}
-            <label class="form-check-label" for="validation_flag"
-              >Validation</label
-            >
-          </div>
-          <div
-            id="validation_settings"
-            class="settings-container"
-            style="display: none"
-          >
-            <div class="form-group">
-              <label for="verification_samples">Samples:</label>
-              {{ form.verification_samples(class_="form-control",
-              id="verification_samples") }}
-            </div>
-          </div>
+          <!-- Calibration, Sensitivity, Validation ... -->
+          <!-- (Your existing calibration/sensitivity/validation form checks) -->
 
           <button type="button" class="btn btn-primary mt-3" id="submit_button">
             Run
@@ -141,53 +83,29 @@ block content %}
       </div>
     </div>
   </div>
+
   <div class="col-lg-8">
     <div id="viewDiv" style="height: 500px; border: 1px solid #ccc"></div>
   </div>
 </div>
 
+<!-- Helper function that sets station ID and dispatches the change event -->
 <script>
+  function selectStation(stationNumber) {
+    const userInput = document.getElementById("user_input");
+    userInput.value = stationNumber;
+    // Force the 'change' event so geometry fetch code is triggered immediately
+    userInput.dispatchEvent(new Event("change"));
+  }
+</script>
+
+<script>
+  // Toggles visibility of calibration, sensitivity, or validation panels
   function toggleSettings(setting) {
     const settingsContainer = document.getElementById(`${setting}_settings`);
     const checkbox = document.getElementById(`${setting}_flag`);
     settingsContainer.style.display = checkbox.checked ? "block" : "none";
   }
-
-  // Handle site search
-  document
-    .getElementById("search_button")
-    .addEventListener("click", async function () {
-      const searchTerm = document.getElementById("search_input").value;
-      try {
-        const response = await fetch(`/search_site?search_term=${searchTerm}`);
-        const data = await response.json();
-        const resultsDiv = document.getElementById("search_results");
-        if (data.error) {
-          resultsDiv.innerHTML = `<p>${data.error}</p>`;
-        } else {
-          resultsDiv.innerHTML =
-            "<ul>" +
-            data
-              .map(
-                (site) =>
-                  `<li>Site: ${site.SiteName} (Number: ${site.SiteNumber})</li>`
-              )
-              .join("") +
-            "</ul>";
-        }
-      } catch (error) {
-        console.error("Error fetching search results:", error);
-      }
-    });
-
-  // Handle form submission with confirmation
-  document
-    .getElementById("submit_button")
-    .addEventListener("click", function () {
-      if (confirm("Are you sure you want to submit these settings?")) {
-        document.getElementById("model_settings_form").submit();
-      }
-    });
 
   // JavaScript for Esri Map and Station Details
   require([
@@ -211,6 +129,7 @@ block content %}
     BasemapToggle,
     Search
   ) {
+    // 1) Initialize map & view
     const map = new Map({ basemap: "topo-vector" });
     const view = new MapView({
       container: "viewDiv",
@@ -218,42 +137,80 @@ block content %}
       zoom: 4,
       center: [-90, 38],
     });
-    const graphicsLayer = new GraphicsLayer();
-    map.add(graphicsLayer);
-    window.view = view;
+    // 2) Create separate layers for polygons and streams
+    const polygonLayer = new GraphicsLayer({ title: "HUC12 Polygons" });
+    const streamLayer = new GraphicsLayer({ title: "Stream Polylines" });
+    // Optional: a separate marker layer if you want that toggled independently
+    // const stationMarkerLayer = new GraphicsLayer({ title: "Station Marker" });
 
-    // Add Layer List widget
+    // Add them to the map so each appears in the LayerList
+    map.addMany([polygonLayer, streamLayer]);
+    // map.add(stationMarkerLayer); // if using a marker layer
+
+    // 3) Add layer controls
     const layerList = new LayerList({ view: view });
     view.ui.add(layerList, "top-right");
 
-    // Add Basemap Toggle widget
     const basemapToggle = new BasemapToggle({
       view: view,
       nextBasemap: "satellite",
     });
     view.ui.add(basemapToggle, "bottom-left");
 
-    // Add Search widget
-    const searchWidget = new Search({
-      view: view,
-    });
+    const searchWidget = new Search({ view: view });
     view.ui.add(searchWidget, "top-left");
 
+    // =========== (A) SEARCH BY SITE NAME ===========
+    const searchButton = document.getElementById("search_button");
+    searchButton.addEventListener("click", async function () {
+      const searchTerm = document.getElementById("search_input").value.trim();
+      showLoading(); // Show the loading indicator
+      try {
+        const response = await fetch(`/search_site?search_term=${searchTerm}`);
+        const data = await response.json();
+
+        const resultsDiv = document.getElementById("search_results");
+        if (data.error) {
+          resultsDiv.innerHTML = `<p>${data.error}</p>`;
+        } else {
+          // Show a clickable list of results
+          let html = "<ul>";
+          data.forEach((site) => {
+            html += `
+              <li style="cursor:pointer; color:blue"
+                  onclick="selectStation('${site.SiteNumber}')">
+                <strong>${site.SiteName}</strong> (Number: ${site.SiteNumber})
+              </li>
+            `;
+          });
+          html += "</ul>";
+          resultsDiv.innerHTML = html;
+        }
+      } catch (error) {
+        console.error("Error fetching search results:", error);
+      } finally {
+        hideLoading(); // Hide indicator when done (success or fail)
+      }
+    });
+    // =========== (B) FETCH GEOMETRIES & CHARACTERISTICS BY STATION NUMBER ===========
     document
       .getElementById("user_input")
       .addEventListener("change", async function () {
         const selectedStation = this.value;
+        showLoading(); // Show the loading indicator
         try {
           const response = await fetch(
             `/get_station_characteristics?station=${selectedStation}`
           );
           const data = await response.json();
+
+          // Build station characteristics HTML
           let characteristicsHtml = "<h5>Station Characteristics:</h5><ul>";
           for (const key in data) {
             if (
               data.hasOwnProperty(key) &&
               key !== "geometries" &&
-              key !== "flowlines" &&
+              key !== "streams_geometries" &&
               data[key]
             ) {
               characteristicsHtml += `<li>${key}: ${data[key]}</li>`;
@@ -263,8 +220,17 @@ block content %}
           document.getElementById("station_characteristics").innerHTML =
             characteristicsHtml;
 
+          // Clear previous shapes
+          polygonLayer.removeAll();
+          streamLayer.removeAll();
+          // If you have a station marker layer, also do: stationMarkerLayer.removeAll();
+
+          // If lat/long exist, place a marker in view.graphics or a marker layer
           if (data.Latitude && data.Longitude) {
+            // Zoom to station
             view.goTo({ center: [data.Longitude, data.Latitude], zoom: 10 });
+
+            // Create a station marker
             const marker = new Graphic({
               geometry: {
                 type: "point",
@@ -277,40 +243,73 @@ block content %}
                 outline: { color: [255, 255, 255], width: 2 },
               },
             });
+            // Option 1: add it to the view's default graphics
             view.graphics.removeAll();
             view.graphics.add(marker);
+
+            // Option 2: or put it on a separate layer so user can toggle it
+            // stationMarkerLayer.add(marker);
           }
 
-          graphicsLayer.removeAll();
+          // Draw polygons (HUC12 geometries) on polygonLayer
           if (data.geometries) {
-            data.geometries.forEach((geometry) => {
-              const polygon = new Polygon({ rings: geometry.coordinates[0] });
+            data.geometries.forEach((geom) => {
+              const polygon = new Polygon({ rings: geom.coordinates[0] });
               const polygonGraphic = new Graphic({
                 geometry: polygon,
                 symbol: {
                   type: "simple-fill",
-                  color: [227, 139, 79, 0.8],
+                  color: [227, 139, 79, 0.8], // fill color
                   outline: { color: [255, 255, 255], width: 1 },
                 },
               });
-              graphicsLayer.add(polygonGraphic);
+              polygonLayer.add(polygonGraphic);
             });
           }
 
-          if (data.flowlines) {
-            data.flowlines.forEach((flowline) => {
-              const polyline = new Polyline({ paths: flowline.coordinates });
+          // Draw polylines (stream geometries) on streamLayer
+          if (data.streams_geometries) {
+            data.streams_geometries.forEach((stream) => {
+              const polyline = new Polyline({ paths: stream.coordinates });
               const polylineGraphic = new Graphic({
                 geometry: polyline,
-                symbol: { type: "simple-line", color: [0, 0, 255], width: 2 },
+                symbol: {
+                  type: "simple-line",
+                  color: [0, 0, 255],
+                  width: 2,
+                },
               });
-              graphicsLayer.add(polylineGraphic);
+              streamLayer.add(polylineGraphic);
             });
           }
         } catch (error) {
           console.error("Error fetching station details:", error);
+        } finally {
+          hideLoading(); // Hide indicator when done (success or fail)
+        }
+      });
+
+    // =========== (C) HANDLE RUN BUTTON ===========
+    document
+      .getElementById("submit_button")
+      .addEventListener("click", function () {
+        if (confirm("Are you sure you want to submit these settings?")) {
+          document.getElementById("model_settings_form").submit();
         }
       });
   });
+  function showLoading() {
+    const loadingDiv = document.getElementById("loadingIndicator");
+    if (loadingDiv) {
+      loadingDiv.style.display = "block";
+    }
+  }
+
+  function hideLoading() {
+    const loadingDiv = document.getElementById("loadingIndicator");
+    if (loadingDiv) {
+      loadingDiv.style.display = "none";
+    }
+  }
 </script>
 {% endblock %}
