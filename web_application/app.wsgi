@@ -13,9 +13,9 @@ os.environ['FLASK_ENV'] = 'production'
 os.environ['FLASK_APP'] = 'app.py'
 
 # Logging setup
-log_dir = "/data/SWATGenXApp/logs"
+log_dir = "/data/SWATGenXApp/codes/web_application/logs"
 os.makedirs(log_dir, exist_ok=True)
-log_file_path = os.path.join(log_dir, 'myapp.log')
+log_file_path = os.path.join(log_dir, 'ApacheWebAppLogger.log')
 
 logging.basicConfig(
     filename=log_file_path,

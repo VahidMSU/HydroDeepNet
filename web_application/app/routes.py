@@ -5,7 +5,7 @@ from app.forms import RegistrationForm, LoginForm, ContactForm, ModelSettingsFor
 from app.extensions import db
 from functools import partial
 from multiprocessing import Process
-from app.utils import find_station, get_huc12_geometries
+from app.utils import find_station, get_huc12_geometries, get_huc12_streams_geometries
 from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
 import os
 import json
@@ -205,7 +205,15 @@ class AppManager:
 				huc12_list = characteristics.get('HUC12 ids of the watershed', [])
 				huc12_list = [str(x.split("'")[1]) for x in huc12_list[1:-1].split(',')]
 				geometries = get_huc12_geometries(huc12_list)
+				streams_geometries = get_huc12_streams_geometries(huc12_list)
+				### check if the geometries are empty
+				if not geometries:
+					self.logger.error(f"No geometries found for HUC12s: {huc12_list}")
+				if not streams_geometries:
+					self.logger.error(f"No streams geometries found for HUC12s: {huc12_list}")
+					
 				characteristics['geometries'] = geometries
+				characteristics['streams_geometries'] = streams_geometries
 				return jsonify(characteristics)
 			else:
 				return jsonify({"error": "Station not found"}), 404

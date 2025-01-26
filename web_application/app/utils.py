@@ -326,8 +326,7 @@ def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_fl
     return f"{output_path}.zip"
 
 def get_huc12_geometries(list_of_huc12s):
-    #logging.info(f"Getting geometries for HUC12s: {list_of_huc12s}")
-    ### list of huc12 are like:  ['020200030604', '020200030603', '020200030601', '020200030602', '020200030605']
+
     VPUID = list_of_huc12s[0][:4]
     print(VPUID)
     # Read the shapefile
@@ -340,6 +339,20 @@ def get_huc12_geometries(list_of_huc12s):
     gdf = gdf[gdf['huc12'].isin(list_of_huc12s)]
     return gdf['geometry'].apply(mapping).tolist()
 
+def get_huc12_streams_geometries(list_of_huc12s):
+
+    VPUID = list_of_huc12s[0][:4]
+    print(VPUID)
+    # Read the shapefile
+    path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl"
+    
+    gdf = gpd.GeoDataFrame(pd.read_pickle(path)).to_crs("EPSG:4326")
+    ### make sure list_of_huc12s and huc12 column in the geodataframe are in 12 digit int
+    gdf['huc12'] = gdf['huc12'].astype(int)
+    list_of_huc12s = [int(x) for x in list_of_huc12s]
+    
+    gdf = gdf[gdf['huc12'].isin(list_of_huc12s)]
+    return gdf['geometry'].apply(mapping).tolist()
 
 def find_station(search_term='metal'):
 
