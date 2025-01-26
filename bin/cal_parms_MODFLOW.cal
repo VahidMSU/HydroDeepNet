@@ -1,0 +1,26 @@
+###cal_parms.cal##Avail op: replace, multiply, add, percentage
+name                   file_name     min  max    operation
+hk_1_zone_1                modflow   -0.1  10   multiply
+hk_1_zone_2                modflow   -0.1   10   multiply
+hk_1_zone_3                modflow   -0.1   10   multiply
+hk_2_zone_1                modflow   -0.1   10   multiply
+hk_2_zone_2                modflow   -0.1   10   multiply
+hk_2_zone_3                modflow   -0.1   10   multiply
+vk_1_zone_1                modflow   -0.1   0.1   multiply 
+vk_1_zone_2                modflow   -0.1   0.1   multiply  
+vk_1_zone_3                modflow   -0.1   0.1   multiply  
+vk_2_zone_1                modflow   -0.1   0.1   multiply
+vk_2_zone_2                modflow   -0.1   0.1   multiply
+vk_2_zone_3                modflow   -0.1   0.1   multiply
+recharge                   modflow   0.50   1.5   multiply
+thickness_1_zone_1	       modflow   -0.1   0.9   multiply
+thickness_1_zone_2	       modflow   -0.1   0.9   multiply
+thickness_1_zone_3	       modflow   -0.1   0.9   multiply
+thickness_2_zone_1	       modflow   -0.1   0.9   multiply
+thickness_2_zone_2	       modflow   -0.1   0.9   multiply
+thickness_2_zone_3	       modflow   -0.1   0.9   multiply
+initial_head_zone_1	       modflow   -0.1   0.1   multiply
+initial_head_zone_2	       modflow   -0.1   0.1   multiply
+initial_head_zone_3	       modflow   -0.1   0.1   multiply
+drn_cond				   modflow     -0.5   1   multiply
+rv_cond				       modflow    -0.5   1   multiply

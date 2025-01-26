@@ -576,10 +576,10 @@ class NHD_SWATPlus_Extractor:
 
 
         ### CHECKING ALL watersheds and streams being each other
-        if watersheds [~watersheds.PolygonId.isin(streams.WSNO)].empty: self.logger.error('all watersheds have a stream')
-        if subbasins [~subbasins.Subbasin.isin(streams.BasinNo)].empty: self.logger.error('all subbasinss have a stream')
-        if streams [~streams.WSNO.isin(watersheds.PolygonId)].empty: self.logger.error('all streams have a watershed')
-        if streams [~streams.BasinNo.isin(subbasins.Subbasin)].empty: self.logger.error('all streams have a basin')
+        if watersheds [~watersheds.PolygonId.isin(streams.WSNO)].empty: self.logger.info('all watersheds have a stream')
+        if subbasins [~subbasins.Subbasin.isin(streams.BasinNo)].empty: self.logger.info('all subbasinss have a stream')
+        if streams [~streams.WSNO.isin(watersheds.PolygonId)].empty: self.logger.info('all streams have a watershed')
+        if streams [~streams.BasinNo.isin(subbasins.Subbasin)].empty: self.logger.info('all streams have a basin')
         lakes_with_in_but_no_out = streams[~streams.LakeId.isin(streams.LakeOut)]
         if len(lakes_with_in_but_no_out)>0:
             self.logger.error("THERE ARE LAKES WITH NO OUTLET")

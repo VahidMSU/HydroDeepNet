@@ -11,7 +11,8 @@ import os
 import json
 from app.utils import LoggerSetup, single_model_creation, hydrogeo_dataset_dict, read_h5_file
 import numpy as np
-
+from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+import pandas as pd
 class AppManager:
 	def __init__(self, app):
 		self.app = app
@@ -180,8 +181,9 @@ class AppManager:
 				self.logger.info("Model creation process started")
 
 				return redirect(url_for('model_confirmation'))
-
-			station_data = integrate_streamflow_data()
+			
+			#station_data = integrate_streamflow_data()
+			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
 			station_list = station_data.SiteNumber.unique()
 			return render_template('model_settings.html', form=form, output=output, station_list=station_list)
 
@@ -189,9 +191,10 @@ class AppManager:
 		def get_station_characteristics():
 			self.logger.info("Get Station Characteristics route called")
 			station_no = request.args.get('station')
-			station_data = integrate_streamflow_data()
+			#station_data = integrate_streamflow_data()
+			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
 			self.logger.info(f"Station number: {station_no}")
-
+			
 			station_row = station_data[station_data.SiteNumber == station_no]
 			characteristics_list = station_row.to_dict(orient='records')
 			characteristics = characteristics_list[0] if characteristics_list else {}

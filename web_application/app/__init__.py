@@ -7,6 +7,7 @@ import sys
 from app.utils import LoggerSetup
 sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX')
 
+
 def create_app():
     logger = LoggerSetup("/data/SWATGenXApp/codes/web_application/logs", rewrite=True)
     logger = logger.setup_logger("app")

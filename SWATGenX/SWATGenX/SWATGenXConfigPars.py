@@ -18,11 +18,11 @@ class SWATGenXPaths:
     NHDPlus_path: str = f"{base_path}NHDPlusData/"
     streamflow_path: str = f"{base_path}USGS/streamflow_stations/"
     database_dir: str = base_path
-    
+    camel_hydro_path: str = "/data/camel/camels_hydro.txt"
     # Output Paths
     swatgenx_outlet_path: str = f"{base_path}SWATplus_by_VPUID/"
     extracted_nhd_swatplus_path: str = f"{base_path}NHDPlusData/SWATPlus_NHDPlus/"
-    report_path: str = codes_path
+    report_path: str = f"{codes_path}/logs/"
     
     # Specific Data Files
     critical_error_file_path: str = f"{codes_path}critical_errors.txt"
@@ -43,6 +43,7 @@ class SWATGenXPaths:
     QSWATPlus_env_path: str = '/home/rafieiva/.local/share/QGIS/QGIS3/profiles/default/python/plugins/QSWATPlusLinux3_64/'
     runQSWATPlus_path: str = "/data/SWATGenXApp/codes/SWATGenX/runQSWATPlus.sh"
     swat_exe: str = "/data/SWATGenXApp/codes/bin/swatplus"
+    bin_path: str = "/data/SWATGenXApp/codes/bin/"
     
     # PRISM Mesh Paths
     PRISM_mesh_path: str = f"{base_path}PRISM/prism_4km_mesh/prism_4km_mesh.shp"
