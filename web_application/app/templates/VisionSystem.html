@@ -26,38 +26,32 @@ endblock %} {% block content %}
           <img
             src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_1_0.gif') }}"
             alt="Batch 1 Predictions vs Ground Truth"
-            class="img-fluid"
-            style="max-width: 200px; height: auto"
+            class="img-fluid small-gif"
           />
           <img
             src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_2_0.gif') }}"
             alt="Batch 2 Predictions vs Ground Truth"
-            class="img-fluid"
-            style="max-width: 200px; height: auto"
+            class="img-fluid small-gif"
           />
           <img
             src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_3_0.gif') }}"
             alt="Batch 3 Predictions vs Ground Truth"
-            class="img-fluid"
-            style="max-width: 200px; height: auto"
+            class="img-fluid small-gif"
           />
           <img
             src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_4_0.gif') }}"
             alt="Batch 4 Predictions vs Ground Truth"
-            class="img-fluid"
-            style="max-width: 200px; height: auto"
+            class="img-fluid small-gif"
           />
           <img
             src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_5_0.gif') }}"
             alt="Batch 5 Predictions vs Ground Truth"
-            class="img-fluid"
-            style="max-width: 200px; height: auto"
+            class="img-fluid small-gif"
           />
           <img
             src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_6_0.gif') }}"
             alt="Batch 6 Predictions vs Ground Truth"
-            class="img-fluid"
-            style="max-width: 200px; height: auto"
+            class="img-fluid small-gif"
           />
         </div>
         <h5 class="mt-4">Cell-wise NSE Performance</h5>
@@ -232,6 +226,12 @@ endblock %} {% block content %}
     border-radius: 10px;
     max-height: 500px;
     object-fit: contain;
+  }
+
+  /* Increase size of small prediction vs. ground-truth GIFs */
+  .small-gif {
+    max-width: 300px;
+    height: auto;
   }
 </style>
 {% endblock %}
