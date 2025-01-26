@@ -3,14 +3,15 @@ endblock %} {% block content %}
 <div class="container mt-4">
   <h1 class="mb-4 text-center">GeoCNN: Vision System Software</h1>
 
-  <!-- Introduction Section -->
+  <!-- Introduction & Showcasing Results -->
   <div class="card mb-4">
     <div class="card-body">
       <p class="lead">
-        The GeoCNN Vision System is a comprehensive deep learning framework for
-        hydrological modeling and prediction. It leverages advanced
-        architectures like CNN-Transformers and fully Transformer-based models
-        to process large-scale spatiotemporal datasets.
+        GeoCNN is a streamlined deep learning framework designed for
+        hydrological modeling. It processes large-scale spatiotemporal
+        data—integrating remote sensing, climate, and soil/land cover inputs—to
+        predict monthly water balance components (e.g., ET) across the Michigan
+        Lower Peninsula.
       </p>
       <div class="text-center mt-4">
         <img
@@ -58,135 +59,179 @@ endblock %} {% block content %}
             class="img-fluid"
             style="max-width: 200px; height: auto"
           />
-          </div>
+        </div>
         <h5 class="mt-4">Cell-wise NSE Performance</h5>
         <img
           src="{{ url_for('static', filename='images/cell_wise_nse_performance.png') }}"
           alt="Cell-wise NSE Performance"
           class="img-fluid"
         />
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- Key Components -->
-  <h2 class="mt-4">Key Components</h2>
-
-  <!-- Data Pipeline -->
+  <!-- Key Components & Overview -->
+  <h2 class="mt-4">Overview of GeoCNN</h2>
   <div class="card mb-4">
     <div class="card-body">
-      <h3 class="card-title">1. Data Pipeline</h3>
-      <p>
-        GeoCNN has a fully integrated data pipeline that efficiently handles
-        large scale hydrological datasets, including a dataset that contains
-        monthly water balance components from 58 SWAT+ models across Michigan,
-        as well as the HydroGeoDataset, which encompasses various spatiotemporal
-        hydrological, geospatial, and groundwater parameters covering the
-        Michigan LP. Its key features include:
-      </p>
-
+      <p>GeoCNN efficiently handles:</p>
       <ul>
         <li>
-          <b>Processing, Loading, Reloading, and Deloading:</b> Handles
-          large-scale data with minimal latency.
+          <strong>Large Datasets:</strong> Fast loading/reloading of multi-year
+          monthly data.
         </li>
         <li>
-          <b>Queue Management:</b> Ensures smooth and continuous data flow
-          during training.
+          <strong>Multi-Scale Inputs:</strong> Incorporates MODIS, PRISM, soil,
+          and land cover info.
+        </li>
+        <li>
+          <strong>Powerful Architectures:</strong> CNN-Transformers and fully
+          Transformer-based models.
+        </li>
+        <li>
+          <strong>Spatial & Temporal Flexibility:</strong> Custom skip
+          connections, attention, and advanced up/down-sampling.
         </li>
       </ul>
+      <p>
+        Target variables (e.g., ET) are observed at 250m resolution across
+        Michigan. Data gaps are filled using water masks, mean interpolation,
+        and global scaling from 0 to 1. Invalid areas (like Lake Michigan) are
+        marked to help the model distinguish land vs. water.
+      </p>
+    </div>
+  </div>
+
+  <!-- Data Pipeline -->
+  <h2 class="mt-4">Data Pipeline</h2>
+  <div class="card mb-4">
+    <div class="card-body">
+      <p>
+        GeoCNN’s data pipeline handles monthly raster stacks spanning 2001–2021.
+        Temporal aggregation (summing precipitation, averaging temperature)
+        ensures consistency. A 70/20/10 split (train/validate/test) provides
+        robust coverage for model development.
+      </p>
+      <p>
+        Dynamic variables (e.g., NDVI, EVI, precipitation, temperature) and
+        static features (e.g., soil/land cover) are ingested in batches via
+        efficient queue management, minimizing latency during training.
+      </p>
     </div>
   </div>
 
   <!-- Deep Learning Models -->
+  <h2 class="mt-4">Deep Learning Models</h2>
   <div class="card mb-4">
     <div class="card-body">
-      <h3 class="card-title">2. Deep Learning Models</h3>
-      <p>
-        GeoCNN offers state-of-the-art architectures tailored for hydrological
-        modeling, including:
-      </p>
       <ul>
         <li>
-          <b>Inception-LSTM:</b> Combines spatial feature extraction with
-          temporal modeling for dynamic hydrological predictions.
+          <strong>Inception-LSTM:</strong> Combines spatial feature extraction
+          with LSTM-based temporal modeling.
         </li>
         <li>
-          <b>CNN-Transformers:</b>
-          <ul>
-            <li>Handles separate static and dynamic data streams.</li>
-            <li>Integrates static and dynamic data for robust predictions.</li>
-            <li>Enhanced with layer normalization across blocks.</li>
-          </ul>
+          <strong>CNN-Transformers:</strong> Uses a CNN down-sampling path and a
+          Transformer encoder for time steps.
         </li>
         <li>
-          <b>Fully Transformer-Based Models:</b> Two highly optimized versions
-          designed for spatiotemporal hydrological predictions.
+          <strong>Fully Transformer-Based:</strong> Omits convolutional
+          operations entirely, focusing on spatiotemporal attention.
         </li>
       </ul>
+      <p>
+        Multiple iterations (V1–V8) refined hyperparameters (positional
+        encodings, attention mechanisms, learning rates, and more). Removing
+        batch normalization from most layers helped stabilize training, except
+        in squeeze-and-excitation blocks.
+      </p>
     </div>
   </div>
 
-  <!-- Loss Functions -->
+  <!-- CNN-Transformer Architecture -->
+  <h2 class="mt-4">CNN-Transformer Architecture</h2>
   <div class="card mb-4">
     <div class="card-body">
-      <h3 class="card-title">3. Specialized Loss Function</h3>
       <p>
-        A custom loss function evaluates both spatial and temporal components of
-        predictions:
+        Our final CNN-Transformer processes inputs of shape [B, T, C, H,
+        W]—batch, time steps, channels, height, width. Key elements include:
       </p>
       <ul>
         <li>
-          <b>Spatial Components:</b>
-          <ul>
-            <li>Boundary Loss</li>
-            <li>Overall Loss</li>
-            <li>Torrential Loss</li>
-            <li>No-Value Loss</li>
-            <li>Outlier Loss</li>
-          </ul>
+          <strong>Down-Sampling Pathway:</strong> Deformable convolutions, SE
+          blocks, coordinate attention for hierarchical spatial features.
         </li>
         <li>
-          <b>Temporal Components:</b>
-          <ul>
-            <li>Seasonal Losses: Winter, Fall, Spring, Summer</li>
-          </ul>
+          <strong>Transformer Encoder:</strong> Fourier-based positional
+          encoding and multi-head attention for temporal modeling.
+        </li>
+        <li>
+          <strong>Up-Sampling Pathway:</strong> Sub-pixel convolution and skip
+          connections to restore spatial resolution.
         </li>
       </ul>
+      <div class="text-center mt-4">
+        <h5>CNN-Transformer Architecture Flow</h5>
+        <img
+          src="{{ url_for('static', filename='images/CNN-Transformer.png') }}"
+          alt="CNN-Transformer Architecture"
+          class="img-fluid"
+        />
+      </div>
     </div>
   </div>
 
-  <style>
-    .container {
-      max-width: 1200px;
-    }
-
-    .card {
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-body {
-      padding: 2rem;
-    }
-
-    .card-title {
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
-    }
-
-    ul {
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-    }
-
-    .img-fluid {
-      border-radius: 10px;
-      max-height: 500px;
-      object-fit: contain;
-    }
-  </style>
-  {% endblock %}
+  <!-- Specialized Loss Function -->
+  <h2 class="mt-4">Specialized Loss Function</h2>
+  <div class="card mb-4">
+    <div class="card-body">
+      <p>GeoCNN uses a custom loss that evaluates:</p>
+      <ul>
+        <li>
+          <strong>Spatial Dimensions:</strong> Penalizes boundary errors,
+          outliers, and no-value regions.
+        </li>
+        <li>
+          <strong>Temporal Dimensions:</strong> Seasonal performance in winter,
+          spring, summer, and fall.
+        </li>
+      </ul>
+      <p>
+        This ensures that the model captures both local spatial structures and
+        broader seasonal trends.
+      </p>
+    </div>
+  </div>
 </div>
+
+<style>
+  .container {
+    max-width: 1200px;
+  }
+
+  .card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-body {
+    padding: 2rem;
+  }
+
+  .card-title {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .img-fluid {
+    border-radius: 10px;
+    max-height: 500px;
+    object-fit: contain;
+  }
+</style>
+{% endblock %}
