@@ -5,10 +5,11 @@ import pandas as pd
 VPUID = "0407"
 print(VPUID)
 # Read the shapefile
-path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl"
+path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/NHDWaterbody.pkl"
+path2 = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/NHDArea.pkl"
 
 gdf = gpd.GeoDataFrame(pd.read_pickle(path)).to_crs("EPSG:4326")
 import matplotlib.pyplot as plt 
-
+print(f"columns: {gdf.columns}")
 gdf.plot()
-plt.savefig(f"streams.png")
+plt.savefig(f"lakes.png")

@@ -351,7 +351,26 @@ def get_huc12_streams_geometries(list_of_huc12s):
     gdf['huc12'] = gdf['huc12'].astype(int)
     list_of_huc12s = [int(x) for x in list_of_huc12s]
     
+    ### type as str
+    
+
     gdf = gdf[gdf['huc12'].isin(list_of_huc12s)]
+    WBArea_Permanent_Identifier = gdf['WBArea_Permanent_Identifier'].tolist() 
+    
+    return gdf['geometry'].apply(mapping).tolist(), WBArea_Permanent_Identifier
+
+
+
+def get_huc12_lakes_geometries(list_of_huc12s, WBArea_Permanent_Identifier):
+    VPUID = list_of_huc12s[0][:4]
+    path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/NHDWaterbody.pkl"
+    gdf = gpd.GeoDataFrame(pd.read_pickle(path)).to_crs("EPSG:4326")
+
+    # Rename column to match your usage
+    gdf = gdf.rename(columns={'Permanent_Identifier': 'WBArea_Permanent_Identifier'})
+    gdf['WBArea_Permanent_Identifier'] = gdf['WBArea_Permanent_Identifier'].astype(str)
+
+    gdf = gdf[gdf.WBArea_Permanent_Identifier.isin(WBArea_Permanent_Identifier)] 
     return gdf['geometry'].apply(mapping).tolist()
 
 def find_station(search_term='metal'):
