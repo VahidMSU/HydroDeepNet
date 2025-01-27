@@ -5,7 +5,7 @@ from app.forms import RegistrationForm, LoginForm, ContactForm, ModelSettingsFor
 from app.extensions import db
 from functools import partial
 from multiprocessing import Process
-from app.utils import find_station, get_huc12_geometries, get_huc12_streams_geometries
+from app.utils import find_station, get_huc12_geometries, get_huc12_streams_geometries, get_huc12_lakes_geometries
 from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
 import os
 import json
@@ -13,6 +13,24 @@ from app.utils import LoggerSetup, single_model_creation, hydrogeo_dataset_dict,
 import numpy as np
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import pandas as pd
+def check_existing_models(station_name):
+	swatgenx_output = SWATGenXPaths.swatgenx_outlet_path
+	VPUIDs = os.listdir(swatgenx_output)
+	existing_models = []
+	for VPUID in VPUIDs:
+		# now find model inside huc12 directory
+		huc12_path = os.path.join(swatgenx_output, VPUID, "huc12")
+		models = os.listdir(huc12_path)
+		existing_models.extend(os.path.join(huc12_path, model) for model in models)
+
+	existance_flag = False
+	for model in existing_models:
+		if station_name in model:
+			print(f"Model found for station {station_name} at {model}")
+			existance_flag = True
+			break
+
+	return existance_flag
 
 class AppManager:
 	def __init__(self, app):
@@ -167,6 +185,7 @@ class AppManager:
 			output = None
 			if form.validate_on_submit():
 				site_no = form.user_input.data
+				
 				try:
 					self.logger.info("Form validated successfully")
 					ls_resolution = min(int(form.ls_resolution.data), 500)
@@ -184,6 +203,7 @@ class AppManager:
 					self.logger.error("Invalid input received for model settings")
 
 				self.logger.info(f"Model settings received: {site_no}, {ls_resolution}, {dem_resolution}, {calibration_flag}, {validation_flag}, {sensitivity_flag}, {cal_pool_size}, {sen_pool_size}, {sen_total_evaluations}, {num_levels}, {max_cal_iterations}, {verification_samples}")	
+				
 				wrapped_single_model_creation = partial(single_model_creation, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
 				process = Process(target=wrapped_single_model_creation)
 				process.start()
@@ -208,21 +228,30 @@ class AppManager:
 			characteristics_list = station_row.to_dict(orient='records')
 			characteristics = characteristics_list[0] if characteristics_list else {}
 			self.logger.info(f"Station {station_no} found")
+			existance_flag = check_existing_models(station_no)
+			characteristics['model_exists'] = str(existance_flag).capitalize()
+			self.logger.info(f"Existance flag: {existance_flag}")
 			self.logger.info(f"characteristics: {characteristics}")
 
 			if characteristics:
 				huc12_list = characteristics.get('HUC12 ids of the watershed', [])
 				huc12_list = [str(x.split("'")[1]) for x in huc12_list[1:-1].split(',')]
 				geometries = get_huc12_geometries(huc12_list)
-				streams_geometries = get_huc12_streams_geometries(huc12_list)
+				streams_geometries, lake_identifier = get_huc12_streams_geometries(huc12_list)
+				lakes_geometries = get_huc12_lakes_geometries(huc12_list, lake_identifier)
 				### check if the geometries are empty
 				if not geometries:
 					self.logger.error(f"No geometries found for HUC12s: {huc12_list}")
 				if not streams_geometries:
 					self.logger.error(f"No streams geometries found for HUC12s: {huc12_list}")
 
+				if not lakes_geometries:
+					self.logger.error(f"No lakes geometries found for HUC12s: {huc12_list}")
+	
+
 				characteristics['geometries'] = geometries
 				characteristics['streams_geometries'] = streams_geometries
+				characteristics['lakes_geometries'] = lakes_geometries
 				return jsonify(characteristics)
 			else:
 				return jsonify({"error": "Station not found"}), 404
