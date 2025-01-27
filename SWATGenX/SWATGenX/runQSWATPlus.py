@@ -22,7 +22,8 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME):
     
 
     ### make sure the chmod is 777
-    os.chmod(runQSWATPlus_path_new, 0o777)
+    os.chmod(runQSWATPlus_path_new, 0o775)
+    #os.chmod("/data/SWATGenXApp/script.sh", 0o775)
     ## now run the batch file
     subprocess.run(runQSWATPlus_path_new)
     # now remove the batch file
