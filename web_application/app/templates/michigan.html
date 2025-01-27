@@ -1,129 +1,175 @@
-{% extends "layout.html" %} {% block title %}Model Settings{% endblock %} {%
-block content %}
+{% extends "layout.html" %} {% block title %}Michigan LP Hydrologic Modeling{%
+endblock %} {% block content %}
+
 <style>
-  .image-container {
+  /* Base container styles */
+  .container {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px auto;
+    max-width: 1200px;
+    padding: 20px;
+  }
+
+  /* Header title styles */
+  .header-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  /* Grid container styles */
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Image card styles */
+  .image-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: #fff;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .image-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Image styles */
+  .image-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .image-card h4 {
+    margin: 15px 10px;
+    font-size: 1.2rem;
+    color: #555;
+  }
+
+  /* Modal styles */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    align-items: center;
     justify-content: center;
   }
 
-  .image-item {
-    margin: 10px;
-    border: 1px solid #ccc;
-    padding: 10px;
+  .modal img {
+    max-width: 90%;
+    max-height: 90%;
     border-radius: 10px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
   }
 
-  .image-item img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-  }
-
-  .image-item h4 {
-    text-align: center;
-    margin-top: 10px;
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
   }
 </style>
 
 <div class="container">
-  <h2 class="mb-4">
-    Michigan LP Hydrological Modeling Coverage and Performance
+  <h2 class="header-title">
+    Michigan LP Hydrologic Modeling Coverage and Performance
   </h2>
 
-  <!-- Organized Image Display -->
-  <div class="image-container">
-    <!-- 1. Model Boundaries -->
-    <div class="image-item">
+  <div class="image-grid">
+    {% for image in [ { "src": "images/models_boundary_huc12_huc8.jpeg", "alt":
+    "Model Boundaries for HUC12 and HUC8 Models", "title": "Boundaries of the
+    Established Hydrological Models" }, { "src":
+    "images/simple_swat_example.jpeg", "alt": "Simple SWAT+ Model Example",
+    "title": "Examples of SWAT+ Models" }, { "src":
+    "images/complex_swat_example.jpeg", "alt": "Complex SWAT+ Model Example",
+    "title": "Complex SWAT+ Model Example" }, { "src":
+    "images/SWATplus_hrus_area.jpeg", "alt": "SWATplus HRUs Area", "title":
+    "Distribution of Hydrologic Response Units (HRUs)" }, { "src":
+    "images/Daily_all_stations_with_distribution.png", "alt": "Daily SWAT gwflow
+    MODEL Performance", "title": "Daily SWAT+ Models Performance" }, { "src":
+    "images/Monthly_all_stations_with_distribution.png", "alt": "Monthly SWAT
+    MODEL Performance", "title": "Monthly SWAT+ Models Performance" }, { "src":
+    "images/MODFLOW_model_input_example.jpeg", "alt": "MODFLOW Model Example",
+    "title": "MODFLOW Model Example" }, { "src": "images/EBK_metrics.jpeg",
+    "alt": "MODFLOW Model Performances", "title": "Distribution of MODFLOW Model
+    Performances" }, { "src": "images/average_hours_vs_HRU_n_rivers.png", "alt":
+    "Simulation Time vs HRU and Rivers", "title": "Simulation Time vs HRU and
+    Rivers" } ] %}
+    <div class="image-card">
       <img
-        src="{{ url_for('static', filename='images/models_boundary_huc12_huc8.jpeg') }}"
-        alt="Model Boundaries for HUC12 and HUC8 Models"
+        src="{{ url_for('static', filename=image.src) }}"
+        alt="{{ image.alt }}"
+        onclick="openModal(this)"
+        data-index="{{ loop.index0 }}"
       />
-      <h4>Boundaries of the Established Hydrological Models</h4>
+      <h4>{{ image.title }}</h4>
     </div>
-    <!-- 2. Three examples of SWAT+ models -->
-    <div class="image-item">
-      <img
-        src="{{ url_for('static', filename='images/presentation.jpeg') }}"
-        alt="Three SWAT+ Models"
-      />
-      <img
-        src="{{ url_for('static', filename='images/presentation2.jpeg') }}"
-        alt="Three SWAT+ Models"
-      />
-      <img
-        src="{{ url_for('static', filename='images/presentation3.jpeg') }}"
-        alt="Three SWAT+ Models"
-      />
-      <h4>Three Examples of SWAT+ Models</h4>
-    </div>
-
-    <!-- 2. HRUs Distribution -->
-    <div class="image-item">
-      <img
-        src="{{ url_for('static', filename='images/SWATplus_hrus_area.jpeg') }}"
-        alt="SWATplus HRUs Area"
-      />
-      <h4>
-        Distribution of Hydrologic Response Units (HRUs) in Michigan LP
-        SWAT+gwflow Models
-      </h4>
-    </div>
-
-    <!-- 3. Land Use Distribution -->
-    <div class="image-item">
-      <img
-        src="{{ url_for('static', filename='images/landuse_models_distribution.jpeg') }}"
-        alt="Land Use Models Distribution"
-      />
-      <h4>Distribution of Major Land Use in SWAT+gwflow Models</h4>
-    </div>
-
-    <!-- 4. Daily Performance -->
-    <div class="image-item">
-      <img
-        src="{{ url_for('static', filename='images/Daily_all_stations_with_distribution.png') }}"
-        alt="SWAT gwflow MODEL Performance"
-      />
-      <h4>Daily SWAT+gwflow Models Performance</h4>
-    </div>
-
-    <!-- 5. Monthly Performance -->
-    <div class="image-item">
-      <img
-        src="{{ url_for('static', filename='images/Monthly_all_stations_with_distribution.png') }}"
-        alt="SWAT MODEL Performance"
-      />
-      <h4>Monthly SWAT+gwflow Models Performance</h4>
-    </div>
-
-    <!-- 6 MODFLOW model example -->
-    <div class="image-item">
-      <img
-        src="{{ url_for('static', filename='images/MODFLOW_model_input_example.jpeg') }}"
-        alt="MODFLOW model example"
-      />
-      <h4>MODFLOW Model Example</h4>
-      <!-- 7. MODFLOW Performance -->
-      <div class="image-item">
-        <img
-          src="{{ url_for('static', filename='images/EBK_metrics.jpeg') }}"
-          alt="MODFLOW model performances"
-        />
-        <h4>Distribution of MODFLOW Model Performances</h4>
-      </div>
-
-      <!-- 8. Simulation Time -->
-      <div class="image-item">
-        <img
-          src="{{ url_for('static', filename='images/average_hours_vs_HRU_n_rivers.png') }}"
-          alt="Simulation time vs HRU and rivers"
-        />
-        <h4>Simulation Time vs. HRU and Rivers</h4>
-      </div>
-    </div>
+    {% endfor %}
   </div>
-  {% endblock %}
 </div>
+
+<!-- Modal -->
+<div class="modal" id="imageModal">
+  <span class="modal-close" onclick="closeModal()">&times;</span>
+  <img id="modalImage" src="" alt="Large view" />
+</div>
+
+<script>
+  const images = Array.from(document.querySelectorAll(".image-card img"));
+  let currentIndex = 0;
+
+  function openModal(image) {
+    const modal = document.getElementById("imageModal");
+    const modalImage = document.getElementById("modalImage");
+
+    currentIndex = parseInt(image.getAttribute("data-index"), 10);
+    modalImage.src = image.src;
+    modal.style.display = "flex";
+
+    // Add keydown listener
+    document.addEventListener("keydown", handleKeyDown);
+  }
+
+  function closeModal() {
+    const modal = document.getElementById("imageModal");
+    modal.style.display = "none";
+
+    // Remove keydown listener
+    document.removeEventListener("keydown", handleKeyDown);
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "ArrowRight") {
+      currentIndex = (currentIndex + 1) % images.length; // Wrap to start
+    } else if (event.key === "ArrowLeft") {
+      currentIndex = (currentIndex - 1 + images.length) % images.length; // Wrap to end
+    } else if (event.key === "Escape") {
+      closeModal();
+      return;
+    }
+    // Update modal image
+    const modalImage = document.getElementById("modalImage");
+    modalImage.src = images[currentIndex].src;
+  }
+</script>
+
+{% endblock %}

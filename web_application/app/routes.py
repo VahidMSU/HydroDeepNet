@@ -248,6 +248,10 @@ class AppManager:
 				if not lakes_geometries:
 					self.logger.error(f"No lakes geometries found for HUC12s: {huc12_list}")
 	
+				# Remove unnecessary keys
+				characteristics.pop('HUC12 ids of the watershed')
+				## add 
+				characteristics['Num HUC12 subbasins'] = len(huc12_list)
 
 				characteristics['geometries'] = geometries
 				characteristics['streams_geometries'] = streams_geometries
