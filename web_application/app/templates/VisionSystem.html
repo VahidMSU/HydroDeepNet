@@ -1,7 +1,75 @@
 {% extends "layout.html" %} {% block title %}GeoCNN: Vision System Software{%
 endblock %} {% block content %}
+<style>
+  /* Main Layout Styling */
+  .row {
+    display: flex;
+    flex-wrap: nowrap; /* Ensure both columns are side-by-side */
+    gap: 20px;
+    align-items: stretch;
+    height: calc(
+      100vh - 50px
+    ); /* Adjust for full-page height excluding header */
+  }
+
+  .col-half {
+    flex: 1; /* Take equal width for both columns */
+    min-width: 300px; /* Ensure it doesn't shrink too small */
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+  }
+
+  /* Form Container Styling */
+  .form-container {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: #ffffff;
+    overflow-y: auto; /* Allow scrolling if form content is long */
+  }
+
+  .form-container h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .form-control {
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 1rem;
+  }
+
+  button {
+    border-radius: 5px;
+  }
+  /* Map Container Styling */
+  #viewDiv {
+    height: 700px !important; /* Set the desired height */
+    width: 500%; /* Ensure width stays responsive */
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    #viewDiv {
+      height: 400px; /* Slightly smaller height for smaller screens */
+    }
+  }
+</style>
+
 <div class="container mt-4">
-  <h1 class="mb-4 text-center">GeoCNN: Vision System Software</h1>
+  <h1 class="mb-4 text-center">Vision System Deep Learning</h1>
 
   <!-- Introduction & Showcasing Results -->
   <div class="card mb-4">
@@ -234,4 +302,38 @@ endblock %} {% block content %}
     height: auto;
   }
 </style>
+
+<script>
+  const images = Array.from(
+    document.querySelectorAll("img[onclick='openModal(this)']")
+  );
+  const modal = document.getElementById("imageModal");
+  const modalImage = document.getElementById("modalImage");
+  let currentIndex = 0;
+
+  function openModal(image) {
+    currentIndex = images.indexOf(image);
+    modalImage.src = image.src;
+    modal.style.display = "flex";
+    document.addEventListener("keydown", handleKeyDown);
+  }
+
+  function closeModal() {
+    modal.style.display = "none";
+    document.removeEventListener("keydown", handleKeyDown);
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "ArrowRight") {
+      currentIndex = (currentIndex + 1) % images.length;
+    } else if (event.key === "ArrowLeft") {
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+    } else if (event.key === "Escape") {
+      closeModal();
+      return;
+    }
+    modalImage.src = images[currentIndex].src;
+  }
+</script>
+
 {% endblock %}
