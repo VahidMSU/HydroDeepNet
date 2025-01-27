@@ -41,18 +41,18 @@ class AppManager:
 
 	def init_routes(self):
 		@self.app.route('/')
-		#@login_required
+		@login_required
 		def index():
 			self.logger.info("Index route called. Redirecting to /home.")	
 			return redirect(url_for('home'))
 
 		@self.app.route('/dashboard')
-		#@login_required
+		@login_required
 		def dashboard():
 			return render_template('dashboard.html')
 
 		@self.app.route('/get_options', methods=['GET'])
-		#@login_required
+		@login_required
 		def get_options():
 			try:
 				names_path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
@@ -70,7 +70,7 @@ class AppManager:
 				return jsonify({"error": "Failed to fetch options"}), 500
 
 		@self.app.route('/visualizations', methods=['GET'])
-		#@login_required
+		@login_required
 		def visualizations():
 			self.logger.info("Visualizations route called")
 			name = request.args.get('NAME', default=None)
@@ -172,13 +172,13 @@ class AppManager:
 			return redirect(url_for('login'))
 
 		@self.app.route('/home')
-		#@login_required
+		@login_required
 		def home():
 			self.logger.info("Home route called, user is authenticated.")	
 			return render_template('home.html')
 
 		@self.app.route('/model-settings', methods=['GET', 'POST'])
-		#@login_required
+		@login_required
 		def model_settings():
 			self.logger.info("Model Settings route called")	
 			form = ModelSettingsForm()
@@ -267,13 +267,13 @@ class AppManager:
 			return render_template('about.html')
 
 		@self.app.route('/model-confirmation')
-		#@login_required
+		@login_required
 		def model_confirmation():
 			self.logger.info("Model Confirmation route called")
 			return render_template('model_confirmation.html')
 
 		@self.app.route('/contact', methods=['GET', 'POST'])
-		#@login_required
+		@login_required
 		def contact():
 			self.logger.info("Contact route called")
 			form = ContactForm()
@@ -295,13 +295,13 @@ class AppManager:
 			return render_template('contact.html', form=form)
 
 		@self.app.route('/infrastructure')
-		#@login_required
+		@login_required
 		def infrastructure():
 			self.logger.info("Infrastructure route called")
 			return render_template('infrastructure.html')
 
 		@self.app.route('/hydro_geo_dataset', methods=['GET', 'POST'])
-		#@login_required
+		@login_required
 		def hydro_geo_dataset():
 			self.logger.info("HydroGeoDataset route called")
 			form = HydroGeoDatasetForm()
@@ -394,7 +394,7 @@ class AppManager:
 			return render_template('HydroGeoDataset.html', form=form)
 
 		@self.app.route('/get_subvariables', methods=['POST'])
-		#@login_required
+		@login_required
 		def get_subvariables():
 			self.logger.info("Get Subvariables route called")
 			variable = request.form.get('variable')
@@ -410,19 +410,19 @@ class AppManager:
 			return jsonify({"subvariables": subvariables})
 
 		@self.app.route('/ftp-access')
-		#@login_required
+		@login_required
 		def ftp_access():
 			self.logger.info("FTP Access route called")
 			#return render_template('redirect.html')
 			return render_template("ftp_access.html")
 
 		@self.app.route('/deeplearning_models')
-		#@login_required
+		@login_required
 		def deeplearning_models():
 			return render_template('DeepLearning.html')
 		
 		@self.app.route('/vision_system')
-		#@login_required
+		@login_required
 		def vision_system():
 			return render_template('VisionSystem.html')
 
