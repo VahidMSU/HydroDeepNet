@@ -31,7 +31,7 @@ endblock %} {% block content %}
   }
 
   .form-container h2 {
-    font-size: 1.8rem;
+    font-size: 2rem; /* Increased font size */
     margin-bottom: 20px;
     text-align: center;
   }
@@ -45,29 +45,61 @@ endblock %} {% block content %}
   .form-control {
     border-radius: 5px;
     padding: 10px;
-    font-size: 1rem;
+    font-size: 1.1rem; /* Increased font size */
   }
 
   button {
     border-radius: 5px;
   }
-  /* Map Container Styling */
-  #viewDiv {
-    height: 700px !important; /* Set the desired height */
-    width: 500%; /* Ensure width stays responsive */
+  /* Video Container Styling */
+  .video-container {
+    height: 400px !important; /* Set the desired height */
+    width: 100%; /* Ensure width stays responsive */
     border: 1px solid #ccc;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
+  .small-video {
+    height: 200px !important; /* Smaller height for grid videos */
+    width: 100%; /* Ensure width stays responsive */
+  }
+
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
   /* Responsive Adjustments */
-  @media (max-width: 768px) {
-    #viewDiv {
-      height: 400px; /* Slightly smaller height for smaller screens */
+  @media (max-width: 468px) {
+    .video-container {
+      height: 300px; /* Slightly smaller height for smaller screens */
+    }
+
+    .small-video {
+      height: 150px; /* Smaller height for grid videos on small screens */
+    }
+
+    .video-grid {
+      grid-template-columns: 1fr;
     }
   }
-</style>
 
+  /* Image Styling */
+  .clickable-image {
+    max-width: 40%; /* Adjust the max-width to make images smaller */
+    height: auto;
+    cursor: pointer;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+</style>
 <div class="container mt-4">
   <h1 class="mb-4 text-center">Vision System Deep Learning</h1>
 
@@ -81,52 +113,33 @@ endblock %} {% block content %}
         predict monthly water balance components (e.g., ET) across the Michigan
         Lower Peninsula.
       </p>
-      <div class="text-center mt-4">
-        <img
-          src="{{ url_for('static', filename='images/DeepLearningMichiganET_CNNTransformer.gif') }}"
-          alt="GeoCNN Deep Learning GIF"
-          class="img-fluid"
-        />
+      <div class="text-center mt-4"></div>
+        <video controls autoplay class="video-container">
+          <source
+            src="{{ url_for('static', filename='videos/DeepLearningMichiganET_CNNTransformer_reencoded.mp4') }}"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
       </div>
       <div class="text-center mt-4">
         <h5>Predictions vs. Ground Truth (Single Batches)</h5>
-        <div class="d-flex flex-wrap justify-content-center gap-3">
-          <img
-            src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_1_0.gif') }}"
-            alt="Batch 1 Predictions vs Ground Truth"
-            class="img-fluid small-gif"
-          />
-          <img
-            src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_2_0.gif') }}"
-            alt="Batch 2 Predictions vs Ground Truth"
-            class="img-fluid small-gif"
-          />
-          <img
-            src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_3_0.gif') }}"
-            alt="Batch 3 Predictions vs Ground Truth"
-            class="img-fluid small-gif"
-          />
-          <img
-            src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_4_0.gif') }}"
-            alt="Batch 4 Predictions vs Ground Truth"
-            class="img-fluid small-gif"
-          />
-          <img
-            src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_5_0.gif') }}"
-            alt="Batch 5 Predictions vs Ground Truth"
-            class="img-fluid small-gif"
-          />
-          <img
-            src="{{ url_for('static', filename='images/predictions_vs_ground_truth_batch_6_0.gif') }}"
-            alt="Batch 6 Predictions vs Ground Truth"
-            class="img-fluid small-gif"
-          />
+        <div class="video-grid">
+          {% for batch in range(1, 7) %}
+          <video controls autoplay class="video-container small-video">
+            <source
+              src="{{ url_for('static', filename='videos/predictions_vs_ground_truth_batch_' ~ batch ~ '_0_fixed.mp4') }}"
+              type="video/mp4"
+            />
+            Your browser does not support the video tag.
+          </video>
+          {% endfor %}
         </div>
         <h5 class="mt-4">Cell-wise NSE Performance</h5>
         <img
           src="{{ url_for('static', filename='images/cell_wise_nse_performance.png') }}"
           alt="Cell-wise NSE Performance"
-          class="img-fluid"
+          class="img-fluid clickable-image"
         />
       </div>
     </div>
@@ -174,7 +187,7 @@ endblock %} {% block content %}
         ensures consistency. A 70/20/10 split (train/validate/test) provides
         robust coverage for model development.
       </p>
-      <p>
+      <p></p>
         Dynamic variables (e.g., NDVI, EVI, precipitation, temperature) and
         static features (e.g., soil/land cover) are ingested in batches via
         efficient queue management, minimizing latency during training.
@@ -236,7 +249,7 @@ endblock %} {% block content %}
         <img
           src="{{ url_for('static', filename='images/CNN-Transformer.png') }}"
           alt="CNN-Transformer Architecture"
-          class="img-fluid"
+          class="img-fluid clickable-image"
         />
       </div>
     </div>
@@ -257,7 +270,7 @@ endblock %} {% block content %}
           spring, summer, and fall.
         </li>
       </ul>
-      <p>
+      <p></p>
         This ensures that the model captures both local spatial structures and
         broader seasonal trends.
       </p>
@@ -265,75 +278,59 @@ endblock %} {% block content %}
   </div>
 </div>
 
-<style>
-  .container {
-    max-width: 1200px;
-  }
-
-  .card {
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .card-body {
-    padding: 2rem;
-  }
-
-  .card-title {
-    font-size: 1.75rem;
-    margin-bottom: 1rem;
-  }
-
-  ul {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-  }
-
-  .img-fluid {
-    border-radius: 10px;
-    max-height: 500px;
-    object-fit: contain;
-  }
-
-  /* Increase size of small prediction vs. ground-truth GIFs */
-  .small-gif {
-    max-width: 300px;
-    height: auto;
-  }
-</style>
-
 <script>
-  const images = Array.from(
-    document.querySelectorAll("img[onclick='openModal(this)']")
-  );
-  const modal = document.getElementById("imageModal");
-  const modalImage = document.getElementById("modalImage");
-  let currentIndex = 0;
-
-  function openModal(image) {
-    currentIndex = images.indexOf(image);
-    modalImage.src = image.src;
-    modal.style.display = "flex";
-    document.addEventListener("keydown", handleKeyDown);
-  }
+  // Interactive modal script for clickable images
+  document.querySelectorAll(".clickable-image").forEach((img) => {
+    img.addEventListener("click", () => {
+      const modal = document.getElementById("imageModal");
+      const modalImage = document.getElementById("modalImage");
+      modalImage.src = img.src;
+      modal.style.display = "flex";
+    });
+  });
 
   function closeModal() {
+    const modal = document.getElementById("imageModal");
     modal.style.display = "none";
-    document.removeEventListener("keydown", handleKeyDown);
+    const modalImage = document.getElementById("modalImage");
+    modalImage.src = "";
   }
 
-  function handleKeyDown(event) {
-    if (event.key === "ArrowRight") {
-      currentIndex = (currentIndex + 1) % images.length;
-    } else if (event.key === "ArrowLeft") {
-      currentIndex = (currentIndex - 1 + images.length) % images.length;
-    } else if (event.key === "Escape") {
-      closeModal();
-      return;
-    }
-    modalImage.src = images[currentIndex].src;
-  }
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeModal();
+  });
 </script>
 
+<div
+  id="imageModal"
+  style="
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+  "
+>
+  <span
+    style="
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+    "
+    onclick="closeModal()"
+    >&times;</span
+  >
+  <img
+    id="modalImage"
+    style="max-width: 90%; max-height: 90%; border-radius: 10px"
+  />
+</div>
 {% endblock %}
