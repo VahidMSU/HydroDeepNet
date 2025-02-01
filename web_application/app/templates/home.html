@@ -1,132 +1,6 @@
 {% extends "layout.html" %} {% block title %}Hydrological Modeling and Deep
 Learning Framework{% endblock %} {% block content %}
 
-<style>
-  /* Container styles */
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px auto;
-    max-width: 1200px;
-    padding: 20px;
-  }
-
-  .header-title {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #333;
-    font-size: 2.5rem;
-    font-weight: bold;
-  }
-
-  .section {
-    margin-bottom: 40px;
-  }
-
-  .section h3 {
-    color: #444;
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-  }
-
-  .section p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: #555;
-    margin-bottom: 20px;
-  }
-
-  .section ul {
-    padding-left: 20px;
-    font-size: 1.1rem;
-    line-height: 1.8;
-  }
-
-  .section ul li {
-    margin-bottom: 10px;
-  }
-
-  .image-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    width: 100%;
-    margin-top: 20px;
-  }
-
-  .image-card {
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    background-color: #fff;
-    overflow: hidden;
-    text-align: center;
-    cursor: pointer;
-  }
-
-  .image-card img {
-    width: 100%;
-    height: auto;
-  }
-
-  .image-card h4 {
-    padding: 10px;
-    background-color: #f9f9f9;
-    font-size: 1.1rem;
-    color: #555;
-  }
-
-  .interactive-btns {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin: 30px 0;
-  }
-
-  .btn {
-    background-color: #007bff;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 1rem;
-    transition: background-color 0.3s;
-  }
-
-  .btn:hover {
-    background-color: #0056b3;
-  }
-
-  /* Modal styles */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 10px;
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    color: white;
-    font-size: 2rem;
-    cursor: pointer;
-  }
-</style>
-
 <div class="container">
   <h1 class="header-title">
     Hydrological Modeling and Deep Learning Framework
@@ -247,41 +121,10 @@ Learning Framework{% endblock %} {% block content %}
   <img id="modalImage" src="" alt="Large view" />
 </div>
 
-<script>
-  const images = Array.from(document.querySelectorAll(".image-card img"));
-  let currentIndex = 0;
-
-  function openModal(image) {
-    const modal = document.getElementById("imageModal");
-    const modalImage = document.getElementById("modalImage");
-
-    currentIndex = images.indexOf(image);
-    modalImage.src = image.src;
-    modal.style.display = "flex";
-
-    document.addEventListener("keydown", handleKeyDown);
-  }
-
-  function closeModal() {
-    const modal = document.getElementById("imageModal");
-    modal.style.display = "none";
-
-    document.removeEventListener("keydown", handleKeyDown);
-  }
-
-  function handleKeyDown(event) {
-    if (event.key === "ArrowRight") {
-      currentIndex = (currentIndex + 1) % images.length;
-    } else if (event.key === "ArrowLeft") {
-      currentIndex = (currentIndex - 1 + images.length) % images.length;
-    } else if (event.key === "Escape") {
-      closeModal();
-      return;
-    }
-
-    const modalImage = document.getElementById("modalImage");
-    modalImage.src = images[currentIndex].src;
-  }
-</script>
+<link
+  rel="stylesheet"
+  href="{{ url_for('css_static', filename='home.css') }}"
+/>
+<script src="{{ url_for('js_static', filename='home.js') }}" defer></script>
 
 {% endblock %}

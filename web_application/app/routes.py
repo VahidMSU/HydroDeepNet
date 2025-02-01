@@ -17,7 +17,7 @@ from  app.utils import send_verification_email
 from functools import wraps
 from flask_login import current_user
 from flask import redirect, url_for, flash
-
+from flask import send_from_directory, current_app
 from app.forms import VerificationForm
 
 def verified_required(f):
@@ -56,6 +56,9 @@ class AppManager:
 		self.logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/web_application/logs", verbose=True, rewrite=True)
 		self.logger = self.logger.setup_logger("WebAppLogger")
 
+
+
+
 	def init_routes(self):
 		@self.app.route('/')
 		@login_required
@@ -86,7 +89,15 @@ class AppManager:
 			# If GET or invalid code, just show the verify template
 			return render_template('verify.html', form=form)
 
+		@self.app.route('/js/<path:filename>')
+		def js_static(filename):
+			js_dir = os.path.join(current_app.root_path,  'js')
+			return send_from_directory(js_dir, filename)
 
+		@self.app.route('/css/<path:filename>')
+		def css_static(filename):
+			css_dir = os.path.join(current_app.root_path, 'css')
+			return send_from_directory(css_dir, filename)
 
 		@self.app.route('/dashboard')
 		@login_required
