@@ -1,94 +1,6 @@
 {% extends "layout.html" %} {% block title %}Michigan LP Hydrologic Modeling{%
 endblock %} {% block content %}
 
-<style>
-  /* Base container styles */
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px auto;
-    max-width: 1200px;
-    padding: 20px;
-  }
-
-  /* Header title styles */
-  .header-title {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #333;
-    font-size: 2rem;
-    font-weight: bold;
-  }
-
-  /* Grid container styles */
-  .image-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    width: 100%;
-  }
-
-  /* Image card styles */
-  .image-card {
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    background-color: #fff;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: center;
-    cursor: pointer;
-  }
-
-  .image-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-  }
-
-  /* Image styles */
-  .image-card img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  .image-card h4 {
-    margin: 15px 10px;
-    font-size: 1.2rem;
-    color: #555;
-  }
-
-  /* Modal styles */
-  .modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 1000;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-  }
-
-  .modal-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    color: white;
-    font-size: 2rem;
-    cursor: pointer;
-  }
-</style>
-
 <div class="container">
   <h2 class="header-title">
     Michigan LP Hydrologic Modeling Coverage and Performance
@@ -133,43 +45,10 @@ endblock %} {% block content %}
   <img id="modalImage" src="" alt="Large view" />
 </div>
 
-<script>
-  const images = Array.from(document.querySelectorAll(".image-card img"));
-  let currentIndex = 0;
-
-  function openModal(image) {
-    const modal = document.getElementById("imageModal");
-    const modalImage = document.getElementById("modalImage");
-
-    currentIndex = parseInt(image.getAttribute("data-index"), 10);
-    modalImage.src = image.src;
-    modal.style.display = "flex";
-
-    // Add keydown listener
-    document.addEventListener("keydown", handleKeyDown);
-  }
-
-  function closeModal() {
-    const modal = document.getElementById("imageModal");
-    modal.style.display = "none";
-
-    // Remove keydown listener
-    document.removeEventListener("keydown", handleKeyDown);
-  }
-
-  function handleKeyDown(event) {
-    if (event.key === "ArrowRight") {
-      currentIndex = (currentIndex + 1) % images.length; // Wrap to start
-    } else if (event.key === "ArrowLeft") {
-      currentIndex = (currentIndex - 1 + images.length) % images.length; // Wrap to end
-    } else if (event.key === "Escape") {
-      closeModal();
-      return;
-    }
-    // Update modal image
-    const modalImage = document.getElementById("modalImage");
-    modalImage.src = images[currentIndex].src;
-  }
-</script>
+<link
+  rel="stylesheet"
+  href="{{ url_for('css_static', filename='michigan.css') }}"
+/>
+<script src="{{ url_for('js_static', filename='michigan.js') }}" defer></script>
 
 {% endblock %}
