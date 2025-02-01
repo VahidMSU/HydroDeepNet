@@ -1,105 +1,6 @@
 {% extends "layout.html" %} {% block title %}GeoCNN: Vision System Software{%
 endblock %} {% block content %}
-<style>
-  /* Main Layout Styling */
-  .row {
-    display: flex;
-    flex-wrap: nowrap; /* Ensure both columns are side-by-side */
-    gap: 20px;
-    align-items: stretch;
-    height: calc(
-      100vh - 50px
-    ); /* Adjust for full-page height excluding header */
-  }
 
-  .col-half {
-    flex: 1; /* Take equal width for both columns */
-    min-width: 300px; /* Ensure it doesn't shrink too small */
-    display: flex;
-    flex-direction: column;
-    justify-content: stretch;
-    align-items: stretch;
-  }
-
-  /* Form Container Styling */
-  .form-container {
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    background-color: #ffffff;
-    overflow-y: auto; /* Allow scrolling if form content is long */
-  }
-
-  .form-container h2 {
-    font-size: 2rem; /* Increased font size */
-    margin-bottom: 20px;
-    text-align: center;
-  }
-
-  .form-group label {
-    font-weight: bold;
-    margin-bottom: 5px;
-    display: block;
-  }
-
-  .form-control {
-    border-radius: 5px;
-    padding: 10px;
-    font-size: 1.1rem; /* Increased font size */
-  }
-
-  button {
-    border-radius: 5px;
-  }
-  /* Video Container Styling */
-  .video-container {
-    height: 400px !important; /* Set the desired height */
-    width: 100%; /* Ensure width stays responsive */
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-
-  .small-video {
-    height: 200px !important; /* Smaller height for grid videos */
-    width: 100%; /* Ensure width stays responsive */
-  }
-
-  .video-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-
-  /* Responsive Adjustments */
-  @media (max-width: 468px) {
-    .video-container {
-      height: 300px; /* Slightly smaller height for smaller screens */
-    }
-
-    .small-video {
-      height: 150px; /* Smaller height for grid videos on small screens */
-    }
-
-    .video-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* Image Styling */
-  .clickable-image {
-    max-width: 40%; /* Adjust the max-width to make images smaller */
-    height: auto;
-    cursor: pointer;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .text-center {
-    text-align: center;
-  }
-</style>
 <div class="container mt-4">
   <h1 class="mb-4 text-center">Vision System Deep Learning</h1>
 
@@ -278,28 +179,15 @@ endblock %} {% block content %}
   </div>
 </div>
 
-<script>
-  // Interactive modal script for clickable images
-  document.querySelectorAll(".clickable-image").forEach((img) => {
-    img.addEventListener("click", () => {
-      const modal = document.getElementById("imageModal");
-      const modalImage = document.getElementById("modalImage");
-      modalImage.src = img.src;
-      modal.style.display = "flex";
-    });
-  });
+<link
+  rel="stylesheet"
+  href="{{ url_for('css_static', filename='VisionSystem.css') }}"
+/>
+<script
+  src="{{ url_for('js_static', filename='VisionSystem.js') }}"
+  defer
+></script>
 
-  function closeModal() {
-    const modal = document.getElementById("imageModal");
-    modal.style.display = "none";
-    const modalImage = document.getElementById("modalImage");
-    modalImage.src = "";
-  }
-
-  window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeModal();
-  });
-</script>
 
 <div
   id="imageModal"
