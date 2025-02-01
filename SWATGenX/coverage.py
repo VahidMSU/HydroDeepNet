@@ -17,7 +17,8 @@ def plot_all_stations(all_stations, prism_shape_path, num_models):
     plt.ylabel("Latitude")
     plt.grid()  
     plt.tight_layout()
-    plt.savefig("all_stations.png", dpi=300)
+    today = pd.Timestamp("today").strftime("%Y-%m-%d")
+    plt.savefig(f'/data/SWATGenXApp/codes/SWATGenX/Extracted_SWAT_models_{today}.png')
     plt.close()
 
 
