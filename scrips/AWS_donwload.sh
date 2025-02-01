@@ -8,3 +8,4 @@ aws s3 cp s3://nrel-pds-nsrdb/v3/nsrdb_2010.h5 /data/NSRDB/nsrdb_2010_full.h5 --
 aws s3 cp s3://nrel-pds-nsrdb/v3/nsrdb_2011.h5 /data/NSRDB/nsrdb_2011_full.h5 --no-sign-request --region us-east-2
 aws s3 cp s3://nrel-pds-nsrdb/v3/nsrdb_2012.h5 /data/NSRDB/nsrdb_2012_full.h5 --no-sign-request --region us-east-2
 
+

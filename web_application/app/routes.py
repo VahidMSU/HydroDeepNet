@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, request, flash, jsonify, current_app, session
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from app.models import User, ContactMessage
 from app.forms import RegistrationForm, LoginForm, ContactForm, ModelSettingsForm, HydroGeoDatasetForm
 from app.extensions import db
@@ -13,6 +13,23 @@ from app.utils import LoggerSetup, single_model_creation, hydrogeo_dataset_dict,
 import numpy as np
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import pandas as pd
+from  app.utils import send_verification_email
+from functools import wraps
+from flask_login import current_user
+from flask import redirect, url_for, flash
+
+from app.forms import VerificationForm
+
+def verified_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user.is_authenticated and not current_user.is_verified:
+            flash("You must verify your email first!")
+            return redirect(url_for('verify'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 def check_existing_models(station_name):
 	swatgenx_output = SWATGenXPaths.swatgenx_outlet_path
 	VPUIDs = os.listdir(swatgenx_output)
@@ -42,17 +59,44 @@ class AppManager:
 	def init_routes(self):
 		@self.app.route('/')
 		@login_required
+		@verified_required
 		def index():
 			self.logger.info("Index route called. Redirecting to /home.")	
 			return redirect(url_for('home'))
 
+		@self.app.route('/verify', methods=['GET', 'POST'])
+		@login_required
+		def verify():
+			self.logger.info("Verify route called")
+			form = VerificationForm()
+
+			if form.validate_on_submit():
+				code_entered = form.verification_code.data.strip()
+				if current_user.verification_code == code_entered:
+					current_user.is_verified = True
+					current_user.verification_code = None
+					db.session.commit()
+					flash("Email verified successfully!")
+					self.logger.info("User verified successfully.")
+					return redirect(url_for('home'))
+				else:
+					flash("Invalid code.")
+					self.logger.error("Invalid verification code entered.")
+
+			# If GET or invalid code, just show the verify template
+			return render_template('verify.html', form=form)
+
+
+
 		@self.app.route('/dashboard')
 		@login_required
+		@verified_required
 		def dashboard():
 			return render_template('dashboard.html')
 
 		@self.app.route('/get_options', methods=['GET'])
 		@login_required
+		@verified_required
 		def get_options():
 			try:
 				names_path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
@@ -71,6 +115,7 @@ class AppManager:
 
 		@self.app.route('/visualizations', methods=['GET'])
 		@login_required
+		@verified_required
 		def visualizations():
 			self.logger.info("Visualizations route called")
 			name = request.args.get('NAME', default=None)
@@ -139,20 +184,36 @@ class AppManager:
 
 		@self.app.route('/signup', methods=['GET', 'POST'])
 		def signup():
-			self.logger.info("Sign Up route called")	
+			self.logger.info("Sign Up route called")
 			form = RegistrationForm()
 			if form.validate_on_submit():
-				self.logger.info("Form validated successfully")	
-				new_user = User(username=form.username.data, email=form.email.data, password=form.password.data)
-				new_user.password = form.password.data
+				# Send the email and generate a code
+				verification_code = send_verification_email(form.email.data)
+				self.logger.info("Form validated successfully")
+
+				# Create the new user
+				new_user = User(
+					username=form.username.data,
+					email=form.email.data,
+					password=form.password.data,  # hashed in setter
+					verification_code=verification_code
+				)
+				
 				db.session.add(new_user)
 				db.session.commit()
 				try:
+					# Double-check addition to DB, though once is typically enough
 					db.session.add(new_user)
 					db.session.commit()
-					self.logger.info("User added to the database successfully")
-					flash('Account created successfully! You can now log in.')
-					return redirect(url_for('login'))
+					self.logger.info("User added to DB but not verified yet.")
+
+					# **Log them in** immediately
+					login_user(new_user)
+
+					# **Redirect** straight to verify route
+					flash("Please check your email and enter the verification code below.")
+					return redirect(url_for('verify'))
+
 				except Exception as e:
 					self.logger.error(f"Error adding user to the database: {e}")
 					db.session.rollback()
@@ -164,6 +225,7 @@ class AppManager:
 						self.logger.error(f"Error in {field}: {error}")
 			return render_template('register.html', form=form)
 
+
 		@self.app.route('/logout')
 		def logout():
 			self.logger.info("Logout route called")
@@ -173,12 +235,14 @@ class AppManager:
 
 		@self.app.route('/home')
 		@login_required
+		@verified_required
 		def home():
 			self.logger.info("Home route called, user is authenticated.")	
 			return render_template('home.html')
 
 		@self.app.route('/model-settings', methods=['GET', 'POST'])
 		@login_required
+		@verified_required
 		def model_settings():
 			self.logger.info("Model Settings route called")	
 			form = ModelSettingsForm()
@@ -268,12 +332,14 @@ class AppManager:
 
 		@self.app.route('/model-confirmation')
 		@login_required
+		@verified_required
 		def model_confirmation():
 			self.logger.info("Model Confirmation route called")
 			return render_template('model_confirmation.html')
 
 		@self.app.route('/contact', methods=['GET', 'POST'])
 		@login_required
+		@verified_required
 		def contact():
 			self.logger.info("Contact route called")
 			form = ContactForm()
@@ -296,12 +362,14 @@ class AppManager:
 
 		@self.app.route('/infrastructure')
 		@login_required
+		@verified_required
 		def infrastructure():
 			self.logger.info("Infrastructure route called")
 			return render_template('infrastructure.html')
 
 		@self.app.route('/hydro_geo_dataset', methods=['GET', 'POST'])
 		@login_required
+		@verified_required
 		def hydro_geo_dataset():
 			self.logger.info("HydroGeoDataset route called")
 			form = HydroGeoDatasetForm()
@@ -395,6 +463,7 @@ class AppManager:
 
 		@self.app.route('/get_subvariables', methods=['POST'])
 		@login_required
+		@verified_required
 		def get_subvariables():
 			self.logger.info("Get Subvariables route called")
 			variable = request.form.get('variable')
@@ -411,6 +480,7 @@ class AppManager:
 
 		@self.app.route('/ftp-access')
 		@login_required
+		@verified_required
 		def ftp_access():
 			self.logger.info("FTP Access route called")
 			#return render_template('redirect.html')
@@ -418,11 +488,13 @@ class AppManager:
 
 		@self.app.route('/deeplearning_models')
 		@login_required
+		@verified_required
 		def deeplearning_models():
 			return render_template('DeepLearning.html')
 		
 		@self.app.route('/vision_system')
 		@login_required
+		@verified_required
 		def vision_system():
 			return render_template('VisionSystem.html')
 
