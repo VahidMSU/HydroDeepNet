@@ -22,7 +22,6 @@ def plot_all_stations(all_stations, prism_shape_path, num_models):
     plt.close()
 
 
-from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 def check_simulation_output(VPUID, LEVEL, NAME, MODEL_NAME):
     Paths = SWATGenXPaths()
     #print(f"Checking simulation output for {NAME}")
