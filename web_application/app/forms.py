@@ -6,6 +6,15 @@ from wtforms import SelectField, BooleanField, IntegerField
 from wtforms.validators import NumberRange
 from wtforms.validators import Optional
 
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+
+class VerificationForm(FlaskForm):
+    verification_code = StringField('Verification Code', validators=[DataRequired()])
+    submit = SubmitField('Verify')
+
 class RegistrationForm(FlaskForm):
     """
     RegistrationForm is a Flask-WTF form used for user registration.

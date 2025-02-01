@@ -8,6 +8,10 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(255))
     email = db.Column(db.String(120), unique=True, nullable=False)
 
+    # Add these fields
+    is_verified = db.Column(db.Boolean, default=False)
+    verification_code = db.Column(db.String(8), nullable=True)
+
     @property
     def password(self):
         """Prevent reading raw password."""
