@@ -89,6 +89,18 @@ class AppManager:
 			# If GET or invalid code, just show the verify template
 			return render_template('verify.html', form=form)
 
+		#privacy
+		@self.app.route('/privacy')
+		def privacy():
+			self.logger.info("Privacy route called")
+			return render_template('privacy.html')
+		
+		#terms
+		@self.app.route('/terms')
+		def terms():
+			self.logger.info("Terms route called")
+			return render_template('terms.html')
+
 		@self.app.route('/js/<path:filename>')
 		def js_static(filename):
 			js_dir = os.path.join(current_app.root_path,  'js')
