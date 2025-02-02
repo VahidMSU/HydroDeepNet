@@ -57,6 +57,7 @@ class DummyInterface(object):
         return QgsProject.instance().mapLayers().values()
 
 iface = DummyInterface()
+from SWATGenXLogging import LoggerSetup
 class runHUC():
 
     """Run HUC14/12/10/8 project."""
@@ -73,9 +74,8 @@ class runHUC():
         self.proj.write(self.projDir + '/{0}.qgs'.format(projName))
         self.proj.read(self.projDir + '/{0}.qgs'.format(projName))
         self.plugin.setupProject(self.proj, True, isHUC=False, logFile=logFile)
-        print(' %###% debug: projDir {0}'.format(self.projDir), ' ###')
-        print(' %###% debug: projName {0}'.format(projName), ' ###')
-
+        self.logger = LoggerSetup(verbose=True, rewrite=False)
+        self.logger = self.logger.setup_logger("runHUCProject")
         ## main dialogue
         self.dlg = self.plugin._odlg
         ## delineation object
@@ -85,13 +85,19 @@ class runHUC():
         # Prevent annoying "error 4 .shp not recognised" messages.
         # These should become exceptions but instead just disappear.
         # Safer in any case to raise exceptions if something goes wrong.
-        gdal.UseExceptions()
-        ogr.UseExceptions()
+        try:
+            gdal.UseExceptions()
+            ogr.UseExceptions()
+            self.logger.info("Set GDAL exceptions") 
+        except Exception:
+            self.logger.error("Failed to set GDAL exceptions")
+            
 
     def runProject(self, dataDir, scale, minHRUha):
         """Run QSWAT project."""
+        self.logger.info(f'runProject {self.projDir}')
+        self.logger.info(f'projDir {self.projDir}')
         gv = self.plugin._gv
-        #print('Dem is processed is {0}'.format(self.plugin._demIsProcessed))
         self.delin = Delineation(gv, self.plugin._demIsProcessed)
         self.delin._dlg.tabWidget.setCurrentIndex(1)
         self.delin._dlg.selectDem.setText(
@@ -109,8 +115,6 @@ class runHUC():
         )
         self.delin._dlg.selectExistOutlets.setText('')
 
-
-
         self.delin._dlg.recalcButton.setChecked(False)  # want to use length field in channels shapefile
         self.delin._dlg.snapThreshold.setText('300')
         # use MPI on HUC10 and HUC8 projects
@@ -120,15 +124,19 @@ class runHUC():
         gv.useGridModel = False
         gv.existingWshed = True
         self.delin.runExisting()
-        print(' %###% debug: gv.HUCDataDir {0}'.format(gv.HUCDataDir), ' ###')
-        print(' %###% debug: gv.useGridModel {0}'.format(gv.useGridModel), ' ###')
-        print(' %###% debug: gv.existingWshed {0}'.format(gv.existingWshed), ' ###')
-        print(' ProjectDir is {0}'.format(self.projDir))
+        self.logger.info(f'gv.HUCDataDir {gv.HUCDataDir}')
+        self.logger.info(f'gv.useGridModel {gv.useGridModel}')
+        self.logger.info(f'gv.existingWshed {gv.existingWshed}')
+        self.logger.info(f'ProjectDir {self.projDir}')
 
         lakesFile = f'{self.projDir}/Watershed/Shapes/SWAT_plus_lakes.shp'
         if os.path.isfile(lakesFile):
             self.delin._dlg.selectLakes.setText(lakesFile)
             self.delin.addLakesMap()
+            self.logger.info(f'lakesFile {lakesFile}')
+        else:
+            self.logger.info(f'No lakes file {lakesFile}')
+
         self.delin.finishDelineation()
         self.delin._dlg.close()
         self.hrus = HRUs(gv, self.dlg.reportsBox)
@@ -137,14 +145,13 @@ class runHUC():
         self.hrus.landuseFile = os.path.join(
             self.projDir, 'Watershed', 'Rasters', 'Landuse', 'landuse.tif'
         )
+
         self.hrus.landuseLayer = QgsRasterLayer(self.hrus.landuseFile, 'landuse')
         self.hrus.soilFile = os.path.join(self.projDir, 'Watershed', 'Rasters', 'Soil', 'soil.tif')
         self.hrus.soilLayer = QgsRasterLayer(self.hrus.soilFile, 'soil')
-        #landCombo = hrudlg.selectLanduseTable
-        #landIndex = landCombo.findText('nlcd2001_landuses')
-        #landCombo.setCurrentIndex(landIndex)
+        
         self.hrus.landuseTable = 'landuse_lookup'
-        print(' %###% debug: landuseFile {0}'.format(self.hrus.landuseFile), ' ###')
+        self.logger.info(f'landuseFile {self.hrus.landuseFile}')
         hrudlg.SSURGOButton.setChecked(True)
         hrudlg.usersoilButton.setChecked(True)
         self.LanduseTable = SWATGenXPaths.LanduseTable
@@ -155,7 +162,7 @@ class runHUC():
         gv.numElevBands = 5
         hrudlg.generateFullHRUs.setChecked(True)
         self.hrus.initLanduses(self.hrus.landuseTable)
-        print(f"self.hrus.readFiles(): {self.hrus.readFiles()}")
+        self.logger.info(f"self.hrus.readFiles(): {self.hrus.readFiles()}")
         if not self.hrus.readFiles():
             hrudlg.close()
             return
@@ -170,8 +177,6 @@ class runHUC():
 
 def runProject(base_directory, dataDir, scale, minHRUha):
     """Run a QSWAT+ project on directory base_directory"""
-    # seems clumsy to keep opening logFile, rather than opening once and passing handle
-    # but there may be many instances of this function and we want to avoid too many open files
     if os.path.isdir(base_directory):
         logFile = f'{base_directory}/LogFile.txt'
         with open(logFile, 'w') as f:
@@ -192,7 +197,11 @@ def runProject(base_directory, dataDir, scale, minHRUha):
             sys.stdout.write('ERROR: exception: {0}\n'.format(traceback.format_exc()))
             sys.stdout.flush()
 
-def main(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logger):
+def main(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path):
+    from SWATGenXLogging import LoggerSetup
+    logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/SWATGenX/logs/", verbose=True, rewrite=True)
+
+    logger = logger.setup_logger("runHUCProject")
     try:
         logger.info(f"Running project {VPUID}") 
         app = QgsApplication([], True)
@@ -215,13 +224,7 @@ def main(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logge
         inletId = 0
 
         base_directory = os.path.dirname(direc)
-        #print('Running project {0}'.format(base_directory))
         try:
-            #print(' ### debug: base_directory {0}'.format(base_directory), ' ###')
-            #print(' ### debug: dataDir {0}'.format(dataDir), ' ###')
-            #print(' ### debug: scale {0}'.format(scale), ' ###')
-            #print(' ### debug: minHRUha {0}'.format(minHRUha), ' ###')
-            #print(' ### debug: inletId {0}'.format(inletId), ' ###')
             logger.info(f"base_directory {base_directory}")
             logger.info(f"dataDir {dataDir}")
             logger.info(f"scale {scale}")
@@ -230,10 +233,8 @@ def main(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logge
 
             huc = runHUC(base_directory, None)
             huc.runProject(dataDir, scale, minHRUha)
-            #print('Completed project {0}'.format(base_directory))
             logger.info(f"Completed project {base_directory}")
         except Exception:
-            #print('ERROR: exception: {0}'.format(traceback.format_exc()))
             logger.error(f"ERROR: exception: {traceback.format_exc()}")
 
         app.exitQgis()
@@ -244,5 +245,6 @@ def main(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logge
         logger.error(traceback.format_exc())
 
 
-def runHUCProject(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logger):
-    main(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logger)
+def runHUCProject(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path):
+
+    main(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path)

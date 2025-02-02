@@ -3,9 +3,9 @@ from datetime import timedelta
 import os
 
 class Config:
-
+    SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key')
+    
     # Shibboleth SSO Configuration
-    CLIENT_ID = "ciwre-bae.campusad.msu.edu"
     SAML_METADATA_URL = "https://login.msu.edu/idp/shibboleth"
     SAML_SP_ENTITY_ID = "https://ciwre-bae.campusad.msu.edu/shibboleth"
     SAML_SP_METADATA = "/etc/shibboleth/sp-metadata.xml"

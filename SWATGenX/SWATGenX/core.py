@@ -8,28 +8,26 @@ from SWATGenX.PRISM_extraction import extract_PRISM_parallel
 from SWATGenX.configuration import check_configuration
 from SWATGenX.generate_swatplus_shapes import generate_swatplus_shapes
 from SWATGenX.model_precipitation_info import plot_annual_precipitation
-#from SWATGenX.runQSWATPlus import runQSWATPlus
+from SWATGenX.runQSWATPlus import runQSWATPlus
 from SWATGenX.run_swatplusEditor import run_swatplus_editor
 from SWATGenX.SWATplus_streamflow import fetch_streamflow_for_watershed
 from SWATGenX.NSRDB_SWATplus_extraction import NSRDB_extract
 from SWATGenX.SWATGenXLogging import LoggerSetup
-from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 
-
-def SWATGenXCore_run(swatgenx_config):
+def SWATGenXCore_run(SWATGenXPaths, swatgenx_config):
 	"""
 	Runs the SWATGenX model for the specified configuration.
 
 	Args:
 		swatgenx_config (dict): Configuration settings for the SWATGenX command.
 	"""
-	swatgenx = SWATGenXCore(swatgenx_config)
+	swatgenx = SWATGenXCore(SWATGenXPaths, swatgenx_config)
 	swatgenx.process()
 # Compare this snippet from SWATGenX/SWATGenX/SWATGenXConfigPars.py:
 
 class SWATGenXCore:
-	def __init__(self, config):
+	def __init__(self, SWATGenXPaths, config):
 		"""
 		Initializes the SWATGenXCore class with the provided configuration.
 
@@ -47,10 +45,13 @@ class SWATGenXCore:
 		self.dem_resolution = config.get("dem_resolution")
 		self.list_of_huc12s = config.get("list_of_huc12s")
 		self.MODEL_NAME = config.get("MODEL_NAME")
-		self.paths = SWATGenXPaths()
+		self.paths = SWATGenXPaths
+		self.paths.exe_start_year = 2020
+		self.paths.exe_end_year = 2021
+
 		self.logger = self.setup_logger()
 		self.logger.info(f"SWATGenXCore: Starting the SWATGenX model for {self.site_no}")
-
+		self.logger.info(f"SWAT outlet: {self.paths.swatgenx_outlet_path}")
 	def setup_logger(self):
 		"""Sets up the logger for the SWATGenXCore."""
 		logger = LoggerSetup(
@@ -84,51 +85,10 @@ class SWATGenXCore:
 			return {int(huc12) for huc12 in self.list_of_huc12s[self.site_no]}
 
 
-	def runQSWATPlus(self):
-		
-		try:
-			# Validate QSWATPlus path
-			runQSWATPlus_path = self.paths.runQSWATPlus_path
-			
-			#assert os.path.exists(runQSWATPlus_path), f"File {runQSWATPlus_path} does not exist"
-			
-			# Set QGIS-related environment variables
-			os.environ["PYTHONPATH"] = "/usr/lib/python3/dist-packages:" + os.environ.get("PYTHONPATH", "")
-			os.environ["QGIS_ROOT"] = "/usr/share/qgis"
-			os.environ["PYTHONPATH"] += f":{os.environ['QGIS_ROOT']}/python:{os.environ['QGIS_ROOT']}/python/plugins:{os.environ['QGIS_ROOT']}/python/plugins/processing"
-			os.environ["PYTHONHOME"] = "/usr"
-			os.environ["PATH"] += f":{os.environ['QGIS_ROOT']}/bin"
-			os.environ["QGIS_DEBUG"] = "-1"
-			os.environ["QT_PLUGIN_PATH"] = os.environ["QGIS_ROOT"] + "/qtplugins"
-
-			# Change directory to the project folder
-			os.chdir("/data/SWATGenXApp/codes/SWATGenX/SWATGenX")
-			os.makedirs(f"{self.paths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}", exist_ok=True)
-			# Construct the Python command to run QSWATPlus
-			self.logger.info(f"Core: Running QSWATPlus for {self.NAME}")
-			python_command = (
-				f"from QSWATPlus3_64 import runHUCProject; "
-				f"runHUCProject(VPUID='{self.VPUID}', LEVEL='{self.LEVEL}', NAME='{self.NAME}', MODEL_NAME='{self.MODEL_NAME}', SWATGenXPaths_swatgenx_outlet_path='{self.paths.swatgenx_outlet_path}, loggers={self.logger})"
-			)
-
-		except Exception as e:
-			self.logger.error(f"Error in running QSWATPlus for {self.NAME}: {e}")
-			return
-
-		# Execute the command using Xvfb for headless operation
-		try:
-			subprocess.run(["xvfb-run", "-a", "python3", "-c", python_command], check=True)
-		except subprocess.CalledProcessError as e:
-			#print(f"Error: QSWATPlus execution failed with error code {e.returncode}", file=sys.stderr)
-			self.logger.error(f"Error: QSWATPlus execution failed with error code {e.returncode}")
-			self.logger.error(f"Error: QSWATPlus execution failed with error code {e}")
-		# Validate the output
-
-
 	def run_qswat_plus(self):
 		"""Runs the QSWAT+ model for the specified site."""
 		try:
-			self.runQSWATPlus()
+			runQSWATPlus(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME, self.paths)
 			hru2_path = self.paths.construct_path(
 				self.paths.swatgenx_outlet_path,
 				self.VPUID,
@@ -139,19 +99,26 @@ class SWATGenXCore:
 				"Shapes",
 				"hrus2.shp",
 			)
+			success_flag = False
+			self.logger.info(f"hu2_path: {hru2_path}")	
 			if not os.path.exists(hru2_path):
 				self.logger.error(f"HRU2 shapefile does not exist for {self.NAME} after running QSWAT+")
-				return None
+				success_flag = False
+				return success_flag	
+				
 			self.logger.info(f"QSWAT+ processes are completed for {self.NAME}, {self.VPUID}")
+			success_flag = True
+			return success_flag
 		except Exception as e:
 			self.logger.error(f"Error in running QSWAT+ for {self.NAME}: {e}")
-			return None
+			success_flag = False
+			return success_flag
 
 	def extract_prism_data(self):
 		"""Extracts PRISM data for the watershed."""
 		extract_PRISM_parallel(self.VPUID, self.LEVEL, self.NAME, self.list_of_huc12s)
 		plot_annual_precipitation(self.VPUID, self.LEVEL, self.NAME)
-		writing_swatplus_cli_files(self.VPUID, self.LEVEL, self.NAME)
+		writing_swatplus_cli_files(self.paths, self.VPUID, self.LEVEL, self.NAME)
 		self.logger.info(f"Model extraction completed for {self.NAME}")
 
 	def extract_nsrdb_data(self):
@@ -190,7 +157,7 @@ class SWATGenXCore:
 
 	def check_simulation_output(self):
 		"""Checks the simulation output for successful execution."""
-		execution_checkout_path = self.paths.construct_path(
+		execution_checkout_path = os.path.join(
 			self.paths.swatgenx_outlet_path,
 			self.VPUID,
 			self.LEVEL,
@@ -246,11 +213,12 @@ class SWATGenXCore:
 		self.list_of_huc12s = self.prepare_huc12s()
 		
 
-		generate_swatplus_shapes(
+		generate_swatplus_shapes(self.paths,
 			self.list_of_huc12s, self.VPUID, self.LEVEL, self.NAME, self.EPSG, self.MODEL_NAME
 		)
 		try:
 			generate_swatplus_rasters(
+				self.paths,
 				self.VPUID,
 				self.LEVEL,
 				self.NAME,
@@ -269,11 +237,17 @@ class SWATGenXCore:
 		self.list_of_huc12s = [f"{huc12:012d}" for huc12 in self.list_of_huc12s]
 		self.logger.info(f"list of requested huc12s: {self.list_of_huc12s}")
 		self.logger.info(f"Runnig QSWAT+ for {self.NAME}")
-		self.run_qswat_plus()
+		
+		success_flag = self.run_qswat_plus()
+
+		if not success_flag:
+			self.logger.error(f"QSWAT+ processes failed for {self.NAME}")
+			return None
+
 		self.logger.info(f"QSWAT+ processes are completed for {self.NAME}, {self.VPUID}")
 		self.extract_metereological_data()
 
-		run_swatplus_editor(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
+		run_swatplus_editor(self.paths, self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
 
 		self.write_meta_file()
 

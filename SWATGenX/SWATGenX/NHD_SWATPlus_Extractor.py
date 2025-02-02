@@ -5,10 +5,7 @@ import os
 import numpy as np
 import os
 from SWATGenX.SWATGenXLogging import LoggerSetup
-try:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-except ImportError:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+
 
 class NHD_SWATPlus_Extractor:
     """
@@ -27,8 +24,8 @@ class NHD_SWATPlus_Extractor:
 
     It returns the processed and refined streams GeoDataFrame.
     """
-    def __init__(self, list_of_HUC, LEVEL, VPUID, MODEL_NAME, NAME):
-        
+    def __init__(self, SWATGenXPaths, list_of_HUC, LEVEL, VPUID, MODEL_NAME, NAME):
+        self.SWATGenXPaths = SWATGenXPaths  
         self.BASE_PATH = SWATGenXPaths.database_dir  
         self.list_of_HUC = list_of_HUC
         self.LEVEL = LEVEL  
@@ -134,7 +131,7 @@ class NHD_SWATPlus_Extractor:
         return streams
     
     def load_and_clean_lakes(self, criteria=0.1):
-        Lakes_path = f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/NHDWaterbody.pkl'
+        Lakes_path = f'{self.SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/NHDWaterbody.pkl'
         Lakes = gpd.GeoDataFrame(pd.read_pickle(Lakes_path), geometry='geometry')
         self.logger.info(f"Total number of lakes added: {len(Lakes)}")
         Lakes ['LakeId'] = Lakes.Permanent_Identifier
@@ -175,7 +172,7 @@ class NHD_SWATPlus_Extractor:
 
     def extract_initial_streams(self):
         # Load data and select the area of interest
-        os.makedirs(os.path.join(SWATGenXPaths.swatgenx_outlet_path, self.VPUID, self.LEVEL), exist_ok=True)
+        os.makedirs(os.path.join(self.SWATGenXPaths.swatgenx_outlet_path, self.VPUID, self.LEVEL), exist_ok=True)
         streams = gpd.GeoDataFrame(pd.read_pickle(self.streams_pickle_path), geometry='geometry')
         streams = streams[~streams.huc12.isna()].reset_index(drop=True)
         self.logger.info(f"Number of streams loaded: {streams.shape[0]}")
@@ -362,7 +359,7 @@ class NHD_SWATPlus_Extractor:
         self.process_lakes(streams)
 
 
-        watersheds = gpd.GeoDataFrame(pd.read_pickle(f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/watersheds.pkl'), geometry='geometry', crs=EPSG)
+        watersheds = gpd.GeoDataFrame(pd.read_pickle(f'{self.SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/watersheds.pkl'), geometry='geometry', crs=EPSG)
 
         watersheds = watersheds.merge(streams[['Subbasin','huc12','huc8','Subbasin_level_1','NHDPlusID']]).reset_index(drop=True)
         self.report_area(watersheds,title='Watersheds')
@@ -671,7 +668,7 @@ class NHD_SWATPlus_Extractor:
 
 
 
-def writing_swatplus_cli_files(VPUID, LEVEL, NAME):  
+def writing_swatplus_cli_files(SWATGenXPaths, VPUID, LEVEL, NAME):  
     SWAT_MODEL_PRISM_path = f'{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/'
     ## get the name of files
     files = os.listdir(SWAT_MODEL_PRISM_path)
