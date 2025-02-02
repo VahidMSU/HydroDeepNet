@@ -19,13 +19,14 @@ export PATH=$PATH:$QGIS_ROOT/bin
 # Set QGIS specific environment variables
 export QGIS_DEBUG=-1
 
+
+
 # If necessary, adjust the QT plugin path
 export QT_PLUGIN_PATH=$QGIS_ROOT/qtplugins
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
 
 # Change to your project directory
 cd "/data/SWATGenXApp/codes/SWATGenX/SWATGenX"
 
-
 # Run the Python script with Xvfb (headless display)
-#xvfb-run -a python3 -c "from QSWATPlus3_64 import runHUCProject; runHUCProject(VPUID='0405', LEVEL='huc12', NAME='04101370', MODEL_NAME='SWAT_MODEL')"
-xvfb-run -a python3 -c "from QSWATPlus3_64 import runHUCProject; runHUCProject(VPUID = '0206', LEVEL = 'huc12', NAME = '01491500', MODEL_NAME = 'SWAT_MODEL')"
+

@@ -167,7 +167,7 @@ class SWATGenXCommand:
 				"LEVEL": "huc12",
 				"list_of_huc12s": list_of_huc12s,
 			})
-			core = SWATGenXCore(self.config)
+			core = SWATGenXCore(self.paths, self.config)
 			core.process()
 			return f"{self.paths.swatgenx_outlet_path}/{vpuid}/huc12/{station_name}/"
 
@@ -260,7 +260,7 @@ class SWATGenXCommand:
 					})
 
 					# Prepare function call
-					wrapped_SWATGenXCore = partial(SWATGenXCore_run, self.config)
+					wrapped_SWATGenXCore = partial(SWATGenXCore_run, self.paths, self.config)
 
 					# If the queue is already full, wait until at least one finishes
 					while len(futures) >= max_queue_size:
