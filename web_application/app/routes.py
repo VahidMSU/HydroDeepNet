@@ -1,24 +1,30 @@
-from flask import render_template, redirect, url_for, request, flash, jsonify, current_app, session
-from flask_login import login_user, logout_user, login_required, current_user
+from flask import (render_template, redirect, url_for, request, flash,
+				jsonify, current_app, session,
+				send_from_directory, redirect, url_for, flash)
+
+from flask_login import (login_user, logout_user,
+						login_required, current_user)
+
 from app.models import User, ContactMessage
-from app.forms import RegistrationForm, LoginForm, ContactForm, ModelSettingsForm, HydroGeoDatasetForm
+
+from app.forms import (RegistrationForm, LoginForm, 
+						ContactForm, ModelSettingsForm, 
+						HydroGeoDatasetForm)
+
 from app.extensions import db
-from functools import partial
+from functools import partial, wraps
 from multiprocessing import Process
-from app.utils import find_station, get_huc12_geometries, get_huc12_streams_geometries, get_huc12_lakes_geometries
-from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
+from app.utils import (find_station, get_huc12_geometries, get_huc12_streams_geometries,
+						 get_huc12_lakes_geometries, send_verification_email, LoggerSetup, 
+		 				single_model_creation, hydrogeo_dataset_dict, read_h5_file) 
 import os
 import json
-from app.utils import LoggerSetup, single_model_creation, hydrogeo_dataset_dict, read_h5_file
 import numpy as np
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import pandas as pd
-from  app.utils import send_verification_email
-from functools import wraps
-from flask_login import current_user
-from flask import redirect, url_for, flash
-from flask import send_from_directory, current_app
 from app.forms import VerificationForm
+import requests
+
 
 def verified_required(f):
     @wraps(f)
@@ -182,16 +188,66 @@ class AppManager:
 				return jsonify({"gif_files": gif_urls, "png_files": static_plot_files})
 
 			return render_template('visualizations.html', name=name, ver=ver, variables=variables, gif_files=gif_urls, png_files=static_plot_files)
+		
+
+		@self.app.route('/oauth_callback')
+		def oauth_callback():
+			code = request.args.get('code')
+			if not code:
+				flash('Authorization failed. Please try again.', 'danger')
+				return redirect(url_for('login'))
+
+			# Exchange the code for an access token
+			token_url = "https://oauth.msu.edu/token"
+			payload = {
+				"code": code,
+				"client_id": "dummy",# CLIENT_ID,
+				"client_secret": "dummy",#CLIENT_SECRET,
+				"redirect_uri": url_for('oauth_callback', _external=True),
+				"grant_type": "authorization_code"
+			}
+			response = requests.post(token_url, data=payload)
+			if response.status_code != 200:
+				flash('Failed to authenticate with MSU. Please try again.', 'danger')
+				return redirect(url_for('login'))
+
+			token = response.json().get("access_token")
+
+			# Retrieve user info
+			user_info_url = "https://oauth.msu.edu/userinfo"
+			headers = {"Authorization": f"Bearer {token}"}
+			user_info_response = requests.get(user_info_url, headers=headers)
+			if user_info_response.status_code != 200:
+				flash('Failed to retrieve user information.', 'danger')
+				return redirect(url_for('login'))
+
+			user_info = user_info_response.json()
+			msu_netid = user_info.get('netid')
+			email = user_info.get('email')
+
+			# Check if the user already exists
+			user = User.query.filter_by(username=msu_netid).first()
+			if not user:
+				# Create a new user
+				user = User(username=msu_netid, email=email, password="")  # No password needed for MSU login
+				db.session.add(user)
+				db.session.commit()
+
+			# Log the user in
+			login_user(user)
+			self.logger.info(f"MSU login successful for: {msu_netid}")
+			return redirect(url_for('home'))
+
 
 		@self.app.route('/login', methods=['GET', 'POST'])
 		def login():
-			self.logger.info("Login route called")	
+			self.logger.info("Login route called")
 			form = LoginForm()
 
 			if form.validate_on_submit():
 				username = form.username.data
 				password = form.password.data
-				self.logger.warning(f"############### Login for: {username}")	
+				self.logger.warning(f"Login attempt for: {username}")
 
 				user = User.query.filter_by(username=username).first()
 				if user and user.check_password(password):
@@ -203,49 +259,76 @@ class AppManager:
 					self.logger.error("Invalid username or password")
 					flash('Invalid username or password', 'danger')
 
-			return render_template('login.html', form=form)
+			# ✅ Allow MSU NetID login as an **OPTION**, but do not require it
+			#msu_login_url = (
+			#	"https://oauth.msu.edu/authorize?"
+			#	f"response_type=code&client_id={CLIENT_ID}&"
+			#	f"redirect_uri={url_for('oauth_callback', _external=True)}&"
+			#	"scope=profile"
+			#)
+
+			return render_template('login.html', form=form)#, msu_login_url=msu_login_url)
+
+		from app.sftp_manager import create_sftp_user  # Import the SFTP user creation function
 
 		@self.app.route('/signup', methods=['GET', 'POST'])
 		def signup():
+			"""
+			- Use at least one uppercase, one lowercase, and one number.
+			- Use special characters (@ # $ ^ & * - _ ! + = [ ] { } | \ : ' , . ? / ` ~ ” ( ) ;).
+			- Do not include your first, middle, or last name.
+			- Do not reuse old passwords or share them.
+			"""
 			self.logger.info("Sign Up route called")
 			form = RegistrationForm()
+
 			if form.validate_on_submit():
-				# Send the email and generate a code
+				# Generate verification code
 				verification_code = send_verification_email(form.email.data)
 				self.logger.info("Form validated successfully")
 
-				# Create the new user
+				# ✅ Create the new user
 				new_user = User(
 					username=form.username.data,
 					email=form.email.data,
-					password=form.password.data,  # hashed in setter
+					password=form.password.data,  # Hashed internally
 					verification_code=verification_code
 				)
-				
+
 				db.session.add(new_user)
 				db.session.commit()
+
 				try:
-					# Double-check addition to DB, though once is typically enough
+					# 🔹 **Ensure user is added before creating SFTP**
 					db.session.add(new_user)
 					db.session.commit()
 					self.logger.info("User added to DB but not verified yet.")
 
-					# **Log them in** immediately
+					# ✅ **Automatically Create an SFTP Account**
+					sftp_result = create_sftp_user(new_user.username)
+
+					if sftp_result.get("status") != "success":
+						self.logger.error(f"Failed to create SFTP account for {new_user.username}: {sftp_result.get('error')}")
+						flash("SFTP account creation failed. Contact support.", "danger")
+
+					# ✅ **Log the user in immediately**
 					login_user(new_user)
 
-					# **Redirect** straight to verify route
+					# ✅ **Redirect to verification page**
 					flash("Please check your email and enter the verification code below.")
 					return redirect(url_for('verify'))
 
 				except Exception as e:
 					self.logger.error(f"Error adding user to the database: {e}")
 					db.session.rollback()
-					flash('An error occurred while creating the account. Please try again.')
+					flash("An error occurred while creating the account. Please try again.", "danger")
+
 			else:
 				self.logger.error("Form validation failed")
 				for field, errors in form.errors.items():
 					for error in errors:
 						self.logger.error(f"Error in {field}: {error}")
+
 			return render_template('register.html', form=form)
 
 
@@ -290,8 +373,8 @@ class AppManager:
 					self.logger.error("Invalid input received for model settings")
 
 				self.logger.info(f"Model settings received: {site_no}, {ls_resolution}, {dem_resolution}, {calibration_flag}, {validation_flag}, {sensitivity_flag}, {cal_pool_size}, {sen_pool_size}, {sen_total_evaluations}, {num_levels}, {max_cal_iterations}, {verification_samples}")	
-				
-				wrapped_single_model_creation = partial(single_model_creation, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
+			
+				wrapped_single_model_creation = partial(single_model_creation, current_user.username, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
 				process = Process(target=wrapped_single_model_creation)
 				process.start()
 				self.logger.info("Model creation process started")

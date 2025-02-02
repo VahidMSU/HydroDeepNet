@@ -303,7 +303,7 @@ def get_rowcol_index_by_latlon(desired_lat, desired_lon):
 
         return lat_idx, lon_idx
 
-def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples):
+def single_model_creation(username, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples):
     logging.info(f"Starting model creation for site_no: {site_no}")
     
     BASE_PATH = os.getenv('BASE_PATH', '/data/SWATGenXApp/GenXAppData/')
@@ -343,14 +343,26 @@ def single_model_creation(site_no, ls_resolution, dem_resolution, calibration_fl
         "pet": 2,
         "cn": 1,
         "no_value": 1e6,
-        "verification_samples": verification_samples
+        "verification_samples": verification_samples,
+        "username": username,
     }
 
     logger.info(f"Configuration: {config}")
     # Model creation
-    commander = SWATGenXCommand(config)
-    model_path = commander.execute()
-
+    
+    os.makedirs(f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID", exist_ok=True)
+    
+    if not os.path.exists(f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/"):
+         logger.error(f"Output directory not found: /data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/")
+    else:
+        logger.info(f"Output directory found: /data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/")
+    try:
+        commander = SWATGenXCommand(config)
+        model_path = commander.execute()
+    except Exception as e:
+        logger.error(f"Model creation failed: {e}")
+        
+    logger.info(f"Model created successfully: {model_path}")    
     # Calibration, validation, sensitivity analysis
     #if calibration_flag or validation_flag or sensitivity_flag:
     #    process_SCV_SWATGenXModel(config)

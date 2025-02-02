@@ -25,9 +25,10 @@ class SWATGenXCommand:
 		Args:
 			swatgenx_config (dict): Configuration settings for the SWATGenX command.
 		"""
+		self.paths = SWATGenXPaths(**swatgenx_config)
 		self.config = swatgenx_config
 		self.logger = LoggerSetup(verbose=True, rewrite=True).setup_logger("SWATGenXCommand")
-
+		self.logger.info(f"usernames: {self.config.get('username')}, outpath: {self.paths.swatgenx_outlet_path}")		
 	def find_VPUID(self, station_no, level="huc12"):
 		"""
 		Finds the VPUID for a given station number.
@@ -44,7 +45,7 @@ class SWATGenXCommand:
 		if level == "huc8":
 			return f"0{int(station_no)[:3]}"
 
-		conus_streamflow_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={'site_no': str, 'huc_cd': str})
+		conus_streamflow_data = pd.read_csv(self.paths.USGS_CONUS_stations_path, dtype={'site_no': str, 'huc_cd': str})
 		return conus_streamflow_data[conus_streamflow_data.site_no == station_no].huc_cd.values[0][:4]
 	def generate_huc12_list(self, huc8, vpuid):
 		"""
@@ -59,7 +60,7 @@ class SWATGenXCommand:
 		Returns:
 			dict: A dictionary mapping HUC8 codes to their corresponding HUC12 values.
 		"""
-		path = f"{SWATGenXPaths.extracted_nhd_swatplus_path}/{vpuid}/unzipped_NHDPlusVPU/"
+		path = f"{self.paths.extracted_nhd_swatplus_path}/{vpuid}/unzipped_NHDPlusVPU/"
 		gdb_files = [g for g in os.listdir(path) if g.endswith('.gdb')]
 		
 		if not gdb_files:
@@ -103,7 +104,7 @@ class SWATGenXCommand:
 			tuple: A tuple containing the list of HUC12s and the corresponding VPUID.
 		"""
 		vpuid = self.find_VPUID(station_name)
-		streamflow_metadata = f"{SWATGenXPaths.streamflow_path}/VPUID/{vpuid}/meta_{vpuid}.csv"
+		streamflow_metadata = f"{self.paths.streamflow_path}/VPUID/{vpuid}/meta_{vpuid}.csv"
 		streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
 
 		drainage_area = streamflow_metadata[streamflow_metadata.site_no == station_name].drainage_area_sqkm.values[0]
@@ -168,7 +169,7 @@ class SWATGenXCommand:
 			})
 			core = SWATGenXCore(self.config)
 			core.process()
-			return f"{SWATGenXPaths.swatgenx_outlet_path}/{vpuid}/huc12/{station_name}/"
+			return f"{self.paths.swatgenx_outlet_path}/{vpuid}/huc12/{station_name}/"
 
 		# If multiple stations, do parallel processing
 		else:
@@ -295,11 +296,11 @@ class SWATGenXCommand:
 		core = SWATGenXCore(self.config)
 		core.process()
 
-		return f"{SWATGenXPaths.swatgenx_outlet_path}/{vpuid}/huc8/{huc8_name}/"
+		return f"{self.paths.swatgenx_outlet_path}/{vpuid}/huc8/{huc8_name}/"
 
 	def get_eligible_stations(self, vpuid):
 		"""Retrieves eligible stations based on drainage area criteria."""
-		streamflow_metadata = f"{SWATGenXPaths.streamflow_path}/VPUID/{vpuid}/meta_{vpuid}.csv"
+		streamflow_metadata = f"{self.paths.streamflow_path}/VPUID/{vpuid}/meta_{vpuid}.csv"
 		if os.path.exists(streamflow_metadata):
 			streamflow_metadata = pd.read_csv(streamflow_metadata, dtype={'site_no': str})
 			eligible_stations = streamflow_metadata[

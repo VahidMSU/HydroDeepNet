@@ -2,6 +2,14 @@ from app.extensions import db
 from app.extensions import bcrypt
 from flask_login import UserMixin
 
+
+from app.extensions import db
+from flask_login import UserMixin
+
+from app.extensions import db
+from flask_login import UserMixin
+
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -9,7 +17,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
 
     # Add these fields
-    is_verified = db.Column(db.Boolean, default=False)
+    is_verified = db.Column(db.Boolean, default=True)
     verification_code = db.Column(db.String(8), nullable=True)
 
     @property

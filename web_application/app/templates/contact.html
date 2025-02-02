@@ -9,6 +9,19 @@ content %}
       you! Please fill out the form below, and we'll get back to you as soon as
       possible.
     </p>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endif %}
+    {% endwith %}
+    
     <form method="post" action="{{ url_for('contact') }}">
       {{ form.hidden_tag() }}
 
