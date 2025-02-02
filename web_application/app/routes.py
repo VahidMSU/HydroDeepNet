@@ -24,7 +24,14 @@ from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import pandas as pd
 from app.forms import VerificationForm
 import requests
-
+from flask import jsonify, url_for, send_from_directory
+from flask_login import login_required, current_user
+import os
+from werkzeug.utils import secure_filename
+import shutil
+import tempfile
+from flask import send_file
+# Add these inside your AppManager.init_routes() method:
 
 def verified_required(f):
     @wraps(f)
@@ -116,6 +123,13 @@ class AppManager:
 		def css_static(filename):
 			css_dir = os.path.join(current_app.root_path, 'css')
 			return send_from_directory(css_dir, filename)
+
+		@self.app.route('/user_dashboard')
+		@login_required
+		@verified_required
+		def user_dashboard():
+			return render_template('user_dashboard.html')
+
 
 		@self.app.route('/dashboard')
 		@login_required
@@ -332,12 +346,7 @@ class AppManager:
 			return render_template('register.html', form=form)
 
 
-		@self.app.route('/logout')
-		def logout():
-			self.logger.info("Logout route called")
-			logout_user()
-			session.clear()
-			return redirect(url_for('login'))
+
 
 		@self.app.route('/home')
 		@login_required
@@ -385,6 +394,125 @@ class AppManager:
 			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
 			station_list = station_data.SiteNumber.unique()
 			return render_template('model_settings.html', form=form, output=output, station_list=station_list)
+
+
+
+
+		@self.app.route('/api/user_files', methods=['GET'])
+		@login_required
+		def api_user_files():
+			"""
+			Lists directories and files for the logged-in user.
+			Supports navigation within subdirectories and provides download links.
+			"""
+			base_user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
+			subdir = request.args.get('subdir', '')  # Get subdirectory from query params (default: root)
+			target_dir = os.path.join(base_user_dir, subdir)
+
+			# Security check: Ensure the requested path stays within the user's directory
+			if not target_dir.startswith(base_user_dir) or not os.path.exists(target_dir):
+				return jsonify({'error': 'Unauthorized or invalid path'}), 403
+
+			self.logger.info(f"Listing contents for {current_user.username} in: {target_dir}")
+
+			# Initialize response structure
+			contents = {
+				'current_path': subdir,
+				'parent_path': os.path.dirname(subdir) if subdir else '',  # Parent directory for navigation
+				'directories': [],
+				'files': []
+			}
+
+			# Ensure the directory exists
+			if os.path.isdir(target_dir):
+				for item in os.listdir(target_dir):
+					safe_item = secure_filename(item)  # Prevent path traversal
+					item_path = os.path.join(target_dir, safe_item)
+
+					if os.path.isdir(item_path):
+						contents['directories'].append({
+							'name': safe_item,
+							'path': os.path.join(subdir, safe_item).lstrip('/'),
+							'download_zip_url': url_for('download_directory', dirpath=f"{subdir}/{safe_item}".lstrip('/'))
+						})
+					elif os.path.isfile(item_path):
+						contents['files'].append({
+							'name': safe_item,
+							'download_url': url_for('download_user_file', filename=f"{subdir}/{safe_item}".lstrip('/'))
+						})
+
+			return jsonify(contents)
+
+
+		@self.app.route('/download/<path:filename>', methods=['GET'])
+		@login_required
+		def download_user_file(filename):
+			"""
+			Securely serves individual files from the user's directory.
+			"""
+			user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
+			full_path = os.path.join(user_dir, filename)
+
+			# Security check: Ensure the requested file is within the user's directory
+			if not full_path.startswith(user_dir) or not os.path.isfile(full_path):
+				return jsonify({'error': 'File not found or access denied'}), 404
+
+			directory, file = os.path.split(full_path)
+			return send_from_directory(directory, file, as_attachment=True)
+
+
+		@self.app.route('/download-directory/<path:dirpath>', methods=['GET'])
+		@login_required
+		def download_directory(dirpath):
+			"""
+			Compresses the requested directory into a ZIP file and serves it for download.
+			"""
+			user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
+			full_dir_path = os.path.join(user_dir, dirpath)
+
+			# Ensure the requested directory is within the user's allowed directory
+			if not full_dir_path.startswith(user_dir) or not os.path.isdir(full_dir_path):
+				self.logger.error(f"Unauthorized directory access or not found: {full_dir_path}")
+				return jsonify({'error': 'Directory not found or access denied'}), 404
+
+			self.logger.info(f"Creating ZIP for directory: {full_dir_path}")
+
+			# Create a temporary ZIP file
+			with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
+				zip_path = tmp_zip.name  # Temporary file path
+
+			# Create ZIP archive
+			try:
+				shutil.make_archive(zip_path[:-4], 'zip', full_dir_path)  # Strip .zip from tempfile path
+			except Exception as e:
+				self.logger.error(f"Failed to create ZIP: {e}")
+				return jsonify({'error': 'Failed to create ZIP file'}), 500
+
+			zip_file_name = f"{os.path.basename(dirpath)}.zip"
+			final_zip_path = zip_path[:-4] + ".zip"  # Ensure proper file name
+
+			# Ensure ZIP exists before sending
+			if not os.path.exists(final_zip_path):
+				self.logger.error(f"ZIP file missing: {final_zip_path}")
+				return jsonify({'error': 'ZIP file not found'}), 500
+
+			return send_file(final_zip_path, as_attachment=True, download_name=zip_file_name)
+
+
+
+
+		@self.app.route('/logout', methods=['GET'])
+		@login_required
+		def logout():
+			"""
+			Logs the user out and redirects to the login page.
+			"""
+			self.logger.info(f"User {current_user.username} logged out.")
+			logout_user()
+			session.clear()  # Clear all session data
+			flash("You have been logged out successfully.", "info")
+			return redirect(url_for('login'))
+
 
 		@self.app.route('/get_station_characteristics', methods=['GET'])
 		def get_station_characteristics():
