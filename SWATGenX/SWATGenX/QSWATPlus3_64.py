@@ -192,45 +192,57 @@ def runProject(base_directory, dataDir, scale, minHRUha):
             sys.stdout.write('ERROR: exception: {0}\n'.format(traceback.format_exc()))
             sys.stdout.flush()
 
-def main(VPUID,LEVEL,NAME, MODEL_NAME):
-    app = QgsApplication([], True)
-    QgsApplication.initQgis()
-    atexit.register(QgsApplication.exitQgis)
-    direc = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{MODEL_NAME}.qgs"
-    ## delete the database file if it exists
-    if os.path.exists(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"):
-        ### remove all files and no directories
-        files = glob.glob(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/*")
-        for f in files:
-            ## do not remove directories
-            if os.path.isfile(f):
-                os.remove(f)
-    else:
-        os.makedirs(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/")
-    dataDir = "H:/Data"
-    scale = 8
-    minHRUha = 0.00
-    inletId = 0
-
-    base_directory = os.path.dirname(direc)
-    print('Running project {0}'.format(base_directory))
+def main(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logger):
     try:
-        print(' ### debug: base_directory {0}'.format(base_directory), ' ###')
-        print(' ### debug: dataDir {0}'.format(dataDir), ' ###')
-        print(' ### debug: scale {0}'.format(scale), ' ###')
-        print(' ### debug: minHRUha {0}'.format(minHRUha), ' ###')
-        print(' ### debug: inletId {0}'.format(inletId), ' ###')
+        logger.info(f"Running project {VPUID}") 
+        app = QgsApplication([], True)
+        QgsApplication.initQgis()
+        atexit.register(QgsApplication.exitQgis)
+        direc = f"{SWATGenXPaths_swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{MODEL_NAME}.qgs"
+        ## delete the database file if it exists
+        if os.path.exists(f"{SWATGenXPaths_swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"):
+            ### remove all files and no directories
+            files = glob.glob(f"{SWATGenXPaths_swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/*")
+            for f in files:
+                ## do not remove directories
+                if os.path.isfile(f):
+                    os.remove(f)
+        else:
+            os.makedirs(f"{SWATGenXPaths_swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/")
+        dataDir = "H:/Data"
+        scale = 8
+        minHRUha = 0.00
+        inletId = 0
 
-        huc = runHUC(base_directory, None)
-        huc.runProject(dataDir, scale, minHRUha)
-        print('Completed project {0}'.format(base_directory))
-    except Exception:
-        print('ERROR: exception: {0}'.format(traceback.format_exc()))
+        base_directory = os.path.dirname(direc)
+        #print('Running project {0}'.format(base_directory))
+        try:
+            #print(' ### debug: base_directory {0}'.format(base_directory), ' ###')
+            #print(' ### debug: dataDir {0}'.format(dataDir), ' ###')
+            #print(' ### debug: scale {0}'.format(scale), ' ###')
+            #print(' ### debug: minHRUha {0}'.format(minHRUha), ' ###')
+            #print(' ### debug: inletId {0}'.format(inletId), ' ###')
+            logger.info(f"base_directory {base_directory}")
+            logger.info(f"dataDir {dataDir}")
+            logger.info(f"scale {scale}")
+            logger.info(f"minHRUha {minHRUha}")
+            logger.info(f"inletId {inletId}")
 
-    app.exitQgis()
-    app.exit()
-    del app
+            huc = runHUC(base_directory, None)
+            huc.runProject(dataDir, scale, minHRUha)
+            #print('Completed project {0}'.format(base_directory))
+            logger.info(f"Completed project {base_directory}")
+        except Exception:
+            #print('ERROR: exception: {0}'.format(traceback.format_exc()))
+            logger.error(f"ERROR: exception: {traceback.format_exc()}")
+
+        app.exitQgis()
+        app.exit()
+        del app
+    except Exception as e:
+        logger.error(f"Error in runHUCProject: {e}")
+        logger.error(traceback.format_exc())
 
 
-def runHUCProject(VPUID,LEVEL,NAME, MODEL_NAME):
-    main(VPUID, LEVEL, NAME, MODEL_NAME)
+def runHUCProject(VPUID,LEVEL,NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logger):
+    main(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path, logger)

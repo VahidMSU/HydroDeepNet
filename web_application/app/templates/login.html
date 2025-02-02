@@ -16,6 +16,28 @@
           <div class="card shadow">
             <div class="card-body p-4">
               <h2 class="text-center mb-4">Login</h2>
+
+              <!-- Flash Messages -->
+              {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+              <div class="alert alert-warning" role="alert">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              </div>
+              {% endif %} {% endwith %}
+
+              <!-- MSU NetID Login Button -->
+              <div class="d-grid mb-3">
+                <a
+                  href="{{ url_for('login', msu_oauth=True) }}"
+                  class="btn btn-success"
+                >
+                  Login with MSU NetID
+                </a>
+              </div>
+
+              <!-- Form Login -->
               <form method="post" action="{{ url_for('login') }}">
                 {{ form.hidden_tag() }}
 

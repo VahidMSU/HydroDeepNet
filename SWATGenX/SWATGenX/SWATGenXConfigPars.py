@@ -61,13 +61,51 @@ class SWATGenXPaths:
     prism_start_year: int = 1990
     prism_end_year: int = 2022
 
-    start_year: int = 2000
-    end_year: int = 2021
+    start_year: int = 2015  # Changed to match `START_YEAR`
+    end_year: int = 2022  # Changed to match `END_YEAR`
+    single_model: bool = True
+    sensitivity_flag: bool = False
+    calibration_flag: bool = False
+    verification_flag: bool = False
+    nyskip: int = 3
+    sen_total_evaluations: int = 1000
+    sen_pool_size: int = 180
+    num_levels: int = 10
+    cal_pool_size: int = 50
+    max_cal_iterations: int = 25
+    termination_tolerance: int = 10
+    epsilon: float = 0.0001
+    Ver_START_YEAR: int = 2004
+    Ver_END_YEAR: int = 2022
+    Ver_nyskip: int = 3
+    range_reduction_flag: bool = False
+    pet: int = 2
+    cn: int = 1
+    no_value: float = 1000000.0
+    verification_samples: int = 25
 
-    exe_start_year: int = 2000
-    exe_end_year: int = 2001
-
-
+    LEVEL: str = None
+    NAME: str = None
+    MODEL_NAME: str = None
+    BASE_PATH: str = None
+    MAX_AREA: int = None
+    MIN_AREA: int = None
+    landuse_product: str = None
+    landuse_epoch: str = None
+    ls_resolution: str = None
+    dem_resolution: str = None
+    station_name: list = None
+    GAP_percent: int = None
+    username: str = None    
+    START_YEAR: int = None
+    END_YEAR: int = None
 
     def construct_path(self, *args) -> str:
         return os.path.join(self.base_path, *args)
+    
+
+    ### define post initi and if username is not None, then override the swatgex_outlet_path
+    def __post_init__(self):
+        if self.username is not None:
+            self.swatgenx_outlet_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
+           

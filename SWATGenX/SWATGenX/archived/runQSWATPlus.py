@@ -8,7 +8,7 @@ except ImportError:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME):
-    print(f"Running QSWATPlus for {NAME}")
+    print(f"runQSWATPlus: Running QSWATPlus for {NAME}")
 
     # Validate QSWATPlus path
     runQSWATPlus_path = SWATGenXPaths.runQSWATPlus_path

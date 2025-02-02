@@ -85,30 +85,35 @@ class SWATGenXCore:
 
 
 	def runQSWATPlus(self):
-		self.logger.info(f"Running QSWATPlus for {self.NAME}")
-
-		# Validate QSWATPlus path
-		runQSWATPlus_path = SWATGenXPaths.runQSWATPlus_path
 		
-		#assert os.path.exists(runQSWATPlus_path), f"File {runQSWATPlus_path} does not exist"
-		
-		# Set QGIS-related environment variables
-		os.environ["PYTHONPATH"] = "/usr/lib/python3/dist-packages:" + os.environ.get("PYTHONPATH", "")
-		os.environ["QGIS_ROOT"] = "/usr/share/qgis"
-		os.environ["PYTHONPATH"] += f":{os.environ['QGIS_ROOT']}/python:{os.environ['QGIS_ROOT']}/python/plugins:{os.environ['QGIS_ROOT']}/python/plugins/processing"
-		os.environ["PYTHONHOME"] = "/usr"
-		os.environ["PATH"] += f":{os.environ['QGIS_ROOT']}/bin"
-		os.environ["QGIS_DEBUG"] = "-1"
-		os.environ["QT_PLUGIN_PATH"] = os.environ["QGIS_ROOT"] + "/qtplugins"
+		try:
+			# Validate QSWATPlus path
+			runQSWATPlus_path = self.paths.runQSWATPlus_path
+			
+			#assert os.path.exists(runQSWATPlus_path), f"File {runQSWATPlus_path} does not exist"
+			
+			# Set QGIS-related environment variables
+			os.environ["PYTHONPATH"] = "/usr/lib/python3/dist-packages:" + os.environ.get("PYTHONPATH", "")
+			os.environ["QGIS_ROOT"] = "/usr/share/qgis"
+			os.environ["PYTHONPATH"] += f":{os.environ['QGIS_ROOT']}/python:{os.environ['QGIS_ROOT']}/python/plugins:{os.environ['QGIS_ROOT']}/python/plugins/processing"
+			os.environ["PYTHONHOME"] = "/usr"
+			os.environ["PATH"] += f":{os.environ['QGIS_ROOT']}/bin"
+			os.environ["QGIS_DEBUG"] = "-1"
+			os.environ["QT_PLUGIN_PATH"] = os.environ["QGIS_ROOT"] + "/qtplugins"
 
-		# Change directory to the project folder
-		os.chdir("/data/SWATGenXApp/codes/SWATGenX/SWATGenX")
+			# Change directory to the project folder
+			os.chdir("/data/SWATGenXApp/codes/SWATGenX/SWATGenX")
+			os.makedirs(f"{self.paths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}", exist_ok=True)
+			# Construct the Python command to run QSWATPlus
+			self.logger.info(f"Core: Running QSWATPlus for {self.NAME}")
+			python_command = (
+				f"from QSWATPlus3_64 import runHUCProject; "
+				f"runHUCProject(VPUID='{self.VPUID}', LEVEL='{self.LEVEL}', NAME='{self.NAME}', MODEL_NAME='{self.MODEL_NAME}', SWATGenXPaths_swatgenx_outlet_path='{self.paths.swatgenx_outlet_path}, loggers={self.logger})"
+			)
 
-		# Construct the Python command to run QSWATPlus
-		python_command = (
-			f"from QSWATPlus3_64 import runHUCProject; "
-			f"runHUCProject(VPUID='{self.VPUID}', LEVEL='{self.LEVEL}', NAME='{self.NAME}', MODEL_NAME='{self.MODEL_NAME}')"
-		)
+		except Exception as e:
+			self.logger.error(f"Error in running QSWATPlus for {self.NAME}: {e}")
+			return
 
 		# Execute the command using Xvfb for headless operation
 		try:
@@ -116,6 +121,7 @@ class SWATGenXCore:
 		except subprocess.CalledProcessError as e:
 			#print(f"Error: QSWATPlus execution failed with error code {e.returncode}", file=sys.stderr)
 			self.logger.error(f"Error: QSWATPlus execution failed with error code {e.returncode}")
+			self.logger.error(f"Error: QSWATPlus execution failed with error code {e}")
 		# Validate the output
 
 
@@ -243,23 +249,26 @@ class SWATGenXCore:
 		generate_swatplus_shapes(
 			self.list_of_huc12s, self.VPUID, self.LEVEL, self.NAME, self.EPSG, self.MODEL_NAME
 		)
-		
-		generate_swatplus_rasters(
-			self.VPUID,
-			self.LEVEL,
-			self.NAME,
-			self.MODEL_NAME,
-			self.landuse_product,
-			self.landuse_epoch,
-			self.ls_resolution,
-			self.dem_resolution,
-		)
-		
-		self.logger.info(f"Generated SWAT+ shapes and rasters for {self.NAME}, {self.VPUID}")
+		try:
+			generate_swatplus_rasters(
+				self.VPUID,
+				self.LEVEL,
+				self.NAME,
+				self.MODEL_NAME,
+				self.landuse_product,
+				self.landuse_epoch,
+				self.ls_resolution,
+				self.dem_resolution,
+			)
+			
+			self.logger.info(f"Generated SWAT+ shapes and rasters for {self.NAME}, {self.VPUID}")
+		except Exception as e:
+			self.logger.error(f"Error in generating SWAT+ shapes and rasters for {self.NAME}: {e}")
+			return None
 
 		self.list_of_huc12s = [f"{huc12:012d}" for huc12 in self.list_of_huc12s]
-		print("list_of_huc12s:", self.list_of_huc12s)
-
+		self.logger.info(f"list of requested huc12s: {self.list_of_huc12s}")
+		self.logger.info(f"Runnig QSWAT+ for {self.NAME}")
 		self.run_qswat_plus()
 		self.logger.info(f"QSWAT+ processes are completed for {self.NAME}, {self.VPUID}")
 		self.extract_metereological_data()
