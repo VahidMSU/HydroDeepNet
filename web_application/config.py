@@ -1,7 +1,19 @@
 import os
 from datetime import timedelta
+import os
 
 class Config:
+
+    # Shibboleth SSO Configuration
+    CLIENT_ID = "ciwre-bae.campusad.msu.edu"
+    SAML_METADATA_URL = "https://login.msu.edu/idp/shibboleth"
+    SAML_SP_ENTITY_ID = "https://ciwre-bae.campusad.msu.edu/shibboleth"
+    SAML_SP_METADATA = "/etc/shibboleth/sp-metadata.xml"
+    SAML_SP_PRIVATE_KEY = "/etc/shibboleth/sp-key.pem"
+    SAML_SP_CERTIFICATE = "/etc/shibboleth/sp-cert.pem"
+    SAML_LOGIN_REDIRECT = "/sso/login"
+    SAML_LOGOUT_REDIRECT = "/sso/logout"
+
     BASE_PATH = os.getenv('BASE_PATH', '/data/SWATGenXApp/GenXAppData/')
     USGS_PATH = os.getenv('USGS_PATH', '/data/SWATGenXApp/GenXAppData/USGS')
     

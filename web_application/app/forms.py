@@ -15,11 +15,16 @@ class VerificationForm(FlaskForm):
     verification_code = StringField('Verification Code', validators=[DataRequired()])
     submit = SubmitField('Verify')
 
+import re
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
+from flask_wtf import FlaskForm
 class RegistrationForm(FlaskForm):
     """
     RegistrationForm is a Flask-WTF form used for user registration.
 
-    This form collects the username, email, password, and confirmation of the password from the user. It includes validation methods to ensure that the username and email are unique and that the password meets the minimum length requirement.
+    This form collects the username, email, password, and confirmation of the password from the user.
+    It includes validation methods to ensure that the username and email are unique and that the password meets the complexity requirements.
 
     Attributes:
         username (StringField): The username of the user.
@@ -30,29 +35,49 @@ class RegistrationForm(FlaskForm):
 
     Methods:
         validate_username(username): Validates that the username is unique.
-        validate_password(password): Validates that the password meets the minimum length requirement.
+        validate_password(password): Validates that the password meets the complexity requirements.
         validate_email(email): Validates that the email is unique.
     """
 
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    
+    confirm_password = PasswordField(
+        'Confirm Password', 
+        validators=[DataRequired(), EqualTo('password', message="Passwords must match.")]
+    )
+    submit = SubmitField('Sign Up')
 
     def validate_username(self, username):
-        if user := User.query.filter_by(username=username.data).first():
+        """Validates that the username is unique."""
+        if User.query.filter_by(username=username.data).first():
             raise ValidationError('That username is taken. Please choose a different one.')
 
     def validate_password(self, password):
-        if len(password.data) < 8:
+        """
+        Validates that the password meets the complexity requirements:
+        - At least 8 characters long
+        - Contains at least one uppercase letter
+        - Contains at least one lowercase letter
+        - Contains at least one number
+        - Contains at least one special character
+        """
+        password_data = password.data
+        if len(password_data) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
+        if not re.search(r'[A-Z]', password_data):
+            raise ValidationError('Password must contain at least one uppercase letter.')
+        if not re.search(r'[a-z]', password_data):
+            raise ValidationError('Password must contain at least one lowercase letter.')
+        if not re.search(r'\d', password_data):
+            raise ValidationError('Password must contain at least one number.')
+        if not re.search(r'[@#$^&*()_+={}\[\]|\\:;"\'<>,.?/~`-]', password_data):
+            raise ValidationError('Password must contain at least one special character.')
 
     def validate_email(self, email):
-        if user := User.query.filter_by(email=email.data).first():
+        """Validates that the email is unique."""
+        if User.query.filter_by(email=email.data).first():
             raise ValidationError('That email is already in use. Please choose a different one.')
-        
-    submit = SubmitField('Sign Up')
 
 
 class LoginForm(FlaskForm):
