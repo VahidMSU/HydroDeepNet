@@ -30,12 +30,38 @@
         color: red;
         font-size: 0.9rem;
       }
+
+      footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.9rem;
+        color: #555;
+      }
+
+      footer a {
+        color: #007bff;
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
     </style>
   </head>
 
   <body>
     <div class="signup-container">
       <h2>Sign Up</h2>
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="alert alert-info">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
       <form method="post" action="{{ url_for('signup') }}">
         {{ form.hidden_tag() }}
 
@@ -85,5 +111,12 @@
       </div>
       {% endif %}
     </div>
+
+    <!-- Footer Section -->
+    <footer>
+      By signing up, you agree to our
+      <a href="{{ url_for('privacy') }}">Privacy Policy</a> and
+      <a href="{{ url_for('terms') }}">Terms of Service</a>.
+    </footer>
   </body>
 </html>
