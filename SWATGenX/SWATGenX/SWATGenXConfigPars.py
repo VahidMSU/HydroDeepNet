@@ -41,7 +41,7 @@ class SWATGenXPaths:
     # Software Paths
     wgn_db: str = "/data/SWATGenXApp/swatplus_installation/swatplus_wgn.sqlite"
     QSWATPlus_env_path: str = '/home/rafieiva/.local/share/QGIS/QGIS3/profiles/default/python/plugins/QSWATPlusLinux3_64/'
-    runQSWATPlus_path: str = "/data/SWATGenXApp/codes/SWATGenX/runQSWATPlus.sh"
+    runQSWATPlus_path: str = "/data/SWATGenXApp/codes/scripts/runQSWATPlus.sh"
     swat_exe: str = "/data/SWATGenXApp/codes/bin/swatplus"
     bin_path: str = "/data/SWATGenXApp/codes/bin/"
     
@@ -99,6 +99,8 @@ class SWATGenXPaths:
     username: str = None    
     START_YEAR: int = None
     END_YEAR: int = None
+
+    path: str = None
 
     def construct_path(self, *args) -> str:
         return os.path.join(self.base_path, *args)
