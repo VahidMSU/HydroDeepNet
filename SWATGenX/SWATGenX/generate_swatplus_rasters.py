@@ -6,30 +6,29 @@ import pandas as pd
 import rasterio
 import fiona
 from rasterio.mask import mask
-
-# Attempt to import necessary modules, handling potential import errors
 try:
-    from SWATGenX.sa import sa
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-except ImportError:
     from sa import sa
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+except ImportError:
+    from SWATGenX.sa import sa
+# Attempt to import necessary modules, handling potential import errors
 
 
-def generate_swatplus_rasters(vpuid: str, level: str, name: str, model_name: str, 
+
+def generate_swatplus_rasters(SWATGenXPaths, 
+                              vpuid: str, level: str, name: str, model_name: str, 
                                landuse_product: str, landuse_epoch: str, 
                                ls_resolution: str, dem_resolution: str) -> None:
     """Generate SWAT+ raster files."""
-    extractor = SWATplusRasterGenerator(vpuid, name, level, model_name, 
+    extractor = SWATplusRasterGenerator(SWATGenXPaths, vpuid, name, level, model_name, 
                                          landuse_product, landuse_epoch, 
                                          ls_resolution, dem_resolution)
     extractor.generate_rasters()
 
 class SWATplusRasterGenerator:
-    def __init__(self, vpuid: str, name: str, level: str, model_name: str, 
+    def __init__(self, SWATGenXPaths, vpuid: str, name: str, level: str, model_name: str, 
                  landuse_product: str, landuse_epoch: str, 
                  ls_resolution: str, dem_resolution: str):
-        self.paths = SWATGenXPaths()
+        self.paths = SWATGenXPaths
         print(f"################## Generating raster files for {name} {level} {vpuid} ##################")
         
         # Define paths

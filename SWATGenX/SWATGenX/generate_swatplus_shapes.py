@@ -3,12 +3,8 @@ import pandas as pd
 import time
 from SWATGenX.NHD_SWATPlus_Extractor import NHD_SWATPlus_Extractor
 
-try:
-	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-except ImportError:
-	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
-def generate_swatplus_shapes(list_of_huc12s, VPUID, LEVEL, NAME, EPSG, MODEL_NAME):
+def generate_swatplus_shapes(SWATGenXPaths, list_of_huc12s, VPUID, LEVEL, NAME, EPSG, MODEL_NAME):
 
 	SWAT_MODEL_directory = f'{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/'  # Move assignment closer to its usage within a block
 
@@ -31,7 +27,7 @@ def generate_swatplus_shapes(list_of_huc12s, VPUID, LEVEL, NAME, EPSG, MODEL_NAM
 		print("list_of_huc12s is a list of strings")
 		list_of_huc12s = [int(huc12) for huc12 in list_of_huc12s]
 
-	extractor = NHD_SWATPlus_Extractor(list_of_huc12s, LEVEL, VPUID, MODEL_NAME, NAME)
+	extractor = NHD_SWATPlus_Extractor(SWATGenXPaths, list_of_huc12s, LEVEL, VPUID, MODEL_NAME, NAME)
 	
 	streams = extractor.extract_initial_streams()
 

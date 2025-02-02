@@ -1,21 +1,13 @@
 import sys
 import os
 
-try:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    from SWATGenX.utils import get_all_VPUIDs
-except ImportError:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    from utils import get_all_VPUIDs
 
-sys.path.append(SWATGenXPaths.SWATPlusEditor_path)
 
-from actions.run_all import RunAll
-from rest.setup import check_config
-
-def run_swatplus_editor(vpuid: str, level: str, name: str, model_name: str) -> None:
+def run_swatplus_editor(SWATGenXPaths, vpuid: str, level: str, name: str, model_name: str) -> None:
     """Run the SWAT+ Editor for the specified model."""
-
+    sys.path.append(SWATGenXPaths.SWATPlusEditor_path)
+    from actions.run_all import RunAll
+    from rest.setup import check_config
     base_model = os.path.join(SWATGenXPaths.swatgenx_outlet_path, vpuid, level, name)
     assert os.path.exists(base_model), f"Model does not exist in {base_model}"
     print(f"Base model: {base_model}")
@@ -46,4 +38,8 @@ def run_swatplus_editor(vpuid: str, level: str, name: str, model_name: str) -> N
     )
 
 if __name__ == '__main__':
-    run_swatplus_editor("0407", "huc12", "04128990", "SWAT_MODEL_web_application")
+    from SWATGenXConfigPars import SWATGenXPaths
+    SWATGenXPaths.exe_start_year = 2000
+    SWATGenXPaths.exe_end_year = 2021
+    
+    run_swatplus_editor(SWATGenXPaths, "0407", "huc12", "04128990", "SWAT_MODEL_web_application")

@@ -359,10 +359,11 @@ def single_model_creation(username, site_no, ls_resolution, dem_resolution, cali
     try:
         commander = SWATGenXCommand(config)
         model_path = commander.execute()
+        logger.info(f"Model created successfully: {model_path}") 
     except Exception as e:
         logger.error(f"Model creation failed: {e}")
-        
-    logger.info(f"Model created successfully: {model_path}")    
+
+       
     # Calibration, validation, sensitivity analysis
     #if calibration_flag or validation_flag or sensitivity_flag:
     #    process_SCV_SWATGenXModel(config)
