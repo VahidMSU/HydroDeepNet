@@ -1,6 +1,6 @@
-from flask import (render_template, redirect, url_for, request, flash,
-				jsonify, current_app, session,
-				send_from_directory, redirect, url_for, flash)
+from flask import (render_template, url_for, request, flash,
+				jsonify, current_app, session,send_file,
+				send_from_directory, redirect, flash)
 
 from flask_login import (login_user, logout_user,
 						login_required, current_user)
@@ -24,14 +24,9 @@ from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import pandas as pd
 from app.forms import VerificationForm
 import requests
-from flask import jsonify, url_for, send_from_directory
-from flask_login import login_required, current_user
-import os
 from werkzeug.utils import secure_filename
 import shutil
 import tempfile
-from flask import send_file
-# Add these inside your AppManager.init_routes() method:
 
 def verified_required(f):
     @wraps(f)
@@ -52,14 +47,12 @@ def check_existing_models(station_name):
 		huc12_path = os.path.join(swatgenx_output, VPUID, "huc12")
 		models = os.listdir(huc12_path)
 		existing_models.extend(os.path.join(huc12_path, model) for model in models)
-
 	existance_flag = False
 	for model in existing_models:
 		if station_name in model:
 			print(f"Model found for station {station_name} at {model}")
 			existance_flag = True
 			break
-
 	return existance_flag
 
 class AppManager:
@@ -68,9 +61,6 @@ class AppManager:
 		self.init_routes()
 		self.logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/web_application/logs", verbose=True, rewrite=True)
 		self.logger = self.logger.setup_logger("WebAppLogger")
-
-
-
 
 	def init_routes(self):
 		@self.app.route('/')
@@ -102,13 +92,11 @@ class AppManager:
 			# If GET or invalid code, just show the verify template
 			return render_template('verify.html', form=form)
 
-		#privacy
 		@self.app.route('/privacy')
 		def privacy():
 			self.logger.info("Privacy route called")
 			return render_template('privacy.html')
 		
-		#terms
 		@self.app.route('/terms')
 		def terms():
 			self.logger.info("Terms route called")
@@ -129,13 +117,6 @@ class AppManager:
 		@verified_required
 		def user_dashboard():
 			return render_template('user_dashboard.html')
-
-
-		@self.app.route('/dashboard')
-		@login_required
-		@verified_required
-		def dashboard():
-			return render_template('dashboard.html')
 
 		@self.app.route('/get_options', methods=['GET'])
 		@login_required
@@ -203,7 +184,6 @@ class AppManager:
 
 			return render_template('visualizations.html', name=name, ver=ver, variables=variables, gif_files=gif_urls, png_files=static_plot_files)
 		
-
 		@self.app.route('/oauth_callback')
 		def oauth_callback():
 			code = request.args.get('code')
@@ -251,7 +231,6 @@ class AppManager:
 			login_user(user)
 			self.logger.info(f"MSU login successful for: {msu_netid}")
 			return redirect(url_for('home'))
-
 
 		@self.app.route('/login', methods=['GET', 'POST'])
 		def login():
@@ -345,9 +324,6 @@ class AppManager:
 
 			return render_template('register.html', form=form)
 
-
-
-
 		@self.app.route('/home')
 		@login_required
 		@verified_required
@@ -382,7 +358,6 @@ class AppManager:
 					self.logger.error("Invalid input received for model settings")
 
 				self.logger.info(f"Model settings received: {site_no}, {ls_resolution}, {dem_resolution}, {calibration_flag}, {validation_flag}, {sensitivity_flag}, {cal_pool_size}, {sen_pool_size}, {sen_total_evaluations}, {num_levels}, {max_cal_iterations}, {verification_samples}")	
-			
 				wrapped_single_model_creation = partial(single_model_creation, current_user.username, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
 				process = Process(target=wrapped_single_model_creation)
 				process.start()
@@ -394,9 +369,6 @@ class AppManager:
 			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
 			station_list = station_data.SiteNumber.unique()
 			return render_template('model_settings.html', form=form, output=output, station_list=station_list)
-
-
-
 
 		@self.app.route('/api/user_files', methods=['GET'])
 		@login_required
@@ -443,7 +415,6 @@ class AppManager:
 
 			return jsonify(contents)
 
-
 		@self.app.route('/download/<path:filename>', methods=['GET'])
 		@login_required
 		def download_user_file(filename):
@@ -459,7 +430,6 @@ class AppManager:
 
 			directory, file = os.path.split(full_path)
 			return send_from_directory(directory, file, as_attachment=True)
-
 
 		@self.app.route('/download-directory/<path:dirpath>', methods=['GET'])
 		@login_required
@@ -498,9 +468,6 @@ class AppManager:
 
 			return send_file(final_zip_path, as_attachment=True, download_name=zip_file_name)
 
-
-
-
 		@self.app.route('/logout', methods=['GET'])
 		@login_required
 		def logout():
@@ -512,7 +479,6 @@ class AppManager:
 			session.clear()  # Clear all session data
 			flash("You have been logged out successfully.", "info")
 			return redirect(url_for('login'))
-
 
 		@self.app.route('/get_station_characteristics', methods=['GET'])
 		def get_station_characteristics():
@@ -542,15 +508,11 @@ class AppManager:
 					self.logger.error(f"No geometries found for HUC12s: {huc12_list}")
 				if not streams_geometries:
 					self.logger.error(f"No streams geometries found for HUC12s: {huc12_list}")
-
 				if not lakes_geometries:
-					self.logger.error(f"No lakes geometries found for HUC12s: {huc12_list}")
+					self.logger.warning(f"No lakes geometries found for HUC12s: {huc12_list}")
 	
-				# Remove unnecessary keys
 				characteristics.pop('HUC12 ids of the watershed')
-				## add 
 				characteristics['Num HUC12 subbasins'] = len(huc12_list)
-
 				characteristics['geometries'] = geometries
 				characteristics['streams_geometries'] = streams_geometries
 				characteristics['lakes_geometries'] = lakes_geometries
@@ -559,7 +521,8 @@ class AppManager:
 				return jsonify({"error": "Station not found"}), 404
 
 		@self.app.route('/about')
-		
+		@login_required
+		@verified_required
 		def about():
 			self.logger.info("About route called")
 			return render_template('about.html')
@@ -711,14 +674,6 @@ class AppManager:
 			self.logger.info(f"Subvariables for {variable}: {subvariables}")
 
 			return jsonify({"subvariables": subvariables})
-
-		@self.app.route('/ftp-access')
-		@login_required
-		@verified_required
-		def ftp_access():
-			self.logger.info("FTP Access route called")
-			#return render_template('redirect.html')
-			return render_template("ftp_access.html")
 
 		@self.app.route('/deeplearning_models')
 		@login_required

@@ -83,9 +83,9 @@ class SWATGenXPaths:
     cn: int = 1
     no_value: float = 1000000.0
     verification_samples: int = 25
-
+    VPUID: str = None   
     LEVEL: str = None
-    NAME: str = None
+   # NAME: str = None
     MODEL_NAME: str = None
     BASE_PATH: str = None
     MAX_AREA: int = None
@@ -108,6 +108,9 @@ class SWATGenXPaths:
 
     ### define post initi and if username is not None, then override the swatgex_outlet_path
     def __post_init__(self):
+        
         if self.username is not None:
             self.swatgenx_outlet_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
-           
+            self.extracted_swat_prism_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.station_name}/PRISM"
+            os.makedirs(self.extracted_swat_prism_path, exist_ok=True)
+                

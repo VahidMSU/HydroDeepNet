@@ -2,15 +2,10 @@ from app.extensions import db
 from app.extensions import bcrypt
 from flask_login import UserMixin
 
-
-from app.extensions import db
-from flask_login import UserMixin
-
-from app.extensions import db
-from flask_login import UserMixin
-
-
 class User(db.Model, UserMixin):
+    
+    """ User Model for storing user related details """
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(255))
@@ -35,6 +30,9 @@ class User(db.Model, UserMixin):
         return bcrypt.check_password_hash(self.password_hash, plain_password)
 
 class ContactMessage(db.Model):
+    
+    """ Contact Message Model for storing contact messages """
+
     __tablename__ = 'contact_message'
     __table_args__ = {'extend_existing': True}  # Add this line for ContactMessage as well
     id = db.Column(db.Integer, primary_key=True)
