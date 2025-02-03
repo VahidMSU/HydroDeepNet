@@ -2,7 +2,7 @@ import os
 import pandas as pd
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-except ImportError:
+except Exception:
     from SWATGenXConfigPars import SWATGenXPaths
 
 def get_all_VPUIDs():

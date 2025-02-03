@@ -1,5 +1,5 @@
 import sys
-sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX')
+sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
 from SWATGenX.SWATGenXCommand import SWATGenXCommand
 from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
 from SWATGenX.find_station_region import find_station_region
@@ -303,14 +303,28 @@ def get_rowcol_index_by_latlon(desired_lat, desired_lon):
 
         return lat_idx, lon_idx
 
+
+def find_VPUID(station_no):
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths  
+    CONUS_streamflow_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={'site_no': str,'huc_cd': str})
+    return CONUS_streamflow_data[
+        CONUS_streamflow_data.site_no == station_no
+    ].huc_cd.values[0][:4]
+
+
 def single_model_creation(username, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples):
-    logging.info(f"Starting model creation for site_no: {site_no}")
     
+    """ 
+    Create a SWATGenX model for a single USGS site for a given user setting.
+    """
+    
+    VPUID = find_VPUID(site_no)
     BASE_PATH = os.getenv('BASE_PATH', '/data/SWATGenXApp/GenXAppData/')
     from SWATGenX.SWATGenXLogging import LoggerSetup
     logger = LoggerSetup('/data/SWATGenXApp/codes/web_application/logs/', verbose=True, rewrite=False)
     logger.setup_logger(name="WebAppLogger")
     config = {
+        "VPUID": VPUID,
         "BASE_PATH": BASE_PATH,
         "LEVEL": "huc12",
         "MAX_AREA": 5000,
@@ -374,7 +388,7 @@ def single_model_creation(username, site_no, ls_resolution, dem_resolution, cali
     try:
         shutil.make_archive(output_path, 'zip', model_path)
     except Exception as e:
-        logging.error(f"Model creation failed for site_no: {site_no}")
+        logger.error(f"Model creation failed for site_no: {site_no}")
     logger.info(f"Model creation successful for site_no: {site_no}")
     
     return f"{output_path}.zip"
@@ -406,14 +420,10 @@ def get_huc12_streams_geometries(list_of_huc12s):
     list_of_huc12s = [int(x) for x in list_of_huc12s]
     
     ### type as str
-    
-
     gdf = gdf[gdf['huc12'].isin(list_of_huc12s)]
     WBArea_Permanent_Identifier = gdf['WBArea_Permanent_Identifier'].tolist() 
     
     return gdf['geometry'].apply(mapping).tolist(), WBArea_Permanent_Identifier
-
-
 
 def get_huc12_lakes_geometries(list_of_huc12s, WBArea_Permanent_Identifier):
     VPUID = list_of_huc12s[0][:4]
@@ -428,13 +438,9 @@ def get_huc12_lakes_geometries(list_of_huc12s, WBArea_Permanent_Identifier):
     return gdf['geometry'].apply(mapping).tolist()
 
 def find_station(search_term='metal'):
-
     df = find_station_region(search_term)
-
     print(df)
     return df
-
-
 
 if __name__ == '__main__':
 

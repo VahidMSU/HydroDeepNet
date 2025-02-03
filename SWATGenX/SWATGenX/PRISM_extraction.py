@@ -9,19 +9,15 @@ import rasterio
 from functools import partial
 from multiprocessing import Process
 # Comment out if you don't need the fallback imports
-try:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    from SWATGenX.utils import get_all_VPUIDs, return_list_of_huc12s
-except ImportError:
-    from SWATGenXConfigPars import SWATGenXPaths
-    from utils import get_all_VPUIDs, return_list_of_huc12s
+from SWATGenX.utils import get_all_VPUIDs, return_list_of_huc12s
+
 from multiprocessing import Process
 
-def extract_PRISM_parallel(VPUID, LEVEL, NAME, list_of_huc12s=None):
+def extract_PRISM_parallel(SWATGenXPaths, VPUID, LEVEL, NAME, list_of_huc12s=None):
     """
     Main function to extract PRISM data for a given VPUID using parallel processing.
     """
-    extractor = PRISMExtractor(VPUID, LEVEL, NAME, list_of_huc12s)
+    extractor = PRISMExtractor(SWATGenXPaths, VPUID, LEVEL, NAME, list_of_huc12s)
     extractor.run()
 
 
@@ -31,17 +27,18 @@ class PRISMExtractor:
     Extracts PRISM precipitation and temperature data for SWAT+ simulations.
     """
 
-    def __init__(self, VPUID, LEVEL, NAME, list_of_huc12s=None):
+    def __init__(self, SWATGenXPaths, VPUID, LEVEL, NAME, list_of_huc12s=None):
         self.VPUID = VPUID
         self.LEVEL = LEVEL
         self.NAME = NAME
         self.list_of_huc12s = list_of_huc12s
+        self.SWATGenXPaths = SWATGenXPaths
         self._prism_dir = SWATGenXPaths.PRISM_path
         self._outlet_dir = SWATGenXPaths.swatgenx_outlet_path
         self.SWAT_MODEL_PRISM_path = f"{self._outlet_dir}/{self.VPUID}/{self.LEVEL}/{self.NAME}/PRISM"
     def _get_elevation(self, row, col):
         """Helper to extract DEM-based elevation using rasterio."""
-        with rasterio.open(SWATGenXPaths.PRISM_dem_path) as src:
+        with rasterio.open(self.SWATGenXPaths.PRISM_dem_path) as src:
             elev_data = src.read(1)
         return elev_data[row, col]
     
@@ -60,17 +57,17 @@ class PRISMExtractor:
 
         print(f"Clipping PRISM data for {self.VPUID}...")
         wbdhu8 = pd.read_pickle(
-            f"{SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/WBDHU8.pkl"
+            f"{self.SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/WBDHU8.pkl"
         ).to_crs("EPSG:4326")
 
         # Clip the PRISM mesh shapefile
         extent = wbdhu8.total_bounds
-        prism_mesh = gpd.read_file(SWATGenXPaths.PRISM_mesh_path).to_crs("EPSG:4326")
+        prism_mesh = gpd.read_file(self.SWATGenXPaths.PRISM_mesh_path).to_crs("EPSG:4326")
         clipped = prism_mesh.cx[extent[0]:extent[2], extent[1]:extent[3]]
 
         # Overlay with WBDHU12
         wbdhu12 = pd.read_pickle(
-            f"{SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/WBDHU12.pkl"
+            f"{self.SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/WBDHU12.pkl"
         ).to_crs("EPSG:4326")
         clipped_prism = gpd.overlay(clipped, wbdhu12[['huc12', 'geometry']], how='intersection')
         clipped_prism.to_file(clipped_grid_path)
@@ -179,7 +176,7 @@ class PRISMExtractor:
         if self.list_of_huc12s is not None:
             os.makedirs(self.SWAT_MODEL_PRISM_path, exist_ok=True)
             prism_vpuid_grid = prism_vpuid_grid[prism_vpuid_grid['huc12'].isin(self.list_of_huc12s)]
-            prism_mesh = gpd.read_file(SWATGenXPaths.PRISM_mesh_path)
+            prism_mesh = gpd.read_file(self.SWATGenXPaths.PRISM_mesh_path)
             extracted_grid = prism_mesh[
                 (prism_mesh['row'].isin(prism_vpuid_grid['row'])) &
                 (prism_mesh['col'].isin(prism_vpuid_grid['col']))
