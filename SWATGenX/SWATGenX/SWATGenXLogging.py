@@ -1,9 +1,6 @@
 import logging
 import os 
-try:
-	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-except ImportError:
-	from SWATGenXConfigPars import SWATGenXPaths
+
 
 class LoggerSetup:
 	"""
@@ -23,7 +20,7 @@ class LoggerSetup:
 			report_path (str): Path to the directory where the log file will be saved.
 			verbose (bool): Whether to print logs to console. Defaults to True.
 		"""
-		self.report_path = report_path or SWATGenXPaths.report_path
+		self.report_path = report_path or "/data/SWATGenXApp/codes/SWATGenX/logs"
 		self.logger = None
 		self.verbose = verbose
 		self.rewrite = rewrite  

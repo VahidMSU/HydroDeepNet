@@ -4,38 +4,3 @@
   padding: 20px;
   text-align: center;
 }
-
-.logout-buttons {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.logout-btn,
-.cancel-btn {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-
-.logout-btn {
-  background-color: #dc3545;
-  color: white;
-}
-
-.logout-btn:hover {
-  background-color: #c82333;
-}
-
-.cancel-btn {
-  background-color: #007bff;
-  color: white;
-}
-
-.cancel-btn:hover {
-  background-color: #0056b3;
-}

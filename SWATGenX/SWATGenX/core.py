@@ -61,12 +61,14 @@ class SWATGenXCore:
 		return logger.setup_logger("SWATGenXCommand")
 
 	def extract_metereological_data(self):
-		prism_grid_path = os.path.join(self.extracted_swat_prism_path, "PRISM_grid.shp")
-		pcp_cli = os.path.join(self.extracted_swat_prism_path, "pcp.cli")
-		tmp_cli = os.path.join(self.extracted_swat_prism_path, "tmp.cli")
-		slr_cli_path = os.path.join(self.extracted_swat_prism_path, "slr.cli")
-		hmd_cli_path = os.path.join(self.extracted_swat_prism_path, "hmd.cli")
-		wnd_cli_path = os.path.join(self.extracted_swat_prism_path, "wnd.cli")
+		os.makedirs(self.paths.extracted_swat_prism_path, exist_ok=True)
+		self.logger.info(f"paths.extracted_swat_prism_path: {self.paths.extracted_swat_prism_path}")
+		prism_grid_path = os.path.join(self.paths.extracted_swat_prism_path, "PRISM_grid.shp")
+		pcp_cli = os.path.join(self.paths.extracted_swat_prism_path, "pcp.cli")
+		tmp_cli = os.path.join(self.paths.extracted_swat_prism_path, "tmp.cli")
+		slr_cli_path = os.path.join(self.paths.extracted_swat_prism_path, "slr.cli")
+		hmd_cli_path = os.path.join(self.paths.extracted_swat_prism_path, "hmd.cli")
+		wnd_cli_path = os.path.join(self.paths.extracted_swat_prism_path, "wnd.cli")
 
 		if not os.path.exists(prism_grid_path) or not os.path.exists(pcp_cli) or not os.path.exists(tmp_cli):
 			self.extract_prism_data()
@@ -100,29 +102,25 @@ class SWATGenXCore:
 				"hrus2.shp",
 			)
 			success_flag = False
-			self.logger.info(f"hu2_path: {hru2_path}")	
+			self.logger.info(f"hu2_path: {hru2_path}")
 			if not os.path.exists(hru2_path):
 				self.logger.error(f"HRU2 shapefile does not exist for {self.NAME} after running QSWAT+")
-				success_flag = False
-				return success_flag	
-				
+				return False
 			self.logger.info(f"QSWAT+ processes are completed for {self.NAME}, {self.VPUID}")
-			success_flag = True
-			return success_flag
+			return True
 		except Exception as e:
 			self.logger.error(f"Error in running QSWAT+ for {self.NAME}: {e}")
-			success_flag = False
-			return success_flag
+			return False
 
 	def extract_prism_data(self):
 		"""Extracts PRISM data for the watershed."""
-		extract_PRISM_parallel(self.VPUID, self.LEVEL, self.NAME, self.list_of_huc12s)
+		extract_PRISM_parallel(self.paths, self.VPUID, self.LEVEL, self.NAME, self.list_of_huc12s)
 		plot_annual_precipitation(self.VPUID, self.LEVEL, self.NAME)
 		writing_swatplus_cli_files(self.paths, self.VPUID, self.LEVEL, self.NAME)
 		self.logger.info(f"Model extraction completed for {self.NAME}")
 
 	def extract_nsrdb_data(self):
-		NSRDB_extract(self.VPUID, self.LEVEL, self.NAME)
+		NSRDB_extract(self.paths, self.VPUID, self.LEVEL, self.NAME)
 		self.logger.info(f"NSRDB extraction completed for {self.NAME}")
 
 	def write_meta_file(self):
@@ -188,19 +186,20 @@ class SWATGenXCore:
 	def path_setup(self):
 		"""Sets up the paths for the SWATGenX model."""
 		
-		self.extracted_swat_prism_path = self.paths.construct_path(
-		self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "PRISM"
+		self.paths.extracted_swat_prism_path = self.paths.construct_path(
+			self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "PRISM"
 		)
+
 
 		streamflow_shape = self.paths.construct_path(
 			self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "streamflow_data", "stations.shp"
 		)
-
-		if not os.path.exists(streamflow_shape) and os.path.exists(self.extracted_swat_prism_path):
+		
+		if not os.path.exists(streamflow_shape) and os.path.exists(self.paths.extracted_swat_prism_path):
 			self.logger.error(
 				f"The model extraction has failed for {self.NAME} before (PRISM extracted but streamflow shapefile does not exist)"
 			)
-
+		
 
 	def process(self):
 		"""Core function to run the SWATGenX model for a given watershed."""

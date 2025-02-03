@@ -5,17 +5,18 @@ from app.extensions import db, login_manager
 from app.models import User  # Ensure this is imported after db is initialized
 import sys
 from app.utils import LoggerSetup
-sys.path.append(r'/data/SWATGenXApp/codes/SWATGenX')
-
+sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
 from flask_talisman import Talisman  # Import Flask-Talisman
-
-from flask import Flask
-from app.extensions import db, login_manager
 from app.sftp_routes import sftp_bp  # Import the SFTP blueprint
 
 
-
 def create_app():
+
+    """
+    Create a Flask application using the app factory pattern.
+    :return: Flask app
+    """
+    
     logger = LoggerSetup("/data/SWATGenXApp/codes/web_application/logs", rewrite=True)
     logger = logger.setup_logger("app")
     logger.info("Creating app")
@@ -42,7 +43,6 @@ def create_app():
 
     # CSRF Protection
     csrf = CSRFProtect(app)
-
     # Initialize extensions
     db.init_app(app)
 
@@ -51,7 +51,6 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'login'
 
-    
     @login_manager.user_loader
     def load_user(user_id):
         logger.info(f"User ID: {user_id}") 
