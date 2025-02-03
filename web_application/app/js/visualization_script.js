@@ -6,8 +6,9 @@
  */
 function addImage(containerId, imageUrl, altText) {
   const container = document.getElementById(containerId);
-  if (!container)
+  if (!container) {
     return console.error(`Container with ID "${containerId}" not found.`);
+  }
 
   const img = document.createElement("img");
   img.src = imageUrl;
@@ -21,12 +22,13 @@ function addImage(containerId, imageUrl, altText) {
  */
 async function populateDropdowns() {
   const controller = new AbortController(); // To handle fetch cancellation
-  const signal = controller.signal;
+  const {signal} = controller;
 
   try {
     const response = await fetch("/get_options", { signal });
-    if (!response.ok)
+    if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
 
     const data = await response.json();
     if (!data.names || !data.variables) {
@@ -61,8 +63,9 @@ function updateDropdown(
   isMultiple = false
 ) {
   const dropdown = document.getElementById(dropdownId);
-  if (!dropdown)
+  if (!dropdown) {
     return console.error(`Dropdown with ID "${dropdownId}" not found.`);
+  }
 
   dropdown.innerHTML = isMultiple
     ? ""
@@ -106,8 +109,9 @@ async function updateVisualizations() {
     const response = await fetch(`/visualizations?${params.toString()}`, {
       headers: { "X-Requested-With": "XMLHttpRequest" },
     });
-    if (!response.ok)
+    if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
 
     const data = await response.json();
     if (data.error) {
@@ -132,7 +136,9 @@ async function updateVisualizations() {
  */
 function updateVisualizationResults(gifFiles) {
   const gifContainer = document.getElementById("gif_container");
-  if (!gifContainer) return console.error("GIF container not found.");
+  if (!gifContainer) {
+    return console.error("GIF container not found.");
+  }
 
   gifContainer.innerHTML = ""; // Clear previous content
   if (gifFiles.length > 0) {
@@ -159,7 +165,9 @@ function updateVisualizationResults(gifFiles) {
  */
 function toggleError(message = "") {
   const errorMessage = document.getElementById("error_message");
-  if (!errorMessage) return;
+  if (!errorMessage) {
+    return;
+  }
 
   if (message) {
     errorMessage.textContent = message;

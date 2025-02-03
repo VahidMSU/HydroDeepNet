@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+{% extends "layout.html" %} {% block title %}Michigan LP Hydrologic Modeling{%
+endblock %} {% block content %}
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -28,12 +30,6 @@
   </head>
 
   <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <h2>HydroGeoDataset</h2>
-      <a href="/" class="nav-link">Home</a>
-    </div>
-
     <!-- Main Content -->
     <div class="content">
       <!-- Map Section -->
@@ -117,3 +113,5 @@
     <script src="{{ url_for('js_static', filename='HydroGeoDataset_script.js') }}"></script>
   </body>
 </html>
+
+{% endblock %}

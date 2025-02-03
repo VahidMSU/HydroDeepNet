@@ -25,10 +25,13 @@ class SWATGenXCommand:
 		Args:
 			swatgenx_config (dict): Configuration settings for the SWATGenX command.
 		"""
-		self.paths = SWATGenXPaths(**swatgenx_config)
 		self.config = swatgenx_config
+		self.paths = SWATGenXPaths(**swatgenx_config)
+		
 		self.logger = LoggerSetup(verbose=True, rewrite=True).setup_logger("SWATGenXCommand")
 		self.logger.info(f"usernames: {self.config.get('username')}, outpath: {self.paths.swatgenx_outlet_path}")		
+		#self.logger.info(f"extracted_swat_prism_path: {self.paths.extracted_swat_prism_path}")	
+		#os.makedirs(self.paths.extracted_swat_prism_path, exist_ok=True)
 	def find_VPUID(self, station_no, level="huc12"):
 		"""
 		Finds the VPUID for a given station number.
