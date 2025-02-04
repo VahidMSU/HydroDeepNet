@@ -13,7 +13,7 @@ source_path = f'/data2/MyDataBase/SWATGenXAppData/SWAT_input/huc12/{NAME}'
 modflow_model = os.path.join(source_path, "MODFLOW_250m")
 swat_model = os.path.join(source_path, "SWAT_MODEL")
 
-source_path_2 = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}"
+source_path_2 = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}"
 swat_gwflow_model = os.path.join(source_path_2, "SWAT_gwflow_MODEL")
 cal_parameters = os.path.join(source_path_2, "cal_parms_SWAT_gwflow_MODEL.cal")
 best_parameters = os.path.join(source_path_2, "best_solution_SWAT_gwflow_MODEL.txt")

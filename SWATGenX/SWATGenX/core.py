@@ -74,6 +74,7 @@ class SWATGenXCore:
 			self.extract_prism_data()
 
 		if not os.path.exists(slr_cli_path) or not os.path.exists(hmd_cli_path) or not os.path.exists(wnd_cli_path):
+			self.logger.info(f"Extracting NSRDB data for {self.NAME}")
 			self.extract_nsrdb_data()
 
 
