@@ -6,7 +6,7 @@ def add_lookup_table(NAME, ver, lookup_csv):
     """
     Add the lookup table to the SWAT+ output HDF5 file.
     """
-    SWATplus_output = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
+    SWATplus_output = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
     print(f"Processing {SWATplus_output}")
     with h5py.File(SWATplus_output, "r+") as f:
         # Check if Landuse group exists
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     df = pd.read_csv(path)
     lookup_csv = df.to_csv(index=False)  # Convert DataFrame to CSV string
 
-    NAMES = os.listdir("/data/MyDataBase/SWATplus_by_VPUID/0000/huc12")
+    NAMES = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12")
     NAMES.remove("log.txt")
 
     for NAME in NAMES:

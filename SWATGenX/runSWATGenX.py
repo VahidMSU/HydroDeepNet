@@ -82,11 +82,12 @@ if __name__ == "__main__":
         "landuse_epoch": "2021",
         "ls_resolution": "250",
         "dem_resolution": "30",
-        "station_name": ['01583570'],
+        "station_name": ['10336684'],
         "MODEL_NAME": MODEL_NAME,
         "MAX_AREA": 1500,
         "MIN_AREA": 500,
         "GAP_percent": 10,
+        "username":"admin",
         
 #        "username": "vahidr32",
 

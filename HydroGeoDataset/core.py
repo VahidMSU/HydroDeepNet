@@ -123,7 +123,7 @@ class LoggerSetup:
 
 
 def hydrogeo_dataset_dict(path=None):
-	path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+	path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
 	with h5py.File(path,'r') as f:
 		groups = f.keys()
 		hydrogeo_dict = {group: list(f[group].keys()) for group in groups}
@@ -131,7 +131,7 @@ def hydrogeo_dataset_dict(path=None):
 
 
 def read_h5_file(address, lat=None, lon=None, lat_range=None, lon_range=None):
-	path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+	path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
 	with h5py.File(path, 'r') as f:
 		if lat is not None and lon is not None:
 			data = f[address][lat, lon]
@@ -143,7 +143,7 @@ def read_h5_file(address, lat=None, lon=None, lat_range=None, lon_range=None):
 
 
 def get_rowcol_range_by_latlon(desired_min_lat, desired_max_lat, desired_min_lon, desired_max_lon):
-	path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+	path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
 	with h5py.File(path, 'r') as f:
 		# Read latitude and longitude arrays
 		lat_ = f["geospatial/lat_250m"][:]
@@ -182,7 +182,7 @@ def get_rowcol_range_by_latlon(desired_min_lat, desired_max_lat, desired_min_lon
 
 
 def get_rowcol_index_by_latlon(desired_lat, desired_lon, RESOLUTION=250):
-	path = f"/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_{RESOLUTION}.h5"
+	path = f"/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_{RESOLUTION}.h5"
 
 	with h5py.File(path, 'r') as f:
 		lat_ = f["geospatial/lat_250m"][:]
@@ -266,7 +266,7 @@ class DataImporter:
 		self.config = config if isinstance(config, dict) else config.__dict__
 		self.device = device
 		self.config['RESOLUTION'] = 250 if 'RESOLUTION' not in config else config['RESOLUTION']
-		self.config['database_path'] = f'/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_{config["RESOLUTION"]}.h5'
+		self.config['database_path'] = f'/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_{config["RESOLUTION"]}.h5'
 		self.config['geoloc'] = False if 'geoloc' not in config else config['geoloc']
 		self.config['snow'] = False if 'snow' not in config else config['snow']
 		self.config['groundwater'] = False if 'groundwater' not in config else config['groundwater']
@@ -275,9 +275,9 @@ class DataImporter:
 		self.config['geology'] = False if 'geology' not in config else config['geology']
 		self.config['NHDPlus'] = False if 'NHDPlus' not in config else config['NHDPlus']
 		self.config['plot'] = False if 'plot' not in config else config['plot']
-		self.config['pfas_database_path'] = f'/data/MyDataBase/HydroGeoDataset/PFAS_sw_{config["RESOLUTION"]}m.h5'
+		self.config['pfas_database_path'] = f'/data/SWATGenXApp/GenXAppData/HydroGeoDataset/PFAS_sw_{config["RESOLUTION"]}m.h5'
 		self.config['huc8'] = None if 'huc8' not in config else config['huc8']
-		self.config['snowdas_h5_path'] = '/data/MyDataBase/HydroGeoDataset/SNODAS.h5'
+		self.config['snowdas_h5_path'] = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/SNODAS.h5'
 		self.config['video'] = False if 'video' not in config else config['video']
 		self.config['aggregation'] = None if 'aggregation' not in config else config['aggregation']
 		self.logger = LoggerSetup(os.getcwd(), rewrite=True).setup_logger("HydroGeoDataset")
@@ -285,7 +285,7 @@ class DataImporter:
 	def get_database_rows_cols(self):
 
 		""" Get the rows and columns of the database. """
-		path = f"/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_{self.config['RESOLUTION']}.h5"
+		path = f"/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_{self.config['RESOLUTION']}.h5"
 		with h5py.File(path, 'r') as f:
 			reference = f['geospatial/DEM_250m'][:]
 			rows = reference.shape[0]
@@ -394,7 +394,7 @@ class DataImporter:
 
 		if self.config['RESOLUTION'] != 250:
 			raise ValueError("Groundwater head data is only available at 250m RESOLUTION.")
-		path = '/data/MyDataBase/HydroGeoDataset/gw_head.h5'
+		path = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/gw_head.h5'
 		with h5py.File(path, 'r') as f:
 			## NOTE: date from 1-1-1990 to 12-31-2022
 			start_index = (start_year - 1990) * 365
@@ -419,7 +419,7 @@ class DataImporter:
 	def gw_stations_ds(self, stations=None, start_year=2020, end_year=2022) -> np.ndarray:
 		""" Extract the groundwater head data for specific stations from the database. """
 
-		path = '/data/MyDataBase/HydroGeoDataset/gw_head_2d.h5'
+		path = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/gw_head_2d.h5'
 
 		numerical, categorical, _ = self.import_static_data(huc8=False)
 		print(f"Numerical shape: {numerical.shape}, Categorical shape: {categorical.shape}")
@@ -910,7 +910,7 @@ class DataImporter:
 
 		#self.logger.info(f"Size of the mask: {mask.shape}")
 		ppts, tmaxs, tmins = [], [], []
-		PRISM_path = '/data/MyDataBase/HydroGeoDataset/PRISM_ML_250m.h5'
+		PRISM_path = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/PRISM_ML_250m.h5'
 
 		with h5py.File(PRISM_path, 'r') as f:
 			self.logger.info(f"PRISM keys: {f.keys()}")
