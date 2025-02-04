@@ -163,7 +163,7 @@ class LoggerSetup:
 		log_method = log_methods.get(level.lower(), temp_logger.info)
 		log_method(message)
 
-def hydrogeo_dataset_dict(path="/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"):
+def hydrogeo_dataset_dict(path="/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"):
     with h5py.File(path, 'r') as f:
         groups = f.keys()
         hydrogeo_dict = {group: list(f[group].keys()) for group in groups}
@@ -176,7 +176,7 @@ def CDL_lookup(code):
     return df.NAME.values[0]
 
 def read_h5_file(address, lat=None, lon=None, lat_range=None, lon_range=None, logger=None):
-    path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+    path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
 
     if lat is not None and lon is not None:
         if logger:
@@ -257,7 +257,7 @@ def process_data(data, address):
 	return dict_data
 
 def get_rowcol_range_by_latlon(desired_min_lat, desired_max_lat, desired_min_lon, desired_max_lon):
-    path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+    path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
     with h5py.File(path, 'r') as f:
         lat_ = f["geospatial/lat_250m"][:]
         lon_ = f["geospatial/lon_250m"][:]
@@ -282,7 +282,7 @@ def _extract_rowcol_range(combined_mask):
     return min_row_number, max_row_number, min_col_number, max_col_number
 
 def get_rowcol_index_by_latlon(desired_lat, desired_lon):
-    path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+    path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
     with h5py.File(path, 'r') as f:
         lat_ = f["geospatial/lat_250m"][:]
         lat_ = np.where(lat_ == -999, np.nan, lat_)

@@ -1,11 +1,11 @@
 import os 
 import sys
 import pandas as pd
-NAMES = os.listdir("/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/")
+NAMES = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/")
 NAMES.remove("log.txt")
 
 for NAME in NAMES:
-    path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/Default/TxtInOut/"
+    path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/Default/TxtInOut/"
 
     files = os.listdir(path)
 

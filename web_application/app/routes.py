@@ -116,6 +116,7 @@ class AppManager:
 		@login_required
 		@verified_required
 		def user_dashboard():
+			self.logger.info("User Dashboard route called")
 			return render_template('user_dashboard.html')
 
 		@self.app.route('/get_options', methods=['GET'])
@@ -123,7 +124,7 @@ class AppManager:
 		@verified_required
 		def get_options():
 			try:
-				names_path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
+				names_path = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/"
 				variables = ['et', 'perc', 'precip', 'snofall', 'snomlt', 'surq_gen', 'wateryld']
 
 				if os.path.exists(names_path):
@@ -152,7 +153,7 @@ class AppManager:
 				else:
 					return render_template('visualizations.html', error="Please provide NAME, Version, and Variable.")
 
-			base_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
+			base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
 			static_plots_path = os.path.join(base_path, "watershed_static_plots")
 			video_path = os.path.join(base_path, "verifications_videos")
 
@@ -244,13 +245,32 @@ class AppManager:
 
 				user = User.query.filter_by(username=username).first()
 				if user and user.check_password(password):
+					# ✅ Log the user in
 					login_user(user)
 					session.permanent = True
-					self.logger.info(f"Login successful for: {username}")
+
+					# ✅ Check SFTP directory access
+					sftp_home_dir = f"/data/SWATGenXApp/Users/{username}"
+					if not os.path.exists(sftp_home_dir):
+						self.logger.error(f"SFTP home directory missing for {username}. Attempting to create...")
+						os.makedirs(sftp_home_dir, mode=0o770, exist_ok=True)
+						os.chown(sftp_home_dir, user.id, os.getgid())  # Ensure correct ownership
+
+					# ✅ Check if user has correct access
+					if not os.access(sftp_home_dir, os.W_OK):
+						self.logger.error(f"User {username} does not have write access to SFTP directory.")
+						flash("SFTP directory access issue. Contact support.", "danger")
+						return redirect(url_for('logout'))
+
+					self.logger.info(f"SFTP directory verified for {username}: {sftp_home_dir}")
+
+					flash("Login successful!", "success")
 					return redirect(url_for('home'))
 				else:
 					self.logger.error("Invalid username or password")
 					flash('Invalid username or password', 'danger')
+
+			return render_template('login.html', form=form)
 
 			# ✅ Allow MSU NetID login as an **OPTION**, but do not require it
 			#msu_login_url = (
@@ -260,7 +280,7 @@ class AppManager:
 			#	"scope=profile"
 			#)
 
-			return render_template('login.html', form=form)#, msu_login_url=msu_login_url)
+			#return render_template('login.html', form=form)#, msu_login_url=msu_login_url)
 
 		from app.sftp_manager import create_sftp_user  # Import the SFTP user creation function
 
@@ -377,10 +397,11 @@ class AppManager:
 			Lists directories and files for the logged-in user.
 			Supports navigation within subdirectories and provides download links.
 			"""
+			self.logger.info("API User Files route called")
 			base_user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
 			subdir = request.args.get('subdir', '')  # Get subdirectory from query params (default: root)
 			target_dir = os.path.join(base_user_dir, subdir)
-
+			self.logger.info(f"Listing contents for {current_user.username} in: {target_dir}")
 			# Security check: Ensure the requested path stays within the user's directory
 			if not target_dir.startswith(base_user_dir) or not os.path.exists(target_dir):
 				return jsonify({'error': 'Unauthorized or invalid path'}), 403

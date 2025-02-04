@@ -10,18 +10,18 @@ from flask_talisman import Talisman  # Import Flask-Talisman
 from app.sftp_routes import sftp_bp  # Import the SFTP blueprint
 
 
-def create_app():
+def create_app(apptype=None):
 
     """
     Create a Flask application using the app factory pattern.
     :return: Flask app
     """
-    
-    logger = LoggerSetup("/data/SWATGenXApp/codes/web_application/logs", rewrite=True)
-    logger = logger.setup_logger("app")
+
+    logger = LoggerSetup("/data/SWATGenXApp/codes/web_application/logs", rewrite=False)
+    logger = logger.setup_logger("app" if apptype is None else apptype)
     logger.info("Creating app")
 
-    app = Flask(__name__, static_url_path='/static', static_folder='/data/MyDataBase')
+    app = Flask(__name__, static_url_path='/static', static_folder='/data/SWATGenXApp/GenXAppData')
 
     # Apply security configurations
     app.config.from_object(Config)
@@ -29,6 +29,7 @@ def create_app():
     app.config['REMEMBER_COOKIE_SECURE'] = True
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
 
     # ✅ Apply Flask-Talisman with HSTS enabled
     Talisman(
@@ -43,13 +44,16 @@ def create_app():
 
     # CSRF Protection
     csrf = CSRFProtect(app)
+    logger.info("Applying CSRF protection")
     # Initialize extensions
     db.init_app(app)
+    logger.info("Initializing database")
 
     app.register_blueprint(sftp_bp, url_prefix="/api")  # 🔹 Register with /api prefix
-
+    logger.info("Registering SFTP blueprint")
     login_manager.init_app(app)
     login_manager.login_view = 'login'
+    logger.info("Initializing login manager")   
 
     @login_manager.user_loader
     def load_user(user_id):

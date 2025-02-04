@@ -160,7 +160,7 @@ def read_parameter_performance_files(BASE_PATH, NAMES, parameters_name, performa
     return all_df, parameters_df
 
 
-BASE_PATH = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12"
+BASE_PATH = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12"
 NAMES = os.listdir(BASE_PATH)
 NAMES.remove("log.txt")
 parameters_name = "CentralParameters.txt"
