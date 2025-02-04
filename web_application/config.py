@@ -1,9 +1,14 @@
 import os
 from datetime import timedelta
 import os
+import sys
+sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
+
+from SWATGenX.SWATGenXLogging import LoggerSetup
 
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key')
+    logger = LoggerSetup("/data/SWATGenXApp/codes/web_application/logs", rewrite=False)
+    logger = logger.setup_logger("Config")
     
     # Shibboleth SSO Configuration
     SAML_METADATA_URL = "https://login.msu.edu/idp/shibboleth"
@@ -16,11 +21,15 @@ class Config:
 
     BASE_PATH = os.getenv('BASE_PATH', '/data/SWATGenXApp/GenXAppData/')
     USGS_PATH = os.getenv('USGS_PATH', '/data/SWATGenXApp/GenXAppData/USGS')
-    
+
+    try:
     # Read the secret key from a file or environment variable
-    with open('/data/SWATGenXApp/codes/ciwre-bae-crs/ciwre-bae.campusad.msu.edu.key') as f:
-        SECRET_KEY = f.read().strip()
-        
+        with open('/data/SWATGenXApp/codes/ciwre-bae-crs/ciwre-bae.campusad.msu.edu.key') as f:
+            SECRET_KEY = f.read().strip()
+            logger.info("Secret key file found")
+    except FileNotFoundError:
+        logger.error("Secret key file not found")
+        SECRET_KEY = os.getenv
     # OR use environment variable for SECRET_KEY
     # SECRET_KEY = os.getenv('SECRET_KEY', 'your-default-secret-key')
     
@@ -35,3 +44,4 @@ class Config:
     # For debugging/production control
     DEBUG = os.getenv('FLASK_DEBUG', False)
     TESTING = os.getenv('FLASK_TESTING', False)
+    logger.info(f"Debug: {DEBUG}, Testing: {TESTING}")

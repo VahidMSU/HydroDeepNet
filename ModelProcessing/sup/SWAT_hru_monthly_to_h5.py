@@ -17,8 +17,8 @@ import time
 
 def generate_mask(NAME):
     """Generate a mask raster with 30m resolution."""
-    path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/hru_rasterized/hru_30m.tif"
-    mask_raster = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/hru_rasterized/mask_30m.tif"
+    path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/hru_rasterized/hru_30m.tif"
+    mask_raster = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/hru_rasterized/mask_30m.tif"
     with rasterio.open(path, 'r') as src:
         data = src.read(1)
         data = np.where(data < 0.0, -999, data)
@@ -42,13 +42,13 @@ class HydroGenerator:
     def __init__(self, args):
         self.NAME = args["NAME"]
         self.ver = args["ver"]
-        self.h5_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{self.NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{self.ver}/SWATplus_output.h5"
-        self.hru_wb_mon_txt = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{self.NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{self.ver}/hru_wb_mon.txt"
+        self.h5_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{self.NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{self.ver}/SWATplus_output.h5"
+        self.hru_wb_mon_txt = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{self.NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{self.ver}/hru_wb_mon.txt"
         self.variable_name = args["variable_name"]
         self.hru_shape_path = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/huc12/{self.NAME}/SWAT_MODEL/Watershed/Shapes/hrus2.shp"
         self.watershed_boundary_path = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/huc12/{self.NAME}/SWAT_MODEL/Watershed/Shapes/watershed_boundary.shp"
-        self.reference_raster_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{self.NAME}/hru_rasterized/hru_30m.tif"
-        self.mask_raster_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{self.NAME}/hru_rasterized/mask_30m.tif"
+        self.reference_raster_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{self.NAME}/hru_rasterized/hru_30m.tif"
+        self.mask_raster_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{self.NAME}/hru_rasterized/mask_30m.tif"
         self.start_year = 2000
         self.end_year = 2020
         self.chunksize = 100000
@@ -190,15 +190,15 @@ def cleanup_swath5():
     
     """
     
-    NAMES = os.listdir("/data/MyDataBase/SWATplus_by_VPUID/0000/huc12")
+    NAMES = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12")
     NAMES.remove("log.txt")
 
     for NAME in NAMES:
-        path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/hru_rasterized"
+        path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/hru_rasterized"
         if os.path.exists(path):
             shutil.rmtree(path) 
         for ver in range(0, 6):
-            path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
+            path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
             if os.path.exists(path):
                 os.remove(path)
 
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     
     num_workers = 100
     
-    NAMES = [name for name in os.listdir("/data/MyDataBase/SWATplus_by_VPUID/0000/huc12") if name != "log.txt"]
+    NAMES = [name for name in os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12") if name != "log.txt"]
     vers = [0, 1, 2, 3, 4, 5]
 
     test = False

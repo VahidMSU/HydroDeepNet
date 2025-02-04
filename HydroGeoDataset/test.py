@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, request, jsonify
 import h5py
 def hydrogeo_dataset_dict(path=None):
-	path = "/data/MyDataBase/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+	path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
 	with h5py.File(path,'r') as f:
 		groups = f.keys()
 		hydrogeo_dict = {group: list(f[group].keys()) for group in groups}

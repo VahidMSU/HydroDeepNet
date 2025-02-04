@@ -30,7 +30,7 @@ def enforce_alignment(input_raster, output_raster, reference_dem):
 
 
 # Iterate through each directory
-NAMES = os.listdir("/data/MyDataBase/SWATplus_by_VPUID/0000/huc12")
+NAMES = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12")
 NAMES.remove("log.txt")  # Remove unwanted files
 
 for NAME in NAMES:

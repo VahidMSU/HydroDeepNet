@@ -125,12 +125,12 @@ import os
 
 
 if __name__ == "__main__":
-    NAMES = os.listdir("/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/")
+    NAMES = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/")
     NAMES.remove("log.txt")
     for NAME in NAMES:
 
 
         
-        base_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/"
+        base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/"
         remove_first_line(f"{base_path}/CentralPerformance.txt")
         change_column_name(f"{base_path}/CentralPerformance.txt")

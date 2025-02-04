@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
-  loadUserFiles(""); // Load root directory on page load
-
-  function loadUserFiles(subdir) {
-    const endpoint = `/api/user_files?subdir=${encodeURIComponent(subdir)}`;
+  // Define the function BEFORE calling it
+  const loadUserFiles = function (subdir) {
+    const endpoint = `${
+      window.location.origin
+    }/api/user_files?subdir=${encodeURIComponent(subdir)}`;
 
     fetch(endpoint)
       .then((response) => response.json())
@@ -72,5 +73,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("file-list").innerHTML =
           "<p>Error loading files.</p>";
       });
-  }
+  };
+
+  // Now, it's safe to call the function
+  loadUserFiles(""); // Load root directory on page load
 });
