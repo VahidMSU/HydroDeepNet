@@ -12,6 +12,9 @@ from app.routes import AppManager
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_socketio import SocketIO, emit
+
+
 
 # Ensure the system path includes SWATGenX
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
@@ -39,6 +42,20 @@ def create_app():
             "allow_headers": ["Content-Type", "Authorization"]
         }
     })
+
+
+    socketio = SocketIO(app, cors_allowed_origins="*")
+
+    @socketio.on('connect')
+    def on_connect():
+        logger.info('Client connected')
+        emit('message', {'data': 'Connected to WebSocket!'})
+
+
+    @socketio.on('disconnect')
+    def on_disconnect():
+        logger.info('Client disconnected')
+        emit('message', {'data': 'Disconnected from WebSocket!'})
 
     # Load configurations
     app.config.from_object(Config)
@@ -134,5 +151,17 @@ def create_app():
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
         return response
+
+
+    from flask import send_from_directory
+
+    @app.route('/js_static/<path:filename>')
+    def serve_js_static(filename):
+        return send_from_directory('/data/SWATGenXApp/codes/web_application/app/js', filename)
+
+    @app.route('/css_static/<path:filename>')
+    def serve_css_static(filename):
+        return send_from_directory('/data/SWATGenXApp/codes/web_application/app/css', filename)
+
 
     return app
