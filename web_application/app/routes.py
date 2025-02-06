@@ -1,6 +1,6 @@
-from flask import (render_template, url_for, request, flash,
+from flask import (url_for, request,
 				jsonify, current_app, session,send_file,
-				send_from_directory, redirect, flash)
+				send_from_directory, redirect)
 
 from flask_login import (login_user, logout_user,
 						login_required, current_user)
@@ -29,13 +29,15 @@ import shutil
 import tempfile
 
 def verified_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if current_user.is_authenticated and not current_user.is_verified:
-            flash("You must verify your email first!")
-            return redirect(url_for('verify'))
-        return f(*args, **kwargs)
-    return decorated_function
+	@wraps(f)
+	def decorated_function(*args, **kwargs):
+		if current_user.is_authenticated and not current_user.is_verified:
+			#flash("You must verify your email first!")
+			message = "You must verify your email first!"
+			#return redirect(url_for('verify'))
+			return jsonify({"status": "error", "message": message}), 403
+		return f(*args, **kwargs)
+	return decorated_function
 
 
 def check_existing_models(station_name):
@@ -82,25 +84,37 @@ class AppManager:
 					current_user.is_verified = True
 					current_user.verification_code = None
 					db.session.commit()
-					flash("Email verified successfully!")
-					self.logger.info("User verified successfully.")
-					return redirect(url_for('home'))
+					#flash("Email verified successfully!")
+					message = "Email verified successfully!"
+					self.logger.info(f"Email verified successfully for {current_user.username}")
+					#return redirect(url_for('home'))
+					return jsonify({"status": "success", "message": message})
 				else:
-					flash("Invalid code.")
+					#flash("Invalid code.")
+					message = "Invalid code."
 					self.logger.error("Invalid verification code entered.")
 
 			# If GET or invalid code, just show the verify template
-			return render_template('verify.html', form=form)
+			#return render_template('verify.html', form=form)
+			### migrate to React. replace render_template with jsonify
+			return jsonify({"error": "Invalid code"}), 400
+
+		@self.app.route('/flask-static/<path:filename>')
+		def serve_flask_static(filename):
+			return send_from_directory('/data/SWATGenXApp/GenXAppData/', filename)
+
 
 		@self.app.route('/privacy')
 		def privacy():
 			self.logger.info("Privacy route called")
-			return render_template('privacy.html')
+			#return render_template('privacy.html')
+			return jsonify({"title": "Privacy", "message": "privacy page"})
 		
 		@self.app.route('/terms')
 		def terms():
 			self.logger.info("Terms route called")
-			return render_template('terms.html')
+			#return render_template('terms.html')
+			return jsonify({"title": "Terms", "message": "terms page"})
 
 		@self.app.route('/js/<path:filename>')
 		def js_static(filename):
@@ -111,13 +125,15 @@ class AppManager:
 		def css_static(filename):
 			css_dir = os.path.join(current_app.root_path, 'css')
 			return send_from_directory(css_dir, filename)
+	
 
 		@self.app.route('/user_dashboard')
 		@login_required
 		@verified_required
 		def user_dashboard():
 			self.logger.info("User Dashboard route called")
-			return render_template('user_dashboard.html')
+			#return render_template('user_dashboard.html')
+			return jsonify({"title": "User Dashboard", "message": "user dashboard page"})
 
 		@self.app.route('/get_options', methods=['GET'])
 		@login_required
@@ -151,7 +167,8 @@ class AppManager:
 				if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 					return jsonify({"error": "Please provide NAME, Version, and Variable."}), 400
 				else:
-					return render_template('visualizations.html', error="Please provide NAME, Version, and Variable.")
+					#return render_template('visualizations.html', error="Please provide NAME, Version, and Variable.")
+					return jsonify({"title": "Visualizations", "message": "Please provide NAME, Version, and Variable."})
 
 			base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
 			static_plots_path = os.path.join(base_path, "watershed_static_plots")
@@ -178,20 +195,24 @@ class AppManager:
 				if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 					return jsonify({"error": f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}."}), 404
 				else:
-					return render_template('visualizations.html', error=f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}.")
+					#return render_template('visualizations.html', error=f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}.")
+					return jsonify({"title": "Visualizations", "message": f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}."})
 
 			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 				return jsonify({"gif_files": gif_urls, "png_files": static_plot_files})
 
-			return render_template('visualizations.html', name=name, ver=ver, variables=variables, gif_files=gif_urls, png_files=static_plot_files)
+			#return render_template('visualizations.html', name=name, ver=ver, variables=variables, gif_files=gif_urls, png_files=static_plot_files)
+			return jsonify({"title": "Visualizations", "message": "Visualizations page"})
 		
 		@self.app.route('/oauth_callback')
 		def oauth_callback():
 			code = request.args.get('code')
 			if not code:
-				flash('Authorization failed. Please try again.', 'danger')
-				return redirect(url_for('login'))
-
+				#flash('Authorization failed. Please try again.', 'danger')
+				#return redirect(url_for('login'))
+				message = "Authorization failed. Please try again."
+				return jsonify({"status": "error", "message": message})
+			
 			# Exchange the code for an access token
 			token_url = "https://oauth.msu.edu/token"
 			payload = {
@@ -203,8 +224,10 @@ class AppManager:
 			}
 			response = requests.post(token_url, data=payload)
 			if response.status_code != 200:
-				flash('Failed to authenticate with MSU. Please try again.', 'danger')
-				return redirect(url_for('login'))
+				#flash('Failed to authenticate with MSU. Please try again.', 'danger')
+				#return redirect(url_for('login'))
+				message = "Failed to authenticate with MSU. Please try again."
+				return jsonify({"status": "error", "message": message})
 
 			token = response.json().get("access_token")
 
@@ -213,8 +236,10 @@ class AppManager:
 			headers = {"Authorization": f"Bearer {token}"}
 			user_info_response = requests.get(user_info_url, headers=headers)
 			if user_info_response.status_code != 200:
-				flash('Failed to retrieve user information.', 'danger')
-				return redirect(url_for('login'))
+				#flash('Failed to retrieve user information.', 'danger')
+				#return redirect(url_for('login'))
+				message = "Failed to retrieve user information."
+				return jsonify({"status": "error", "message": message})
 
 			user_info = user_info_response.json()
 			msu_netid = user_info.get('netid')
@@ -259,18 +284,27 @@ class AppManager:
 					# ✅ Check if user has correct access
 					if not os.access(sftp_home_dir, os.W_OK):
 						self.logger.error(f"User {username} does not have write access to SFTP directory.")
-						flash("SFTP directory access issue. Contact support.", "danger")
-						return redirect(url_for('logout'))
-
+						#flash("SFTP directory access issue. Contact support.", "danger")
+						#return redirect(url_for('logout'))
+						message = "SFTP directory access issue. Contact support."
+						return jsonify({"status": "error", "message": message})
 					self.logger.info(f"SFTP directory verified for {username}: {sftp_home_dir}")
 
-					flash("Login successful!", "success")
-					return redirect(url_for('home'))
+					#flash("Login successful!", "success")
+					#return redirect(url_for('home'))
+					message = "Login successful!"
+					return jsonify({"status": "success", "message": message})
 				else:
-					self.logger.error("Invalid username or password")
-					flash('Invalid username or password', 'danger')
+					#flash('Invalid username or password', 'danger')
+					#self.logger.error("Invalid username or password")
+					message = "Invalid username or password"
+					self.logger.error(message)
+					return jsonify({"status": "error", "message": message})
+					
 
-			return render_template('login.html', form=form)
+
+			#return render_template('login.html', form=form)
+			return jsonify({"title": "login", "message": "login page"})	
 
 			# ✅ Allow MSU NetID login as an **OPTION**, but do not require it
 			#msu_login_url = (
@@ -281,6 +315,7 @@ class AppManager:
 			#)
 
 			#return render_template('login.html', form=form)#, msu_login_url=msu_login_url)
+			#return jsonify({"error": "Invalid username or password"}), 401
 
 		from app.sftp_manager import create_sftp_user  # Import the SFTP user creation function
 
@@ -322,34 +357,42 @@ class AppManager:
 
 					if sftp_result.get("status") != "success":
 						self.logger.error(f"Failed to create SFTP account for {new_user.username}: {sftp_result.get('error')}")
-						flash("SFTP account creation failed. Contact support.", "danger")
+						#flash("SFTP account creation failed. Contact support.", "danger")
+						message = "SFTP account creation failed. Contact support."
+						return jsonify({"status": "error", "message": message})
 
 					# ✅ **Log the user in immediately**
 					login_user(new_user)
 
 					# ✅ **Redirect to verification page**
-					flash("Please check your email and enter the verification code below.")
-					return redirect(url_for('verify'))
+					#flash("Please check your email and enter the verification code below.")
+					#return redirect(url_for('verify'))
+					message = "Please check your email and enter the verification code below."
+					return jsonify({"status": "success", "message": message})
 
 				except Exception as e:
 					self.logger.error(f"Error adding user to the database: {e}")
 					db.session.rollback()
-					flash("An error occurred while creating the account. Please try again.", "danger")
-
+					#flash("An error occurred while creating the account. Please try again.", "danger")
+					message = "An error occurred while creating the account. Please try again."
+					return jsonify({"status": "error", "message": message})
 			else:
 				self.logger.error("Form validation failed")
 				for field, errors in form.errors.items():
 					for error in errors:
 						self.logger.error(f"Error in {field}: {error}")
 
-			return render_template('register.html', form=form)
+			#return render_template('register.html', form=form)
+			return jsonify({"title": "register", "message": "register page"})
+			
 
 		@self.app.route('/home')
 		@login_required
 		@verified_required
 		def home():
 			self.logger.info("Home route called, user is authenticated.")	
-			return render_template('home.html')
+			#return render_template('home.html')
+			return jsonify({"title": "Home", "message": "Welcome to the API-based app!"})
 
 		@self.app.route('/model-settings', methods=['GET', 'POST'])
 		@login_required
@@ -388,8 +431,9 @@ class AppManager:
 			#station_data = integrate_streamflow_data()
 			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
 			station_list = station_data.SiteNumber.unique()
-			return render_template('model_settings.html', form=form, output=output, station_list=station_list)
-
+			#return render_template('model_settings.html', form=form, output=output, station_list=station_list)
+			return jsonify({"station_list": station_list})
+	
 		@self.app.route('/api/user_files', methods=['GET'])
 		@login_required
 		def api_user_files():
@@ -498,9 +542,11 @@ class AppManager:
 			self.logger.info(f"User {current_user.username} logged out.")
 			logout_user()
 			session.clear()  # Clear all session data
-			flash("You have been logged out successfully.", "info")
-			return redirect(url_for('login'))
-
+			#flash("You have been logged out successfully.", "info")
+			#return redirect(url_for('login'))
+			message = "You have been logged out successfully."
+			return jsonify({"status": "success", "message": message})
+		
 		@self.app.route('/get_station_characteristics', methods=['GET'])
 		def get_station_characteristics():
 			self.logger.info("Get Station Characteristics route called")
@@ -546,14 +592,16 @@ class AppManager:
 		@verified_required
 		def about():
 			self.logger.info("About route called")
-			return render_template('about.html')
+			#return render_template('about.html')
+			return jsonify({"title": "About", "message": "about page"})
 
 		@self.app.route('/model-confirmation')
 		@login_required
 		@verified_required
 		def model_confirmation():
 			self.logger.info("Model Confirmation route called")
-			return render_template('model_confirmation.html')
+			#return render_template('model_confirmation.html')
+			return jsonify({"title": "Model Confirmation", "message": "Model confirmation page"})
 
 		@self.app.route('/contact', methods=['GET', 'POST'])
 		@login_required
@@ -570,20 +618,26 @@ class AppManager:
 					db.session.add(contact_message)
 					db.session.commit()
 					self.logger.info(f"Message from {name} added to the database")	
-					flash('Your message has been sent successfully!')
+					#flash('Your message has been sent successfully!')
+					message = "Your message has been sent successfully!"
 				except Exception as e:
 					self.logger.error(f"Error adding message to the database: {e}")	
 					db.session.rollback()
-					flash('An error occurred while sending the message. Please try again.')
-				return redirect(url_for('contact'))
-			return render_template('contact.html', form=form)
+					#flash('An error occurred while sending the message. Please try again.')
+					message = "An error occurred while sending the message. Please try again."
+				#return redirect(url_for('contact'))
+				return jsonify({"status": "success", "message": message})
+			#return render_template('contact.html', form=form)
+			return jsonify({"title": "Contact", "message": "contact page"})
+
 
 		@self.app.route('/infrastructure')
 		@login_required
 		@verified_required
 		def infrastructure():
 			self.logger.info("Infrastructure route called")
-			return render_template('infrastructure.html')
+			#return render_template('infrastructure.html')
+			return jsonify({"title": "Infrastructure", "message": "infrastructure page"})
 
 		@self.app.route('/hydro_geo_dataset', methods=['GET', 'POST'])
 		@login_required
@@ -634,16 +688,22 @@ class AppManager:
 						self.logger.info(f"Polygon bounds: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")	
 					except Exception as e:
 						self.logger.error(f"Error parsing polygon coordinates: {e}")
-						flash("Invalid polygon coordinates.", "danger")
-						return render_template('HydroGeoDataset.html', form=form)
+						#flash("Invalid polygon coordinates.", "danger")
+						message = "Invalid polygon coordinates."
+						#return render_template('HydroGeoDataset.html', form=form)
+						return jsonify({"title": "HydroGeoDataset", "message": message})
 
 				elif not any([latitude, longitude, min_latitude, max_latitude, min_longitude, max_longitude]):
-					flash("Please provide either a point or a range for data retrieval.", "danger")
-					return render_template('HydroGeoDataset.html', form=form)
+					#flash("Please provide either a point or a range for data retrieval.", "danger")
+					#return render_template('HydroGeoDataset.html', form=form)
+					message = "Please provide either a point or a range for data retrieval."
+					return jsonify({"title": "HydroGeoDataset", "message": message})
 
 				if not variable or not subvariable:
-					flash("Variable and Subvariable are required.", "danger")
-					return render_template('HydroGeoDataset.html', form=form)
+					#flash("Variable and Subvariable are required.", "danger")
+					#return render_template('HydroGeoDataset.html', form=form)
+					message = "Variable and Subvariable are required."
+					return jsonify({"title": "HydroGeoDataset", "message": message})
 				try:
 					if latitude and longitude:
 						self.logger.info(f"Fetching data for {variable}/{subvariable} at {latitude}, {longitude}")
@@ -664,20 +724,27 @@ class AppManager:
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
 						self.logger.info(f"Data fetched for range: {data}")
 					else:
-						flash("Please provide either a point or a range for data retrieval.", "danger")
-						return render_template('HydroGeoDataset.html', form=form)
+						#flash("Please provide either a point or a range for data retrieval.", "danger")
+						#return render_template('HydroGeoDataset.html', form=form)
+						message = "Please provide either a point or a range for data retrieval."
+						return jsonify({"title": "HydroGeoDataset", "message": message})
 
-					return render_template(
-						'HydroGeoDataset.html',
-						form=form,
-						variable=variable,
-						subvariable=subvariable,
-						data=data
-					)
+					#return render_template(
+					#	'HydroGeoDataset.html',
+					#	form=form,
+					#	variable=variable,
+					#	subvariable=subvariable,
+					#	data=data
+					#)
+					message = "Data fetched successfully"
+					return jsonify({"title": "HydroGeoDataset", "message": message, "data": data})
+				
 				except Exception as e:
 					self.logger.error(f"Error fetching data: {e}")	
-					flash(f"Error fetching data: {e}", "danger")
-			return render_template('HydroGeoDataset.html', form=form)
+					#flash(f"Error fetching data: {e}", "danger")
+					message = f"Error fetching data: {e}"
+			#return render_template('HydroGeoDataset.html', form=form)
+			return jsonify({"title": "HydroGeoDataset", "message": message})	
 
 		@self.app.route('/get_subvariables', methods=['POST'])
 		@login_required
@@ -700,18 +767,21 @@ class AppManager:
 		@login_required
 		@verified_required
 		def deeplearning_models():
-			return render_template('DeepLearning.html')
+			#return render_template('DeepLearning.html')
+			return jsonify({"title": "Deep Learning Models", "message": "Deep Learning Models page"})
 		
 		@self.app.route('/vision_system')
 		@login_required
 		@verified_required
 		def vision_system():
-			return render_template('VisionSystem.html')
+			#return render_template('VisionSystem.html')
+			return jsonify({"title": "Vision System", "message": "Vision System page"})
 
 		@self.app.route('/michigan')
 		def michigan():
 			self.logger.info("Michigan route called")
-			return render_template('michigan.html')
+			#return render_template('michigan.html')
+			return jsonify({"title": "Michigan", "message": "Michigan page"})
 
 		@self.app.route('/search_site', methods=['GET', 'POST'])
 		def search_site():
@@ -719,6 +789,7 @@ class AppManager:
 			search_term = request.args.get('search_term', '').lower()
 			if not search_term:
 				return jsonify({"error": "Search term is required"}), 400
+				
 			try:
 				results = find_station(search_term)
 				if results.empty:
