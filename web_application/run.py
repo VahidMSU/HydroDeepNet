@@ -1,8 +1,8 @@
+from flask_socketio import SocketIO
 import os
 import sys
 import logging
 from werkzeug.middleware.proxy_fix import ProxyFix
-from waitress import serve
 
 # Set up system paths
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
@@ -26,10 +26,12 @@ logger.info("Flask application created")
 # Apply proxy middleware
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
+# Initialize SocketIO
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 # Expose `application` for Apache WSGI
 application = app  
 
-# Ensure there are no indentation errors here
 if __name__ == '__main__':
-    logger.info("Starting Waitress server on port 5050")
-    serve(app, host='0.0.0.0', port=5050)
+    logger.info("Starting Flask-SocketIO server on port 5050")
+    socketio.run(app, host='0.0.0.0', port=5050)
