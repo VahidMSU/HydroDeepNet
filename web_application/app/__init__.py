@@ -1,72 +1,138 @@
-from flask import Flask
-from flask_wtf.csrf import CSRFProtect
-from config import Config
-from app.extensions import db, login_manager
-from app.models import User  # Ensure this is imported after db is initialized
 import sys
+import os
+from flask import Flask, abort, jsonify
+from flask_talisman import Talisman
+from config import Config
+from app.extensions import csrf, db, login_manager
+from app.models import User
 from app.utils import LoggerSetup
+from app.sftp_routes import sftp_bp  # Import SFTP API routes
+from .api_routes import api_bp  # Import API routes
+from app.routes import AppManager
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# Ensure the system path includes SWATGenX
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
-from flask_talisman import Talisman  # Import Flask-Talisman
-from app.sftp_routes import sftp_bp  # Import the SFTP blueprint
 
-
-def create_app(apptype=None):
-
+def create_app():
     """
-    Create a Flask application using the app factory pattern.
-    :return: Flask app
+    Creates and configures the Flask application.
     """
+    # Set up logging
+    log_dir = "/data/SWATGenXApp/codes/web_application/logs"
+    logger = LoggerSetup(log_dir, rewrite=False).setup_logger("FlaskApp")
+    logger.info("Initializing Flask application")
 
-    logger = LoggerSetup("/data/SWATGenXApp/codes/web_application/logs", rewrite=False)
-    logger = logger.setup_logger("app" if apptype is None else apptype)
-    logger.info("Creating app")
+    # Initialize Flask app
+    app = Flask(
+        __name__,
+        static_url_path='/static',
+        static_folder='/data/SWATGenXApp/GenXAppData'
+    )
 
-    app = Flask(__name__, static_url_path='/static', static_folder='/data/SWATGenXApp/GenXAppData')
+    CORS(app, supports_credentials=True, resources={
+        r"/api/*": {
+            "origins": "https://ciwre-bae.campusad.msu.edu",
+            "methods": ["GET", "POST", "PUT", "DELETE"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
 
-    # Apply security configurations
+    # Load configurations
     app.config.from_object(Config)
-    app.config['SESSION_COOKIE_SECURE'] = True
-    app.config['REMEMBER_COOKIE_SECURE'] = True
-    app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['PREFERRED_URL_SCHEME'] = 'https'
+    app.config.update({
+        'SESSION_COOKIE_SECURE': True,
+        'REMEMBER_COOKIE_SECURE': True,
+        'SESSION_COOKIE_HTTPONLY': True,
+        'SESSION_COOKIE_SAMESITE': 'Lax',
+        'PREFERRED_URL_SCHEME': 'https'
+    })
 
-    # ✅ Apply Flask-Talisman with HSTS enabled
+    # Apply Flask-Talisman for security headers & HTTPS enforcement
     Talisman(
         app,
-        force_https=True,  # Redirect all HTTP to HTTPS
-        strict_transport_security=True,  # Enables HSTS
-        strict_transport_security_max_age=31536000,  # HSTS duration (1 year)
-        strict_transport_security_include_subdomains=True,  # Apply to subdomains
-        strict_transport_security_preload=True,  # Enable HSTS Preloading
+        force_https=False,  # ✅ Disable HTTPS redirect for local testing
+        strict_transport_security=True,
+        strict_transport_security_max_age=31536000,
+        strict_transport_security_include_subdomains=True,
+        strict_transport_security_preload=True,
         content_security_policy=None  # Disable CSP blocking for now
     )
 
-    # CSRF Protection
-    csrf = CSRFProtect(app)
-    logger.info("Applying CSRF protection")
+    logger.info("Applied Flask-Talisman security configurations")
+
+    # Apply CSRF Protection
+    csrf.init_app(app)
+    logger.info("CSRF protection enabled")
+
     # Initialize extensions
     db.init_app(app)
-    logger.info("Initializing database")
-
-    app.register_blueprint(sftp_bp, url_prefix="/api")  # 🔹 Register with /api prefix
-    logger.info("Registering SFTP blueprint")
     login_manager.init_app(app)
     login_manager.login_view = 'login'
-    logger.info("Initializing login manager")   
 
     @login_manager.user_loader
     def load_user(user_id):
-        logger.info(f"User ID: {user_id}") 
+        logger.info(f"Loading user: {user_id}")
         return User.query.get(int(user_id))
 
+    # Load test user
     with app.app_context():
-        logger.info("Creating all tables")
-        db.create_all()
+        test_user = User.query.get(1)
+        if (test_user):
+            logger.info(f"Test user loaded: {test_user.username}")
+        else:
+            logger.warning("Test user with ID 1 not found.")
 
-    # Import routes
-    from app.routes import AppManager
-    hydro_geo_app = AppManager(app)
-    logger.info("Initializing routes")
+    # Register Blueprints
+    app.register_blueprint(api_bp, url_prefix="/api")
+    logger.info("Registered API blueprints")    
+    
+    app.register_blueprint(sftp_bp, url_prefix="/api/sftp")
+    logger.info("Registered SFTP blueprints")
+    
+    # Ensure database tables exist
+    with app.app_context():
+        db.create_all()
+        logger.info("Ensured database tables exist")
+
+    # Import and initialize routes
+    AppManager(app)
+    logger.info("Application routes initialized")
+
+    # Initialize rate limiting
+    limiter = Limiter(get_remote_address, default_limits=["1000 per hour"])
+    limiter.init_app(app)
+
+    logger.info("Rate limiting enabled")
+
+    # Function to ensure path is within the base directory
+    def secure_path(user_path, allowed_paths):
+        abs_target_dir = os.path.abspath(os.path.realpath(user_path))  # Double sanitization
+
+        if not any(abs_target_dir.startswith(os.path.abspath(base)) for base in allowed_paths):
+            logger.error(f"Unauthorized path access attempt: {user_path}")
+            abort(403, description="Unauthorized path access")
+
+        return abs_target_dir
+
+    # Example usage
+    allowed_dirs = [
+        "/data/SWATGenXApp/codes/web_application",
+        "/data/SWATGenXApp/Users",
+        "/data/SWATGenXApp/GenXAppData"
+    ]
+    secure_path("/data/SWATGenXApp/Users", allowed_dirs)
+
+
+    # Apply secure headers
+    @app.after_request
+    def apply_headers(response):
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
+        return response
 
     return app
