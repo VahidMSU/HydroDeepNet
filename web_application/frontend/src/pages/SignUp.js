@@ -1,4 +1,3 @@
-// pages/SignUp.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/SignUp.css'; // Corrected CSS file path
@@ -46,24 +45,42 @@ const SignUp = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    // Simulate successful submission
-    console.log('Submitted:', formData);
-    setFlashMessages([{ category: 'info', text: 'Sign up successful!' }]);
-    setErrors({});
-    // Reset form fields if desired:
-    setFormData({
-      username: '',
-      email: '',
-      password: '',
-      confirm_password: '',
-    });
+
+    try {
+      const response = await fetch('/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        setFlashMessages([{ category: 'info', text: result.message }]);
+        setErrors({});
+        setFormData({
+          username: '',
+          email: '',
+          password: '',
+          confirm_password: '',
+        });
+      } else {
+        setFlashMessages([{ category: 'error', text: result.message }]);
+        setErrors(result.errors || {});
+      }
+    } catch (error) {
+      setFlashMessages([
+        { category: 'error', text: 'An error occurred during signup. Please try again.' },
+      ]);
+    }
   };
 
   return (

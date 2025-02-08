@@ -96,21 +96,21 @@ class LoggerSetup:
 
             # File handler for writing logs to a file
             file_handler = logging.FileHandler(log_file_path)
-            file_handler.setLevel(logging.INFO)
-            file_handler.setFormatter(log_format)
-            self.logger.addHandler(file_handler)
-
+            self._extracted_from_setup_logger_31(file_handler, log_format)
             # Console handler for logging to the console
             if self.verbose:
                 console_handler = logging.StreamHandler()
-                console_handler.setLevel(logging.INFO)
-                console_handler.setFormatter(log_format)
-                self.logger.addHandler(console_handler)
-
+                self._extracted_from_setup_logger_31(console_handler, log_format)
             # Log the logger initialization path
             self.logger.info(f"Logger initialized: {log_file_path}")
 
         return self.logger
+
+    # TODO Rename this here and in `setup_logger`
+    def _extracted_from_setup_logger_31(self, arg0, log_format):
+        arg0.setLevel(logging.INFO)
+        arg0.setFormatter(log_format)
+        self.logger.addHandler(arg0)
 
     def log(self, message: str, level: str = "info"):
         """
@@ -299,7 +299,7 @@ def find_VPUID(station_no):
     ].huc_cd.values[0][:4]
 
 
-def single_model_creation(username, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples):
+def single_model_creation(username, site_no, ls_resolution, dem_resolution):
     
     """ 
     Create a SWATGenX model for a single USGS site for a given user setting.
@@ -324,18 +324,18 @@ def single_model_creation(username, site_no, ls_resolution, dem_resolution, cali
         "station_name": site_no,
         "MODEL_NAME": 'SWAT_MODEL_Web_Application',
         "single_model": True,
-        "sensitivity_flag": sensitivity_flag,
-        "calibration_flag": calibration_flag,
-        "verification_flag": validation_flag,
+        "sensitivity_flag": False,
+        "calibration_flag": False,
+        "verification_flag": False,
         "START_YEAR": 2015,
         "END_YEAR": 2022,
         "nyskip": 3,
-        "sen_total_evaluations": sen_total_evaluations,
-        "sen_pool_size": sen_pool_size,
-        "num_levels": num_levels,
-        "cal_pool_size": cal_pool_size,
-        "max_cal_iterations": max_cal_iterations,
-        "termination_tolerance": 10,
+        "sen_total_evaluations": 1000,
+        "sen_pool_size": 10,
+        "num_levels": 5,
+        "cal_pool_size": 50,
+        "max_cal_iterations": 50,
+        "termination_tolerance": 0.0001,
         "epsilon": 0.0001,
         "Ver_START_YEAR": 2004,
         "Ver_END_YEAR": 2022,
@@ -344,7 +344,7 @@ def single_model_creation(username, site_no, ls_resolution, dem_resolution, cali
         "pet": 2,
         "cn": 1,
         "no_value": 1e6,
-        "verification_samples": verification_samples,
+        "verification_samples": 5,
         "username": username,
     }
 

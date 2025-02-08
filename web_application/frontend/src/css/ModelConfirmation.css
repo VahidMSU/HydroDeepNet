@@ -1,16 +1,21 @@
 /* ModelConfirmation.css */
 body {
   background-color: #f8f9fa;
+  text-size-adjust: 100%; /* Added for better support */
 }
 
 .card {
   border: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(10px); /* Added for better support */
+  backdrop-filter: blur(10px); /* Existing property */
 }
 
 .btn-primary {
   display: flex;
   align-items: center;
+  text-align: -webkit-match-parent; /* Existing property */
+  text-align: match-parent; /* Added for better support */
 }
 
 .btn-primary i {

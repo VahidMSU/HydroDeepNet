@@ -1,27 +1,27 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "../css/Layout.css"; // Ensure correct path for CSS
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import '../css/Layout.css'; // Ensure correct path for CSS
 
 const Layout = ({ children }) => {
   const navigate = useNavigate(); // Hook for navigation
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("/logout", {
-        method: "GET",
-        credentials: "include", // Include cookies for session handling
+      const response = await fetch('/api/logout', {
+        method: 'POST', // Ensure method is 'POST'
+        credentials: 'include', // Include cookies for session handling
       });
 
       if (!response.ok) {
-        throw new Error("Logout failed");
+        throw new Error('Logout failed');
       }
 
-      console.log("User logged out successfully");
+      console.log('User logged out successfully');
       // Redirect to the login page after logout
-      navigate("/login");
+      navigate('/login');
     } catch (error) {
-      console.error("Error during logout:", error);
-      alert("Failed to logout. Please try again.");
+      console.error('Error during logout:', error);
+      alert('Failed to logout. Please try again.');
     }
   };
 
@@ -52,10 +52,7 @@ const Layout = ({ children }) => {
             <i className="fas fa-tachometer-alt"></i> User Dashboard
           </Link>
           {/* Logout Button */}
-          <button
-            className="nav-link btn btn-link text-start"
-            onClick={handleLogout}
-          >
+          <button className="nav-link btn btn-link text-start" onClick={handleLogout}>
             <i className="fas fa-sign-out-alt"></i> Logout
           </button>
           <Link className="nav-link" to="/contact">
@@ -72,8 +69,7 @@ const Layout = ({ children }) => {
       {/* Main Content Area */}
       <div className="content-wrapper">{children}</div>
       <footer className="footer mt-4 p-3 text-center border-top">
-        <Link to="/privacy">Privacy Policy</Link> |{" "}
-        <Link to="/terms">Terms of Service</Link>
+        <Link to="/privacy">Privacy Policy</Link> | <Link to="/terms">Terms of Service</Link>
       </footer>
     </div>
   );

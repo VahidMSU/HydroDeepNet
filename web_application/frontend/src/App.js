@@ -20,7 +20,7 @@ import {
 import PrivateRoute from './components/PrivateRoute';
 
 const App = () => (
-  <Router>
+  <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
     <Routes>
       <Route
         path="/login"
@@ -101,7 +101,7 @@ const App = () => (
         }
       />
       <Route
-        path="/api/logout"
+        path="/logout"
         element={
           <PrivateRoute>
             <Layout>
