@@ -1,6 +1,6 @@
 // pages/UserDashboard.js
 import React, { useEffect, useState } from 'react';
-import '../css/UserDashboard.css'; // Adjust the path if necessary
+import '../styles/UserDashboard.tsx'; // Adjust the path if necessary
 
 const UserDashboard = () => {
   const [files, setFiles] = useState([]);
