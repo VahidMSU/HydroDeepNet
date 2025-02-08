@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../css/Layout.css'; // Ensure correct path for CSS
+import '../styles/Layout.tsx'; // Ensure correct path for CSS
 
 const Layout = ({ children }) => {
   const navigate = useNavigate(); // Hook for navigation

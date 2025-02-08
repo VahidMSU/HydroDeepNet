@@ -1,7 +1,7 @@
 // pages/ModelConfirmation.js
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../css/ModelConfirmation.css'; // Create this file with the styles below
+import '../css/ModelConfirmation.tsx'; // Create this file with the styles below
 
 const ModelConfirmation = () => {
   return (

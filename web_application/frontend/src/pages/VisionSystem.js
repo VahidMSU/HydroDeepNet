@@ -1,6 +1,6 @@
 // pages/VisionSystem.js
 import React, { useState } from 'react';
-import '../css/VisionSystem.css'; // Adjust the path if necessary
+import '../styles/VisionSystem.tsx'; // Adjust the path if necessary
 
 const VisionSystem = () => {
   const [modalOpen, setModalOpen] = useState(false);

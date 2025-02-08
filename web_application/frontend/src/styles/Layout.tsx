@@ -1,0 +1,253 @@
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
+
+export const GlobalStyle = createGlobalStyle`
+  body {
+    background-color: #f8f9fa;
+    text-size-adjust: 100%;
+  }
+`;
+
+export const HeaderTitle = styled.h1`
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: -webkit-match-parent;
+  text-align: match-parent;
+`;
+
+export const ContainerFluid = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+`;
+
+export const Content = styled.main`
+  margin-left: 260px;
+  padding: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  width: calc(100% - 260px);
+  box-sizing: border-box;
+`;
+
+export const Sidebar = styled.nav`
+  background-color: #343a40;
+  color: white;
+  width: 250px;
+  padding: 20px;
+  position: fixed;
+  height: 100%;
+  overflow-y: auto;
+  transition: all 0.3s;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+
+  h2 {
+    color: #ffc107;
+    font-weight: bold;
+    margin-bottom: 30px;
+  }
+`;
+
+export const NavLink = styled.a`
+  color: #adb5bd;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+
+  &:hover {
+    color: #ffffff;
+  }
+
+  i {
+    margin-right: 10px;
+  }
+`;
+
+export const FooterContainer = styled.footer`
+  width: 10%;
+  margin-left: 0;
+  background-color: #343a40;
+  color: #343a40;
+  text-align: center;
+  padding: 15px;
+  font-size: 10px;
+  border-top: 1px solid #343a40;
+  position: fixed;
+  bottom: 0;
+
+  a {
+    color: #d8dbde;
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
+export const ContentWrapper = styled.div`
+  flex-grow: 1;
+  margin-left: 270px;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+`;
+
+export const ViewDiv = styled.div`
+  flex: 2;
+  min-width: 200px;
+  height: 800px;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+`;
+
+export const Card = styled.div`
+  margin-bottom: 20px;
+`;
+
+export const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+
+  .form-check-label {
+    margin-right: 15px;
+  }
+`;
+
+export const SettingsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+
+  .form-group {
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 100px;
+  }
+`;
+
+export const FormGroup = styled.div`
+  label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+  }
+`;
+
+export const StyledImage = styled.img`
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+`;
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`;
+
+export const LoadingIndicator = styled.div`
+  img {
+    animation: ${spin} 1s linear infinite;
+  }
+`;
+
+export const Button = styled.button`
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
+export const ButtonPrimary = styled(Button)`
+  background-color: #007bff;
+  border-color: #007bff;
+  padding: 0.625rem 1.5rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  border-radius: 0.3125rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+
+  &:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    background-color: #004085;
+    border-color: #003768;
+  }
+`;
+
+export const FormControl = styled.input`
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  padding: 0.625rem;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 10px;
+
+  &:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.125rem rgba(0, 123, 255, 0.25);
+  }
+`;
+
+export const VideoContainer = styled.div`
+  height: 400px !important;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 468px) {
+    height: 300px;
+  }
+`;
+
+export const Modal = styled.div`
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  align-items: center;
+  justify-content: center;
+
+  img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+  }
+`;
+
+// You can continue adding more styled components as needed...

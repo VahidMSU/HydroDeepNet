@@ -1,6 +1,6 @@
 // pages/Michigan.js
 import React, { useState } from 'react';
-import '../css/Michigan.css'; // Ensure the path is correct
+import '../styles/Michigan.tsx'; // Ensure the path is correct
 
 const Michigan = () => {
   const images = [
