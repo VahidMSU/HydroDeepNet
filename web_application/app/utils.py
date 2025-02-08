@@ -55,113 +55,100 @@ def send_verification_email(recipient):
 
     return verification_code
 
-
+import os
+import logging
 
 class LoggerSetup:
-	def __init__(self, report_path, verbose=True, rewrite=False):
-		"""
-		Initialize the LoggerSetup class.
+    def __init__(self, report_path: str, verbose: bool = True, rewrite: bool = False):
+        """
+        Initialize the LoggerSetup class.
 
-		Args:
-			report_path (str): Path to the directory where the log file will be saved.
-			verbose (bool): Whether to print logs to console. Defaults to True.
-		"""
-		self.report_path = report_path
-		self.logger = None
-		self.verbose = verbose
-		self.rewrite = rewrite  
+        Args:
+            report_path (str): Path to the directory where the log file will be saved.
+            verbose (bool): Whether to print logs to console. Defaults to True.
+            rewrite (bool): Whether to rewrite the log file if it already exists. Defaults to False.
+        """
+        self.report_path = report_path
+        self.verbose = verbose
+        self.rewrite = rewrite
+        self.logger = None  # Placeholder for the logger instance
 
-	def setup_logger(self, name="GeoClassCNNLogger"):
-		"""
-		Set up the logger to log messages to a file and optionally to the console.
+    def setup_logger(self, name: str = "GeoClassCNNLogger") -> logging.Logger:
+        """
+        Set up the logger to log messages to a file and optionally to the console.
 
-		Returns:
-			logging.Logger: Configured logger.
-		"""
-		if not self.logger:
-			# Define the path for the log file
-			path = os.path.join(self.report_path, f"{name}.log")
-			if self.rewrite and os.path.exists(path):
-				os.remove(path)
-			# Create a logger
-			self.logger = logging.getLogger(name)
-			self.logger.setLevel(logging.INFO)  # Set the logging level
+        Returns:
+            logging.Logger: Configured logger instance.
+        """
+        if self.logger is None:
+            log_file_path = os.path.join(self.report_path, f"{name}.log")
 
-			# FileHandler for logging to a file
-			file_handler = logging.FileHandler(path)
-			file_handler.setLevel(logging.INFO)
-			self.logger.addHandler(file_handler)
+            # Delete existing log file if rewrite mode is enabled
+            if self.rewrite and os.path.exists(log_file_path):
+                os.remove(log_file_path)
 
-			# Conditionally add console handler based on verbose flag
-			if self.verbose:
-				console_handler = logging.StreamHandler()
-				console_handler.setLevel(logging.INFO)
-				self.logger.addHandler(console_handler)
+            # Create the logger
+            self.logger = logging.getLogger(name)
+            self.logger.setLevel(logging.INFO)
 
-			self.logger.info(f"Logging to {path}")
+            # Define log format with enforced timestamp
+            log_format = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
-		return self.logger
-	def error(self, message, time_stamp=True):
-		"""
-		Log an error message.
+            # File handler for writing logs to a file
+            file_handler = logging.FileHandler(log_file_path)
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(log_format)
+            self.logger.addHandler(file_handler)
 
-		Args:
-			message (str): The error message to log.
-			time_stamp (bool): Whether to include a timestamp in the log.
-		"""
-		self.info(message, level="error", time_stamp=time_stamp)
+            # Console handler for logging to the console
+            if self.verbose:
+                console_handler = logging.StreamHandler()
+                console_handler.setLevel(logging.INFO)
+                console_handler.setFormatter(log_format)
+                self.logger.addHandler(console_handler)
 
-	def warning(self, message, time_stamp=True):
-		"""
-		Log a warning message.
+            # Log the logger initialization path
+            self.logger.info(f"Logger initialized: {log_file_path}")
 
-		Args:
-			message (str): The warning message to log.
-			time_stamp (bool): Whether to include a timestamp in the log.
-		"""
-		self.info(message, level="warning", time_stamp=time_stamp)
+        return self.logger
 
-	def info(self, message, level="info", time_stamp=True):
-		"""
-		Log a message with or without a timestamp.
+    def log(self, message: str, level: str = "info"):
+        """
+        Log a message with a specific logging level.
 
-		Args:
-			message (str): The message to log.
-			level (str): The logging level (e.g., "info", "error").
-			time_stamp (bool): Whether to include a timestamp in the log.
-		"""
-		# Create a temporary logger with the desired format
-		temp_logger = logging.getLogger("TempLogger")
-		temp_logger.setLevel(self.logger.level)
+        Args:
+            message (str): The message to log.
+            level (str): The logging level (e.g., "info", "error", "warning", "debug").
+        """
+        if self.logger is None:
+            raise RuntimeError("Logger is not initialized. Call `setup_logger()` first.")
 
-		# Remove existing handlers to avoid duplicates
-		temp_logger.handlers.clear()
+        # Log message with timestamp (highest priority)
+        log_methods = {
+            "info": self.logger.info,
+            "error": self.logger.error,
+            "warning": self.logger.warning,
+            "debug": self.logger.debug,
+        }
+        log_method = log_methods.get(level.lower(), self.logger.info)
+        log_method(message)
 
-		# Define the log format based on the time_stamp flag
-		log_format = '%(asctime)s - %(levelname)s - %(message)s' if time_stamp else '%(levelname)s - %(message)s'
+    def error(self, message: str):
+        """Log an error message."""
+        self.log(message, level="error")
 
-		# Add file handler
-		for handler in self.logger.handlers:
-			if isinstance(handler, logging.FileHandler):
-				new_file_handler = logging.FileHandler(handler.baseFilename)
-				new_file_handler.setFormatter(logging.Formatter(log_format))
-				temp_logger.addHandler(new_file_handler)
+    def warning(self, message: str):
+        """Log a warning message."""
+        self.log(message, level="warning")
 
-		# Conditionally add console handler based on verbose flag
-		if self.verbose:
-			console_handler = logging.StreamHandler()
-			console_handler.setFormatter(logging.Formatter(log_format))
-			temp_logger.addHandler(console_handler)
+    def info(self, message: str):
+        """Log an info message."""
+        self.log(message, level="info")
 
-		# Log the message at the specified level
-		log_methods = {
-			"info": temp_logger.info,
-			"error": temp_logger.error,
-			"warning": temp_logger.warning,
-			"debug": temp_logger.debug
-		}
-		log_method = log_methods.get(level.lower(), temp_logger.info)
-		log_method(message)
+    def debug(self, message: str):
+        """Log a debug message."""
+        self.log(message, level="debug")
+
 
 def hydrogeo_dataset_dict(path="/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"):
     with h5py.File(path, 'r') as f:

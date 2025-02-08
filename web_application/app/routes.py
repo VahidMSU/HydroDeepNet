@@ -1,10 +1,13 @@
+## /data/SWATGenXApp/codes/web_application/app/routes.py
+
 from flask import (url_for, request,
 				jsonify, current_app, session,send_file,
 				send_from_directory, redirect)
+from app.sftp_manager import create_sftp_user  # Import the SFTP user creation function
 
 from flask_login import (login_user, logout_user,
 						login_required, current_user)
-
+from app.extensions import csrf
 from app.models import User, ContactMessage
 
 from app.forms import (RegistrationForm, LoginForm, 
@@ -15,7 +18,7 @@ from app.extensions import db
 from functools import partial, wraps
 from multiprocessing import Process
 from app.utils import (find_station, get_huc12_geometries, get_huc12_streams_geometries,
-						 get_huc12_lakes_geometries, send_verification_email, LoggerSetup, 
+						 get_huc12_lakes_geometries, send_verification_email, 
 		 				single_model_creation, hydrogeo_dataset_dict, read_h5_file) 
 import os
 import json
@@ -61,21 +64,20 @@ class AppManager:
 	def __init__(self, app):
 		self.app = app
 		self.init_routes()
-		self.logger = LoggerSetup(report_path="/data/SWATGenXApp/codes/web_application/logs", verbose=True, rewrite=True)
-		self.logger = self.logger.setup_logger("WebAppLogger")
+		self.app.logger.info("AppManager initialized!")
 
 	def init_routes(self):
 		@self.app.route('/')
 		@login_required
 		@verified_required
 		def index():
-			self.logger.info("Index route called. Redirecting to /home.")	
-			return redirect(url_for('home'))
+			self.app.logger.info("Index route called. Redirecting to /home.")	
+			return jsonify({"status": "success", "redirect": "/home"})
 
 		@self.app.route('/verify', methods=['GET', 'POST'])
 		@login_required
 		def verify():
-			self.logger.info("Verify route called")
+			self.app.logger.info("Verify route called")
 			form = VerificationForm()
 
 			if form.validate_on_submit():
@@ -84,20 +86,29 @@ class AppManager:
 					current_user.is_verified = True
 					current_user.verification_code = None
 					db.session.commit()
-					#flash("Email verified successfully!")
-					message = "Email verified successfully!"
-					self.logger.info(f"Email verified successfully for {current_user.username}")
-					#return redirect(url_for('home'))
-					return jsonify({"status": "success", "message": message})
-				else:
-					#flash("Invalid code.")
-					message = "Invalid code."
-					self.logger.error("Invalid verification code entered.")
+					self.app.logger.info(f"Email verified successfully for {current_user.username}")
 
-			# If GET or invalid code, just show the verify template
-			#return render_template('verify.html', form=form)
-			### migrate to React. replace render_template with jsonify
-			return jsonify({"error": "Invalid code"}), 400
+					# ✅ Return success JSON with redirect
+					return jsonify({
+						"status": "success",
+						"message": "Email verified successfully!",
+						"redirect": "/home"
+					})
+
+				# ✅ Return error response
+				self.app.logger.error("Invalid verification code entered.")
+				return jsonify({
+					"status": "error",
+					"message": "Invalid verification code."
+				}), 400  # HTTP 400 Bad Request
+
+			# ✅ If GET request, return form structure
+			return jsonify({
+				"title": "Verify",
+				"message": "Enter your verification code.",
+				"errors": form.errors  # Include validation errors if any
+			})
+
 
 		@self.app.route('/flask-static/<path:filename>')
 		def serve_flask_static(filename):
@@ -106,13 +117,13 @@ class AppManager:
 
 		@self.app.route('/privacy')
 		def privacy():
-			self.logger.info("Privacy route called")
+			self.app.logger.info("Privacy route called")
 			#return render_template('privacy.html')
 			return jsonify({"title": "Privacy", "message": "privacy page"})
 		
 		@self.app.route('/terms')
 		def terms():
-			self.logger.info("Terms route called")
+			self.app.logger.info("Terms route called")
 			#return render_template('terms.html')
 			return jsonify({"title": "Terms", "message": "terms page"})
 
@@ -131,7 +142,7 @@ class AppManager:
 		@login_required
 		@verified_required
 		def user_dashboard():
-			self.logger.info("User Dashboard route called")
+			self.app.logger.info("User Dashboard route called")
 			#return render_template('user_dashboard.html')
 			return jsonify({"title": "User Dashboard", "message": "user dashboard page"})
 
@@ -151,14 +162,14 @@ class AppManager:
 					names = []
 				return jsonify({'names': names, 'variables': variables})
 			except Exception as e:
-				self.logger.error(f"Error fetching options: {e}")
+				self.app.logger.error(f"Error fetching options: {e}")
 				return jsonify({"error": "Failed to fetch options"}), 500
 
 		@self.app.route('/visualizations', methods=['GET'])
 		@login_required
 		@verified_required
 		def visualizations():
-			self.logger.info("Visualizations route called")
+			self.app.logger.info("Visualizations route called")
 			name = request.args.get('NAME', default=None)
 			ver = request.args.get('ver', default=None)
 			variable = request.args.get('variable', default=None)
@@ -211,7 +222,7 @@ class AppManager:
 				#flash('Authorization failed. Please try again.', 'danger')
 				#return redirect(url_for('login'))
 				message = "Authorization failed. Please try again."
-				return jsonify({"status": "error", "message": message})
+				return jsonify({"status": "error", "message": message, "redirect": "/login"})
 			
 			# Exchange the code for an access token
 			token_url = "https://oauth.msu.edu/token"
@@ -227,7 +238,7 @@ class AppManager:
 				#flash('Failed to authenticate with MSU. Please try again.', 'danger')
 				#return redirect(url_for('login'))
 				message = "Failed to authenticate with MSU. Please try again."
-				return jsonify({"status": "error", "message": message})
+				return jsonify({"status": "error", "message": message, "redirect": "/login"})
 
 			token = response.json().get("access_token")
 
@@ -239,7 +250,7 @@ class AppManager:
 				#flash('Failed to retrieve user information.', 'danger')
 				#return redirect(url_for('login'))
 				message = "Failed to retrieve user information."
-				return jsonify({"status": "error", "message": message})
+				return jsonify({"status": "error", "message": message, "redirect": "/login"})
 
 			user_info = user_info_response.json()
 			msu_netid = user_info.get('netid')
@@ -255,142 +266,85 @@ class AppManager:
 
 			# Log the user in
 			login_user(user)
-			self.logger.info(f"MSU login successful for: {msu_netid}")
-			return redirect(url_for('home'))
+			self.app.logger.info(f"MSU login successful for: {msu_netid}")
+			#return redirect(url_for('home'))
+			return jsonify({"status": "success", "redirect": "/home"})
+		
+		
+		@csrf.exempt
+		@self.app.route('/api/login', methods=['POST'])
+		def api_login():
+			self.app.logger.info(f"{request.method} request received for /api/login")
+			data = request.json
+			if not data:
+				return jsonify({"error": "No data received"}), 400
 
-		@self.app.route('/login', methods=['GET', 'POST'])
-		def login():
-			self.logger.info("Login route called")
-			form = LoginForm()
+			username = data.get('username')
+			password = data.get('password')
+			if not all([username, password]):
+				return jsonify({"error": "Missing username or password"}), 400
 
-			if form.validate_on_submit():
-				username = form.username.data
-				password = form.password.data
-				self.logger.warning(f"Login attempt for: {username}")
+			user = User.query.filter_by(username=username).first()
+			if user and user.check_password(password):
+				login_user(user)
+				session.permanent = True
+				return jsonify({"success": True, "token": "someJWT"}), 200
 
-				user = User.query.filter_by(username=username).first()
-				if user and user.check_password(password):
-					# ✅ Log the user in
-					login_user(user)
-					session.permanent = True
+			else:
+				return jsonify({"error": "Invalid username or password"}), 401
+			
 
-					# ✅ Check SFTP directory access
-					sftp_home_dir = f"/data/SWATGenXApp/Users/{username}"
-					if not os.path.exists(sftp_home_dir):
-						self.logger.error(f"SFTP home directory missing for {username}. Attempting to create...")
-						os.makedirs(sftp_home_dir, mode=0o770, exist_ok=True)
-						os.chown(sftp_home_dir, user.id, os.getgid())  # Ensure correct ownership
-
-					# ✅ Check if user has correct access
-					if not os.access(sftp_home_dir, os.W_OK):
-						self.logger.error(f"User {username} does not have write access to SFTP directory.")
-						#flash("SFTP directory access issue. Contact support.", "danger")
-						#return redirect(url_for('logout'))
-						message = "SFTP directory access issue. Contact support."
-						return jsonify({"status": "error", "message": message})
-					self.logger.info(f"SFTP directory verified for {username}: {sftp_home_dir}")
-
-					#flash("Login successful!", "success")
-					#return redirect(url_for('home'))
-					message = "Login successful!"
-					return jsonify({"status": "success", "message": message})
-				else:
-					#flash('Invalid username or password', 'danger')
-					#self.logger.error("Invalid username or password")
-					message = "Invalid username or password"
-					self.logger.error(message)
-					return jsonify({"status": "error", "message": message})
-					
-
-
-			#return render_template('login.html', form=form)
-			return jsonify({"title": "login", "message": "login page"})	
-
-			# ✅ Allow MSU NetID login as an **OPTION**, but do not require it
-			#msu_login_url = (
-			#	"https://oauth.msu.edu/authorize?"
-			#	f"response_type=code&client_id={CLIENT_ID}&"
-			#	f"redirect_uri={url_for('oauth_callback', _external=True)}&"
-			#	"scope=profile"
-			#)
-
-			#return render_template('login.html', form=form)#, msu_login_url=msu_login_url)
-			#return jsonify({"error": "Invalid username or password"}), 401
-
-		from app.sftp_manager import create_sftp_user  # Import the SFTP user creation function
-
+				
 		@self.app.route('/signup', methods=['GET', 'POST'])
 		def signup():
-			"""
-			- Use at least one uppercase, one lowercase, and one number.
-			- Use special characters (@ # $ ^ & * - _ ! + = [ ] { } | \ : ' , . ? / ` ~ ” ( ) ;).
-			- Do not include your first, middle, or last name.
-			- Do not reuse old passwords or share them.
-			"""
-			self.logger.info("Sign Up route called")
+			self.app.logger.info("Sign Up route called")
 			form = RegistrationForm()
 
 			if form.validate_on_submit():
-				# Generate verification code
 				verification_code = send_verification_email(form.email.data)
-				self.logger.info("Form validated successfully")
+				self.app.logger.info("Form validated successfully")
 
-				# ✅ Create the new user
 				new_user = User(
 					username=form.username.data,
 					email=form.email.data,
-					password=form.password.data,  # Hashed internally
+					password=form.password.data,
 					verification_code=verification_code
 				)
 
-				db.session.add(new_user)
-				db.session.commit()
-
 				try:
-					# 🔹 **Ensure user is added before creating SFTP**
 					db.session.add(new_user)
 					db.session.commit()
-					self.logger.info("User added to DB but not verified yet.")
+					self.app.logger.info("User added to DB but not verified yet.")
 
-					# ✅ **Automatically Create an SFTP Account**
+					# ✅ Automatically create SFTP account
 					sftp_result = create_sftp_user(new_user.username)
-
 					if sftp_result.get("status") != "success":
-						self.logger.error(f"Failed to create SFTP account for {new_user.username}: {sftp_result.get('error')}")
-						#flash("SFTP account creation failed. Contact support.", "danger")
-						message = "SFTP account creation failed. Contact support."
-						return jsonify({"status": "error", "message": message})
+						self.app.logger.error(f"Failed to create SFTP for {new_user.username}: {sftp_result.get('error')}")
+						return jsonify({"status": "error", "message": "SFTP account creation failed. Contact support."})
 
-					# ✅ **Log the user in immediately**
+					# ✅ Log user in and redirect
 					login_user(new_user)
-
-					# ✅ **Redirect to verification page**
-					#flash("Please check your email and enter the verification code below.")
-					#return redirect(url_for('verify'))
-					message = "Please check your email and enter the verification code below."
-					return jsonify({"status": "success", "message": message})
+					return jsonify({"status": "success", "message": "Check your email for verification code.", "redirect": "/verify"})
 
 				except Exception as e:
-					self.logger.error(f"Error adding user to the database: {e}")
+					self.app.logger.error(f"Error adding user: {e}")
 					db.session.rollback()
-					#flash("An error occurred while creating the account. Please try again.", "danger")
-					message = "An error occurred while creating the account. Please try again."
-					return jsonify({"status": "error", "message": message})
-			else:
-				self.logger.error("Form validation failed")
-				for field, errors in form.errors.items():
-					for error in errors:
-						self.logger.error(f"Error in {field}: {error}")
+					return jsonify({"status": "error", "message": "An error occurred while creating the account."})
 
-			#return render_template('register.html', form=form)
-			return jsonify({"title": "register", "message": "register page"})
-			
+			# ✅ If form is invalid, return errors
+			self.app.logger.error("Form validation failed")
+			return jsonify({
+				"title": "Sign Up",
+				"message": "Registration failed.",
+				"errors": form.errors
+			}), 400
+
 
 		@self.app.route('/home')
 		@login_required
 		@verified_required
 		def home():
-			self.logger.info("Home route called, user is authenticated.")	
+			self.app.logger.info("Home route called, user is authenticated.")	
 			#return render_template('home.html')
 			return jsonify({"title": "Home", "message": "Welcome to the API-based app!"})
 
@@ -398,14 +352,13 @@ class AppManager:
 		@login_required
 		@verified_required
 		def model_settings():
-			self.logger.info("Model Settings route called")	
+			self.app.logger.info("Model Settings route called")	
 			form = ModelSettingsForm()
 			output = None
 			if form.validate_on_submit():
 				site_no = form.user_input.data
-				
 				try:
-					self.logger.info("Form validated successfully")
+					self.app.logger.info("Form validated successfully")
 					ls_resolution = min(int(form.ls_resolution.data), 500)
 					dem_resolution = min(int(form.dem_resolution.data), 250)
 					calibration_flag = form.calibration_flag.data
@@ -417,22 +370,22 @@ class AppManager:
 					num_levels = min(int(form.num_levels.data), 20)
 					max_cal_iterations = min(int(form.max_iterations.data), 50)
 					verification_samples = min(int(form.verification_samples.data), 50)
+					self.app.logger.info(f"Model settings received: {site_no}, {ls_resolution}, {dem_resolution}, {calibration_flag}, {validation_flag}, {sensitivity_flag}, {cal_pool_size}, {sen_pool_size}, {sen_total_evaluations}, {num_levels}, {max_cal_iterations}, {verification_samples}")	
+					wrapped_single_model_creation = partial(single_model_creation, current_user.username, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
+					process = Process(target=wrapped_single_model_creation)
+					process.start()
+					self.app.logger.info("Model creation process started")
+					return jsonify({"status": "success", "message": "Model creation process started.", "redirect": "/model-confirmation"})
 				except ValueError:
-					self.logger.error("Invalid input received for model settings")
-
-				self.logger.info(f"Model settings received: {site_no}, {ls_resolution}, {dem_resolution}, {calibration_flag}, {validation_flag}, {sensitivity_flag}, {cal_pool_size}, {sen_pool_size}, {sen_total_evaluations}, {num_levels}, {max_cal_iterations}, {verification_samples}")	
-				wrapped_single_model_creation = partial(single_model_creation, current_user.username, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
-				process = Process(target=wrapped_single_model_creation)
-				process.start()
-				self.logger.info("Model creation process started")
-
-				return redirect(url_for('model_confirmation'))
+					self.app.logger.error("Invalid input received for model settings")
+				#return redirect(url_for('model_confirmation'))
 
 			#station_data = integrate_streamflow_data()
+			self.app.logger.info("Model settings page loaded")		
 			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
 			station_list = station_data.SiteNumber.unique()
 			#return render_template('model_settings.html', form=form, output=output, station_list=station_list)
-			return jsonify({"station_list": station_list})
+			return jsonify({"title": "Model Settings", "message": "model settings page", "station_list": station_list, "form": form})
 	
 		@self.app.route('/api/user_files', methods=['GET'])
 		@login_required
@@ -441,16 +394,16 @@ class AppManager:
 			Lists directories and files for the logged-in user.
 			Supports navigation within subdirectories and provides download links.
 			"""
-			self.logger.info("API User Files route called")
+			self.app.logger.info("API User Files route called")
 			base_user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
 			subdir = request.args.get('subdir', '')  # Get subdirectory from query params (default: root)
 			target_dir = os.path.join(base_user_dir, subdir)
-			self.logger.info(f"Listing contents for {current_user.username} in: {target_dir}")
+			self.app.logger.info(f"Listing contents for {current_user.username} in: {target_dir}")
 			# Security check: Ensure the requested path stays within the user's directory
 			if not target_dir.startswith(base_user_dir) or not os.path.exists(target_dir):
 				return jsonify({'error': 'Unauthorized or invalid path'}), 403
 
-			self.logger.info(f"Listing contents for {current_user.username} in: {target_dir}")
+			self.app.logger.info(f"Listing contents for {current_user.username} in: {target_dir}")
 
 			# Initialize response structure
 			contents = {
@@ -507,10 +460,10 @@ class AppManager:
 
 			# Ensure the requested directory is within the user's allowed directory
 			if not full_dir_path.startswith(user_dir) or not os.path.isdir(full_dir_path):
-				self.logger.error(f"Unauthorized directory access or not found: {full_dir_path}")
+				self.app.logger.error(f"Unauthorized directory access or not found: {full_dir_path}")
 				return jsonify({'error': 'Directory not found or access denied'}), 404
 
-			self.logger.info(f"Creating ZIP for directory: {full_dir_path}")
+			self.app.logger.info(f"Creating ZIP for directory: {full_dir_path}")
 
 			# Create a temporary ZIP file
 			with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
@@ -520,7 +473,7 @@ class AppManager:
 			try:
 				shutil.make_archive(zip_path[:-4], 'zip', full_dir_path)  # Strip .zip from tempfile path
 			except Exception as e:
-				self.logger.error(f"Failed to create ZIP: {e}")
+				self.app.logger.error(f"Failed to create ZIP: {e}")
 				return jsonify({'error': 'Failed to create ZIP file'}), 500
 
 			zip_file_name = f"{os.path.basename(dirpath)}.zip"
@@ -528,7 +481,7 @@ class AppManager:
 
 			# Ensure ZIP exists before sending
 			if not os.path.exists(final_zip_path):
-				self.logger.error(f"ZIP file missing: {final_zip_path}")
+				self.app.logger.error(f"ZIP file missing: {final_zip_path}")
 				return jsonify({'error': 'ZIP file not found'}), 500
 
 			return send_file(final_zip_path, as_attachment=True, download_name=zip_file_name)
@@ -537,61 +490,89 @@ class AppManager:
 		@login_required
 		def logout():
 			"""
-			Logs the user out and redirects to the login page.
+			Logs the user out and returns a success message with a redirect URL.
 			"""
-			self.logger.info(f"User {current_user.username} logged out.")
-			logout_user()
-			session.clear()  # Clear all session data
-			#flash("You have been logged out successfully.", "info")
-			#return redirect(url_for('login'))
-			message = "You have been logged out successfully."
-			return jsonify({"status": "success", "message": message})
+			self.app.logger.info(f"User {current_user.username} logged out.")
+			logout_user()  # Logs out the current user
+			session.clear()  # Clears all session data
+			return jsonify({
+				"status": "success",
+				"message": "You have been logged out successfully.",
+				"redirect": "/api/login"
+			}), 200
+
 		
 		@self.app.route('/get_station_characteristics', methods=['GET'])
 		def get_station_characteristics():
-			self.logger.info("Get Station Characteristics route called")
-			station_no = request.args.get('station')
-			#station_data = integrate_streamflow_data()
+			self.app.logger.info("Get Station Characteristics route called")
+			station_no = request.args.get('station', None)
+			
+			# Load station CSV
 			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
-			self.logger.info(f"Station number: {station_no}")
+			self.app.logger.info(f"Station number: {station_no}")
 
+			# Find the row with that station
 			station_row = station_data[station_data.SiteNumber == station_no]
-			characteristics_list = station_row.to_dict(orient='records')
-			characteristics = characteristics_list[0] if characteristics_list else {}
-			self.logger.info(f"Station {station_no} found")
+			if station_row.empty:
+				self.app.logger.error(f"Station {station_no} not found in CSV.")
+				return jsonify({"error": "Station not found"}), 404
+
+			# Convert row to dict
+			characteristics = station_row.iloc[0].to_dict()
+			self.app.logger.info(f"Found station row for {station_no}")
+
+			# Check if a model already exists
 			existance_flag = check_existing_models(station_no)
 			characteristics['model_exists'] = str(existance_flag).capitalize()
-			self.logger.info(f"Existance flag: {existance_flag}")
-			self.logger.info(f"characteristics: {characteristics}")
 
-			if characteristics:
-				huc12_list = characteristics.get('HUC12 ids of the watershed', [])
-				huc12_list = [str(x.split("'")[1]) for x in huc12_list[1:-1].split(',')]
-				geometries = get_huc12_geometries(huc12_list)
-				streams_geometries, lake_identifier = get_huc12_streams_geometries(huc12_list)
-				lakes_geometries = get_huc12_lakes_geometries(huc12_list, lake_identifier)
-				### check if the geometries are empty
-				if not geometries:
-					self.logger.error(f"No geometries found for HUC12s: {huc12_list}")
-				if not streams_geometries:
-					self.logger.error(f"No streams geometries found for HUC12s: {huc12_list}")
-				if not lakes_geometries:
-					self.logger.warning(f"No lakes geometries found for HUC12s: {huc12_list}")
-	
-				characteristics.pop('HUC12 ids of the watershed')
-				characteristics['Num HUC12 subbasins'] = len(huc12_list)
-				characteristics['geometries'] = geometries
-				characteristics['streams_geometries'] = streams_geometries
-				characteristics['lakes_geometries'] = lakes_geometries
+			# Safely parse the HUC12 list from the CSV field
+			# The CSV field looks like: "['040500040703','040500040508', ... ]"
+			huc12_str = characteristics.get('HUC12 ids of the watershed')
+			if not huc12_str or pd.isna(huc12_str):
+				# If missing/empty, just return characteristics without geometry
+				self.app.logger.warning(f"No HUC12 data for station {station_no}")
 				return jsonify(characteristics)
-			else:
-				return jsonify({"error": "Station not found"}), 404
+
+			# Parse the string as a Python list
+			import ast
+			try:
+				# This safely evaluates the string as a list:
+				# e.g. "['040500040703','040500040508']" -> ["040500040703", "040500040508"]
+				huc12_list = ast.literal_eval(huc12_str)
+			except Exception as e:
+				self.app.logger.error(f"Error parsing HUC12 list for {station_no}: {e}")
+				return jsonify({"error": "Failed to parse HUC12 data"}), 500
+
+			# Now call geometry functions safely
+			geometries = get_huc12_geometries(huc12_list)
+			streams_geometries, lake_identifier = get_huc12_streams_geometries(huc12_list)
+			lakes_geometries = get_huc12_lakes_geometries(huc12_list, lake_identifier)
+
+			if not geometries:
+				self.app.logger.error(f"No geometries found for HUC12s: {huc12_list}")
+			if not streams_geometries:
+				self.app.logger.error(f"No streams geometries found for HUC12s: {huc12_list}")
+			if not lakes_geometries:
+				self.app.logger.warning(f"No lakes geometries found for HUC12s: {huc12_list}")
+
+			# Add geometry data to the dictionary
+			characteristics['Num HUC12 subbasins'] = len(huc12_list)
+			characteristics['geometries'] = geometries
+			characteristics['streams_geometries'] = streams_geometries
+			characteristics['lakes_geometries'] = lakes_geometries
+
+			# Clean up if you don’t want that field in your final JSON
+			characteristics.pop('HUC12 ids of the watershed', None)
+
+			# Return as JSON
+			return jsonify(characteristics)
+
 
 		@self.app.route('/about')
 		@login_required
 		@verified_required
 		def about():
-			self.logger.info("About route called")
+			self.app.logger.info("About route called")
 			#return render_template('about.html')
 			return jsonify({"title": "About", "message": "about page"})
 
@@ -599,7 +580,7 @@ class AppManager:
 		@login_required
 		@verified_required
 		def model_confirmation():
-			self.logger.info("Model Confirmation route called")
+			self.app.logger.info("Model Confirmation route called")
 			#return render_template('model_confirmation.html')
 			return jsonify({"title": "Model Confirmation", "message": "Model confirmation page"})
 
@@ -607,7 +588,7 @@ class AppManager:
 		@login_required
 		@verified_required
 		def contact():
-			self.logger.info("Contact route called")
+			self.app.logger.info("Contact route called")
 			form = ContactForm()
 			if form.validate_on_submit():
 				name = form.name.data
@@ -617,25 +598,25 @@ class AppManager:
 				try:
 					db.session.add(contact_message)
 					db.session.commit()
-					self.logger.info(f"Message from {name} added to the database")	
+					self.app.logger.info(f"Message from {name} added to the database")	
 					#flash('Your message has been sent successfully!')
 					message = "Your message has been sent successfully!"
 				except Exception as e:
-					self.logger.error(f"Error adding message to the database: {e}")	
+					self.app.logger.error(f"Error adding message to the database: {e}")	
 					db.session.rollback()
 					#flash('An error occurred while sending the message. Please try again.')
 					message = "An error occurred while sending the message. Please try again."
 				#return redirect(url_for('contact'))
-				return jsonify({"status": "success", "message": message})
+				return jsonify({"status": "success", "message": message, "redirect": "/contact"})
 			#return render_template('contact.html', form=form)
-			return jsonify({"title": "Contact", "message": "contact page"})
+			return jsonify({"title": "Contact", "message": "contact page", "form": form})
 
 
 		@self.app.route('/infrastructure')
 		@login_required
 		@verified_required
 		def infrastructure():
-			self.logger.info("Infrastructure route called")
+			self.app.logger.info("Infrastructure route called")
 			#return render_template('infrastructure.html')
 			return jsonify({"title": "Infrastructure", "message": "infrastructure page"})
 
@@ -643,7 +624,7 @@ class AppManager:
 		@login_required
 		@verified_required
 		def hydro_geo_dataset():
-			self.logger.info("HydroGeoDataset route called")
+			self.app.logger.info("HydroGeoDataset route called")
 			form = HydroGeoDatasetForm()
 			hydrodict = hydrogeo_dataset_dict()
 
@@ -652,14 +633,14 @@ class AppManager:
 				'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population'
 			]
 			form.variable.choices = [(group, group) for group in available_groups]
-			self.logger.info(f"Available groups: {available_groups}")	
+			self.app.logger.info(f"Available groups: {available_groups}")	
 			if request.method == 'POST':
-				self.logger.info("Form submitted")
+				self.app.logger.info("Form submitted")
 				selected_variable = request.form.get('variable')
 				if selected_variable in hydrodict:
 					form.subvariable.choices = [(item, item) for item in hydrodict[selected_variable]]
 
-				self.logger.info("Form validated successfully")	
+				self.app.logger.info("Form validated successfully")	
 				variable = request.form.get('variable')
 				subvariable = request.form.get('subvariable')
 
@@ -671,27 +652,27 @@ class AppManager:
 				max_longitude = request.form.get('max_longitude', None)
 
 				if min_latitude and max_latitude and min_longitude and max_longitude:
-					self.logger.info(f"Received range: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
+					self.app.logger.info(f"Received range: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
 					latitude = longitude = None
 
 				polygon_coordinates = request.form.get('polygon_coordinates')
 				if polygon_coordinates:
 					try:
 						vertices = json.loads(polygon_coordinates)
-						self.logger.info(f"Received polygon vertices: {vertices}")
+						self.app.logger.info(f"Received polygon vertices: {vertices}")
 						max_latitudes = [vertex['latitude'] for vertex in vertices]
 						max_longitudes = [vertex['longitude'] for vertex in vertices]
 						min_latitude = min(max_latitudes)
 						max_latitude = max(max_latitudes)
 						min_longitude = min(max_longitudes)
 						max_longitude = max(max_longitudes)
-						self.logger.info(f"Polygon bounds: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")	
+						self.app.logger.info(f"Polygon bounds: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")	
 					except Exception as e:
-						self.logger.error(f"Error parsing polygon coordinates: {e}")
+						self.app.logger.error(f"Error parsing polygon coordinates: {e}")
 						#flash("Invalid polygon coordinates.", "danger")
 						message = "Invalid polygon coordinates."
 						#return render_template('HydroGeoDataset.html', form=form)
-						return jsonify({"title": "HydroGeoDataset", "message": message})
+						return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
 
 				elif not any([latitude, longitude, min_latitude, max_latitude, min_longitude, max_longitude]):
 					#flash("Please provide either a point or a range for data retrieval.", "danger")
@@ -703,18 +684,18 @@ class AppManager:
 					#flash("Variable and Subvariable are required.", "danger")
 					#return render_template('HydroGeoDataset.html', form=form)
 					message = "Variable and Subvariable are required."
-					return jsonify({"title": "HydroGeoDataset", "message": message})
+					return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
 				try:
 					if latitude and longitude:
-						self.logger.info(f"Fetching data for {variable}/{subvariable} at {latitude}, {longitude}")
+						self.app.logger.info(f"Fetching data for {variable}/{subvariable} at {latitude}, {longitude}")
 						raw_data = read_h5_file(
 							lat=float(latitude), lon=float(longitude), address=f"{variable}/{subvariable}"
 						)
 						# Convert np.float32 to float
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
-						self.logger.info(f"Data fetched: {data}")
+						self.app.logger.info(f"Data fetched: {data}")
 					elif all([min_latitude, max_latitude, min_longitude, max_longitude]):
-						self.logger.info(f"Fetching data for {variable}/{subvariable} in range ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
+						self.app.logger.info(f"Fetching data for {variable}/{subvariable} in range ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
 						raw_data = read_h5_file(
 							lat_range=(float(min_latitude), float(max_latitude)),
 							lon_range=(float(min_longitude), float(max_longitude)),
@@ -722,12 +703,12 @@ class AppManager:
 						)
 						# Convert np.float32 to float
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
-						self.logger.info(f"Data fetched for range: {data}")
+						self.app.logger.info(f"Data fetched for range: {data}")
 					else:
 						#flash("Please provide either a point or a range for data retrieval.", "danger")
 						#return render_template('HydroGeoDataset.html', form=form)
 						message = "Please provide either a point or a range for data retrieval."
-						return jsonify({"title": "HydroGeoDataset", "message": message})
+						return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
 
 					#return render_template(
 					#	'HydroGeoDataset.html',
@@ -740,26 +721,26 @@ class AppManager:
 					return jsonify({"title": "HydroGeoDataset", "message": message, "data": data})
 				
 				except Exception as e:
-					self.logger.error(f"Error fetching data: {e}")	
+					self.app.logger.error(f"Error fetching data: {e}")	
 					#flash(f"Error fetching data: {e}", "danger")
 					message = f"Error fetching data: {e}"
 			#return render_template('HydroGeoDataset.html', form=form)
-			return jsonify({"title": "HydroGeoDataset", "message": message})	
+			return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})	
 
 		@self.app.route('/get_subvariables', methods=['POST'])
 		@login_required
 		@verified_required
 		def get_subvariables():
-			self.logger.info("Get Subvariables route called")
+			self.app.logger.info("Get Subvariables route called")
 			variable = request.form.get('variable')
-			self.logger.info(f"Received variable: {variable}")
+			self.app.logger.info(f"Received variable: {variable}")
 
 			if not variable:
 				return jsonify({"error": "Variable is required"}), 400
 
 			hydrodict = hydrogeo_dataset_dict()
 			subvariables = hydrodict.get(variable, [])
-			self.logger.info(f"Subvariables for {variable}: {subvariables}")
+			self.app.logger.info(f"Subvariables for {variable}: {subvariables}")
 
 			return jsonify({"subvariables": subvariables})
 
@@ -774,18 +755,24 @@ class AppManager:
 		@login_required
 		@verified_required
 		def vision_system():
+			self.app.logger.info("Vision System route called")
 			#return render_template('VisionSystem.html')
 			return jsonify({"title": "Vision System", "message": "Vision System page"})
 
 		@self.app.route('/michigan')
+		@login_required
+		@verified_required
 		def michigan():
-			self.logger.info("Michigan route called")
-			#return render_template('michigan.html')
-			return jsonify({"title": "Michigan", "message": "Michigan page"})
+			self.app.logger.info("Michigan route called")  
+			return jsonify({
+				"title": "Michigan",
+				"message": "Michigan page"
+			})
+
 
 		@self.app.route('/search_site', methods=['GET', 'POST'])
 		def search_site():
-			self.logger.info("Search site route called")	
+			self.app.logger.info("Search site route called")	
 			search_term = request.args.get('search_term', '').lower()
 			if not search_term:
 				return jsonify({"error": "Search term is required"}), 400
@@ -793,9 +780,9 @@ class AppManager:
 			try:
 				results = find_station(search_term)
 				if results.empty:
-					self.logger.info("No matching sites found")
+					self.app.logger.info("No matching sites found")
 					return jsonify({"error": "No matching sites found"}), 404
 				return jsonify(results.to_dict(orient='records'))
 			except Exception as e:
-				self.logger.error(f"Error searching for site: {e}")
+				self.app.logger.error(f"Error searching for site: {e}")
 				return jsonify({"error": "An error occurred during the search"}), 500
