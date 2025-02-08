@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import "../css/ContactUs.css"; // Assuming you have a CSS file for custom styles
+import React, { useState } from 'react';
+import '../css/ContactUs.css'; // Assuming you have a CSS file for custom styles
 
 const ContactUs = () => {
   const [flashMessages, setFlashMessages] = useState([]);
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
+    name: '',
+    email: '',
+    message: '',
     newsletter: false,
   });
 
@@ -14,17 +14,15 @@ const ContactUs = () => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitted:", formData);
-    setFlashMessages([
-      { category: "success", text: "Your message has been sent!" },
-    ]);
-    setFormData({ name: "", email: "", message: "", newsletter: false });
+    console.log('Submitted:', formData);
+    setFlashMessages([{ category: 'success', text: 'Your message has been sent!' }]);
+    setFormData({ name: '', email: '', message: '', newsletter: false });
   };
 
   return (
@@ -33,24 +31,15 @@ const ContactUs = () => {
       <div className="card">
         <div className="card-body">
           <p className="intro-text">
-            Have questions, feedback, or collaboration ideas? We'd love to hear
-            from you! Please fill out the form below, and we'll get back to you
-            as soon as possible.
+            Have questions, feedback, or collaboration ideas? We'd love to hear from you! Please
+            fill out the form below, and we'll get back to you as soon as possible.
           </p>
 
           {flashMessages.length > 0 &&
             flashMessages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`alert alert-${msg.category}`}
-                role="alert"
-              >
+              <div key={idx} className={`alert alert-${msg.category}`} role="alert">
                 {msg.text}
-                <button
-                  type="button"
-                  className="close"
-                  onClick={() => setFlashMessages([])}
-                >
+                <button type="button" className="close" onClick={() => setFlashMessages([])}>
                   &times;
                 </button>
               </div>
@@ -111,30 +100,6 @@ const ContactUs = () => {
               Submit
             </button>
           </form>
-        </div>
-      </div>
-
-      <div className="faq-section">
-        <h3 className="text-center">Frequently Asked Questions</h3>
-        <div className="accordion">
-          <div className="accordion-item">
-            <button className="accordion-button">
-              How long will it take to receive a response?
-            </button>
-            <div className="accordion-content">
-              We aim to respond to all inquiries within 1-2 business days.
-            </div>
-          </div>
-
-          <div className="accordion-item">
-            <button className="accordion-button">
-              Can I schedule a meeting with your team?
-            </button>
-            <div className="accordion-content">
-              Yes, we’re happy to arrange a meeting. Please mention your request
-              in the message section of the form.
-            </div>
-          </div>
         </div>
       </div>
     </div>

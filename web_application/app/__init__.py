@@ -14,6 +14,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_socketio import SocketIO, emit
+from redis import Redis, ConnectionError
 
 
 
@@ -35,6 +36,8 @@ def create_app():
         static_url_path='/static',
         static_folder='/data/SWATGenXApp/GenXAppData'
     )
+
+    CORS(app)  # Enable CORS for all routes
 
     CORS(
         app,
@@ -128,11 +131,22 @@ def create_app():
     AppManager(app)
     logger.info("Application routes initialized")
 
-    # Initialize rate limiting
-    limiter = Limiter(get_remote_address, default_limits=["1000 per hour"])
-    limiter.init_app(app)
+    # Initialize Redis connection
+    try:
+        redis_client = Redis.from_url(app.config['REDIS_URL'])
+        redis_client.ping()
+    except ConnectionError:
+        redis_client = None
+        logger.error("Failed to connect to Redis")
 
-    logger.info("Rate limiting enabled")
+    # Initialize rate limiting with Redis storage backend
+    limiter = Limiter(
+        get_remote_address,
+        app=app,
+        storage_uri=app.config['REDIS_URL'] if redis_client else 'memory://'
+    )
+
+    logger.info("Rate limiting enabled with Redis storage backend")
 
     # Function to ensure path is within the base directory
     def secure_path(user_path, allowed_paths):

@@ -38,7 +38,7 @@ class Config:
     REMEMBER_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True  # Mitigate XSS attacks
     
-
+    REDIS_URL = "redis://localhost:6379/0"
     
     # For debugging/production control
     DEBUG = True

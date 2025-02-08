@@ -92,39 +92,3 @@ body {
 .btn-submit:hover {
   background-color: #0056b3;
 }
-
-.faq-section {
-  margin-top: 40px;
-}
-
-.accordion {
-  border-top: 1px solid #ddd;
-}
-
-.accordion-item {
-  border-bottom: 1px solid #ddd;
-}
-
-.accordion-button {
-  width: 100%;
-  padding: 15px;
-  text-align: left;
-  background-color: #f8f9fa;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.accordion-button:hover {
-  background-color: #e2e6ea;
-}
-
-.accordion-content {
-  padding: 15px;
-  display: none;
-}
-
-.accordion-button.active + .accordion-content {
-  display: block;
-}

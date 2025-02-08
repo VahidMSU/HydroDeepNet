@@ -25,7 +25,7 @@ async function populateDropdowns() {
   const { signal } = controller;
 
   try {
-    const response = await fetch('/get_options', { signal });
+    const response = await fetch('/get_options', { signal, method: 'GET' }); // Ensure this matches the backend method
     if (!response.ok) {
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
