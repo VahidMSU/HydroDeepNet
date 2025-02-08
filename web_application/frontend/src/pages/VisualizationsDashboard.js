@@ -1,5 +1,6 @@
 // pages/VisualizationsDashboard.js
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import '../css/VisualizationsDashboard.css'; // Adjust the path if needed
 
 const VisualizationsDashboard = () => {
@@ -14,11 +15,17 @@ const VisualizationsDashboard = () => {
   const [visualizationResults, setVisualizationResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
 
-  // Simulate fetching dropdown options on component mount
+  // Fetch dropdown options on component mount
   useEffect(() => {
-    // Replace these with actual API calls as needed
-    setWatersheds(['Watershed 1', 'Watershed 2', 'Watershed 3']);
-    setAvailableVariables(['Variable A', 'Variable B', 'Variable C']);
+    axios
+      .get('/get_options')
+      .then((response) => {
+        setWatersheds(response.data.names);
+        setAvailableVariables(response.data.variables);
+      })
+      .catch((error) => {
+        console.error('Error fetching options:', error);
+      });
   }, []);
 
   // Handle form submission
@@ -34,15 +41,24 @@ const VisualizationsDashboard = () => {
 
     setErrorMessage('');
 
-    // Simulate fetching visualization results
-    // Replace with an actual API call and logic as needed.
-    const dummyGIFs = [
-      process.env.PUBLIC_URL + '/gifs/animation1.gif',
-      process.env.PUBLIC_URL + '/gifs/animation2.gif',
-      process.env.PUBLIC_URL + '/gifs/animation3.gif',
-    ];
-    setVisualizationResults(dummyGIFs);
-    setShowResults(true);
+    // Fetch visualization results from backend
+    axios
+      .get('/visualizations', {
+        params: {
+          NAME: selectedWatershed,
+          ver: ensemble,
+          variable: selectedVariables.join(','),
+        },
+      })
+      .then((response) => {
+        setVisualizationResults(response.data.gif_files);
+        setShowResults(true);
+      })
+      .catch((error) => {
+        console.error('Error fetching visualizations:', error);
+        setErrorMessage('Failed to fetch visualizations.');
+        setShowResults(false);
+      });
   };
 
   // Handle multiple selection change
@@ -62,10 +78,8 @@ const VisualizationsDashboard = () => {
       <h1 className="text-center mb-4">Visualizations Dashboard</h1>
       <section>
         <form id="visualization_form" className="form-container" onSubmit={handleSubmit}>
-          {/* Container Holding Input Fields */}
           <div className="form-grid">
-            {/* Watershed Name Dropdown */}
-            <div className="col-md-6 mb-3">
+            <div className="form-group">
               <label htmlFor="NAME" className="form-label">
                 Watershed Name
               </label>
@@ -86,8 +100,7 @@ const VisualizationsDashboard = () => {
               </select>
             </div>
 
-            {/* Version Input */}
-            <div className="col-md-6 mb-3">
+            <div className="form-group">
               <label htmlFor="ver" className="form-label">
                 Ensemble
               </label>
@@ -103,8 +116,7 @@ const VisualizationsDashboard = () => {
               />
             </div>
 
-            {/* Variable Dropdown */}
-            <div className="col-md-12 mb-3">
+            <div className="form-group">
               <label htmlFor="variable" className="form-label">
                 Variable Name
               </label>
@@ -128,7 +140,6 @@ const VisualizationsDashboard = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="text-center mt-4">
             <button
               type="submit"
@@ -143,7 +154,6 @@ const VisualizationsDashboard = () => {
         </form>
       </section>
 
-      {/* Error Message Section */}
       <section aria-live="polite" aria-atomic="true" className="mt-3">
         {errorMessage && (
           <div id="error_message" className="alert alert-danger text-center" role="alert">
@@ -152,7 +162,6 @@ const VisualizationsDashboard = () => {
         )}
       </section>
 
-      {/* Visualization Results Section */}
       <section
         id="visualization_results"
         className={`mt-5 ${showResults ? '' : 'd-none'}`}
