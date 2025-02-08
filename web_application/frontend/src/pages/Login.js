@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
+    username: '',
+    password: '',
     remember_me: false,
   });
   const [errors, setErrors] = useState({});
@@ -14,7 +14,7 @@ const Login = () => {
   const handleChange = ({ target: { name, value, type, checked } }) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -24,10 +24,10 @@ const Login = () => {
 
     const newErrors = {};
     if (!formData.username) {
-      newErrors.username = "Username is required";
+      newErrors.username = 'Username is required';
     }
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = 'Password is required';
     }
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
@@ -35,25 +35,22 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(
-        "https://ciwre-bae.campusad.msu.edu/api/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        },
-      );
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
       const data = await response.json();
       if (data.success) {
         // store token or other credentials as needed
-        localStorage.setItem("authToken", data.token);
-        navigate("/");
+        localStorage.setItem('authToken', data.token);
+        navigate('/');
       } else {
         setErrors({ login: data.message });
       }
     } catch (error) {
-      console.error("Login error:", error);
-      setErrors({ login: "Login failed. Try again." });
+      console.error('Login error:', error);
+      setErrors({ login: 'Login failed. Try again.' });
     }
   };
 
@@ -83,15 +80,13 @@ const Login = () => {
                     type="text"
                     id="username"
                     name="username"
-                    className={`form-control ${errors.username ? "is-invalid" : ""}`}
+                    className={`form-control ${errors.username ? 'is-invalid' : ''}`}
                     placeholder="Enter username"
                     autoFocus
                     value={formData.username}
                     onChange={handleChange}
                   />
-                  {errors.username && (
-                    <div className="invalid-feedback">{errors.username}</div>
-                  )}
+                  {errors.username && <div className="invalid-feedback">{errors.username}</div>}
                 </div>
 
                 {/* Password Field */}
@@ -103,14 +98,12 @@ const Login = () => {
                     type="password"
                     id="password"
                     name="password"
-                    className={`form-control ${errors.password ? "is-invalid" : ""}`}
+                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
                     placeholder="Enter password"
                     value={formData.password}
                     onChange={handleChange}
                   />
-                  {errors.password && (
-                    <div className="invalid-feedback">{errors.password}</div>
-                  )}
+                  {errors.password && <div className="invalid-feedback">{errors.password}</div>}
                 </div>
 
                 {/* Remember Me Checkbox */}
@@ -138,8 +131,7 @@ const Login = () => {
                 {/* Additional Links */}
                 <div className="text-center mt-3">
                   <p>
-                    Don&apos;t have an account?{" "}
-                    <Link to="/signup">Sign up</Link>
+                    Don&apos;t have an account? <Link to="/signup">Sign up</Link>
                   </p>
 
                   <p>

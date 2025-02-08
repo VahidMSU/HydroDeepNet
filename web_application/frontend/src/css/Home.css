@@ -1,3 +1,7 @@
+body {
+  text-size-adjust: 100%; /* Added for better support */
+}
+
 /* Container styles */
 .container {
   display: flex;
@@ -6,4 +10,8 @@
   margin: 20px auto;
   max-width: 1200px;
   padding: 20px;
+  -webkit-backdrop-filter: blur(10px); /* Added for better support */
+  backdrop-filter: blur(10px); /* Existing property */
+  text-align: -webkit-match-parent; /* Existing property */
+  text-align: match-parent; /* Added for better support */
 }
