@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SearchForm from '../components/SearchForm';
 import StationDetails from '../components/StationDetails';
 import EsriMap from '../components/EsriMap';
-import '../css/ModelSettings.css';
+import '../styles/ModelSettings.tsx';
 
 const ModelSettings = () => {
   const [stationList, setStationList] = useState([]);

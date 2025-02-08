@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../css/SignUp.css'; // Corrected CSS file path
+import '../styles/SignUp.tsx'; // Corrected CSS file path
 
 const SignUp = () => {
   // Simulated flash messages (in a real app, these might come from props or context)

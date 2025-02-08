@@ -1,7 +1,7 @@
 // pages/Home.js
 import React from 'react';
-import '../css/Home.css'; // Corrected CSS file path
 import '../css/Layout.css'; // Corrected CSS file path
+import '../styles/Home.tsx'; // Corrected CSS file path
 
 const Home = () => {
   return (
