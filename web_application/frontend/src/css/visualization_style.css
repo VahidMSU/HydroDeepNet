@@ -3,7 +3,7 @@ body {
   background-color: #f0f2f5;
   color: #1a1a1a;
   line-height: 1.6;
-  text-size-adjust: 100%; /* Added for better support */
+  text-size-adjust: 100%;
 }
 
 h1,
@@ -12,7 +12,7 @@ h2 {
   margin-bottom: 1.5rem;
   color: #1a1a1a;
   letter-spacing: -0.5px;
-  text-align: match-parent; /* Added for better support */
+  text-align: match-parent;
 }
 
 /* Enhanced Form Container */
@@ -59,7 +59,7 @@ h2 {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
-  backdrop-filter: blur(10px); /* Existing property */
+  backdrop-filter: blur(10px);
 }
 
 .form-group {
