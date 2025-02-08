@@ -42,3 +42,35 @@
   `/data/SWATGenXApp/codes/web_application/app.wsgi`
 
 This document provides an overview of the deployment structure, configuration files, and management of the SWATGenXApp web application.
+
+
+Check out these:
+ 
+curl -I https://ciwre-bae.campusad.msu.edu/static/js/
+curl -I https://ciwre-bae.campusad.msu.edu/static/css/
+curl -I https://ciwre-bae.campusad.msu.edu/static/images/
+curl -I http://ciwre-bae.campusad.msu.edu/api/
+curl -I http://ciwre-bae.campusad.msu.edu/api/status
+ 
+###########
+React development env: localhost:3000
+ 
+ 
+##############
+The only thing remain is to wrapping and moving template htmls to JXS in:
+legacy: /data/SWATGenXApp/codes/web_application/app/templates
+react: /data/SWATGenXApp/codes/web_application/frontend/src/pages
+ 
+I have done it for the home page: /data/SWATGenXApp/codes/web_application/frontend/src/pages/Home.js
+ 
+###############
+Directories of css and js that moved from the legacy template rendering:
+/data/SWATGenXApp/codes/web_application/frontend/build/static/js
+/data/SWATGenXApp/codes/web_application/frontend/build/static/css
+curl -I https://ciwre-bae.campusad.msu.edu/static/js/home.js
+curl -I https://ciwre-bae.campusad.msu.edu/static/css/home.css
+ 
+#####
+run React: 
+cd /data/SWATGenXApp/codes/web_application/frontend
+npm start
