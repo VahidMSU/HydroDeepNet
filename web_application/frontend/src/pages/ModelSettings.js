@@ -8,8 +8,8 @@ const ModelSettings = () => {
   const [stationList, setStationList] = useState([]);
   const [stationInput, setStationInput] = useState('');
   const [stationData, setStationData] = useState(null);
-  const [lsResolution, setLsResolution] = useState('');
-  const [demResolution, setDemResolution] = useState('');
+  const [lsResolution, setLsResolution] = useState('250');
+  const [demResolution, setDemResolution] = useState('30');
   const [calibrationFlag, setCalibrationFlag] = useState(false);
   const [sensitivityFlag, setSensitivityFlag] = useState(false);
   const [validationFlag, setValidationFlag] = useState(false);
@@ -33,9 +33,15 @@ const ModelSettings = () => {
 
     console.log('Submitting model settings:', formData);
 
+    if (!stationInput) {
+      alert(
+        'Notice: Default settings are being used for Landuse/Soil Resolution (250) and DEM Resolution (30).',
+      );
+    }
+
     try {
       const response = await fetch('/model-settings', {
-        method: 'POST',
+        method: 'POST', // Ensure this matches the backend method
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
@@ -154,7 +160,7 @@ const ModelSettings = () => {
         </div>
 
         {/* Right Column: Esri Map */}
-        <div className="col-lg-8">
+        <div className="col-lg-6">
           <div className="card shadow">
             <div className="card-body p-0">
               <EsriMap

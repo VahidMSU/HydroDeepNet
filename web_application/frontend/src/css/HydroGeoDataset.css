@@ -48,6 +48,20 @@ body {
   border-radius: var(--radius);
 }
 
+/* Map Container Styling */
+#viewDiv {
+  width: 120%; /* Further increased width */
+  height: calc(100vh - 100px); /* Increased height */
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+#viewDiv:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .sidebar {
@@ -61,7 +75,8 @@ body {
   }
 
   #viewDiv {
-    height: 50vh;
+    height: calc(60vh - 50px); /* Adjusted height for consistency */
+    width: 130%; /* Adjusted width for consistency */
   }
 }
 
