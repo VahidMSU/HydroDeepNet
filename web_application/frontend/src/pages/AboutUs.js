@@ -1,0 +1,63 @@
+// pages/AboutUs.js
+import React from "react";
+
+const AboutUs = () => {
+  return (
+    <div>
+      <h2 className="mb-4">About Us</h2>
+      <div className="card">
+        <div className="card-body">
+          <p>
+            This project was funded by the{" "}
+            <strong>MSU Institute of Water Research</strong> with the goal of
+            addressing critical challenges in hydrological modeling and water
+            resource management in Michigan. Our focus is to develop a scalable,
+            physically informed deep learning model that predicts
+            high-resolution hydrological variables, especially groundwater
+            recharge, with applications across various watersheds in the United
+            States.
+          </p>
+
+          <h3>Key Aspects</h3>
+          <ol>
+            <li>
+              A scalable framework for hydrological data modeling across the
+              United States.
+            </li>
+            <li>
+              A deep learning architecture capable of high-resolution,
+              spatiotemporal predictions.
+            </li>
+            <li>
+              Facilitate collaboration by creating a platform for researchers to
+              access data and models.
+            </li>
+          </ol>
+          <h4>Developer Information</h4>
+          <p>
+            For more technical details, or to collaborate, please contact us via
+            email at:{" "}
+            <a
+              href="https://bitbucket.org/vahidrafiei/workspace/overview/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              rafieiva@msu.edu
+            </a>
+            . The project&apos;s source code is available on Bitbucket:{" "}
+            <a
+              href="https://bitbucket.org/vahidrafiei/swatgenx/src/main/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              SWATGenX
+            </a>
+            .
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AboutUs;

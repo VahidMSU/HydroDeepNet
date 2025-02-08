@@ -21,7 +21,6 @@ class Config:
 
     BASE_PATH = os.getenv('BASE_PATH', '/data/SWATGenXApp/GenXAppData/')
     USGS_PATH = os.getenv('USGS_PATH', '/data/SWATGenXApp/GenXAppData/USGS')
-
     try:
     # Read the secret key from a file or environment variable
         with open('/data/SWATGenXApp/codes/ciwre-bae-crs/ciwre-bae.campusad.msu.edu.key') as f:
@@ -30,8 +29,6 @@ class Config:
     except FileNotFoundError:
         logger.error("Secret key file not found")
         SECRET_KEY = os.getenv
-    # OR use environment variable for SECRET_KEY
-    # SECRET_KEY = os.getenv('SECRET_KEY', 'your-default-secret-key')
     
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///site.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -42,6 +39,6 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True  # Mitigate XSS attacks
     
     # For debugging/production control
-    DEBUG = os.getenv('FLASK_DEBUG', False)
-    TESTING = os.getenv('FLASK_TESTING', False)
+    DEBUG = True
+    TESTING = True
     logger.info(f"Debug: {DEBUG}, Testing: {TESTING}")
