@@ -7,23 +7,18 @@ const Logout = () => {
 
   const handleConfirmLogout = async () => {
     try {
-      // Make API call to logout endpoint
-      const response = await fetch('logout', {
-        method: 'GET',
+      const response = await fetch('/api/logout', {
+        method: 'POST', // Ensure this matches the backend method
         credentials: 'include', // Ensures cookies are sent
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status === 'success') {
-            console.log('Logout successful:', data.message);
-            navigate('/login'); // Redirect user to login
-          } else {
-            console.error('Logout failed:', data.message);
-          }
-        })
-        .catch((error) => {
-          console.error('Error during logout:', error);
-        });
+      });
+
+      const data = await response.json();
+      if (data.status === 'success') {
+        console.log('Logout successful:', data.message);
+        navigate('/login'); // Redirect user to login
+      } else {
+        console.error('Logout failed:', data.message);
+      }
     } catch (error) {
       console.error('Error during logout:', error);
       alert('Failed to logout. Please try again.');
