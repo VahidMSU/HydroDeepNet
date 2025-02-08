@@ -38,6 +38,8 @@ class Config:
     REMEMBER_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True  # Mitigate XSS attacks
     
+
+    
     # For debugging/production control
     DEBUG = True
     TESTING = True

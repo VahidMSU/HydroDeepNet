@@ -20,6 +20,8 @@
   background-color: #f8f9fa;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  -webkit-backdrop-filter: blur(10px); /* Added for better support */
+  backdrop-filter: blur(10px); /* Existing property */
 }
 
 /* Card Styling */
@@ -54,6 +56,8 @@
   color: #2c3e50;
   margin-bottom: 8px;
   font-size: 0.95rem;
+  text-align: -webkit-match-parent; /* Existing property */
+  text-align: match-parent; /* Added for better support */
 }
 
 .form-control {
@@ -130,4 +134,8 @@ button:hover {
   .form-group {
     width: 100%;
   }
+}
+
+body {
+  text-size-adjust: 100%; /* Added for better support */
 }

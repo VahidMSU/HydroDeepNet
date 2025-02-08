@@ -8,6 +8,10 @@
   --spacing: 1.5rem;
 }
 
+body {
+  text-size-adjust: 100%; /* Added for better support */
+}
+
 /* Form Container */
 .form-container {
   flex: 1;
@@ -19,10 +23,21 @@
   box-shadow: var(--shadow);
   background-color: #fff;
   transition: box-shadow 0.3s ease;
+  -webkit-backdrop-filter: blur(10px); /* Added for better support */
+  backdrop-filter: blur(10px); /* Existing property */
 }
 
 .form-container:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Form Group */
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  text-align: -webkit-match-parent; /* Existing property */
+  text-align: match-parent; /* Added for better support */
 }
 
 /* Results Section */

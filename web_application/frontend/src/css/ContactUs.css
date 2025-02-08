@@ -1,3 +1,7 @@
+body {
+  text-size-adjust: 100%; /* Added for better support */
+}
+
 .contact-us-container {
   max-width: 800px;
   margin: 0 auto;
@@ -6,6 +10,8 @@
 
 .text-center {
   text-align: center;
+  text-align: -webkit-match-parent; /* Existing property */
+  text-align: match-parent; /* Added for better support */
 }
 
 .card {
@@ -14,6 +20,8 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
+  -webkit-backdrop-filter: blur(10px); /* Added for better support */
+  backdrop-filter: blur(10px); /* Existing property */
 }
 
 .card-body {

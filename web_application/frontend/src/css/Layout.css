@@ -1,5 +1,6 @@
 body {
   background-color: #f8f9fa;
+  text-size-adjust: 100%; /* Added for better support */
 }
 
 .header-title {
@@ -8,6 +9,8 @@ body {
   color: #333;
   font-size: 2.5rem;
   font-weight: bold;
+  text-align: -webkit-match-parent; /* Existing property */
+  text-align: match-parent; /* Added for better support */
 }
 
 .container-fluid {
@@ -35,6 +38,8 @@ body {
   height: 100%;
   overflow-y: auto;
   transition: all 0.3s;
+  -webkit-backdrop-filter: blur(10px); /* Ensure this is listed first */
+  backdrop-filter: blur(10px); /* Existing property */
 }
 
 .sidebar .nav-link {
