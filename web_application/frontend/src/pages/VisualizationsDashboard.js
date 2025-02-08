@@ -1,9 +1,11 @@
 // pages/VisualizationsDashboard.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import '../css/VisualizationsDashboard.css'; // Adjust the path if needed
 
 const VisualizationsDashboard = () => {
+  const navigate = useNavigate();
   // Form states
   const [watersheds, setWatersheds] = useState([]);
   const [selectedWatershed, setSelectedWatershed] = useState('');
@@ -17,16 +19,22 @@ const VisualizationsDashboard = () => {
 
   // Fetch dropdown options on component mount
   useEffect(() => {
-    axios
-      .get('/get_options')
-      .then((response) => {
+    const fetchOptions = async () => {
+      try {
+        const response = await axios.get('/get_options');
         setWatersheds(response.data.names);
         setAvailableVariables(response.data.variables);
-      })
-      .catch((error) => {
-        console.error('Error fetching options:', error);
-      });
-  }, []);
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        } else {
+          console.error('Error fetching options:', error);
+        }
+      }
+    };
+
+    fetchOptions();
+  }, [navigate]);
 
   // Handle form submission
   const handleSubmit = (e) => {
