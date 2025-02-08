@@ -1,6 +1,6 @@
 /* Modern Map Container Styling */
 #viewDiv {
-  width: 100%;
+  width: 110%; /* Increased width */
   height: calc(100vh - 150px);
   border: none;
   border-radius: 15px;
@@ -119,6 +119,7 @@ button:hover {
 @media (max-width: 768px) {
   #viewDiv {
     height: calc(60vh - 100px);
+    width: 120%;
   }
 
   .container {
