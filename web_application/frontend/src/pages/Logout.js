@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../css/Logout.css'; // Adjust the path if necessary
+import '../styles/Logout.tsx'; // Adjust the path if necessary
 
 const Logout = () => {
   const navigate = useNavigate();

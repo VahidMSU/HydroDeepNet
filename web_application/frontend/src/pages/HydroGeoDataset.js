@@ -1,9 +1,9 @@
 // pages/HydroGeoDataset.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import MapComponent from '../components/MapComponent';
 import FormComponent from '../components/FormComponent';
-import '../css/Layout.css'; // Ensure the path is correct
-import '../css/HydroGeoDataset.css'; // Ensure the path is correct
+import '../styles/HydroGeoDataset.tsx'; // Ensure the path is correct
+import '../styles/Layout.tsx'; // Ensure the path is correct
 
 const HydroGeoDataset = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +19,7 @@ const HydroGeoDataset = () => {
   const [data, setData] = useState(null);
 
   return (
-    <div className="content">
+    <div className="container">
       {/* Map Section */}
       <MapComponent setFormData={setFormData} />
 

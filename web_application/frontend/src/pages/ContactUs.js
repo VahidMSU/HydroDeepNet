@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../css/ContactUs.css'; // Assuming you have a CSS file for custom styles
+import '../styles/ContactUs.tsx'; // Assuming you have a CSS file for custom styles
 
 const ContactUs = () => {
   const [flashMessages, setFlashMessages] = useState([]);

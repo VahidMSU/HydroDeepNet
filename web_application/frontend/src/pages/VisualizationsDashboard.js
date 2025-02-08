@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../css/VisualizationsDashboard.css'; // Adjust the path if needed
+import '../styles/VisualizationsDashboard.tsx'; // Adjust the path if needed
 
 const VisualizationsDashboard = () => {
   const navigate = useNavigate();
