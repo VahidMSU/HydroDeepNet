@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import SearchForm from '../components/SearchForm';
 import StationDetails from '../components/StationDetails';
 import EsriMap from '../components/EsriMap';
@@ -15,10 +15,12 @@ const ModelSettings = () => {
   const [validationFlag, setValidationFlag] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Memoize the ESRI map to prevent re-renders
-  const memoizedMap = useMemo(() => <EsriMap stationData={stationData} />, [stationData]);
+  useEffect(() => {
+    if (stationData) {
+      console.log('Station details:', stationData);
+    }
+  }, [stationData]);
 
-  // Submit model settings to the backend
   const handleSubmit = async () => {
     const formData = {
       stationInput,
@@ -32,24 +34,19 @@ const ModelSettings = () => {
     console.log('Submitting model settings:', formData);
 
     try {
-      // POST JSON data to the same /model-settings route
       const response = await fetch('/model-settings', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        // e.g. 400 or 500
         const errorData = await response.json();
         console.error('Model creation error:', errorData);
         alert(`Error: ${errorData.error || 'Unknown error'}`);
         return;
       }
 
-      // On success
       const data = await response.json();
       console.log('Model creation response:', data);
       alert('Model creation started!');
@@ -60,91 +57,114 @@ const ModelSettings = () => {
   };
 
   return (
-    <div className="model-settings">
-      <h2>Create SWAT+ Models for USGS Streamgages</h2>
+    <div className="container-fluid model-settings">
+      <h2 className="text-center my-4">Create SWAT+ Models for USGS Streamgages</h2>
 
       <div className="row">
-        {/* Left Column: Form */}
-        <div className="col-lg-4">
-          <SearchForm setStationData={setStationData} setLoading={setLoading} />
-          {/* USGS Station Number */}
-          <div className="form-group mt-3">
-            <label>USGS Station Number:</label>
-            <input
-              type="text"
-              className="form-control"
-              value={stationInput}
-              onChange={(e) => setStationInput(e.target.value)}
-              placeholder="Enter station number"
-              list="station_list"
-            />
-            <datalist id="station_list">
-              {stationList.map((station, index) => (
-                <option key={index} value={station} />
-              ))}
-            </datalist>
+        {/* Left Column: Search & Form */}
+        <div className="col-lg-4 d-flex flex-column align-items-stretch">
+          <div className="card shadow p-3 mb-4">
+            <div className="card-body">
+              <SearchForm setStationData={setStationData} setLoading={setLoading} />
+
+              <div className="form-group mt-3">
+                <label>USGS Station Number:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={stationInput}
+                  onChange={(e) => setStationInput(e.target.value)}
+                  placeholder="Enter station number"
+                  list="station_list"
+                />
+                <datalist id="station_list">
+                  {stationList.map((station, index) => (
+                    <option key={index} value={station} />
+                  ))}
+                </datalist>
+              </div>
+
+              {stationData && <StationDetails stationData={stationData} />}
+
+              <div className="form-group">
+                <label>Landuse/Soil Resolution:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={lsResolution}
+                  onChange={(e) => setLsResolution(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>DEM Resolution:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={demResolution}
+                  onChange={(e) => setDemResolution(e.target.value)}
+                />
+              </div>
+
+              {/* Calibration, Sensitivity, Validation Flags */}
+              <div className="form-check mt-2">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="calibrationFlag"
+                  checked={calibrationFlag}
+                  onChange={(e) => setCalibrationFlag(e.target.checked)}
+                />
+                <label className="form-check-label" htmlFor="calibrationFlag">
+                  Calibration
+                </label>
+              </div>
+
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="sensitivityFlag"
+                  checked={sensitivityFlag}
+                  onChange={(e) => setSensitivityFlag(e.target.checked)}
+                />
+                <label className="form-check-label" htmlFor="sensitivityFlag">
+                  Sensitivity Analysis
+                </label>
+              </div>
+
+              <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="validationFlag"
+                  checked={validationFlag}
+                  onChange={(e) => setValidationFlag(e.target.checked)}
+                />
+                <label className="form-check-label" htmlFor="validationFlag">
+                  Validation
+                </label>
+              </div>
+
+              <button className="btn btn-primary mt-3 w-100" onClick={handleSubmit}>
+                Run Model
+              </button>
+            </div>
           </div>
-          {/* Station Details */}
-          {stationData && <StationDetails stationData={stationData} />}
-          {/* Landuse/Soil Resolution */}
-          <div className="form-group">
-            <label>Landuse/Soil Resolution:</label>
-            <input
-              type="text"
-              className="form-control"
-              value={lsResolution}
-              onChange={(e) => setLsResolution(e.target.value)}
-            />
-          </div>
-          /* DEM Resolution */
-          <div className="form-group">
-            <label>DEM Resolution:</label>
-            <input
-              type="text"
-              className="form-control"
-              value={demResolution}
-              onChange={(e) => setDemResolution(e.target.value)}
-            />
-          </div>
-          {/* Calibration, Sensitivity, Validation Flags */}
-          <div className="form-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={calibrationFlag}
-                onChange={(e) => setCalibrationFlag(e.target.checked)}
-              />{' '}
-              Calibration
-            </label>
-          </div>
-          <div className="form-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={sensitivityFlag}
-                onChange={(e) => setSensitivityFlag(e.target.checked)}
-              />{' '}
-              Sensitivity Analysis
-            </label>
-          </div>
-          <div className="form-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={validationFlag}
-                onChange={(e) => setValidationFlag(e.target.checked)}
-              />{' '}
-              Validation
-            </label>
-          </div>
-          {/* Submit Button */}
-          <button className="btn btn-primary mt-3" onClick={handleSubmit}>
-            Run
-          </button>
         </div>
 
         {/* Right Column: Esri Map */}
-        <div className="col-lg-8">{memoizedMap}</div>
+        <div className="col-lg-8">
+          <div className="card shadow">
+            <div className="card-body p-0">
+              <EsriMap
+                geometries={stationData?.geometries || []}
+                streamsGeometries={stationData?.streams_geometries || []}
+                lakesGeometries={stationData?.lakes_geometries || []}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

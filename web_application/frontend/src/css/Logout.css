@@ -1,6 +1,14 @@
+body {
+  text-size-adjust: 100%; /* Added for better support */
+}
+
 .container {
   max-width: 600px;
   margin: auto;
   padding: 20px;
   text-align: center;
+  text-align: -webkit-match-parent; /* Existing property */
+  text-align: match-parent; /* Added for better support */
+  -webkit-backdrop-filter: blur(10px); /* Added for better support */
+  backdrop-filter: blur(10px); /* Existing property */
 }

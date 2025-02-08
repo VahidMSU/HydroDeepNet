@@ -1,31 +1,11 @@
-import sys
-import os
-import logging
-
-# Set the Python path for your application
-sys.path.insert(0, "/data/SWATGenXApp/codes/web_application")
-
-# Ensure Matplotlib can write temporary files
-os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib-cache'
-
-# Set environment variables for the Flask application
-os.environ['FLASK_ENV'] = 'production'
-os.environ['FLASK_APP'] = 'app.py'
-
-# Logging setup
-log_dir = "/data/SWATGenXApp/codes/web_application/logs"
-os.makedirs(log_dir, exist_ok=True)
-log_file_path = os.path.join(log_dir, 'ApacheWebAppLogger.log')
-
-logging.basicConfig(
-    filename=log_file_path,
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logging.info("Starting the Flask application...")
-
-# Import the Flask app
 from app import create_app
+from werkzeug.middleware.proxy_fix import ProxyFix
 
-# Create the WSGI application object
+# Create the Flask app
 application = create_app()
+
+# Apply ProxyFix middleware to handle proxy headers (e.g., X-Forwarded-For)
+application.wsgi_app = ProxyFix(application.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
+# Log that the WSGI application has started
+application.logger.info("WSGI application initialized via Apache.")

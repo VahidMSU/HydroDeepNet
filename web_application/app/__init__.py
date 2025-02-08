@@ -78,17 +78,17 @@ def create_app():
     })
 
     # Apply Flask-Talisman for security headers & HTTPS enforcement
-#    Talisman(
-#        app,
-#        force_https=False,  # ✅ Disable HTTPS redirect for local testing
-#        strict_transport_security=True,
-#        strict_transport_security_max_age=31536000,
-#        strict_transport_security_include_subdomains=True,
-#        strict_transport_security_preload=True,
-#        content_security_policy=None  # Disable CSP blocking for now
-#    )
+    Talisman(
+        app,
+        force_https=False,  # ✅ Disable HTTPS redirect for local testing
+        strict_transport_security=True,
+        strict_transport_security_max_age=31536000,
+        strict_transport_security_include_subdomains=True,
+        strict_transport_security_preload=True,
+        content_security_policy=None  # Disable CSP blocking for now
+    )
 
-#    logger.info("Applied Flask-Talisman security configurations")
+    logger.info("Applied Flask-Talisman security configurations")
 
     # Apply CSRF Protection
     #csrf.init_app(app)
@@ -97,7 +97,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = 'login'
+    login_manager.login_view = 'api_login'  # Corrected login view
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -135,43 +135,34 @@ def create_app():
     logger.info("Rate limiting enabled")
 
     # Function to ensure path is within the base directory
- #   def secure_path(user_path, allowed_paths):
- #       abs_target_dir = os.path.abspath(os.path.realpath(user_path))  # Double sanitization
-#
-  #      if not any(abs_target_dir.startswith(os.path.abspath(base)) for base in allowed_paths):
-  #          logger.error(f"Unauthorized path access attempt: {user_path}")
- #           abort(403, description="Unauthorized path access")
- #
- #       return abs_target_dir
+    def secure_path(user_path, allowed_paths):
+        abs_target_dir = os.path.abspath(os.path.realpath(user_path))  # Double sanitization
+
+        if not any(abs_target_dir.startswith(os.path.abspath(base)) for base in allowed_paths):
+            logger.error(f"Unauthorized path access attempt: {user_path}")
+            abort(403, description="Unauthorized path access")
+ 
+        return abs_target_dir
 
     # Example usage
- #   allowed_dirs = [
- #       "/data/SWATGenXApp/codes/web_application",
- #       "/data/SWATGenXApp/Users",
- #       "/data/SWATGenXApp/GenXAppData"
- #   ]
- #   secure_path("/data/SWATGenXApp/Users", allowed_dirs)
+    allowed_dirs = [
+        "/data/SWATGenXApp/codes/web_application",
+        "/data/SWATGenXApp/Users",
+        "/data/SWATGenXApp/GenXAppData"
+    ]
+    secure_path("/data/SWATGenXApp/Users", allowed_dirs)
 
 
     # Apply secure headers
- #   @app.after_request
- #   def apply_headers(response):
- #       response.headers["X-Frame-Options"] = "DENY"
- #       response.headers["X-XSS-Protection"] = "1; mode=block"
- #       response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
- #       response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
- #       return response
-
-
-#    from flask import send_from_directory
-
-#    @app.route('/js_static/<path:filename>')
-#    def serve_js_static(filename):
-#        return send_from_directory('/data/SWATGenXApp/codes/web_application/app/js', filename)
-#
- #   @app.route('/css_static/<path:filename>')
- #   def serve_css_static(filename):
- #       return send_from_directory('/data/SWATGenXApp/codes/web_application/app/css', filename)
+    @app.after_request
+    def apply_headers(response):
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
+        response.headers["Content-Security-Policy"] = "frame-ancestors 'self'"
+        response.headers["Cache-Control"] = "no-store"
+        return response
 
 
     return app

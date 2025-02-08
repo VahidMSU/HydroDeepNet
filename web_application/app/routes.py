@@ -18,8 +18,8 @@ from app.extensions import db
 from functools import partial, wraps
 from multiprocessing import Process
 from app.utils import (find_station, get_huc12_geometries, get_huc12_streams_geometries,
-						 get_huc12_lakes_geometries, send_verification_email, 
-		 				single_model_creation, hydrogeo_dataset_dict, read_h5_file) 
+						get_huc12_lakes_geometries, send_verification_email, 
+						single_model_creation, hydrogeo_dataset_dict, read_h5_file) 
 import os
 import json
 import numpy as np
@@ -77,37 +77,20 @@ class AppManager:
 		@self.app.route('/verify', methods=['GET', 'POST'])
 		@login_required
 		def verify():
-			self.app.logger.info("Verify route called")
+			"""Email verification route."""
+			self.app.logger.info(f"Verification requested by user: {current_user.username}.")
 			form = VerificationForm()
-
 			if form.validate_on_submit():
 				code_entered = form.verification_code.data.strip()
 				if current_user.verification_code == code_entered:
 					current_user.is_verified = True
 					current_user.verification_code = None
 					db.session.commit()
-					self.app.logger.info(f"Email verified successfully for {current_user.username}")
-
-					# ✅ Return success JSON with redirect
-					return jsonify({
-						"status": "success",
-						"message": "Email verified successfully!",
-						"redirect": "/home"
-					})
-
-				# ✅ Return error response
-				self.app.logger.error("Invalid verification code entered.")
-				return jsonify({
-					"status": "error",
-					"message": "Invalid verification code."
-				}), 400  # HTTP 400 Bad Request
-
-			# ✅ If GET request, return form structure
-			return jsonify({
-				"title": "Verify",
-				"message": "Enter your verification code.",
-				"errors": form.errors  # Include validation errors if any
-			})
+					self.app.logger.info(f"User `{current_user.username}` verified successfully.")
+					return jsonify({"status": "success", "redirect": "/home"})
+				self.app.logger.warning(f"Invalid verification code entered by `{current_user.username}`.")
+				return jsonify({"status": "error", "message": "Invalid verification code."}), 400
+			return jsonify({"title": "Verify", "message": "Enter your verification code."})
 
 
 		@self.app.route('/flask-static/<path:filename>')
@@ -138,13 +121,13 @@ class AppManager:
 			return send_from_directory(css_dir, filename)
 	
 
-		@self.app.route('/user_dashboard')
+		@self.app.route('/user_dashboard', methods=['GET'])
 		@login_required
 		@verified_required
 		def user_dashboard():
-			self.app.logger.info("User Dashboard route called")
-			#return render_template('user_dashboard.html')
-			return jsonify({"title": "User Dashboard", "message": "user dashboard page"})
+			"""User dashboard route."""
+			self.app.logger.info(f"User Dashboard accessed by `{current_user.username}`.")
+			return jsonify({"title": "Dashboard", "message": "Your user dashboard."})
 
 		@self.app.route('/get_options', methods=['GET'])
 		@login_required
@@ -340,53 +323,46 @@ class AppManager:
 			}), 400
 
 
-		@self.app.route('/home')
+		@self.app.route('/home', methods=['GET'])
 		@login_required
 		@verified_required
 		def home():
-			self.app.logger.info("Home route called, user is authenticated.")	
-			#return render_template('home.html')
-			return jsonify({"title": "Home", "message": "Welcome to the API-based app!"})
+			"""User's home page."""
+			self.app.logger.info(f"Home route accessed by user: {current_user.username}.")
+			return jsonify({"title": "Home", "message": "Welcome to the app!"})
 
-		@self.app.route('/model-settings', methods=['GET', 'POST'])
+		@self.app.route('/model-settings', methods=['POST'])
 		@login_required
 		@verified_required
 		def model_settings():
-			self.app.logger.info("Model Settings route called")	
-			form = ModelSettingsForm()
-			output = None
-			if form.validate_on_submit():
-				site_no = form.user_input.data
-				try:
-					self.app.logger.info("Form validated successfully")
-					ls_resolution = min(int(form.ls_resolution.data), 500)
-					dem_resolution = min(int(form.dem_resolution.data), 250)
-					calibration_flag = form.calibration_flag.data
-					validation_flag = form.validation_flag.data
-					sensitivity_flag = form.sensitivity_flag.data
-					cal_pool_size = min(int(form.cal_pool_size.data), 100)
-					sen_pool_size = min(int(form.sen_pool_size.data), 500)
-					sen_total_evaluations = min(int(form.sen_total_evaluations.data), 5000)
-					num_levels = min(int(form.num_levels.data), 20)
-					max_cal_iterations = min(int(form.max_iterations.data), 50)
-					verification_samples = min(int(form.verification_samples.data), 50)
-					self.app.logger.info(f"Model settings received: {site_no}, {ls_resolution}, {dem_resolution}, {calibration_flag}, {validation_flag}, {sensitivity_flag}, {cal_pool_size}, {sen_pool_size}, {sen_total_evaluations}, {num_levels}, {max_cal_iterations}, {verification_samples}")	
-					wrapped_single_model_creation = partial(single_model_creation, current_user.username, site_no, ls_resolution, dem_resolution, calibration_flag, validation_flag, sensitivity_flag, cal_pool_size, sen_pool_size, sen_total_evaluations, num_levels, max_cal_iterations, verification_samples)
-					process = Process(target=wrapped_single_model_creation)
-					process.start()
-					self.app.logger.info("Model creation process started")
-					return jsonify({"status": "success", "message": "Model creation process started.", "redirect": "/model-confirmation"})
-				except ValueError:
-					self.app.logger.error("Invalid input received for model settings")
-				#return redirect(url_for('model_confirmation'))
+			"""Model settings submission route."""
+			data = request.json
+			if not data:
+				return jsonify({"error": "No data received"}), 400
 
-			#station_data = integrate_streamflow_data()
-			self.app.logger.info("Model settings page loaded")		
-			station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
-			station_list = station_data.SiteNumber.unique()
-			#return render_template('model_settings.html', form=form, output=output, station_list=station_list)
-			return jsonify({"title": "Model Settings", "message": "model settings page", "station_list": station_list, "form": form})
-	
+			# Extract form data
+			site_no = data.get("site_no")
+			ls_resolution = data.get("ls_resolution", 500)
+			dem_resolution = data.get("dem_resolution", 250)
+
+			self.app.logger.info(
+				f"Model settings received for `{site_no}`: "
+				f"LS Resolution: {ls_resolution}, DEM Resolution: {dem_resolution}"
+			)
+			# Perform model creation
+			try:
+				wrapped_model_creation = partial(
+					single_model_creation,
+					current_user.username, site_no, ls_resolution, dem_resolution
+				)
+				process = Process(target=wrapped_model_creation)
+				process.start()
+				self.app.logger.info("Model creation process started successfully.")
+				return jsonify({"status": "success", "message": "Model creation started!"})
+			except Exception as e:
+				self.app.logger.error(f"Error starting model creation: {e}")
+				return jsonify({"error": "Failed to start model creation"}), 500
+
 		@self.app.route('/api/user_files', methods=['GET'])
 		@login_required
 		def api_user_files():
@@ -486,19 +462,18 @@ class AppManager:
 
 			return send_file(final_zip_path, as_attachment=True, download_name=zip_file_name)
 
-		@self.app.route('/logout', methods=['GET'])
+		@self.app.route('/api/logout', methods=['POST'])  # Ensure method is 'POST'
 		@login_required
 		def logout():
-			"""
-			Logs the user out and returns a success message with a redirect URL.
-			"""
-			self.app.logger.info(f"User {current_user.username} logged out.")
-			logout_user()  # Logs out the current user
-			session.clear()  # Clears all session data
+			"""Logout route."""
+			username = current_user.username if current_user.is_authenticated else "Anonymous"
+			current_app.logger.info(f"Logging out user: {username}.")
+			logout_user()
+			session.clear()
 			return jsonify({
 				"status": "success",
 				"message": "You have been logged out successfully.",
-				"redirect": "/api/login"
+				"redirect": "/login"
 			}), 200
 
 		
