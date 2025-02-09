@@ -1,17 +1,26 @@
 import React, { useState } from 'react';
 import ContactUsForm from '../forms/ContactUs.js';
-import '../../styles/ContactUs.tsx'; // Assuming you have a CSS file for custom styles
+import {
+  ContactUsContainer,
+  Card as ContactUsCard,
+  CardBody as ContactUsCardBody,
+  TextCenter as ContactUsIntroText,
+} from '../../styles/ContactUs.tsx'; // Import styled components
 
 const ContactUsTemplate = ({ handleFormSubmit, flashMessages, setFlashMessages }) => {
   return (
-    <div className="contact-us-container">
-      <h2 className="text-center">Contact Us</h2>
-      <div className="card">
-        <div className="card-body">
-          <p className="intro-text">
-            Have questions, feedback, or collaboration ideas? We'd love to hear from you! Please
-            fill out the form below, and we'll get back to you as soon as possible.
-          </p>
+    <ContactUsContainer>
+      <ContactUsIntroText>
+        <h2>Contact Us</h2>
+      </ContactUsIntroText>
+      <ContactUsCard>
+        <ContactUsCardBody>
+          <ContactUsIntroText>
+            <p>
+              Have questions, feedback, or collaboration ideas? We'd love to hear from you! Please
+              fill out the form below, and we'll get back to you as soon as possible.
+            </p>
+          </ContactUsIntroText>
 
           {flashMessages.length > 0 &&
             flashMessages.map((msg, idx) => (
@@ -24,9 +33,9 @@ const ContactUsTemplate = ({ handleFormSubmit, flashMessages, setFlashMessages }
             ))}
 
           <ContactUsForm onSubmit={handleFormSubmit} />
-        </div>
-      </div>
-    </div>
+        </ContactUsCardBody>
+      </ContactUsCard>
+    </ContactUsContainer>
   );
 };
 
