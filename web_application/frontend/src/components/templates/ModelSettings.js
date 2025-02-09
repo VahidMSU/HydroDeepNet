@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import ModelSettingsForm from '../forms/ModelSettings.js';
+import { Row, Column } from '../../styles/ModelSettings.tsx';
 import EsriMap from '../EsriMap.js';
-import { ContainerFluid, Title, Row, Column, Card, CardBody } from '../../styles/ModelSettings.tsx';
+import { HeaderTitle, Section, Card } from '../../styles/Layout.tsx';
+
+import {
+  CardBody,
+  ContainerFluid,
+  Content,
+  ContentWrapper,
+  MapWrapper,
+} from '../../styles/ModelSettings.tsx';
 
 const ModelSettingsTemplate = () => {
   const [stationList, setStationList] = useState([]);
@@ -64,46 +73,63 @@ const ModelSettingsTemplate = () => {
 
   return (
     <ContainerFluid>
-      <Title>Create SWAT+ Models for USGS Streamgages</Title>
-
-      <Row>
-        {/* Left Column: Search & Form */}
-        <Column>
-          <ModelSettingsForm
-            stationList={stationList}
-            stationInput={stationInput}
-            setStationInput={setStationInput}
-            stationData={stationData}
-            setStationData={setStationData}
-            lsResolution={lsResolution}
-            setLsResolution={setLsResolution}
-            demResolution={demResolution}
-            setDemResolution={setDemResolution}
-            calibrationFlag={calibrationFlag}
-            setCalibrationFlag={setCalibrationFlag}
-            sensitivityFlag={sensitivityFlag}
-            setSensitivityFlag={setSensitivityFlag}
-            validationFlag={validationFlag}
-            setValidationFlag={setValidationFlag}
-            handleSubmit={handleSubmit}
-            loading={loading}
-            setLoading={setLoading}
-          />
-        </Column>
-
-        {/* Right Column: Esri Map */}
-        <Column>
-          <Card>
-            <CardBody>
-              <EsriMap
-                geometries={stationData?.geometries || []}
-                streamsGeometries={stationData?.streams_geometries || []}
-                lakesGeometries={stationData?.lakes_geometries || []}
-              />
-            </CardBody>
-          </Card>
-        </Column>
-      </Row>
+      <HeaderTitle style={{ margin: '0 0 15px 0' }}>
+        Create SWAT+ Models for USGS Streamgages
+      </HeaderTitle>
+      <Content>
+        <Row>
+          <Column width={0.32} minWidth="350px" mobileMinWidth="100%">
+            <ContentWrapper
+              style={{
+                height: '100%',
+                margin: 0,
+                padding: '1.5rem', // Increased padding
+                overflow: 'auto',
+              }}
+            >
+              <Section style={{ padding: '0 1.5rem' }}>
+                {' '}
+                {/* Added horizontal padding */}
+                <ModelSettingsForm
+                  stationList={stationList}
+                  stationInput={stationInput}
+                  setStationInput={setStationInput}
+                  stationData={stationData}
+                  setStationData={setStationData}
+                  lsResolution={lsResolution}
+                  setLsResolution={setLsResolution}
+                  demResolution={demResolution}
+                  setDemResolution={setDemResolution}
+                  calibrationFlag={calibrationFlag}
+                  setCalibrationFlag={setCalibrationFlag}
+                  sensitivityFlag={sensitivityFlag}
+                  setSensitivityFlag={setSensitivityFlag}
+                  validationFlag={validationFlag}
+                  setValidationFlag={setValidationFlag}
+                  handleSubmit={handleSubmit}
+                  loading={loading}
+                  setLoading={setLoading}
+                />
+              </Section>
+            </ContentWrapper>
+          </Column>
+          <Column width={0.68} minWidth="650px" mobileMinWidth="100%" className="map-column">
+            <MapWrapper>
+              <Card style={{ height: '100%', margin: 0 }}>
+                <CardBody style={{ padding: '0.75rem' }}>
+                  {' '}
+                  {/* Adjusted padding */}
+                  <EsriMap
+                    geometries={stationData?.geometries || []}
+                    streamsGeometries={stationData?.streams_geometries || []}
+                    lakesGeometries={stationData?.lakes_geometries || []}
+                  />
+                </CardBody>
+              </Card>
+            </MapWrapper>
+          </Column>
+        </Row>
+      </Content>
     </ContainerFluid>
   );
 };

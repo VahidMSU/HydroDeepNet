@@ -1,4 +1,5 @@
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
+import '../css/Layout.css'; // Ensure the path is correct
 
 export const GlobalStyle = createGlobalStyle`
   body {
@@ -17,21 +18,8 @@ export const HeaderTitle = styled.h1`
   text-align: match-parent;
 `;
 
-export const ContainerFluid = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-`;
 
-export const Content = styled.main`
-  margin-left: 260px;
-  padding: 1.25rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.25rem;
-  width: calc(100% - 260px);
-  box-sizing: border-box;
-`;
+
 
 export const Sidebar = styled.nav`
   background-color: #343a40;
@@ -68,39 +56,7 @@ export const NavLink = styled.a`
   }
 `;
 
-export const FooterContainer = styled.footer`
-  width: 10%;
-  margin-left: 0;
-  background-color: #343a40;
-  color: #343a40;
-  text-align: center;
-  padding: 15px;
-  font-size: 10px;
-  border-top: 1px solid #343a40;
-  position: fixed;
-  bottom: 0;
 
-  a {
-    color: #d8dbde;
-    text-decoration: none;
-    margin: 0 10px;
-    font-weight: 500;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-export const ContentWrapper = styled.div`
-  flex-grow: 1;
-  margin-left: 270px;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-`;
 
 export const ViewDiv = styled.div`
   flex: 2;
@@ -218,17 +174,6 @@ export const FormControl = styled.input`
   }
 `;
 
-export const VideoContainer = styled.div`
-  height: 400px !important;
-  width: 100%;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-  @media (max-width: 468px) {
-    height: 300px;
-  }
-`;
 
 export const Modal = styled.div`
   display: none;
