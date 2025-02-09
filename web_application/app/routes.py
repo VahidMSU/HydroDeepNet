@@ -161,43 +161,30 @@ class AppManager:
 				if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 					return jsonify({"error": "Please provide NAME, Version, and Variable."}), 400
 				else:
-					#return render_template('visualizations.html', error="Please provide NAME, Version, and Variable.")
 					return jsonify({"title": "Visualizations", "message": "Please provide NAME, Version, and Variable."})
 
 			base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
-			static_plots_path = os.path.join(base_path, "watershed_static_plots")
 			video_path = os.path.join(base_path, "verifications_videos")
 
 			variables = variable.split(",")
 			gif_urls = []
-			static_plot_files = []
 
 			for var in variables:
 				gif_file = os.path.join(video_path, f"{ver}_{var}_animation.gif")
-				static_plot_dir = os.path.join(static_plots_path, var.capitalize())
-
 				if os.path.exists(gif_file):
 					gif_urls.append(f"/static/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{var}_animation.gif")
 
-				if os.path.exists(static_plot_dir):
-					static_plot_files += [
-						f"/static/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/watershed_static_plots/{var.capitalize()}/{file}"
-						for file in os.listdir(static_plot_dir) if file.endswith('.png')
-					]
-
-			if not gif_urls and not static_plot_files:
+			if not gif_urls:
 				if request.headers.get("X-Requested-With") == "XMLHttpRequest":
 					return jsonify({"error": f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}."}), 404
 				else:
-					#return render_template('visualizations.html', error=f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}.")
 					return jsonify({"title": "Visualizations", "message": f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}."})
 
 			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-				return jsonify({"gif_files": gif_urls, "png_files": static_plot_files})
+				return jsonify({"gif_files": gif_urls})
 
-			#return render_template('visualizations.html', name=name, ver=ver, variables=variables, gif_files=gif_urls, png_files=static_plot_files)
-			return jsonify({"title": "Visualizations", "message": "Visualizations page"})
-		
+			return jsonify({"title": "Visualizations", "message": "Visualizations page", "gif_files": gif_urls})
+
 		@self.app.route('/oauth_callback')
 		def oauth_callback():
 			code = request.args.get('code')
