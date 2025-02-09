@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import VisualizationForm from '../forms/Visualization';
+import VisualizationForm from '../forms/Visualization.js';
+import {
+  Body,
+  FormContainer,
+  PageTitle,
+  SectionTitle,
+  GifContainer,
+  GifWrapper,
+  NoResults,
+} from '../../styles/VisualizationsDashboard.tsx';
+import { Box } from '@mui/material';
 
 const VisualizationsDashboardTemplate = () => {
   const navigate = useNavigate();
@@ -75,44 +85,48 @@ const VisualizationsDashboardTemplate = () => {
   };
 
   return (
-    <main className="container my-5">
-      <h1 className="text-center mb-4">Visualizations Dashboard</h1>
-      <section>
-        <VisualizationForm
-          watersheds={watersheds}
-          selectedWatershed={selectedWatershed}
-          setSelectedWatershed={setSelectedWatershed}
-          ensemble={ensemble}
-          setEnsemble={setEnsemble}
-          availableVariables={availableVariables}
-          selectedVariables={selectedVariables}
-          setSelectedVariables={setSelectedVariables}
-          handleSubmit={handleSubmit}
-          errorMessage={errorMessage}
-        />
-      </section>
+    <Body>
+      <FormContainer maxWidth="lg">
+        <Box display="flex" justifyContent="center" width="100%">
+          <PageTitle variant="h1">Visualizations Dashboard</PageTitle>
+        </Box>
+        <section>
+          <VisualizationForm
+            watersheds={watersheds}
+            selectedWatershed={selectedWatershed}
+            setSelectedWatershed={setSelectedWatershed}
+            ensemble={ensemble}
+            setEnsemble={setEnsemble}
+            availableVariables={availableVariables}
+            selectedVariables={selectedVariables}
+            setSelectedVariables={setSelectedVariables}
+            handleSubmit={handleSubmit}
+            errorMessage={errorMessage}
+          />
+        </section>
 
-      <section
-        id="visualization_results"
-        className={`mt-5 ${showResults ? '' : 'd-none'}`}
-        aria-labelledby="results-title"
-      >
-        <h2 id="results-title" className="text-center mb-4">
-          Spatiotemporal Animations (GIFs)
-        </h2>
-        <div id="gif_container" className="d-flex flex-wrap justify-content-center gap-4">
-          {visualizationResults && visualizationResults.length > 0 ? (
-            visualizationResults.map((gif, idx) => (
-              <div key={idx} className="gif-wrapper">
-                <img src={gif} alt={`Animation ${idx + 1}`} className="img-fluid" />
-              </div>
-            ))
-          ) : (
-            <p>No visualizations available.</p>
-          )}
-        </div>
-      </section>
-    </main>
+        <section
+          id="visualization_results"
+          style={{ display: showResults ? 'block' : 'none' }}
+          aria-labelledby="results-title"
+        >
+          <SectionTitle variant="h2" id="results-title">
+            Spatiotemporal Animations (GIFs)
+          </SectionTitle>
+          <GifContainer>
+            {visualizationResults && visualizationResults.length > 0 ? (
+              visualizationResults.map((gif, idx) => (
+                <GifWrapper key={idx}>
+                  <img src={gif} alt={`Animation ${idx + 1}`} />
+                </GifWrapper>
+              ))
+            ) : (
+              <NoResults>No visualizations available.</NoResults>
+            )}
+          </GifContainer>
+        </section>
+      </FormContainer>
+    </Body>
   );
 };
 

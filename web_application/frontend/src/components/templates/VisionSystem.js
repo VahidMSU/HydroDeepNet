@@ -1,9 +1,36 @@
-import React, { useState } from 'react';
-import '../../styles/VisionSystem.tsx'; // Adjust the path if necessary
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  ContainerFluid,
+  VideoContainer,
+  CardBody,
+  VideoGrid,
+  TextCenter,
+  MediaModal,
+  MediaWrapper,
+  NavigationButton,
+  CloseButton,
+} from '../../styles/VisionSystem.tsx'; // Import styled components
+
+import {
+  Card,
+  HeaderTitle,
+  Paragraph,
+  ImageCard,
+  Modal,
+  ModalClose,
+  Section,
+  List,
+  SubHeader,
+} from '../../styles/Layout.tsx'; // Import styled components
 
 const VisionSystemTemplate = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState('');
+  const videoRefs = useRef([]);
+  const mainVideoRef = useRef(null);
+  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [mediaType, setMediaType] = useState(null); // 'video' or 'image'
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Open the modal with the given image src.
   const openModal = (src) => {
@@ -20,72 +47,173 @@ const VisionSystemTemplate = () => {
   // Batch numbers for the prediction videos (1 through 6).
   const batches = [1, 2, 3, 4, 5, 6];
 
-  return (
-    <>
-      <div className="container mt-4">
-        <h1 className="mb-4 text-center">Vision System Deep Learning</h1>
+  const allMedia = [
+    {
+      type: 'video',
+      src:
+        process.env.REACT_APP_PUBLIC_URL +
+        '/static/videos/DeepLearningMichiganET_CNNTransformer_reencoded.mp4',
+    },
+    ...batches.map((batch) => ({
+      type: 'video',
+      src:
+        process.env.REACT_APP_PUBLIC_URL +
+        `/static/videos/predictions_vs_ground_truth_batch_${batch}_0_fixed.mp4`,
+    })),
+    {
+      type: 'image',
+      src: process.env.REACT_APP_PUBLIC_URL + '/static/images/cell_wise_nse_performance.png',
+    },
+    { type: 'image', src: process.env.REACT_APP_PUBLIC_URL + '/static/images/CNN-Transformer.png' },
+  ];
 
-        {/* Introduction & Showcasing Results */}
-        <div className="card mb-4">
-          <div className="card-body">
-            <p className="lead">
+  const handleMediaClick = (src, type, index) => {
+    setSelectedMedia(src);
+    setMediaType(type);
+    setCurrentIndex(index);
+  };
+
+  const handleKeyPress = (e) => {
+    if (!selectedMedia) {
+      return;
+    }
+
+    switch (e.key) {
+      case 'Escape':
+        setSelectedMedia(null);
+        break;
+      case 'ArrowLeft':
+        setCurrentIndex((prev) => (prev > 0 ? prev - 1 : allMedia.length - 1));
+        break;
+      case 'ArrowRight':
+        setCurrentIndex((prev) => (prev < allMedia.length - 1 ? prev + 1 : 0));
+        break;
+    }
+  };
+
+  const setupVideoSync = () => {
+    if (mainVideoRef.current) {
+      mainVideoRef.current.addEventListener('play', () => {
+        videoRefs.current.forEach((video) => {
+          if (video && video !== mainVideoRef.current) {
+            video.currentTime = mainVideoRef.current.currentTime;
+            video.play();
+          }
+        });
+      });
+
+      mainVideoRef.current.addEventListener('pause', () => {
+        videoRefs.current.forEach((video) => {
+          if (video && video !== mainVideoRef.current) {
+            video.pause();
+          }
+        });
+      });
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [selectedMedia]);
+
+  useEffect(() => {
+    if (selectedMedia) {
+      const newMedia = allMedia[currentIndex];
+      setSelectedMedia(newMedia.src);
+      setMediaType(newMedia.type);
+    }
+  }, [currentIndex]);
+
+  useEffect(() => {
+    setupVideoSync();
+    // Start all videos automatically
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        video.play();
+      }
+    });
+  }, []);
+
+  // Update video rendering
+  const renderVideo = (src, index) => (
+    <VideoContainer onClick={() => handleMediaClick(src, 'video', index)}>
+      <video ref={(el) => (videoRefs.current[index] = el)} loop muted playsInline autoPlay>
+        <source src={src} type="video/mp4" />
+      </video>
+    </VideoContainer>
+  );
+
+  return (
+    <ContainerFluid>
+      <HeaderTitle>Vision System Deep Learning</HeaderTitle>
+
+      {/* Introduction & Showcasing Results */}
+      <Section>
+        <Card>
+          <CardBody>
+            <Paragraph>
               GeoCNN is a streamlined deep learning framework designed for hydrological modeling. It
               processes large-scale spatiotemporal data—integrating remote sensing, climate, and
               soil/land cover inputs—to predict monthly water balance components (e.g., ET) across
               the Michigan Lower Peninsula.
-            </p>
-            <div className="text-center mt-4">
-              <video controls autoPlay className="video-container">
-                <source
+            </Paragraph>
+            <TextCenter>
+              <VideoContainer>
+                <video ref={mainVideoRef} loop muted playsInline autoPlay>
+                  <source
+                    src={
+                      process.env.REACT_APP_PUBLIC_URL +
+                      '/static/videos/DeepLearningMichiganET_CNNTransformer_reencoded.mp4'
+                    }
+                    type="video/mp4"
+                  />
+                  Your browser does not support the video tag.
+                </video>
+              </VideoContainer>
+            </TextCenter>
+            <TextCenter>
+              <SubHeader>Predictions vs. Ground Truth (Single Batches)</SubHeader>
+              <VideoGrid>
+                {batches.map((batch, index) =>
+                  renderVideo(
+                    process.env.REACT_APP_PUBLIC_URL +
+                      `/static/videos/predictions_vs_ground_truth_batch_${batch}_0_fixed.mp4`,
+                    index,
+                  ),
+                )}
+              </VideoGrid>
+              <SubHeader className="mt-4">Cell-wise NSE Performance</SubHeader>
+              <ImageCard>
+                <img
                   src={
                     process.env.REACT_APP_PUBLIC_URL +
-                    '/static/videos/DeepLearningMichiganET_CNNTransformer_reencoded.mp4'
+                    '/static/images/cell_wise_nse_performance.png'
                   }
-                  type="video/mp4"
+                  alt="Cell-wise NSE Performance"
+                  className="img-fluid clickable-image"
+                  onClick={() =>
+                    handleMediaClick(
+                      process.env.REACT_APP_PUBLIC_URL +
+                        '/static/images/cell_wise_nse_performance.png',
+                      'image',
+                      batches.length,
+                    )
+                  }
                 />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-            <div className="text-center mt-4">
-              <h5>Predictions vs. Ground Truth (Single Batches)</h5>
-              <div className="video-grid">
-                {batches.map((batch) => (
-                  <video key={batch} controls autoPlay className="video-container small-video">
-                    <source
-                      src={
-                        process.env.REACT_APP_PUBLIC_URL +
-                        `/static/videos/predictions_vs_ground_truth_batch_${batch}_0_fixed.mp4`
-                      }
-                      type="video/mp4"
-                    />
-                    Your browser does not support the video tag.
-                  </video>
-                ))}
-              </div>
-              <h5 className="mt-4">Cell-wise NSE Performance</h5>
-              <img
-                src={
-                  process.env.REACT_APP_PUBLIC_URL + '/static/images/cell_wise_nse_performance.png'
-                }
-                alt="Cell-wise NSE Performance"
-                className="img-fluid clickable-image"
-                onClick={() =>
-                  openModal(
-                    process.env.REACT_APP_PUBLIC_URL +
-                      '/static/images/cell_wise_nse_performance.png',
-                  )
-                }
-              />
-            </div>
-          </div>
-        </div>
+              </ImageCard>
+            </TextCenter>
+          </CardBody>
+        </Card>
+      </Section>
 
-        {/* Key Components & Overview */}
-        <h2 className="mt-4">Overview of GeoCNN</h2>
-        <div className="card mb-4">
-          <div className="card-body">
-            <p>GeoCNN efficiently handles:</p>
-            <ul>
+      {/* Key Components & Overview */}
+      <Section>
+        <SubHeader>Overview of GeoCNN</SubHeader>
+        <Card>
+          <CardBody>
+            <Paragraph>GeoCNN efficiently handles:</Paragraph>
+            <List>
               <li>
                 <strong>Large Datasets:</strong> Fast loading/reloading of multi-year monthly data.
               </li>
@@ -101,38 +229,42 @@ const VisionSystemTemplate = () => {
                 <strong>Spatial & Temporal Flexibility:</strong> Custom skip connections, attention,
                 and advanced up/down-sampling.
               </li>
-            </ul>
-            <p>
+            </List>
+            <Paragraph>
               Target variables (e.g., ET) are observed at 250m resolution across Michigan. Data gaps
               are filled using water masks, mean interpolation, and global scaling from 0 to 1.
               Invalid areas (like Lake Michigan) are marked to help the model distinguish land vs.
               water.
-            </p>
-          </div>
-        </div>
+            </Paragraph>
+          </CardBody>
+        </Card>
+      </Section>
 
-        {/* Data Pipeline */}
-        <h2 className="mt-4">Data Pipeline</h2>
-        <div className="card mb-4">
-          <div className="card-body">
-            <p>
+      {/* Data Pipeline */}
+      <Section>
+        <SubHeader>Data Pipeline</SubHeader>
+        <Card>
+          <CardBody>
+            <Paragraph>
               GeoCNN’s data pipeline handles monthly raster stacks spanning 2001–2021. Temporal
               aggregation (summing precipitation, averaging temperature) ensures consistency. A
               70/20/10 split (train/validate/test) provides robust coverage for model development.
-            </p>
-            <p>
+            </Paragraph>
+            <Paragraph>
               Dynamic variables (e.g., NDVI, EVI, precipitation, temperature) and static features
               (e.g., soil/land cover) are ingested in batches via efficient queue management,
               minimizing latency during training.
-            </p>
-          </div>
-        </div>
+            </Paragraph>
+          </CardBody>
+        </Card>
+      </Section>
 
-        {/* Deep Learning Models */}
-        <h2 className="mt-4">Deep Learning Models</h2>
-        <div className="card mb-4">
-          <div className="card-body">
-            <ul>
+      {/* Deep Learning Models */}
+      <Section>
+        <SubHeader>Deep Learning Models</SubHeader>
+        <Card>
+          <CardBody>
+            <List>
               <li>
                 <strong>Inception-LSTM:</strong> Combines spatial feature extraction with LSTM-based
                 temporal modeling.
@@ -145,24 +277,26 @@ const VisionSystemTemplate = () => {
                 <strong>Fully Transformer-Based:</strong> Omits convolutional operations entirely,
                 focusing on spatiotemporal attention.
               </li>
-            </ul>
-            <p>
+            </List>
+            <Paragraph>
               Multiple iterations (V1–V8) refined hyperparameters (positional encodings, attention
               mechanisms, learning rates, and more). Removing batch normalization from most layers
               helped stabilize training, except in squeeze-and-excitation blocks.
-            </p>
-          </div>
-        </div>
+            </Paragraph>
+          </CardBody>
+        </Card>
+      </Section>
 
-        {/* CNN-Transformer Architecture */}
-        <h2 className="mt-4">CNN-Transformer Architecture</h2>
-        <div className="card mb-4">
-          <div className="card-body">
-            <p>
+      {/* CNN-Transformer Architecture */}
+      <Section>
+        <SubHeader>CNN-Transformer Architecture</SubHeader>
+        <Card>
+          <CardBody>
+            <Paragraph>
               Our final CNN-Transformer processes inputs of shape [B, T, C, H, W]—batch, time steps,
               channels, height, width. Key elements include:
-            </p>
-            <ul>
+            </Paragraph>
+            <List>
               <li>
                 <strong>Down-Sampling Pathway:</strong> Deformable convolutions, SE blocks,
                 coordinate attention for hierarchical spatial features.
@@ -175,27 +309,35 @@ const VisionSystemTemplate = () => {
                 <strong>Up-Sampling Pathway:</strong> Sub-pixel convolution and skip connections to
                 restore spatial resolution.
               </li>
-            </ul>
-            <div className="text-center mt-4">
-              <h5>CNN-Transformer Architecture Flow</h5>
-              <img
-                src={process.env.REACT_APP_PUBLIC_URL + '/static/images/CNN-Transformer.png'}
-                alt="CNN-Transformer Architecture"
-                className="img-fluid clickable-image"
-                onClick={() =>
-                  openModal(process.env.REACT_APP_PUBLIC_URL + '/static/images/CNN-Transformer.png')
-                }
-              />
-            </div>
-          </div>
-        </div>
+            </List>
+            <TextCenter>
+              <SubHeader>CNN-Transformer Architecture Flow</SubHeader>
+              <ImageCard>
+                <img
+                  src={process.env.REACT_APP_PUBLIC_URL + '/static/images/CNN-Transformer.png'}
+                  alt="CNN-Transformer Architecture"
+                  className="img-fluid clickable-image"
+                  onClick={() =>
+                    handleMediaClick(
+                      process.env.REACT_APP_PUBLIC_URL + '/static/images/CNN-Transformer.png',
+                      'image',
+                      batches.length + 1,
+                    )
+                  }
+                />
+              </ImageCard>
+            </TextCenter>
+          </CardBody>
+        </Card>
+      </Section>
 
-        {/* Specialized Loss Function */}
-        <h2 className="mt-4">Specialized Loss Function</h2>
-        <div className="card mb-4">
-          <div className="card-body">
-            <p>GeoCNN uses a custom loss that evaluates:</p>
-            <ul>
+      {/* Specialized Loss Function */}
+      <Section>
+        <SubHeader>Specialized Loss Function</SubHeader>
+        <Card>
+          <CardBody>
+            <Paragraph>GeoCNN uses a custom loss that evaluates:</Paragraph>
+            <List>
               <li>
                 <strong>Spatial Dimensions:</strong> Penalizes boundary errors, outliers, and
                 no-value regions.
@@ -204,55 +346,55 @@ const VisionSystemTemplate = () => {
                 <strong>Temporal Dimensions:</strong> Seasonal performance in winter, spring,
                 summer, and fall.
               </li>
-            </ul>
-            <p>
+            </List>
+            <Paragraph>
               This ensures that the model captures both local spatial structures and broader
               seasonal trends.
-            </p>
-          </div>
-        </div>
-      </div>
+            </Paragraph>
+          </CardBody>
+        </Card>
+      </Section>
 
       {/* Modal for enlarged images */}
       {modalOpen && (
-        <div
-          id="imageModal"
-          style={{
-            display: 'flex',
-            position: 'fixed',
-            zIndex: 1000,
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          onClick={closeModal}
-        >
-          <span
-            style={{
-              position: 'absolute',
-              top: '20px',
-              right: '30px',
-              color: 'white',
-              fontSize: '2rem',
-              cursor: 'pointer',
-            }}
-            onClick={closeModal}
-          >
-            &times;
-          </span>
+        <Modal onClick={closeModal}>
+          <ModalClose onClick={closeModal}>&times;</ModalClose>
           <img
             id="modalImage"
             src={modalImage}
             alt="Large view"
             style={{ maxWidth: '90%', maxHeight: '90%', borderRadius: '10px' }}
           />
-        </div>
+        </Modal>
       )}
-    </>
+
+      {selectedMedia && (
+        <MediaModal>
+          <CloseButton onClick={() => setSelectedMedia(null)}>&times;</CloseButton>
+          <NavigationButton
+            className="prev"
+            onClick={() => setCurrentIndex((prev) => (prev > 0 ? prev - 1 : allMedia.length - 1))}
+          >
+            &#8592;
+          </NavigationButton>
+          <MediaWrapper>
+            {mediaType === 'video' ? (
+              <video controls autoPlay loop>
+                <source src={selectedMedia} type="video/mp4" />
+              </video>
+            ) : (
+              <img src={selectedMedia} alt="Enlarged view" />
+            )}
+          </MediaWrapper>
+          <NavigationButton
+            className="next"
+            onClick={() => setCurrentIndex((prev) => (prev < allMedia.length - 1 ? prev + 1 : 0))}
+          >
+            &#8594;
+          </NavigationButton>
+        </MediaModal>
+      )}
+    </ContainerFluid>
   );
 };
 
