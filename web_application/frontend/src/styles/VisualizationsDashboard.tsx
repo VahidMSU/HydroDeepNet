@@ -20,10 +20,18 @@ const FormContainer = styled(Container)({
 
 const FormLabel = styled('label')({
   display: 'block',
-  marginBottom: '8px',
+  marginBottom: '1rem',
   fontWeight: 600,
-  fontSize: '0.9rem',
+  fontSize: '1rem',
   color: '#4a5568',
+  letterSpacing: '0.01em',
+  textAlign: 'center',  // Center the label text
+  width: '100%',        // Full width for center alignment
+  paddingLeft: '0',     // Remove left padding
+  position: 'relative',
+  '&::before': {
+    display: 'none'     // Remove the marker since we're centering
+  }
 });
 
 const FormControl = styled(TextField)({
@@ -34,26 +42,58 @@ const FormControl = styled(TextField)({
   fontSize: '1rem',
   transition: 'all 0.2s ease',
   backgroundColor: '#f8fafc',
-  marginBottom: '1rem',
+  marginBottom: '1.5rem',
+  marginLeft: '0',      // Remove left margin
+  width: '100%',        // Full width
+  maxWidth: '300px',    // Limit maximum width
+  textAlign: 'center',  // Center the text inside
   '&:focus': {
     borderColor: '#3b82f6',
     boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
     outline: 'none',
+  },
+  '& .MuiInputBase-root': {
+    marginTop: '0.5rem',  // Added space between label and input
   },
 });
 
 const FormGrid = styled(Box)({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-  gap: '2rem',
-  marginTop: '2rem',
+  gap: '4rem',  // Increased gap between grid items
+  marginTop: '3rem',    // Increased top margin
+  marginBottom: '3rem', // Increased bottom margin
   backdropFilter: 'blur(10px)',
+  maxWidth: '900px',    // Increased max width to accommodate spacing
+  margin: '0 auto',
+  justifyContent: 'center',
+  alignItems: 'start',
+  padding: '2rem',      // Added padding around the grid
 });
 
 const FormGroup = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  gap: '0.5rem',
+  gap: '1.5rem',        // Increased gap between label and input
+  marginBottom: '2rem', // Increased bottom margin
+  padding: '1.5rem',    // Added padding around each form group
+  alignItems: 'center',
+  textAlign: 'center',
+  backgroundColor: 'rgba(255, 255, 255, 0.5)', // Optional: subtle background
+  borderRadius: '12px', // Optional: rounded corners
+  '& .MuiFormControl-root': {
+    marginBottom: '2rem',
+  },
+  '&.ensemble-group': {
+    '& .MuiFormControl-root': {
+      marginLeft: '0',  // Remove left margin since we're centering
+      width: '100%',    // Use full width
+      maxWidth: '300px' // Limit maximum width
+    },
+    '& label': {
+      marginLeft: '0',  // Remove left margin
+    }
+  }
 });
 
 const Btn = styled(Button)({
@@ -72,6 +112,7 @@ const BtnPrimary = styled(Btn)({
     backgroundColor: '#2563eb',
     transform: 'translateY(-1px)',
   },
+  marginTop: '1.5rem',  // Added top margin for button
 });
 
 const FormError = styled(Typography)({
@@ -85,22 +126,76 @@ const VisualizationResults = styled(Box)({
 });
 
 const GifContainer = styled(Box)({
-  display: 'flex',
-  flexWrap: 'wrap',
-  justifyContent: 'center',
-  gap: '1rem',
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+  gap: '2rem',
+  padding: '1rem',
+  width: '100%',
 });
 
 const GifWrapper = styled(Box)({
-  maxWidth: '300px',
-  border: '1px solid #ddd',
-  borderRadius: '8px',
+  position: 'relative',
+  borderRadius: '12px',
   overflow: 'hidden',
-  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+  backgroundColor: '#ffffff',
   '& img': {
     width: '100%',
     height: 'auto',
+    display: 'block',
   },
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: '0 8px 12px rgba(0, 0, 0, 0.15)',
+  },
+});
+
+const PageTitle = styled(Typography)({
+  fontSize: '2.5rem',
+  fontWeight: 700,
+  textAlign: 'center',
+  marginBottom: '2rem',
+  color: '#2d3748',
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '1rem 0',
+  '@media (max-width: 768px)': {
+    fontSize: '2rem',
+  },
+});
+
+const SectionTitle = styled(Typography)({
+  fontSize: '1.8rem',
+  fontWeight: 600,
+  textAlign: 'center',
+  marginBottom: '1.5rem',
+  color: '#2d3748',
+});
+
+const FormSelect = styled(TextField)({
+  ...FormControl.style,
+  marginBottom: '1.5rem',
+  marginLeft: '0',      // Remove left margin
+  width: '100%',        // Full width
+  maxWidth: '300px',    // Limit maximum width
+  textAlign: 'center',  // Center the text inside
+  '& .MuiSelect-select': {
+    padding: '0.75rem 1rem',
+  },
+  '& .MuiFormHelperText-root': {
+    marginTop: '0.5rem',  // Added space for helper text
+  },
+});
+
+const NoResults = styled(Typography)({
+  textAlign: 'center',
+  color: '#64748b',
+  fontSize: '1.1rem',
+  padding: '2rem',
+  width: '100%',
 });
 
 const ResponsiveDesign = styled('div')({
@@ -131,5 +226,9 @@ export {
   VisualizationResults,
   GifContainer,
   GifWrapper,
+  PageTitle,
+  SectionTitle,
+  FormSelect,
+  NoResults,
   ResponsiveDesign,
 };

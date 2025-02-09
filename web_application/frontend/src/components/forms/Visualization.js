@@ -1,4 +1,5 @@
 import React from 'react';
+import { Box } from '@mui/material';
 
 const VisualizationForm = ({
   watersheds,
@@ -25,67 +26,69 @@ const VisualizationForm = ({
 
   return (
     <form id="visualization_form" className="form-container" onSubmit={handleSubmit}>
-      <div className="form-grid">
-        <div className="form-group">
-          <label htmlFor="NAME" className="form-label">
-            Watershed Name
-          </label>
-          <select
-            name="NAME"
-            id="NAME"
-            className="form-select"
-            required
-            value={selectedWatershed}
-            onChange={(e) => setSelectedWatershed(e.target.value)}
-          >
-            <option value="">Select a Watershed</option>
-            {watersheds.map((w, idx) => (
-              <option key={idx} value={w}>
-                {w}
-              </option>
-            ))}
-          </select>
-        </div>
+      <Box display="flex" justifyContent="center">
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="NAME" className="form-label">
+              Watershed Name
+            </label>
+            <select
+              name="NAME"
+              id="NAME"
+              className="form-select"
+              required
+              value={selectedWatershed}
+              onChange={(e) => setSelectedWatershed(e.target.value)}
+            >
+              <option value="">Select a Watershed</option>
+              {watersheds.map((w, idx) => (
+                <option key={idx} value={w}>
+                  {w}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="ver" className="form-label">
-            Ensemble
-          </label>
-          <input
-            type="text"
-            name="ver"
-            id="ver"
-            className="form-control"
-            placeholder="Enter Ensemble Version"
-            required
-            value={ensemble}
-            onChange={(e) => setEnsemble(e.target.value)}
-          />
-        </div>
+          <div className="form-group ensemble-group">
+            <label htmlFor="ver" className="form-label">
+              Ensemble
+            </label>
+            <input
+              type="text"
+              name="ver"
+              id="ver"
+              className="form-control"
+              placeholder="Enter Ensemble Version"
+              required
+              value={ensemble}
+              onChange={(e) => setEnsemble(e.target.value)}
+            />
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="variable" className="form-label">
-            Variable Name
-          </label>
-          <select
-            name="variable"
-            id="variable"
-            className="form-select"
-            multiple
-            value={selectedVariables}
-            onChange={handleVariableChange}
-          >
-            {availableVariables.map((variable, idx) => (
-              <option key={idx} value={variable}>
-                {variable}
-              </option>
-            ))}
-          </select>
-          <small id="variable-help" className="form-text text-muted">
-            Hold Ctrl/Cmd to select multiple variables.
-          </small>
+          <div className="form-group">
+            <label htmlFor="variable" className="form-label">
+              Variable Name
+            </label>
+            <select
+              name="variable"
+              id="variable"
+              className="form-select"
+              multiple
+              value={selectedVariables}
+              onChange={handleVariableChange}
+            >
+              {availableVariables.map((variable, idx) => (
+                <option key={idx} value={variable}>
+                  {variable}
+                </option>
+              ))}
+            </select>
+            <small id="variable-help" className="form-text text-muted">
+              Hold Ctrl/Cmd to select multiple variables.
+            </small>
+          </div>
         </div>
-      </div>
+      </Box>
 
       <div className="text-center mt-4">
         <button
