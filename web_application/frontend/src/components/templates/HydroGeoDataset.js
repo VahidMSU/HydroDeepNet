@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import MapComponent from '../MapComponent'; // Ensure the path is correct
-import HydroGeoDatasetForm from '../forms/HydroGeoDataset'; // Ensure the path is correct
+import MapComponent from '../MapComponent';
+import HydroGeoDatasetForm from '../forms/HydroGeoDataset';
+import { Container, DataDisplay, Title } from '../../styles/HydroGeoDataset.tsx';
 
 const HydroGeoDatasetTemplate = () => {
   const [formData, setFormData] = useState({
@@ -72,7 +73,7 @@ const HydroGeoDatasetTemplate = () => {
   };
 
   return (
-    <div className="container">
+    <Container>
       {/* Map Section */}
       <MapComponent setFormData={setFormData} />
 
@@ -87,12 +88,12 @@ const HydroGeoDatasetTemplate = () => {
 
       {/* Display Data */}
       {data && (
-        <div className="data-display">
-          <h3>Data:</h3>
+        <DataDisplay>
+          <Title>Data:</Title>
           <pre>{JSON.stringify(data, null, 2)}</pre>
-        </div>
+        </DataDisplay>
       )}
-    </div>
+    </Container>
   );
 };
 
