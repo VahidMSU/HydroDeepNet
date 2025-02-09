@@ -22,6 +22,7 @@ const VisualizationsDashboard = () => {
     const fetchOptions = async () => {
       try {
         const response = await axios.get('/get_options');
+        console.log('GET /get_options response:', response.data); // Logging after GET request
         setWatersheds(response.data.names);
         setAvailableVariables(response.data.variables);
       } catch (error) {
@@ -50,6 +51,11 @@ const VisualizationsDashboard = () => {
     setErrorMessage('');
 
     // Fetch visualization results from backend
+    console.log('POST /visualizations params:', {
+      NAME: selectedWatershed,
+      ver: ensemble,
+      variable: selectedVariables.join(','),
+    }); // Logging before POST request
     axios
       .get('/visualizations', {
         params: {

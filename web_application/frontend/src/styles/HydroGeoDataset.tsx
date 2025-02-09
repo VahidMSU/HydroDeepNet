@@ -1,7 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { styled } from '@mui/material/styles';
 import { Box } from '@mui/material';
-import theme from './variables.ts';
 import './variables.ts'; // Ensure this path is correct or the file exists
 
 export const FormContainer = styled(Box)({
