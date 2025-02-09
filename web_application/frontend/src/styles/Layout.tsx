@@ -250,4 +250,95 @@ export const Modal = styled.div`
   }
 `;
 
-// You can continue adding more styled components as needed...
+export const Section = styled.div`
+  margin-bottom: 30px;
+`;
+
+export const Header = styled.h3`
+  font-size: 1.75rem;
+  color: #333;
+  margin-bottom: 15px;
+`;
+
+export const SubHeader = styled.h4`
+  font-size: 1.5rem;
+  color: #555;
+  margin-bottom: 10px;
+`;
+
+export const Paragraph = styled.p`
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 15px;
+`;
+
+export const List = styled.ul`
+  list-style-type: disc;
+  padding-left: 20px;
+  margin-bottom: 15px;
+
+  li {
+    margin-bottom: 10px;
+  }
+`;
+
+export const ImageGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+`;
+
+export const ImageCard = styled.div`
+  flex: 1;
+  min-width: 200px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  text-align: center;
+
+  img {
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+  }
+
+  h4 {
+    margin: 10px 0;
+    font-size: 1.25rem;
+    color: #333;
+  }
+`;
+
+export const InteractiveButtons = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+
+  a {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+`;
+
+export const ModalClose = styled.span`
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+`;

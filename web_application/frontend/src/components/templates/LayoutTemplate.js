@@ -1,6 +1,14 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../../styles/Layout.tsx'; // Ensure correct path for CSS
+import {
+  ContainerFluid,
+  Sidebar,
+  Nav,
+  NavLink,
+  ContentWrapper,
+  Footer,
+  LogoutButton,
+} from '../../styles/LayoutTemplate.tsx';
 
 const LayoutTemplate = ({ children, handleLogout }) => {
   const navigate = useNavigate(); // Hook for navigation
@@ -13,54 +21,52 @@ const LayoutTemplate = ({ children, handleLogout }) => {
   }, [navigate]);
 
   return (
-    <div className="container-fluid">
+    <ContainerFluid>
       {localStorage.getItem('authToken') && (
-        <div className="sidebar">
+        <Sidebar>
           <h2>Navigation</h2>
-          <nav className="nav flex-column">
-            <Link className="nav-link" to="/">
+          <Nav>
+            <NavLink to="/">
               <i className="fas fa-home"></i> Home
-            </Link>
-            <Link className="nav-link" to="/model_settings">
+            </NavLink>
+            <NavLink to="/model_settings">
               <i className="fas fa-cogs"></i> Model Settings
-            </Link>
-            <Link className="nav-link" to="/visualizations">
+            </NavLink>
+            <NavLink to="/visualizations">
               <i className="fas fa-chart-bar"></i> Visualizations
-            </Link>
-            <Link className="nav-link" to="/michigan">
+            </NavLink>
+            <NavLink to="/michigan">
               <i className="fas fa-map-marker-alt"></i> Michigan
-            </Link>
-            <Link className="nav-link" to="/vision_system">
+            </NavLink>
+            <NavLink to="/vision_system">
               <i className="fas fa-eye"></i> Vision System
-            </Link>
-            <Link className="nav-link" to="/hydro_geo_dataset">
+            </NavLink>
+            <NavLink to="/hydro_geo_dataset">
               <i className="fas fa-database"></i> HydroGeoDataset
-            </Link>
-            <Link className="nav-link" to="/user_dashboard">
+            </NavLink>
+            <NavLink to="/user_dashboard">
               <i className="fas fa-tachometer-alt"></i> User Dashboard
-            </Link>
-            {/* Logout Button */}
-            <button className="nav-link btn btn-link text-start" onClick={handleLogout}>
+            </NavLink>
+            <LogoutButton onClick={handleLogout}>
               <i className="fas fa-sign-out-alt"></i> Logout
-            </button>
-            <Link className="nav-link" to="/contact">
+            </LogoutButton>
+            <NavLink to="/contact">
               <i className="fas fa-envelope"></i> Contact
-            </Link>
-            <Link className="nav-link" to="/about">
+            </NavLink>
+            <NavLink to="/about">
               <i className="fas fa-info-circle"></i> About
-            </Link>
-            <Link className="nav-link" to="/signup">
+            </NavLink>
+            <NavLink to="/signup">
               <i className="fas fa-user-plus"></i> Sign Up
-            </Link>
-          </nav>
-        </div>
+            </NavLink>
+          </Nav>
+        </Sidebar>
       )}
-      {/* Main Content Area */}
-      <div className="content-wrapper">{children}</div>
-      <footer className="footer mt-4 p-3 text-center border-top">
+      <ContentWrapper>{children}</ContentWrapper>
+      <Footer>
         <Link to="/privacy">Privacy Policy</Link> | <Link to="/terms">Terms of Service</Link>
-      </footer>
-    </div>
+      </Footer>
+    </ContainerFluid>
   );
 };
 

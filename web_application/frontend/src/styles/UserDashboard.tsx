@@ -19,4 +19,19 @@ const Title = styled.h1`
   margin-bottom: 20px;
 `;
 
-export { UserDashboardContainer, Title };
+const DirectoryList = styled.div`
+  width: 100%;
+  margin-bottom: 30px;
+`;
+
+const FileList = styled.div`
+  width: 100%;
+  margin-bottom: 30px;
+`;
+
+const ErrorMessage = styled.div`
+  color: red;
+  margin-bottom: 20px;
+`;
+
+export { UserDashboardContainer, Title, DirectoryList, FileList, ErrorMessage };
