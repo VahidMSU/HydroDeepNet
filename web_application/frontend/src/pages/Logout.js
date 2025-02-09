@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import LogoutTemplate from '../components/templates/Logout'; // Import the new LogoutTemplate component
 import '../styles/Logout.tsx'; // Adjust the path if necessary
 
 const Logout = () => {
@@ -31,26 +32,10 @@ const Logout = () => {
   };
 
   return (
-    <main className="container my-5">
-      <h1 className="text-center">Logout</h1>
-      <p className="text-center">Are you sure you want to log out?</p>
-      <div className="logout-buttons text-center">
-        <button
-          id="confirm-logout"
-          className="logout-btn btn btn-danger"
-          onClick={handleConfirmLogout}
-        >
-          Yes, Logout
-        </button>
-        <button
-          id="cancel-logout"
-          className="cancel-btn btn btn-secondary"
-          onClick={handleCancelLogout}
-        >
-          Cancel
-        </button>
-      </div>
-    </main>
+    <LogoutTemplate
+      handleConfirmLogout={handleConfirmLogout}
+      handleCancelLogout={handleCancelLogout}
+    />
   );
 };
 
