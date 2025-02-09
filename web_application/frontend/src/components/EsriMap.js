@@ -48,7 +48,9 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
   }, []);
 
   useEffect(() => {
-    if (!viewRef.current) return;
+    if (!viewRef.current) {
+      return;
+    }
 
     console.log('🎯 Updating Esri Layers...');
     console.log('📌 HUC12 Geometries:', geometries);
