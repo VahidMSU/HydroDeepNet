@@ -1,6 +1,7 @@
 // pages/Verify.js
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import VerificationForm from '../components/forms/Verification'; // Import the new component
 
 const Verify = () => {
   const [verificationCode, setVerificationCode] = useState('');
@@ -21,26 +22,11 @@ const Verify = () => {
               <p className="text-center">
                 Please enter the verification code we sent to your email.
               </p>
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="verificationCode" className="form-label">
-                    Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="verificationCode"
-                    placeholder="Enter verification code"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                  />
-                </div>
-                <div className="d-grid">
-                  <button type="submit" className="btn btn-primary">
-                    Submit
-                  </button>
-                </div>
-              </form>
+              <VerificationForm
+                verificationCode={verificationCode}
+                setVerificationCode={setVerificationCode}
+                handleSubmit={handleSubmit}
+              />
             </div>
           </div>
         </div>
