@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import MapComponent from '../MapComponent';
 import HydroGeoDatasetForm from '../forms/HydroGeoDataset';
-import { Container, DataDisplay, Title } from '../../styles/HydroGeoDataset.tsx';
+import {
+  PageLayout,
+  Sidebar,
+  MapContainer,
+  DataDisplay,
+  Title,
+} from '../../styles/HydroGeoDataset.tsx';
 
 const HydroGeoDatasetTemplate = () => {
   const [formData, setFormData] = useState({
@@ -73,27 +79,30 @@ const HydroGeoDatasetTemplate = () => {
   };
 
   return (
-    <Container>
-      {/* Map Section */}
-      <MapComponent setFormData={setFormData} />
+    <PageLayout>
+      <Sidebar>
+        {/* Form Section */}
+        <HydroGeoDatasetForm
+          formData={formData}
+          handleChange={handleChange}
+          handleSubmit={handleSubmit}
+          availableVariables={availableVariables}
+          availableSubvariables={availableSubvariables}
+        />
 
-      {/* Form Section */}
-      <HydroGeoDatasetForm
-        formData={formData}
-        handleChange={handleChange}
-        handleSubmit={handleSubmit}
-        availableVariables={availableVariables}
-        availableSubvariables={availableSubvariables}
-      />
+        {/* Display Data */}
+        {data && (
+          <DataDisplay>
+            <Title>Results</Title>
+            <pre>{JSON.stringify(data, null, 2)}</pre>
+          </DataDisplay>
+        )}
+      </Sidebar>
 
-      {/* Display Data */}
-      {data && (
-        <DataDisplay>
-          <Title>Data:</Title>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-        </DataDisplay>
-      )}
-    </Container>
+      <MapContainer>
+        <MapComponent setFormData={setFormData} />
+      </MapContainer>
+    </PageLayout>
   );
 };
 
