@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faDownload, faFolder, faFile } from '@fortawesome/free-solid-svg-icons';
 import UserDashboardTemplate from '../components/templates/UserDashboard'; // Import the new UserDashboardTemplate component
+
+// Add icons to the library
+library.add(faDownload, faFolder, faFile);
 
 const UserDashboard = () => {
   const [contents, setContents] = useState({ directories: [], files: [] });

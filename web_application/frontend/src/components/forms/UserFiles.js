@@ -1,4 +1,17 @@
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDownload, faFolder, faFile } from '@fortawesome/free-solid-svg-icons';
+import {
+  FileContainer,
+  DirectoryButton,
+  DownloadButton,
+  ErrorMessage,
+  GoUpButton,
+  DirectoryContainer,
+  FileList,
+  DirectoryItem,
+  FileItem,
+} from '../../styles/UserFilesStyles.tsx';
 
 const UserFilesForm = ({
   contents,
@@ -8,32 +21,34 @@ const UserFilesForm = ({
   errorMessage,
 }) => {
   return (
-    <div>
-      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-      <div className="list-group">
-        {contents.directories.map((dir) => (
-          <button
-            key={dir}
-            className="list-group-item list-group-item-action"
-            onClick={() => handleDirectoryClick(dir)}
-          >
-            {dir}
-          </button>
-        ))}
-        {contents.files.map((file) => (
-          <button
-            key={file}
-            className="list-group-item list-group-item-action"
-            onClick={() => handleDownloadFile(file.url)}
-          >
-            {file.name}
-          </button>
-        ))}
-      </div>
-      {contents.directories.length === 0 && contents.files.length === 0 && (
-        <div className="alert alert-info mt-3">No files or directories found.</div>
+    <FileContainer>
+      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+      {contents.parent_path && (
+        <GoUpButton onClick={() => handleDirectoryClick(contents.parent_path)}>Go Up</GoUpButton>
       )}
-    </div>
+      <DirectoryContainer>
+        {contents.directories.map((directory, index) => (
+          <DirectoryItem key={`directory-${index}`}>
+            <DirectoryButton onClick={() => handleDirectoryClick(directory.path)}>
+              <FontAwesomeIcon icon={faFolder} /> {directory.name}
+            </DirectoryButton>
+            <DownloadButton onClick={() => handleDownloadDirectory(directory.download_zip_url)}>
+              <FontAwesomeIcon icon={faDownload} />
+            </DownloadButton>
+          </DirectoryItem>
+        ))}
+      </DirectoryContainer>
+      <FileList>
+        {contents.files.map((file, index) => (
+          <FileItem key={`file-${index}`}>
+            <span><FontAwesomeIcon icon={faFile} /> {file.name}</span>
+            <DownloadButton onClick={() => handleDownloadFile(file.download_url)}>
+              <FontAwesomeIcon icon={faDownload} />
+            </DownloadButton>
+          </FileItem>
+        ))}
+      </FileList>
+    </FileContainer>
   );
 };
 
