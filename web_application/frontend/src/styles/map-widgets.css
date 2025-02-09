@@ -1,0 +1,36 @@
+.custom-widget-container button {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-widget-container button:hover {
+  background-color: #f0f0f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.custom-widget-container button.active {
+  background-color: #e6f2ff;
+  border-color: #0077cc;
+}
+
+.custom-sketch-icon {
+  width: 24px;
+  height: 24px;
+  fill: #666;
+}
+
+.esri-widget--button {
+  background-color: white !important;
+}
+
+.esri-widget--button:hover {
+  background-color: #f0f0f0 !important;
+}

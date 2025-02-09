@@ -3,17 +3,41 @@ import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import './variables.ts'; // Ensure this path is correct or the file exists
 
+// Main layout container
+export const PageLayout = styled.div`
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 20px;
+  height: 100vh;
+  padding: 20px;
+  background-color: #f5f5f5;
+`;
+
+// Left sidebar container
+export const Sidebar = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+`;
+
+// Map container
+export const MapContainer = styled.div`
+  height: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
 export const FormContainer = styled(Box)({
-  flex: 1,
-  maxWidth: '400px',
-  minWidth: '300px',
-  padding: 'var(--spacing)',
+  padding: '20px',
   border: '1px solid var(--border-color)',
-  borderRadius: 'var(--radius)',
-  boxShadow: 'var(--shadow)',
+  borderRadius: '12px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
   backgroundColor: '#fff',
   transition: 'box-shadow 0.3s ease',
-  backdropFilter: 'blur(10px)',
   '&:hover': {
     boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12)',
   },
@@ -45,7 +69,7 @@ export const ViewDiv = styled(Box)({
   },
 });
 
-const Container = styled.div`
+export const Container = styled.div`
   margin: 40px auto;
   max-width: 1200px;
   padding: 20px;
@@ -54,17 +78,23 @@ const Container = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 `;
 
-const DataDisplay = styled.div`
-  margin-top: 20px;
+export const DataDisplay = styled.div`
   padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
+  background-color: #fff;
+  border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  pre {
+    margin: 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
 `;
 
-const Title = styled.h3`
+export const Title = styled.h3`
   margin-bottom: 20px;
   color: #333;
+  font-size: 1.2rem;
 `;
-
-export { Container, DataDisplay, Title };
