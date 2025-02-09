@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import ModelSettingsForm from '../forms/ModelSettings.js'; // Ensure the path is correct
-import EsriMap from '../EsriMap.js'; // Ensure the path is correct
-import '../../styles/ModelSettings.tsx'; // Ensure the path is correct
+import ModelSettingsForm from '../forms/ModelSettings.js';
+import EsriMap from '../EsriMap.js';
+import { ContainerFluid, Title, Row, Column, Card, CardBody } from '../../styles/ModelSettings.tsx';
 
 const ModelSettingsTemplate = () => {
   const [stationList, setStationList] = useState([]);
@@ -28,7 +28,7 @@ const ModelSettingsTemplate = () => {
       calibrationFlag,
       sensitivityFlag,
       validationFlag,
-      site_no: stationData?.SiteNumber || stationInput, // Include station name
+      site_no: stationData?.SiteNumber || stationInput,
     };
 
     console.log('Submitting model settings:', formData);
@@ -41,7 +41,7 @@ const ModelSettingsTemplate = () => {
 
     try {
       const response = await fetch('/model-settings', {
-        method: 'POST', // Ensure this matches the backend method
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
@@ -63,12 +63,12 @@ const ModelSettingsTemplate = () => {
   };
 
   return (
-    <div className="container-fluid model-settings">
-      <h2 className="text-center my-4">Create SWAT+ Models for USGS Streamgages</h2>
+    <ContainerFluid>
+      <Title>Create SWAT+ Models for USGS Streamgages</Title>
 
-      <div className="row">
+      <Row>
         {/* Left Column: Search & Form */}
-        <div className="col-lg-4 d-flex flex-column align-items-stretch">
+        <Column>
           <ModelSettingsForm
             stationList={stationList}
             stationInput={stationInput}
@@ -89,22 +89,22 @@ const ModelSettingsTemplate = () => {
             loading={loading}
             setLoading={setLoading}
           />
-        </div>
+        </Column>
 
         {/* Right Column: Esri Map */}
-        <div className="col-lg-6">
-          <div className="card shadow">
-            <div className="card-body p-0">
+        <Column>
+          <Card>
+            <CardBody>
               <EsriMap
                 geometries={stationData?.geometries || []}
                 streamsGeometries={stationData?.streams_geometries || []}
                 lakesGeometries={stationData?.lakes_geometries || []}
               />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </CardBody>
+          </Card>
+        </Column>
+      </Row>
+    </ContainerFluid>
   );
 };
 
