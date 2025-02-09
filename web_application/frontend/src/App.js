@@ -22,14 +22,7 @@ import PrivateRoute from './components/PrivateRoute';
 const App = () => (
   <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
     <Routes>
-      <Route
-        path="/login"
-        element={
-          <Layout>
-            <Login />
-          </Layout>
-        }
-      />
+      <Route path="/login" element={<Login />} />
       <Route
         path="/"
         element={
@@ -150,7 +143,7 @@ const App = () => (
           </Layout>
         }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   </Router>
 );
