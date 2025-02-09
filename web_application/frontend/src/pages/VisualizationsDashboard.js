@@ -179,11 +179,15 @@ const VisualizationsDashboard = () => {
           Spatiotemporal Animations (GIFs)
         </h2>
         <div id="gif_container" className="d-flex flex-wrap justify-content-center gap-4">
-          {visualizationResults.map((gif, idx) => (
-            <div key={idx} className="gif-wrapper">
-              <img src={gif} alt={`Animation ${idx + 1}`} className="img-fluid" />
-            </div>
-          ))}
+          {visualizationResults && visualizationResults.length > 0 ? (
+            visualizationResults.map((gif, idx) => (
+              <div key={idx} className="gif-wrapper">
+                <img src={gif} alt={`Animation ${idx + 1}`} className="img-fluid" />
+              </div>
+            ))
+          ) : (
+            <p>No visualizations available.</p>
+          )}
         </div>
       </section>
     </main>

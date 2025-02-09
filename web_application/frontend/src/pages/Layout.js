@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Layout.tsx'; // Ensure correct path for CSS
 
 const Layout = ({ children }) => {
   const navigate = useNavigate(); // Hook for navigation
+
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const handleLogout = async () => {
     try {
