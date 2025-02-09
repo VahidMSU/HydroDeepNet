@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import { styled } from '@mui/material/styles';
+import styled from '@emotion/styled';
 import { Box } from '@mui/material';
 import './variables.ts'; // Ensure this path is correct or the file exists
 
@@ -44,3 +44,27 @@ export const ViewDiv = styled(Box)({
     boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
   },
 });
+
+const Container = styled.div`
+  margin: 40px auto;
+  max-width: 1200px;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+const DataDisplay = styled.div`
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const Title = styled.h3`
+  margin-bottom: 20px;
+  color: #333;
+`;
+
+export { Container, DataDisplay, Title };
