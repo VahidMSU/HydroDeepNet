@@ -596,6 +596,7 @@ class AppManager:
 			]
 			form.variable.choices = [(group, group) for group in available_groups]
 			self.app.logger.info(f"Available groups: {available_groups}")	
+
 			if request.method == 'POST':
 				self.app.logger.info("Form submitted")
 				selected_variable = request.form.get('variable')
@@ -631,20 +632,14 @@ class AppManager:
 						self.app.logger.info(f"Polygon bounds: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")	
 					except Exception as e:
 						self.app.logger.error(f"Error parsing polygon coordinates: {e}")
-						#flash("Invalid polygon coordinates.", "danger")
 						message = "Invalid polygon coordinates."
-						#return render_template('HydroGeoDataset.html', form=form)
 						return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
 
 				elif not any([latitude, longitude, min_latitude, max_latitude, min_longitude, max_longitude]):
-					#flash("Please provide either a point or a range for data retrieval.", "danger")
-					#return render_template('HydroGeoDataset.html', form=form)
 					message = "Please provide either a point or a range for data retrieval."
 					return jsonify({"title": "HydroGeoDataset", "message": message})
 
 				if not variable or not subvariable:
-					#flash("Variable and Subvariable are required.", "danger")
-					#return render_template('HydroGeoDataset.html', form=form)
 					message = "Variable and Subvariable are required."
 					return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
 				try:
@@ -653,7 +648,6 @@ class AppManager:
 						raw_data = read_h5_file(
 							lat=float(latitude), lon=float(longitude), address=f"{variable}/{subvariable}"
 						)
-						# Convert np.float32 to float
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
 						self.app.logger.info(f"Data fetched: {data}")
 					elif all([min_latitude, max_latitude, min_longitude, max_longitude]):
@@ -663,31 +657,40 @@ class AppManager:
 							lon_range=(float(min_longitude), float(max_longitude)),
 							address=f"{variable}/{subvariable}"
 						)
-						# Convert np.float32 to float
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
 						self.app.logger.info(f"Data fetched for range: {data}")
 					else:
-						#flash("Please provide either a point or a range for data retrieval.", "danger")
-						#return render_template('HydroGeoDataset.html', form=form)
 						message = "Please provide either a point or a range for data retrieval."
 						return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
 
-					#return render_template(
-					#	'HydroGeoDataset.html',
-					#	form=form,
-					#	variable=variable,
-					#	subvariable=subvariable,
-					#	data=data
-					#)
 					message = "Data fetched successfully"
 					return jsonify({"title": "HydroGeoDataset", "message": message, "data": data})
 				
 				except Exception as e:
 					self.app.logger.error(f"Error fetching data: {e}")	
-					#flash(f"Error fetching data: {e}", "danger")
 					message = f"Error fetching data: {e}"
-			#return render_template('HydroGeoDataset.html', form=form)
-			return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})	
+				
+				return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
+			
+			elif request.method == 'GET':
+				self.app.logger.info("GET request received")
+				variable = request.args.get('variable')
+				if variable:
+					self.app.logger.info(f"Fetching subvariables for variable: {variable}")
+					try:
+						subvariables = hydrodict.get(variable, [])
+						return jsonify({"subvariables": subvariables})
+					except Exception as e:
+						self.app.logger.error(f"Error fetching subvariables: {e}")
+						return jsonify({"error": "Failed to fetch subvariables"}), 500
+				else:
+					try:
+						return jsonify({"variables": available_groups})
+					except Exception as e:
+						self.app.logger.error(f"Error fetching hydrogeo variables: {e}")
+						return jsonify({"error": "Failed to fetch variables"}), 500
+
+			return jsonify({"title": "HydroGeoDataset", "message": "HydroGeoDataset page", "form": form})
 
 		@self.app.route('/get_subvariables', methods=['POST'])
 		@login_required

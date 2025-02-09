@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate } from 'react-router-dom';
+import LoginTemplate from '../components/templates/Login'; // Import the new LoginTemplate component
 
 const Login = () => {
   const navigate = useNavigate();
@@ -54,6 +54,7 @@ const Login = () => {
         navigate('/');
       } else {
         setErrors({ login: data.message });
+        alert(data.message); // Flash message for incorrect username or password
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -62,95 +63,12 @@ const Login = () => {
   };
 
   return (
-    <div className="container my-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6 col-lg-4">
-          <div className="card shadow">
-            <div className="card-body p-4">
-              <h2 className="text-center mb-4">Login</h2>
-
-              {/* MSU NetID Login Button */}
-              <div className="d-grid mb-3">
-                <a href="/login?msu_oauth=True" className="btn btn-success">
-                  Login with MSU NetID
-                </a>
-              </div>
-
-              {/* Standard Login Form */}
-              <form onSubmit={handleSubmit}>
-                {/* Username Field */}
-                <div className="mb-3">
-                  <label htmlFor="username" className="form-label">
-                    Username:
-                  </label>
-                  <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    className={`form-control ${errors.username ? 'is-invalid' : ''}`}
-                    placeholder="Enter username"
-                    autoFocus
-                    value={formData.username}
-                    onChange={handleChange}
-                  />
-                  {errors.username && <div className="invalid-feedback">{errors.username}</div>}
-                </div>
-
-                {/* Password Field */}
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    Password:
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                    placeholder="Enter password"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                  {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-                </div>
-
-                {/* Remember Me Checkbox */}
-                <div className="mb-3 form-check">
-                  <input
-                    type="checkbox"
-                    id="remember_me"
-                    name="remember_me"
-                    className="form-check-input"
-                    checked={formData.remember_me}
-                    onChange={handleChange}
-                  />
-                  <label className="form-check-label" htmlFor="remember_me">
-                    Remember Me
-                  </label>
-                </div>
-
-                {/* Submit Button */}
-                <div className="d-grid">
-                  <button type="submit" className="btn btn-primary">
-                    Login
-                  </button>
-                </div>
-
-                {/* Additional Links */}
-                <div className="text-center mt-3">
-                  <p>
-                    Don&apos;t have an account? <Link to="/signup">Sign up</Link>
-                  </p>
-
-                  <p>
-                    <Link to="/">Return to Home</Link>
-                  </p>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <LoginTemplate
+      formData={formData}
+      handleChange={handleChange}
+      handleSubmit={handleSubmit}
+      errors={errors}
+    />
   );
 };
 
