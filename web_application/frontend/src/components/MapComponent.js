@@ -91,7 +91,7 @@ const MapComponent = ({ setFormData }) => {
     const initialize = async () => {
       const graphicsLayer = new GraphicsLayer();
       const map = new Map({
-        basemap: 'streets',
+        basemap: 'topo-vector', // Changed from 'streets' to 'topo-vector'
         layers: [graphicsLayer],
       });
 
