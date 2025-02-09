@@ -45,8 +45,8 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
     real_uid, real_gid = get_real_uid_gid()
 
     # Set ACLs on the output directory so that the user has full (rwx) permissions.
-    subprocess.run(["setfacl", "-m", f"u:{real_uid}:rwx", out_dir], check=True)
-    subprocess.run(["setfacl", "-m", f"g:{real_gid}:rwx", out_dir], check=True)
+    #subprocess.run(["setfacl", "-m", f"u:{real_uid}:rwx", out_dir], check=True)
+    #subprocess.run(["setfacl", "-m", f"g:{real_gid}:rwx", out_dir], check=True)
 
     # Remove any existing modified script.
     if os.path.exists(new_runQSWATPlus_path):
@@ -95,8 +95,8 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
     # Ensure the modified script itself is owned by the current user and is executable.
     os.chown(new_runQSWATPlus_path, real_uid, real_gid)
     os.chmod(new_runQSWATPlus_path, 0o755)
-    subprocess.run(["setfacl", "-m", f"u:{real_uid}:rwx", new_runQSWATPlus_path], check=True)
-    subprocess.run(["setfacl", "-m", f"g:{real_gid}:rwx", new_runQSWATPlus_path], check=True)
+    #subprocess.run(["setfacl", "-m", f"u:{real_uid}:rwx", new_runQSWATPlus_path], check=True)
+    #subprocess.run(["setfacl", "-m", f"g:{real_gid}:rwx", new_runQSWATPlus_path], check=True)
 
     # Finally, execute the modified shell script.
     try:

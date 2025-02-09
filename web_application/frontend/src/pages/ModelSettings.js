@@ -29,6 +29,7 @@ const ModelSettings = () => {
       calibrationFlag,
       sensitivityFlag,
       validationFlag,
+      site_no: stationData?.SiteNumber || stationInput, // Include station name
     };
 
     console.log('Submitting model settings:', formData);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -10,6 +10,13 @@ const Login = () => {
     remember_me: false,
   });
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   const handleChange = ({ target: { name, value, type, checked } }) => {
     setFormData((prev) => ({
