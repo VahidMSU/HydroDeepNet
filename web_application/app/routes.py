@@ -346,7 +346,7 @@ class AppManager:
 			dem_resolution = data.get("dem_resolution", 250)
 
 			self.app.logger.info(
-				f"Model settings received for `{site_no}`: "
+				f"Model settings received for Station `{site_no}`: "
 				f"LS Resolution: {ls_resolution}, DEM Resolution: {dem_resolution}"
 			)
 			# Perform model creation

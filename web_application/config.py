@@ -1,6 +1,5 @@
 import os
 from datetime import timedelta
-import os
 import sys
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
 
@@ -34,12 +33,22 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PERMANENT_SESSION_LIFETIME = timedelta(hours=1)  # Extend session lifetime as needed
     
-    SESSION_COOKIE_SECURE = True  # Ensure cookies are only sent over HTTPS
+    # Ensure secure session management
+    SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True  # Mitigate XSS attacks
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
     
-    REDIS_URL = "redis://localhost:6379/0"
+    REDIS_URL = os.getenv('REDIS_URL', "redis://localhost:6379/0")
     
+    try:
+        import redis
+        redis_client = redis.StrictRedis.from_url(REDIS_URL)
+        redis_client.ping()
+        logger.info("Connected to Redis successfully")
+    except Exception as e:
+        logger.error(f"Failed to connect to Redis: {e}")
+
     # For debugging/production control
     DEBUG = True
     TESTING = True
