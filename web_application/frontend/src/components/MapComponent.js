@@ -5,6 +5,7 @@ import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Sketch from '@arcgis/core/widgets/Sketch';
 import * as webMercatorUtils from '@arcgis/core/geometry/support/webMercatorUtils';
 import '@arcgis/core/assets/esri/themes/light/main.css';
+import '../styles/map-widgets.css';
 
 const updatePointFields = (lat, lon, setFormData) => {
   setFormData((prev) => ({
@@ -84,39 +85,64 @@ const updatePolygonFields = (polygon, setFormData) => {
 
 const MapComponent = ({ setFormData }) => {
   useEffect(() => {
-    const graphicsLayer = new GraphicsLayer();
-    const map = new Map({
-      basemap: 'streets',
-      layers: [graphicsLayer],
-    });
-    const view = new MapView({
-      container: 'viewDiv',
-      map: map,
-      center: [-90, 38],
-      zoom: 4,
-    });
+    let view = null;
+    let sketch = null;
 
-    const sketch = new Sketch({
-      layer: graphicsLayer,
-      view: view,
-      creationMode: 'update',
-      visibleElements: {
-        createTools: { point: true, polygon: true, rectangle: true },
-        selectionTools: { 'rectangle-selection': true },
-      },
-    });
-    view.ui.add(sketch, 'bottom-left');
+    const initialize = async () => {
+      const graphicsLayer = new GraphicsLayer();
+      const map = new Map({
+        basemap: 'streets',
+        layers: [graphicsLayer],
+      });
 
-    view.on('click', (event) => {
-      const geoPoint = webMercatorUtils.webMercatorToGeographic(event.mapPoint);
-      updatePointFields(geoPoint.latitude.toFixed(6), geoPoint.longitude.toFixed(6), setFormData);
-    });
+      view = new MapView({
+        container: 'viewDiv',
+        map: map,
+        center: [-90, 38],
+        zoom: 4,
+      });
 
-    sketch.on('create', (event) => handleSketchEvent(event, graphicsLayer, setFormData));
-    sketch.on('update', (event) => handleSketchEvent(event, graphicsLayer, setFormData));
+      try {
+        await view.when();
+
+        sketch = new Sketch({
+          view: view,
+          layer: graphicsLayer,
+          creationMode: 'update',
+          availableCreateTools: ['point', 'polygon', 'rectangle'],
+          layout: 'vertical',
+        });
+
+        view.ui.add(sketch, 'top-right');
+
+        // Click event handler
+        view.on('click', (event) => {
+          const point = webMercatorUtils.webMercatorToGeographic(event.mapPoint);
+          updatePointFields(point.latitude.toFixed(6), point.longitude.toFixed(6), setFormData);
+        });
+
+        // Sketch event handlers
+        sketch.on('create', (event) => handleSketchEvent(event, graphicsLayer, setFormData));
+        sketch.on('update', (event) => handleSketchEvent(event, graphicsLayer, setFormData));
+      } catch (error) {
+        console.error('Error initializing map:', error);
+      }
+    };
+
+    initialize();
+
+    // Cleanup
+    return () => {
+      if (sketch) {
+        sketch.destroy();
+      }
+      if (view) {
+        view.destroy();
+      }
+    };
   }, [setFormData]);
 
-  return <div id="viewDiv" style={{ height: 'calc(100vh - 100px)' }}></div>;
+  return <div id="viewDiv" style={{ height: '100%', width: '100%' }}></div>;
 };
 
 export default MapComponent;
