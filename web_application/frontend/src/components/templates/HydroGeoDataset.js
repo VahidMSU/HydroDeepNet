@@ -9,7 +9,7 @@ import {
   Title,
 } from '../../styles/HydroGeoDataset.tsx';
 
-const HydroGeoDatasetTemplate = () => {
+const HydroGeoDataset = () => {
   const [formData, setFormData] = useState({
     latitude: '',
     longitude: '',
@@ -106,4 +106,4 @@ const HydroGeoDatasetTemplate = () => {
   );
 };
 
-export default HydroGeoDatasetTemplate;
+export default HydroGeoDataset;

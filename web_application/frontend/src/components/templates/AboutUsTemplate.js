@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../styles/AboutUsTemplate.tsx'; // Import the new TSX file
 
 const AboutUsTemplate = () => {
   return (

@@ -44,7 +44,6 @@ const FormControl = styled(TextField)({
   backgroundColor: '#f8fafc',
   marginBottom: '1.5rem',
   marginLeft: '0',      // Remove left margin
-  width: '100%',        // Full width
   maxWidth: '300px',    // Limit maximum width
   textAlign: 'center',  // Center the text inside
   '&:focus': {
@@ -176,12 +175,25 @@ const SectionTitle = styled(Typography)({
 });
 
 const FormSelect = styled(TextField)({
-  ...FormControl.style,
+  width: '100%',
+  padding: '0.75rem 1rem',
+  border: '2px solid #e2e8f0',
+  borderRadius: '8px',
+  fontSize: '1rem',
+  transition: 'all 0.2s ease',
+  backgroundColor: '#f8fafc',
   marginBottom: '1.5rem',
   marginLeft: '0',      // Remove left margin
-  width: '100%',        // Full width
   maxWidth: '300px',    // Limit maximum width
   textAlign: 'center',  // Center the text inside
+  '&:focus': {
+    borderColor: '#3b82f6',
+    boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
+    outline: 'none',
+  },
+  '& .MuiInputBase-root': {
+    marginTop: '0.5rem',  // Added space between label and input
+  },
   '& .MuiSelect-select': {
     padding: '0.75rem 1rem',
   },
