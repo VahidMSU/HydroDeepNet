@@ -1,16 +1,17 @@
 import React from 'react';
 import LogoutForm from '../forms/LogoutForm'; // Import the new component
+import { Container } from '../../styles/Logout.tsx'; // Import styled components
 
 const LogoutTemplate = ({ handleConfirmLogout, handleCancelLogout }) => {
   return (
-    <main className="container my-5">
-      <h1 className="text-center">Logout</h1>
-      <p className="text-center">Are you sure you want to log out?</p>
+    <Container>
+      <h1>Logout</h1>
+      <p>Are you sure you want to log out?</p>
       <LogoutForm
         handleConfirmLogout={handleConfirmLogout}
         handleCancelLogout={handleCancelLogout}
       />
-    </main>
+    </Container>
   );
 };
 

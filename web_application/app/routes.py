@@ -407,8 +407,10 @@ class AppManager:
 
 			# Security check: Ensure the requested file is within the user's directory
 			if not full_path.startswith(user_dir) or not os.path.isfile(full_path):
+				self.app.logger.error(f"File not found or access denied: {full_path}")
 				return jsonify({'error': 'File not found or access denied'}), 404
 
+			self.app.logger.info(f"Serving file for download: {full_path}")
 			directory, file = os.path.split(full_path)
 			return send_from_directory(directory, file, as_attachment=True)
 
@@ -447,6 +449,7 @@ class AppManager:
 				self.app.logger.error(f"ZIP file missing: {final_zip_path}")
 				return jsonify({'error': 'ZIP file not found'}), 500
 
+			self.app.logger.info(f"Serving ZIP file for download: {final_zip_path}")
 			return send_file(final_zip_path, as_attachment=True, download_name=zip_file_name)
 
 		@self.app.route('/api/logout', methods=['POST'])  # Ensure method is 'POST'

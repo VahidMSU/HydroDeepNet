@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../styles/PrivacyTemplate.tsx'; // Import the new TSX file
 
 const PrivacyTemplate = () => {
   const bodyStyle = {
