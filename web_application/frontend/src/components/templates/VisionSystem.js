@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   ContainerFluid,
   VideoContainer,
@@ -32,12 +32,6 @@ const VisionSystemTemplate = () => {
   const [mediaType, setMediaType] = useState(null); // 'video' or 'image'
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Open the modal with the given image src.
-  const openModal = (src) => {
-    setModalImage(src);
-    setModalOpen(true);
-  };
-
   // Close the modal.
   const closeModal = () => {
     setModalOpen(false);
@@ -45,27 +39,33 @@ const VisionSystemTemplate = () => {
   };
 
   // Batch numbers for the prediction videos (1 through 6).
-  const batches = [1, 2, 3, 4, 5, 6];
+  const batches = useMemo(() => [1, 2, 3, 4, 5, 6], []);
 
-  const allMedia = [
-    {
-      type: 'video',
-      src:
-        process.env.REACT_APP_PUBLIC_URL +
-        '/static/videos/DeepLearningMichiganET_CNNTransformer_reencoded.mp4',
-    },
-    ...batches.map((batch) => ({
-      type: 'video',
-      src:
-        process.env.REACT_APP_PUBLIC_URL +
-        `/static/videos/predictions_vs_ground_truth_batch_${batch}_0_fixed.mp4`,
-    })),
-    {
-      type: 'image',
-      src: process.env.REACT_APP_PUBLIC_URL + '/static/images/cell_wise_nse_performance.png',
-    },
-    { type: 'image', src: process.env.REACT_APP_PUBLIC_URL + '/static/images/CNN-Transformer.png' },
-  ];
+  const allMedia = useMemo(
+    () => [
+      {
+        type: 'video',
+        src:
+          process.env.REACT_APP_PUBLIC_URL +
+          '/static/videos/DeepLearningMichiganET_CNNTransformer_reencoded.mp4',
+      },
+      ...batches.map((batch) => ({
+        type: 'video',
+        src:
+          process.env.REACT_APP_PUBLIC_URL +
+          `/static/videos/predictions_vs_ground_truth_batch_${batch}_0_fixed.mp4`,
+      })),
+      {
+        type: 'image',
+        src: process.env.REACT_APP_PUBLIC_URL + '/static/images/cell_wise_nse_performance.png',
+      },
+      {
+        type: 'image',
+        src: process.env.REACT_APP_PUBLIC_URL + '/static/images/CNN-Transformer.png',
+      },
+    ],
+    [batches],
+  );
 
   const handleMediaClick = (src, type, index) => {
     setSelectedMedia(src);
@@ -73,25 +73,40 @@ const VisionSystemTemplate = () => {
     setCurrentIndex(index);
   };
 
-  const handleKeyPress = (e) => {
-    if (!selectedMedia) {
-      return;
-    }
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (!selectedMedia) {
+        return;
+      }
 
-    switch (e.key) {
-      case 'Escape':
-        setSelectedMedia(null);
-        break;
-      case 'ArrowLeft':
-        setCurrentIndex((prev) => (prev > 0 ? prev - 1 : allMedia.length - 1));
-        break;
-      case 'ArrowRight':
-        setCurrentIndex((prev) => (prev < allMedia.length - 1 ? prev + 1 : 0));
-        break;
-    }
-  };
+      switch (e.key) {
+        case 'Escape':
+          setSelectedMedia(null);
+          break;
+        case 'ArrowLeft':
+          setCurrentIndex((prev) => (prev > 0 ? prev - 1 : allMedia.length - 1));
+          break;
+        case 'ArrowRight':
+          setCurrentIndex((prev) => (prev < allMedia.length - 1 ? prev + 1 : 0));
+          break;
+        default:
+          break;
+      }
+    };
 
-  const setupVideoSync = () => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [selectedMedia, allMedia]);
+
+  useEffect(() => {
+    if (selectedMedia) {
+      const newMedia = allMedia[currentIndex];
+      setSelectedMedia(newMedia.src);
+      setMediaType(newMedia.type);
+    }
+  }, [currentIndex, allMedia, selectedMedia]);
+
+  const setupVideoSync = useCallback(() => {
     if (mainVideoRef.current) {
       mainVideoRef.current.addEventListener('play', () => {
         videoRefs.current.forEach((video) => {
@@ -110,20 +125,7 @@ const VisionSystemTemplate = () => {
         });
       });
     }
-  };
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [selectedMedia]);
-
-  useEffect(() => {
-    if (selectedMedia) {
-      const newMedia = allMedia[currentIndex];
-      setSelectedMedia(newMedia.src);
-      setMediaType(newMedia.type);
-    }
-  }, [currentIndex]);
+  }, []);
 
   useEffect(() => {
     setupVideoSync();
@@ -133,7 +135,7 @@ const VisionSystemTemplate = () => {
         video.play();
       }
     });
-  }, []);
+  }, [setupVideoSync]);
 
   // Update video rendering
   const renderVideo = (src, index) => (

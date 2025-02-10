@@ -1,4 +1,12 @@
 import React, { useState } from 'react';
+import {
+  Container,
+  HeaderTitle,
+  ImageGrid,
+  ImageCard,
+  Modal,
+  ModalClose,
+} from '../../styles/MichiganTemplate.tsx'; // Import styled components
 
 const MichiganTemplate = () => {
   const images = [
@@ -66,12 +74,12 @@ const MichiganTemplate = () => {
   };
 
   return (
-    <div className="container">
-      <h2 className="header-title">Michigan LP Hydrologic Modeling Coverage and Performance</h2>
+    <Container>
+      <HeaderTitle>Michigan LP Hydrologic Modeling Coverage and Performance</HeaderTitle>
 
-      <div className="image-grid">
+      <ImageGrid>
         {images.map((image, index) => (
-          <div className="image-card" key={index}>
+          <ImageCard key={index}>
             <img
               src={image.src}
               alt={image.alt}
@@ -79,24 +87,22 @@ const MichiganTemplate = () => {
               data-index={index}
             />
             <h4>{image.title}</h4>
-          </div>
+          </ImageCard>
         ))}
-      </div>
+      </ImageGrid>
 
       {modalOpen && currentImage && (
-        <div className="modal" id="imageModal" onClick={closeModal}>
-          <span className="modal-close" onClick={closeModal}>
-            &times;
-          </span>
+        <Modal id="imageModal" onClick={closeModal}>
+          <ModalClose onClick={closeModal}>&times;</ModalClose>
           <img
             id="modalImage"
             src={currentImage.src}
             alt={currentImage.alt}
             onClick={(e) => e.stopPropagation()} // Prevent modal close on image click
           />
-        </div>
+        </Modal>
       )}
-    </div>
+    </Container>
   );
 };
 

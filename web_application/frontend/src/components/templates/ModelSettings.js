@@ -13,7 +13,7 @@ import {
 } from '../../styles/ModelSettings.tsx';
 
 const ModelSettingsTemplate = () => {
-  const [stationList, setStationList] = useState([]);
+  const [stationList] = useState([]);
   const [stationInput, setStationInput] = useState('');
   const [stationData, setStationData] = useState(null);
   const [lsResolution, setLsResolution] = useState('250');

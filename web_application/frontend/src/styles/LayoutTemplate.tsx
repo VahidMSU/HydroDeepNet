@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import styled from '@emotion/styled';
+import { Link } from './AboutUsTemplate';
 
 const ContainerFluid = styled.div`
   display: flex;

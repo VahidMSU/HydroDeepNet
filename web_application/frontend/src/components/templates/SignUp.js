@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import SignUpForm from '../forms/SignUp.js';
-import '../../styles/SignUp.tsx'; // Corrected CSS file path
+import '../../styles/SignUp.tsx'; // Import the new TSX file
 
 const SignUpTemplate = ({ flashMessages, handleFormSubmit }) => {
   return (

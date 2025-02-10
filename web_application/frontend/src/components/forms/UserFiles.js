@@ -19,7 +19,20 @@ const UserFilesForm = ({
   handleDownloadFile,
   handleDownloadDirectory,
   errorMessage,
+  username, // Add username prop
 }) => {
+  const handleFileDownload = (url) => {
+    const fullUrl = `/data/SWATGenXApp/Users/${username}/SWATplus_by_VPUID/${url}`;
+    console.log(`Downloading file from URL: ${fullUrl}`);
+    handleDownloadFile(fullUrl);
+  };
+
+  const handleDirectoryDownload = (url) => {
+    const fullUrl = `/data/SWATGenXApp/Users/${username}/SWATplus_by_VPUID/${url}`;
+    console.log(`Downloading directory from URL: ${fullUrl}`);
+    handleDownloadDirectory(fullUrl);
+  };
+
   return (
     <FileContainer>
       {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
@@ -32,7 +45,7 @@ const UserFilesForm = ({
             <DirectoryButton onClick={() => handleDirectoryClick(directory.path)}>
               <FontAwesomeIcon icon={faFolder} /> {directory.name}
             </DirectoryButton>
-            <DownloadButton onClick={() => handleDownloadDirectory(directory.download_zip_url)}>
+            <DownloadButton onClick={() => handleDirectoryDownload(directory.download_zip_url)}>
               <FontAwesomeIcon icon={faDownload} />
             </DownloadButton>
           </DirectoryItem>
@@ -41,8 +54,10 @@ const UserFilesForm = ({
       <FileList>
         {contents.files.map((file, index) => (
           <FileItem key={`file-${index}`}>
-            <span><FontAwesomeIcon icon={faFile} /> {file.name}</span>
-            <DownloadButton onClick={() => handleDownloadFile(file.download_url)}>
+            <span>
+              <FontAwesomeIcon icon={faFile} /> {file.name}
+            </span>
+            <DownloadButton onClick={() => handleFileDownload(file.download_url)}>
               <FontAwesomeIcon icon={faDownload} />
             </DownloadButton>
           </FileItem>
