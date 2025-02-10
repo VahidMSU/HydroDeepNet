@@ -1,14 +1,11 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  ContainerFluid,
+  GlobalStyle,
   Sidebar,
-  Nav,
   NavLink,
-  ContentWrapper,
-  Footer,
-  LogoutButton,
-} from '../../styles/LayoutTemplate.tsx';
+  ViewDiv,
+} from '../../styles/Layout.tsx';
 
 const LayoutTemplate = ({ children, handleLogout }) => {
   const navigate = useNavigate(); // Hook for navigation
@@ -21,11 +18,12 @@ const LayoutTemplate = ({ children, handleLogout }) => {
   }, [navigate]);
 
   return (
-    <ContainerFluid>
+    <>
+      <GlobalStyle />
       {localStorage.getItem('authToken') && (
         <Sidebar>
           <h2>Navigation</h2>
-          <Nav>
+          <nav>
             <NavLink to="/">
               <i className="fas fa-home"></i> Home
             </NavLink>
@@ -47,9 +45,9 @@ const LayoutTemplate = ({ children, handleLogout }) => {
             <NavLink to="/user_dashboard">
               <i className="fas fa-tachometer-alt"></i> User Dashboard
             </NavLink>
-            <LogoutButton onClick={handleLogout}>
+            <Button onClick={handleLogout}>
               <i className="fas fa-sign-out-alt"></i> Logout
-            </LogoutButton>
+            </Button>
             <NavLink to="/contact">
               <i className="fas fa-envelope"></i> Contact
             </NavLink>
@@ -59,14 +57,14 @@ const LayoutTemplate = ({ children, handleLogout }) => {
             <NavLink to="/signup">
               <i className="fas fa-user-plus"></i> Sign Up
             </NavLink>
-          </Nav>
+          </nav>
         </Sidebar>
       )}
-      <ContentWrapper>{children}</ContentWrapper>
-      <Footer>
+      <ViewDiv>{children}</ViewDiv>
+      <footer>
         <Link to="/privacy">Privacy Policy</Link> | <Link to="/terms">Terms of Service</Link>
-      </Footer>
-    </ContainerFluid>
+      </footer>
+    </>
   );
 };
 

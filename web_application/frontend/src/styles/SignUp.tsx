@@ -1,41 +1,31 @@
-import { styled } from '@mui/material/styles';
-import { Box, Container, Typography } from '@mui/material';
-import theme from './variables.ts';
+import styled from 'styled-components';
 
-import './variables.ts'; // Ensure this path is correct or the file exists
+export const SignUpPage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8f9fa;
+`;
 
-const Body = styled('body')({
-  backgroundColor: '#f0f2f5',
-  paddingTop: '20px',
-  textSizeAdjust: '100%',
-});
+export const SignUpContainer = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  text-align: center;
+`;
 
-const SignUpContainer = styled(Container)({
-  width: '100%',
-  maxWidth: '400px',
-  margin: '0 auto',
-  backgroundColor: '#ffffff',
-  padding: '20px',
-  borderRadius: '10px',
-  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-  backdropFilter: 'blur(10px)',
-});
+export const Alert = styled.div`
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
+  background-color: #007bff;
+`;
 
-const ErrorMessage = styled(Typography)({
-  color: 'red',
-  fontSize: '0.9rem',
-});
-
-const Footer = styled(Box)({
-  textAlign: 'center',
-  marginTop: theme.spacing(2.5),
-  fontSize: '0.9rem',
-  color: '#555',
-  '& a': {
-    color: theme.palette.primary.main,
-    textDecoration: 'none',
-    '&:hover': {
-      textDecoration: 'underline',
-    },
-  },
-});
+export const Footer = styled.footer`
+  margin-top: 20px;
+  font-size: 0.9rem;
+`;
