@@ -17,11 +17,7 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
       'esri/geometry/Polyline',
       'esri/geometry/Extent',
     ]).then(([Map, MapView, Graphic, GraphicsLayer, Polygon, Polyline, Extent]) => {
-      if (viewRef.current) {
-        return;
-      }
-
-      console.log('✅ Initializing Esri Map...');
+      if (viewRef.current) return;
 
       const map = new Map({ basemap: 'topo-vector' });
       view = new MapView({
@@ -37,6 +33,16 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
       map.addMany([polygonLayer, streamLayer, lakeLayer]);
 
       viewRef.current = { view, polygonLayer, streamLayer, lakeLayer };
+
+      view.on('pointer-move', (event) => {
+        const screenPoint = { x: event.x, y: event.y };
+        view.toMap(screenPoint).then((mapPoint) => {
+          const coordDiv = document.getElementById('coordinateInfo');
+          if (coordDiv && mapPoint) {
+            coordDiv.innerText = `Lat: ${mapPoint.latitude.toFixed(6)}, Lon: ${mapPoint.longitude.toFixed(6)}`;
+          }
+        });
+      });
     });
 
     return () => {
@@ -52,11 +58,6 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
       return;
     }
 
-    console.log('🎯 Updating Esri Layers...');
-    console.log('📌 HUC12 Geometries:', geometries);
-    console.log('📌 Streams Geometries:', streamsGeometries);
-    console.log('📌 Lakes Geometries:', lakesGeometries);
-
     const { view, polygonLayer, streamLayer, lakeLayer } = viewRef.current;
     polygonLayer.removeAll();
     streamLayer.removeAll();
@@ -66,12 +67,10 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
       ([Graphic, Polygon, Polyline]) => {
         const allGraphics = [];
 
-        // 🔹 Add HUC12 Polygons
         geometries.forEach((geom) => {
           if (geom?.coordinates?.length) {
-            console.log('🟠 Adding HUC12 Polygon:', geom.coordinates);
             const polygon = new Polygon({
-              rings: geom.coordinates[0], // Corrected format
+              rings: geom.coordinates[0],
               spatialReference: { wkid: 4326 },
             });
             const polygonGraphic = new Graphic({
@@ -87,12 +86,10 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
           }
         });
 
-        // 🔹 Add Lake Polygons
         lakesGeometries.forEach((lake) => {
           if (lake?.coordinates?.length) {
-            console.log('🔵 Adding Lake Polygon:', lake.coordinates);
             const polygon = new Polygon({
-              rings: lake.coordinates[0], // Corrected format
+              rings: lake.coordinates[0],
               spatialReference: { wkid: 4326 },
             });
             const polygonGraphic = new Graphic({
@@ -108,12 +105,10 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
           }
         });
 
-        // 🔹 Add Stream Polylines
         streamsGeometries.forEach((stream) => {
           if (stream?.coordinates?.length) {
-            console.log('🌊 Adding Stream Line:', stream.coordinates);
             const polyline = new Polyline({
-              paths: stream.coordinates[0], // Corrected format
+              paths: stream.coordinates[0],
               spatialReference: { wkid: 4326 },
             });
             const polylineGraphic = new Graphic({
@@ -129,7 +124,6 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
           }
         });
 
-        // 🔹 Zoom to All Features
         if (allGraphics.length > 0) {
           view.when(() => {
             view.goTo(allGraphics);
@@ -139,7 +133,24 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
     );
   }, [geometries, streamsGeometries, lakesGeometries]);
 
-  return <div ref={mapRef} style={{ height: '900px', width: '100%' }} />;
+  return (
+    <>
+      <div ref={mapRef} style={{ height: '900px', width: '100%', position: 'relative' }} />
+      <div
+        id="coordinateInfo"
+        style={{
+          position: 'absolute',
+          bottom: '10px',
+          left: '10px',
+          backgroundColor: 'rgba(255,255,255,0.8)',
+          padding: '5px',
+          borderRadius: '3px',
+          fontSize: '12px',
+          pointerEvents: 'none',
+        }}
+      />
+    </>
+  );
 };
 
 export default EsriMap;
