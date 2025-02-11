@@ -50,6 +50,17 @@ class Config:
         logger.error(f"Failed to connect to Redis: {e}")
 
     # For debugging/production control
-    DEBUG = True
-    TESTING = True
-    logger.info(f"Debug: {DEBUG}, Testing: {TESTING}")
+    ENV = os.getenv('FLASK_ENV', 'production')
+    PRIVATE_MODE = os.getenv('PRIVATE_MODE', 'true').lower() == 'true'
+
+    if ENV == 'production':
+        DEBUG = False
+        TESTING = False
+    else:
+        DEBUG = True
+        TESTING = True
+        SESSION_COOKIE_SECURE = False
+        REMEMBER_COOKIE_SECURE = False
+        SESSION_COOKIE_SAMESITE = None
+
+    logger.info(f"ENV: {ENV}, PRIVATE_MODE: {PRIVATE_MODE}")

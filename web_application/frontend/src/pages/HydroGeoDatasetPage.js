@@ -1,16 +1,8 @@
-//HydroGeoDataset.js
 import React, { useState, useEffect } from 'react';
-import MapComponent from '../MapComponent';
-import HydroGeoDatasetForm from '../forms/HydroGeoDataset';
-import {
-  PageLayout,
-  Sidebar,
-  MapContainer,
-  DataDisplay,
-  Title,
-} from '../../styles/HydroGeoDataset.tsx';
-import * as webMercatorUtils from '@arcgis/core/geometry/support/webMercatorUtils';
-const HydroGeoDataset = () => {
+import HydroGeoDataset from '../components/templates/HydroGeoDataset';
+import HydroGeoDatasetForm from '../components/forms/HydroGeoDataset';
+
+const HydroGeoDatasetPage = () => {
   const [formData, setFormData] = useState({
     min_latitude: '',
     max_latitude: '',
@@ -63,23 +55,6 @@ const HydroGeoDataset = () => {
     }));
   };
 
-  const handleGeometryChange = (geom) => {
-    if (!geom) {
-      console.warn('Received null or undefined geometry.');
-      return;
-    }
-    let convertedGeometry = { ...geom };
-    if (geom.rings) {
-      convertedGeometry.rings = geom.rings.map((ring) =>
-        ring.map((coord) => {
-          const geographicPoint = webMercatorUtils.xyToLngLat(coord[0], coord[1]);
-          return [geographicPoint[0].toFixed(6), geographicPoint[1].toFixed(6)];
-        }),
-      );
-    }
-    setFormData((prev) => ({ ...prev, geometry: convertedGeometry }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -114,31 +89,25 @@ const HydroGeoDataset = () => {
   };
 
   return (
-    <PageLayout>
-      <Sidebar>
-        {/* Form Section */}
-        <HydroGeoDatasetForm
-          formData={formData}
-          handleChange={handleChange}
-          handleSubmit={handleSubmit}
-          availableVariables={availableVariables}
-          availableSubvariables={availableSubvariables}
-        />
-
-        {/* Display Data */}
-        {data && (
-          <DataDisplay>
-            <Title>Results</Title>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
-          </DataDisplay>
-        )}
-      </Sidebar>
-
-      <MapContainer>
-        <MapComponent setFormData={setFormData} onGeometryChange={handleGeometryChange} />
-      </MapContainer>
-    </PageLayout>
+    <div style={{ display: 'flex' }}>
+      <HydroGeoDatasetForm
+        formData={formData}
+        handleChange={handleChange}
+        handleSubmit={handleSubmit}
+        availableVariables={availableVariables}
+        availableSubvariables={availableSubvariables}
+      />
+      <HydroGeoDataset
+        formData={formData}
+        handleChange={handleChange}
+        handleSubmit={handleSubmit}
+        availableVariables={availableVariables}
+        availableSubvariables={availableSubvariables}
+        data={data}
+        setData={setData}
+      />
+    </div>
   );
 };
 
-export default HydroGeoDataset;
+export default HydroGeoDatasetPage;

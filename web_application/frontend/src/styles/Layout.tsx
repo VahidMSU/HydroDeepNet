@@ -1,5 +1,5 @@
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import '../css/Layout.css'; // Ensure the path is correct
+//import '../css/Layout.css'; // Ensure the path is correct
 
 export const GlobalStyle = createGlobalStyle`
   body {
@@ -17,8 +17,6 @@ export const HeaderTitle = styled.h1`
   text-align: -webkit-match-parent;
   text-align: match-parent;
 `;
-
-
 
 
 export const Sidebar = styled.nav`
