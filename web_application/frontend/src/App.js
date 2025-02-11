@@ -19,133 +19,32 @@ import {
 } from './pages';
 import PrivateRoute from './components/PrivateRoute';
 
-const App = () => (
-  <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route
-        path="/"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Home />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/model_settings"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <ModelSettings />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/visualizations"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Visualizations />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/michigan"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Michigan />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/vision_system"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <VisionSystem />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/hydro_geo_dataset"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <HydroGeoDataset />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/user_dashboard"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <UserDashboard />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/logout"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Logout />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/contact"
-        element={
-          <Layout>
-            <Contact />
-          </Layout>
-        }
-      />
-      <Route
-        path="/about"
-        element={
-          <Layout>
-            <About />
-          </Layout>
-        }
-      />
-      <Route
-        path="/signup"
-        element={
-          <Layout>
-            <SignUp />
-          </Layout>
-        }
-      />
-      <Route
-        path="/privacy"
-        element={
-          <Layout>
-            <Privacy />
-          </Layout>
-        }
-      />
-      <Route
-        path="/terms"
-        element={
-          <Layout>
-            <Terms />
-          </Layout>
-        }
-      />
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
-  </Router>
-);
+const PRIVATE_MODE = process.env.REACT_APP_PRIVATE_MODE === 'true';
+
+const App = () => {
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={PRIVATE_MODE ? <PrivateRoute><Home /></PrivateRoute> : <Home />} />
+          <Route path="/model_settings" element={PRIVATE_MODE ? <PrivateRoute><ModelSettings /></PrivateRoute> : <ModelSettings />} />
+          <Route path="/visualizations" element={PRIVATE_MODE ? <PrivateRoute><Visualizations /></PrivateRoute> : <Visualizations />} />
+          <Route path="/michigan" element={PRIVATE_MODE ? <PrivateRoute><Michigan /></PrivateRoute> : <Michigan />} />
+          <Route path="/vision_system" element={PRIVATE_MODE ? <PrivateRoute><VisionSystem /></PrivateRoute> : <VisionSystem />} />
+          <Route path="/hydro_geo_dataset" element={PRIVATE_MODE ? <PrivateRoute><HydroGeoDataset /></PrivateRoute> : <HydroGeoDataset />} />
+          <Route path="/user_dashboard" element={PRIVATE_MODE ? <PrivateRoute><UserDashboard /></PrivateRoute> : <UserDashboard />} />
+          <Route path="/logout" element={PRIVATE_MODE ? <PrivateRoute><Logout /></PrivateRoute> : <Logout />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
+};
 
 export default App;

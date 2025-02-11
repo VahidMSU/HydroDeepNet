@@ -187,7 +187,7 @@ class NHD_SWATPlus_Extractor:
 
         # Refine subbasins based on the one-outlet rule
         streams = self.create_subbasins(streams)
-        self.logger.info('Final number of subbasins:', streams['Subbasin'].nunique())
+        self.logger.info(f"Final number of subbasins: {streams['Subbasin'].nunique()}")
 
         streams = self.setting_zero_for_outlets_and_headwaters(streams)
 
@@ -400,7 +400,7 @@ class NHD_SWATPlus_Extractor:
         """
 
         # Initialize new columns with self.no_value  (I found this an effective approach for handling nan and null values)
-        self.logger.info('################################# Unique LAKEID',streams.LakeId.unique())
+        self.logger.info(f'################################# Unique LAKEID {streams.LakeId.unique()}')
         streams['LakeId'] = streams['LakeId'].fillna(self.no_value).infer_objects(copy=False) 
         streams['LakeIn'] = self.no_value
         streams['LakeOut'] = self.no_value
@@ -483,7 +483,8 @@ class NHD_SWATPlus_Extractor:
         # Then run the function identify_lake_out to populate LakeOut
         self.logger.info('start finding the lakeOuts')
         identify_lake_out(streams)
-        streams.replace(self.no_value, np.nan, inplace=True)
+        #streams.replace(self.no_value, np.nan, inplace=True)
+        streams = streams.replace(self.no_value, np.nan).infer_objects(copy=False)
         # Identify main lake for each LakeOut
         lakes_without_outlets=streams[~streams.LakeId.isin(streams.LakeOut)].LakeId.unique()
         if len(lakes_without_outlets)>0:

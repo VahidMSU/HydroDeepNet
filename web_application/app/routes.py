@@ -18,7 +18,7 @@ from app.extensions import db
 from functools import partial, wraps
 from multiprocessing import Process
 from app.utils import (find_station, get_huc12_geometries, get_huc12_streams_geometries,
-						get_huc12_lakes_geometries, send_verification_email, 
+						get_huc12_lakes_geometries, send_verification_email, check_existing_models,
 						single_model_creation, hydrogeo_dataset_dict, read_h5_file) 
 import os
 import json
@@ -30,6 +30,7 @@ import requests
 from werkzeug.utils import secure_filename
 import shutil
 import tempfile
+from app.decorators import conditional_login_required, conditional_verified_required
 
 def verified_required(f):
 	@wraps(f)
@@ -43,33 +44,21 @@ def verified_required(f):
 	return decorated_function
 
 
-def check_existing_models(station_name):
-	swatgenx_output = SWATGenXPaths.swatgenx_outlet_path
-	VPUIDs = os.listdir(swatgenx_output)
-	existing_models = []
-	for VPUID in VPUIDs:
-		# now find model inside huc12 directory
-		huc12_path = os.path.join(swatgenx_output, VPUID, "huc12")
-		models = os.listdir(huc12_path)
-		existing_models.extend(os.path.join(huc12_path, model) for model in models)
-	existance_flag = False
-	for model in existing_models:
-		if station_name in model:
-			print(f"Model found for station {station_name} at {model}")
-			existance_flag = True
-			break
-	return existance_flag
+
+from app.utils import LoggerSetup
 
 class AppManager:
 	def __init__(self, app):
 		self.app = app
 		self.init_routes()
+		log_dir = "/data/SWATGenXApp/codes/web_application/logs"
+		self.app.logger = LoggerSetup(log_dir, rewrite=False).setup_logger("FlaskApp")
 		self.app.logger.info("AppManager initialized!")
-
+    
 	def init_routes(self):
 		@self.app.route('/')
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def index():
 			self.app.logger.info("Index route called. Redirecting to /home.")	
 			return jsonify({"status": "success", "redirect": "/home"})
@@ -93,10 +82,6 @@ class AppManager:
 			return jsonify({"title": "Verify", "message": "Enter your verification code."})
 
 
-		@self.app.route('/flask-static/<path:filename>')
-		def serve_flask_static(filename):
-			return send_from_directory('/data/SWATGenXApp/GenXAppData/', filename)
-
 
 		@self.app.route('/privacy')
 		def privacy():
@@ -110,28 +95,17 @@ class AppManager:
 			#return render_template('terms.html')
 			return jsonify({"title": "Terms", "message": "terms page"})
 
-		@self.app.route('/js/<path:filename>')
-		def js_static(filename):
-			js_dir = os.path.join(current_app.root_path,  'js')
-			return send_from_directory(js_dir, filename)
-
-		@self.app.route('/css/<path:filename>')
-		def css_static(filename):
-			css_dir = os.path.join(current_app.root_path, 'css')
-			return send_from_directory(css_dir, filename)
-	
-
 		@self.app.route('/user_dashboard', methods=['GET'])
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def user_dashboard():
 			"""User dashboard route."""
 			self.app.logger.info(f"User Dashboard accessed by `{current_user.username}`.")
 			return jsonify({"title": "Dashboard", "message": "Your user dashboard."})
 
 		@self.app.route('/get_options', methods=['GET'])
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def get_options():
 			try:
 				names_path = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/"
@@ -149,8 +123,8 @@ class AppManager:
 				return jsonify({"error": "Failed to fetch options"}), 500
 
 		@self.app.route('/visualizations', methods=['GET'])
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def visualizations():
 			self.app.logger.info("Visualizations route called")
 			name = request.args.get('NAME', default=None)
@@ -159,8 +133,10 @@ class AppManager:
 
 			if not all([name, ver, variable]):
 				if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+					self.app.logger.error("Please provide NAME, Version, and Variable.")
 					return jsonify({"error": "Please provide NAME, Version, and Variable."}), 400
 				else:
+					self.app.logger.error("Please provide NAME, Version, and Variable.")
 					return jsonify({"title": "Visualizations", "message": "Please provide NAME, Version, and Variable."})
 
 			base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
@@ -184,62 +160,6 @@ class AppManager:
 				return jsonify({"gif_files": gif_urls})
 
 			return jsonify({"title": "Visualizations", "message": "Visualizations page", "gif_files": gif_urls})
-
-		@self.app.route('/oauth_callback')
-		def oauth_callback():
-			code = request.args.get('code')
-			if not code:
-				#flash('Authorization failed. Please try again.', 'danger')
-				#return redirect(url_for('login'))
-				message = "Authorization failed. Please try again."
-				return jsonify({"status": "error", "message": message, "redirect": "/login"})
-			
-			# Exchange the code for an access token
-			token_url = "https://oauth.msu.edu/token"
-			payload = {
-				"code": code,
-				"client_id": "dummy",# CLIENT_ID,
-				"client_secret": "dummy",#CLIENT_SECRET,
-				"redirect_uri": url_for('oauth_callback', _external=True),
-				"grant_type": "authorization_code"
-			}
-			response = requests.post(token_url, data=payload)
-			if response.status_code != 200:
-				#flash('Failed to authenticate with MSU. Please try again.', 'danger')
-				#return redirect(url_for('login'))
-				message = "Failed to authenticate with MSU. Please try again."
-				return jsonify({"status": "error", "message": message, "redirect": "/login"})
-
-			token = response.json().get("access_token")
-
-			# Retrieve user info
-			user_info_url = "https://oauth.msu.edu/userinfo"
-			headers = {"Authorization": f"Bearer {token}"}
-			user_info_response = requests.get(user_info_url, headers=headers)
-			if user_info_response.status_code != 200:
-				#flash('Failed to retrieve user information.', 'danger')
-				#return redirect(url_for('login'))
-				message = "Failed to retrieve user information."
-				return jsonify({"status": "error", "message": message, "redirect": "/login"})
-
-			user_info = user_info_response.json()
-			msu_netid = user_info.get('netid')
-			email = user_info.get('email')
-
-			# Check if the user already exists
-			user = User.query.filter_by(username=msu_netid).first()
-			if not user:
-				# Create a new user
-				user = User(username=msu_netid, email=email, password="")  # No password needed for MSU login
-				db.session.add(user)
-				db.session.commit()
-
-			# Log the user in
-			login_user(user)
-			self.app.logger.info(f"MSU login successful for: {msu_netid}")
-			#return redirect(url_for('home'))
-			return jsonify({"status": "success", "redirect": "/home"})
-		
 		
 		@csrf.exempt
 		@self.app.route('/api/login', methods=['POST'])
@@ -311,16 +231,16 @@ class AppManager:
 
 
 		@self.app.route('/home', methods=['GET'])
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def home():
 			"""User's home page."""
 			self.app.logger.info(f"Home route accessed by user: {current_user.username}.")
 			return jsonify({"title": "Home", "message": "Welcome to the app!"})
 
 		@self.app.route('/model-settings', methods=['POST'])
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def model_settings():
 			"""Model settings submission route."""
 			data = request.json
@@ -351,7 +271,7 @@ class AppManager:
 				return jsonify({"error": "Failed to start model creation"}), 500
 
 		@self.app.route('/api/user_files', methods=['GET'])
-		@login_required
+		@conditional_login_required
 		def api_user_files():
 			"""
 			Lists directories and files for the logged-in user.
@@ -397,7 +317,7 @@ class AppManager:
 			return jsonify(contents)
 
 		@self.app.route('/download/<path:filename>', methods=['GET'])
-		@login_required
+		@conditional_login_required
 		def download_user_file(filename):
 			"""
 			Securely serves individual files from the user's directory.
@@ -415,7 +335,7 @@ class AppManager:
 			return send_from_directory(directory, file, as_attachment=True)
 
 		@self.app.route('/download-directory/<path:dirpath>', methods=['GET'])
-		@login_required
+		@conditional_login_required
 		def download_directory(dirpath):
 			"""
 			Compresses the requested directory into a ZIP file and serves it for download.
@@ -453,7 +373,7 @@ class AppManager:
 			return send_file(final_zip_path, as_attachment=True, download_name=zip_file_name)
 
 		@self.app.route('/api/logout', methods=['POST'])  # Ensure method is 'POST'
-		@login_required
+		@conditional_login_required
 		def logout():
 			"""Logout route."""
 			username = current_user.username if current_user.is_authenticated else "Anonymous"
@@ -534,24 +454,24 @@ class AppManager:
 
 
 		@self.app.route('/about')
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def about():
 			self.app.logger.info("About route called")
 			#return render_template('about.html')
 			return jsonify({"title": "About", "message": "about page"})
 
 		@self.app.route('/model-confirmation')
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def model_confirmation():
 			self.app.logger.info("Model Confirmation route called")
 			#return render_template('model_confirmation.html')
 			return jsonify({"title": "Model Confirmation", "message": "Model confirmation page"})
 
 		@self.app.route('/contact', methods=['GET', 'POST'])
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def contact():
 			self.app.logger.info("Contact route called")
 			form = ContactForm()
@@ -577,127 +497,120 @@ class AppManager:
 			return jsonify({"title": "Contact", "message": "contact page", "form": form})
 
 
-		@self.app.route('/infrastructure')
-		@login_required
-		@verified_required
-		def infrastructure():
-			self.app.logger.info("Infrastructure route called")
-			#return render_template('infrastructure.html')
-			return jsonify({"title": "Infrastructure", "message": "infrastructure page"})
+		
 
 		@self.app.route('/hydro_geo_dataset', methods=['GET', 'POST'])
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def hydro_geo_dataset():
+			"""Handles HydroGeoDataset requests for fetching environmental data."""
+			
 			self.app.logger.info("HydroGeoDataset route called")
-			form = HydroGeoDatasetForm()
-			hydrodict = hydrogeo_dataset_dict()
 
+			# Define available dataset groups
 			available_groups = [
 				'CDL', 'EBK', 'LANDFIRE', 'MODIS', 'NHDPlus', 'PRISM', 'SNODAS_monthly',
 				'Wellogic', 'climate_pattern', 'geospatial', 'gssurgo', 'population'
 			]
-			form.variable.choices = [(group, group) for group in available_groups]
-			self.app.logger.info(f"Available groups: {available_groups}")	
+			
+			# Load dataset dictionary
+			hydrodict = hydrogeo_dataset_dict()
 
-			if request.method == 'POST':
+			if request.method == 'GET':
+				"""Handle GET request to fetch available variables or subvariables."""
+				self.app.logger.info("GET request received")
+
+				variable = request.args.get('variable')
+				if variable:
+					self.app.logger.info(f"Fetching subvariables for variable: {variable}")
+					subvariables = hydrodict.get(variable, [])
+					return jsonify({"subvariables": subvariables})
+				else:
+					return jsonify({"variables": available_groups})
+
+			elif request.method == 'POST':
+				"""Handle POST request to fetch data based on user input."""
 				self.app.logger.info("Form submitted")
-				selected_variable = request.form.get('variable')
-				if selected_variable in hydrodict:
-					form.subvariable.choices = [(item, item) for item in hydrodict[selected_variable]]
+				data_payload = request.get_json()
+				self.app.logger.info(f"Received JSON data: {json.dumps(data_payload, indent=2)}")
 
-				self.app.logger.info("Form validated successfully")	
-				variable = request.form.get('variable')
-				subvariable = request.form.get('subvariable')
+				# Extract variable and subvariable
+				variable = data_payload.get('variable')
+				subvariable = data_payload.get('subvariable')
 
-				latitude = request.form.get('latitude', None)
-				longitude = request.form.get('longitude', None)
-				min_latitude = request.form.get('min_latitude', None)
-				max_latitude = request.form.get('max_latitude', None)
-				min_longitude = request.form.get('min_longitude', None)
-				max_longitude = request.form.get('max_longitude', None)
+				if not variable or not subvariable:
+					message = "Variable and Subvariable are required."
+					self.app.logger.error(message)
+					return jsonify({"title": "HydroGeoDataset", "message": message}), 400
 
-				if min_latitude and max_latitude and min_longitude and max_longitude:
-					self.app.logger.info(f"Received range: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
-					latitude = longitude = None
+				# Extract coordinates
+				latitude = data_payload.get('latitude')
+				longitude = data_payload.get('longitude')
+				min_latitude = data_payload.get('min_latitude')
+				max_latitude = data_payload.get('max_latitude')
+				min_longitude = data_payload.get('min_longitude')
+				max_longitude = data_payload.get('max_longitude')
 
-				polygon_coordinates = request.form.get('polygon_coordinates')
+				# Extract polygon if provided
+				polygon_coordinates = data_payload.get('polygon_coordinates')
+
 				if polygon_coordinates:
 					try:
 						vertices = json.loads(polygon_coordinates)
 						self.app.logger.info(f"Received polygon vertices: {vertices}")
-						max_latitudes = [vertex['latitude'] for vertex in vertices]
-						max_longitudes = [vertex['longitude'] for vertex in vertices]
-						min_latitude = min(max_latitudes)
-						max_latitude = max(max_latitudes)
-						min_longitude = min(max_longitudes)
-						max_longitude = max(max_longitudes)
-						self.app.logger.info(f"Polygon bounds: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")	
+
+						# Convert polygon to bounding box
+						latitudes = [vertex['latitude'] for vertex in vertices]
+						longitudes = [vertex['longitude'] for vertex in vertices]
+						
+						min_latitude, max_latitude = min(latitudes), max(latitudes)
+						min_longitude, max_longitude = min(longitudes), max(longitudes)
+						
+						self.app.logger.info(f"Polygon bounds: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
+						latitude = longitude = None  # Reset single point
+
 					except Exception as e:
 						self.app.logger.error(f"Error parsing polygon coordinates: {e}")
-						message = "Invalid polygon coordinates."
-						return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
+						return jsonify({"title": "HydroGeoDataset", "message": "Invalid polygon coordinates."}), 400
 
-				elif not any([latitude, longitude, min_latitude, max_latitude, min_longitude, max_longitude]):
-					message = "Please provide either a point or a range for data retrieval."
-					return jsonify({"title": "HydroGeoDataset", "message": message})
-
-				if not variable or not subvariable:
-					message = "Variable and Subvariable are required."
-					return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
-				try:
-					if latitude and longitude:
-						self.app.logger.info(f"Fetching data for {variable}/{subvariable} at {latitude}, {longitude}")
+				# Validate input (must have either a point or a bounding box)
+				if latitude and longitude:
+					self.app.logger.info(f"Fetching data for {variable}/{subvariable} at ({latitude}, {longitude})")
+					try:
 						raw_data = read_h5_file(
-							lat=float(latitude), lon=float(longitude), address=f"{variable}/{subvariable}"
+							lat=float(latitude),
+							lon=float(longitude),
+							address=f"{variable}/{subvariable}"
 						)
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
-						self.app.logger.info(f"Data fetched: {data}")
-					elif all([min_latitude, max_latitude, min_longitude, max_longitude]):
-						self.app.logger.info(f"Fetching data for {variable}/{subvariable} in range ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
+						return jsonify({"title": "HydroGeoDataset", "message": "Data fetched successfully", "data": data})
+					except Exception as e:
+						self.app.logger.error(f"Error fetching data: {e}")
+						return jsonify({"title": "HydroGeoDataset", "message": f"Error fetching data: {e}"}), 500
+
+				elif all([min_latitude, max_latitude, min_longitude, max_longitude]):
+					self.app.logger.info(f"Fetching data for {variable}/{subvariable} in range ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
+					try:
 						raw_data = read_h5_file(
 							lat_range=(float(min_latitude), float(max_latitude)),
 							lon_range=(float(min_longitude), float(max_longitude)),
 							address=f"{variable}/{subvariable}"
 						)
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
-						self.app.logger.info(f"Data fetched for range: {data}")
-					else:
-						message = "Please provide either a point or a range for data retrieval."
-						return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
-
-					message = "Data fetched successfully"
-					return jsonify({"title": "HydroGeoDataset", "message": message, "data": data})
-				
-				except Exception as e:
-					self.app.logger.error(f"Error fetching data: {e}")	
-					message = f"Error fetching data: {e}"
-				
-				return jsonify({"title": "HydroGeoDataset", "message": message, "form": form})
-			
-			elif request.method == 'GET':
-				self.app.logger.info("GET request received")
-				variable = request.args.get('variable')
-				if variable:
-					self.app.logger.info(f"Fetching subvariables for variable: {variable}")
-					try:
-						subvariables = hydrodict.get(variable, [])
-						return jsonify({"subvariables": subvariables})
+						return jsonify({"title": "HydroGeoDataset", "message": "Data fetched successfully", "data": data})
 					except Exception as e:
-						self.app.logger.error(f"Error fetching subvariables: {e}")
-						return jsonify({"error": "Failed to fetch subvariables"}), 500
+						self.app.logger.error(f"Error fetching data: {e}")
+						return jsonify({"title": "HydroGeoDataset", "message": f"Error fetching data: {e}"}), 500
+
 				else:
-					try:
-						return jsonify({"variables": available_groups})
-					except Exception as e:
-						self.app.logger.error(f"Error fetching hydrogeo variables: {e}")
-						return jsonify({"error": "Failed to fetch variables"}), 500
+					message = f"Please provide either a point (latitude/longitude) or a range (min/max lat/lon)."
+					self.app.logger.error(message)
+					return jsonify({"title": "HydroGeoDataset", "message": message}), 400
 
-			return jsonify({"title": "HydroGeoDataset", "message": "HydroGeoDataset page", "form": form})
 
 		@self.app.route('/get_subvariables', methods=['POST'])
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def get_subvariables():
 			self.app.logger.info("Get Subvariables route called")
 			variable = request.form.get('variable')
@@ -711,25 +624,18 @@ class AppManager:
 			self.app.logger.info(f"Subvariables for {variable}: {subvariables}")
 
 			return jsonify({"subvariables": subvariables})
-
-		@self.app.route('/deeplearning_models')
-		@login_required
-		@verified_required
-		def deeplearning_models():
-			#return render_template('DeepLearning.html')
-			return jsonify({"title": "Deep Learning Models", "message": "Deep Learning Models page"})
 		
 		@self.app.route('/vision_system')
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def vision_system():
 			self.app.logger.info("Vision System route called")
 			#return render_template('VisionSystem.html')
 			return jsonify({"title": "Vision System", "message": "Vision System page"})
 
 		@self.app.route('/michigan')
-		@login_required
-		@verified_required
+		@conditional_login_required
+		@conditional_verified_required
 		def michigan():
 			self.app.logger.info("Michigan route called")  
 			return jsonify({

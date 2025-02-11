@@ -45,7 +45,7 @@ def check_simulation_output(VPUID, LEVEL, NAME, MODEL_NAME):
             lines = f.readlines()
             for line in lines:
                 if "Execution successfully completed" in line:
-                    print(f"Model already exists and successfully executed for {NAME}")
+                    print(f"Model already exists and successfully executed for {VPUID}/{LEVEL}/{NAME}")
                     state = True
                     
 
