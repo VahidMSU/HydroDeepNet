@@ -1,8 +1,17 @@
-import React, { useEffect } from 'react';
+//MapComponent.js
+import React, { useEffect, useCallback, useRef } from 'react';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Sketch from '@arcgis/core/widgets/Sketch';
+import Legend from '@arcgis/core/widgets/Legend';
+import BasemapToggle from '@arcgis/core/widgets/BasemapToggle';
+import Measurement from '@arcgis/core/widgets/Measurement';
+import ScaleBar from '@arcgis/core/widgets/ScaleBar';
+import CoordinateConversion from '@arcgis/core/widgets/CoordinateConversion';
+import LayerList from '@arcgis/core/widgets/LayerList';
+import Search from '@arcgis/core/widgets/Search';
+import SnappingOptions from '@arcgis/core/views/interactive/snapping/SnappingOptions';
 import * as webMercatorUtils from '@arcgis/core/geometry/support/webMercatorUtils';
 import '@arcgis/core/assets/esri/themes/light/main.css';
 import '../styles/map-widgets.css';
@@ -44,7 +53,11 @@ const handleSketchEvent = (event, graphicsLayer, setFormData) => {
     if (event.state === 'active' || event.state === 'complete') {
       updatePolygonFields(geoGeom, setFormData);
     }
-  } else if (geometry.type === 'extent' && event.state === 'complete') {
+  } else if (
+    geometry.type === 'extent' &&
+    (event.state === 'active' || event.state === 'complete')
+  ) {
+    // Changed condition to update extent during both active and complete phases.
     updateExtentFields(geoGeom, setFormData);
   } else if (geometry.type === 'point' && event.state === 'complete') {
     updatePointFields(geoGeom.latitude.toFixed(6), geoGeom.longitude.toFixed(6), setFormData);
@@ -83,66 +96,161 @@ const updatePolygonFields = (polygon, setFormData) => {
   }));
 };
 
-const MapComponent = ({ setFormData }) => {
-  useEffect(() => {
-    let view = null;
-    let sketch = null;
+const MapComponent = ({ setFormData, onGeometryChange, centerCoordinates }) => {
+  const viewRef = useRef(null);
 
+  const handleDrawEvent = useCallback(
+    (event) => {
+      const { graphic, graphics } = event;
+      let newGeometry = null;
+      if (graphic && graphic.geometry) {
+        newGeometry = graphic.geometry.toJSON();
+      } else if (graphics && graphics[0].geometry) {
+        newGeometry = graphics[0].geometry.toJSON();
+      }
+      if (newGeometry && onGeometryChange) {
+        onGeometryChange(newGeometry);
+      }
+    },
+    [onGeometryChange],
+  );
+
+  // Initialize map only once on mount
+  useEffect(() => {
+    let view, sketch, legend, basemapToggle, measurement, coordConversion, layerList, search, home;
     const initialize = async () => {
-      const graphicsLayer = new GraphicsLayer();
+      const graphicsLayer = new GraphicsLayer({
+        title: 'Drawing Layer',
+        listMode: 'show',
+      });
       const map = new Map({
-        basemap: 'topo-vector', // Changed from 'streets' to 'topo-vector'
+        basemap: 'topo-vector',
         layers: [graphicsLayer],
       });
-
       view = new MapView({
         container: 'viewDiv',
-        map: map,
+        map,
         center: [-90, 38],
         zoom: 4,
+        constraints: { snapToZoom: true, rotationEnabled: false },
+        popup: {
+          dockEnabled: true,
+          dockOptions: { position: 'bottom-right', breakpoint: false },
+        },
+        snappingOptions: new SnappingOptions({
+          enabled: true,
+          selfEnabled: true,
+          featureSources: [{ layer: graphicsLayer }],
+        }),
       });
-
       try {
         await view.when();
-
+        // Initialize widgets (sketch, legend, basemapToggle, measurement, scaleBar, coordConversion, layerList, search)
         sketch = new Sketch({
-          view: view,
+          view,
           layer: graphicsLayer,
-          creationMode: 'update',
+          creationMode: 'single',
           availableCreateTools: ['point', 'polygon', 'rectangle'],
           layout: 'vertical',
+          defaultCreateOptions: { mode: 'hybrid' },
+          defaultUpdateOptions: {
+            enableRotation: false,
+            enableScaling: false,
+            multipleSelectionEnabled: false,
+          },
+          visibleElements: { settingsMenu: false, undoRedoMenu: true, selectionTools: false },
         });
-
+        legend = new Legend({ view, style: { type: 'card', layout: 'auto' } });
+        basemapToggle = new BasemapToggle({ view, nextBasemap: 'satellite' });
+        measurement = new Measurement({ view, activeTool: 'distance' });
+        const scaleBar = new ScaleBar({ view, unit: 'dual' });
+        coordConversion = new CoordinateConversion({ view });
+        layerList = new LayerList({
+          view,
+          listItemCreatedFunction: (event) => {
+            const item = event.item;
+            if (item.layer.type !== 'group') {
+              item.panel = { content: 'legend', open: true };
+            }
+          },
+        });
+        search = new Search({ view, popupEnabled: true, position: 'top-left' });
+        // Add widgets to the view
+        view.ui.add(search, 'top-right');
+        view.ui.add(measurement, 'bottom-right');
+        view.ui.add(scaleBar, 'top-left');
+        view.ui.add(coordConversion, 'bottom-right');
         view.ui.add(sketch, 'top-right');
-
+        view.ui.add(legend, 'bottom-left');
+        view.ui.add(basemapToggle, 'bottom-right');
+        view.ui.remove('zoom');
         // Click event handler
         view.on('click', (event) => {
           const point = webMercatorUtils.webMercatorToGeographic(event.mapPoint);
           updatePointFields(point.latitude.toFixed(6), point.longitude.toFixed(6), setFormData);
         });
-
-        // Sketch event handlers
-        sketch.on('create', (event) => handleSketchEvent(event, graphicsLayer, setFormData));
-        sketch.on('update', (event) => handleSketchEvent(event, graphicsLayer, setFormData));
+        sketch.on('create', (event) => {
+          if (event.state === 'complete') {
+            view.goTo(event.graphic.geometry.extent.expand(1.5));
+          }
+          handleSketchEvent(event, graphicsLayer, setFormData);
+          handleDrawEvent(event);
+        });
+        sketch.on('update', (event) => {
+          handleSketchEvent(event, graphicsLayer, setFormData);
+          handleDrawEvent(event);
+        });
+        view.on('key-down', (event) => {
+          const { key } = event;
+          if ((key === 'Delete' || key === 'Backspace') && sketch.state === 'active') {
+            sketch.cancel();
+          }
+        });
+        // Store view for later use
+        viewRef.current = view;
       } catch (error) {
         console.error('Error initializing map:', error);
       }
     };
-
     initialize();
-
-    // Cleanup
+    // Cleanup on unmount
     return () => {
-      if (sketch) {
-        sketch.destroy();
-      }
-      if (view) {
-        view.destroy();
+      if (viewRef.current) {
+        viewRef.current.destroy();
+        viewRef.current = null;
       }
     };
-  }, [setFormData]);
+  }, []); // runs only once
 
-  return <div id="viewDiv" style={{ height: '100%', width: '100%' }}></div>;
+  // Pan the map only when centerCoordinates (selected lat/lon) change
+  useEffect(() => {
+    if (viewRef.current && centerCoordinates) {
+      const { latitude, longitude } = centerCoordinates;
+      // Trigger one map pan/zoom to the new center without reinitializing
+      viewRef.current.goTo({ center: [parseFloat(longitude), parseFloat(latitude)] });
+    }
+  }, [centerCoordinates]);
+
+  return (
+    <>
+      <div id="viewDiv" style={{ height: '100%', width: '100%' }}></div>
+      <style>{`
+        .widget-container {
+          padding: 8px;
+          background-color: rgba(255, 255, 255, 0.9);
+          border-radius: 4px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .esri-widget { font-size: 14px; }
+        .esri-sketch { border-radius: 4px; }
+        .esri-legend { max-height: 200px; overflow-y: auto; }
+        .esri-basemap-toggle { border-radius: 4px; }
+        .esri-measurement .esri-measurement__modes { background-color: rgba(255, 255, 255, 0.9); }
+        .esri-coordinate-conversion { max-height: 200px; overflow-y: auto; }
+        .esri-layer-list { max-height: 400px; overflow-y: auto; }
+      `}</style>
+    </>
+  );
 };
 
 export default MapComponent;

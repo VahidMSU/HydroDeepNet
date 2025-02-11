@@ -14,6 +14,25 @@ import pandas as pd
 import logging
 from shapely.geometry import mapping
 from scipy.spatial import cKDTree
+from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+
+
+def check_existing_models(station_name):
+	swatgenx_output = SWATGenXPaths.swatgenx_outlet_path
+	VPUIDs = os.listdir(swatgenx_output)
+	existing_models = []
+	for VPUID in VPUIDs:
+		# now find model inside huc12 directory
+		huc12_path = os.path.join(swatgenx_output, VPUID, "huc12")
+		models = os.listdir(huc12_path)
+		existing_models.extend(os.path.join(huc12_path, model) for model in models)
+	existance_flag = False
+	for model in existing_models:
+		if station_name in model:
+			print(f"Model found for station {station_name} at {model}")
+			existance_flag = True
+			break
+	return existance_flag
 
 def send_verification_email(recipient):
     import smtplib

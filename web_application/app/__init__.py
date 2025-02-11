@@ -15,9 +15,6 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_socketio import SocketIO, emit
 from redis import Redis, ConnectionError
-
-
-
 # Ensure the system path includes SWATGenX
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
 
@@ -54,8 +51,6 @@ def create_app():
             }
         }
     )
-
-
 
     socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -166,7 +161,6 @@ def create_app():
     ]
     secure_path("/data/SWATGenXApp/Users", allowed_dirs)
 
-
     # Apply secure headers
     @app.after_request
     def apply_headers(response):
@@ -177,6 +171,5 @@ def create_app():
         response.headers["Content-Security-Policy"] = "frame-ancestors 'self'"
         response.headers["Cache-Control"] = "no-store"
         return response
-
 
     return app

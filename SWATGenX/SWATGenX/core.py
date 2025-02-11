@@ -175,11 +175,11 @@ class SWATGenXCore:
 				lines = f.readlines()
 				for line in lines:
 					if "Execution successfully completed" in line:
-						print(f"Model already exists and successfully executed for {self.NAME}")
+						print(f"Model already exists and successfully executed for {self.VPUID}/{self.LEVEL}/{self.NAME}")
 						state = True
 
 		if sim_file_exists and not state:
-			raise ValueError(f"Model already exists but did not execute successfully for {self.NAME}")
+			raise ValueError(f"Model already exists but did not execute successfully for {self.VPUID}/{self.LEVEL}/{self.NAME}")
 		
 		return state
 	
