@@ -9,7 +9,7 @@ import {
   Toolbar,
   Box,
   Typography,
-  Divider
+  Divider,
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -56,33 +56,44 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', bgcolor: '#2b2b2c', minHeight: '100vh', width: '100vw', color: 'white' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        bgcolor: '#2b2b2c',
+        minHeight: '100vh',
+        width: '100vw',
+        color: 'white',
+      }}
+    >
       {localStorage.getItem('authToken') && (
         <Drawer
           variant="permanent"
           sx={{
             width: drawerWidth,
             flexShrink: 0,
-            '& .MuiDrawer-paper': { 
-              width: drawerWidth, 
-              boxSizing: 'border-box', 
-              bgcolor: '#2b2b2c', 
+            '& .MuiDrawer-paper': {
+              width: drawerWidth,
+              boxSizing: 'border-box',
+              bgcolor: '#2b2b2c',
               color: 'white',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
             },
           }}
         >
           <Box>
             <Toolbar />
-            <Typography variant="h5" sx={{ color: 'white', textAlign: 'center', mt: 2, mb: 2, fontWeight: 'bold' }}>
-              Navigation
+            <Typography
+              variant="h5"
+              sx={{ color: 'white', textAlign: 'center', mt: 2, mb: 2, fontWeight: 'bold' }}
+            >
+              HydroDeepNet
             </Typography>
             <List>
               {[
                 { text: 'Home', icon: <HomeIcon />, path: '/' },
-                { text: 'Model Settings', icon: <SettingsIcon />, path: '/model_settings' },
+                { text: 'SWATGenX', icon: <SettingsIcon />, path: '/model_settings' },
                 { text: 'Visualizations', icon: <BarChartIcon />, path: '/visualizations' },
                 { text: 'Michigan', icon: <PlaceIcon />, path: '/michigan' },
                 { text: 'Vision System', icon: <VisibilityIcon />, path: '/vision_system' },
@@ -120,8 +131,13 @@ const Layout = ({ children }) => {
           <Box sx={{ width: '100%' }}>
             <Divider sx={{ bgcolor: '#687891', mx: 2 }} />
             <List>
-              <ListItemButton onClick={handleLogout} sx={{ color: 'white', '&:hover': { color: '#ff8500' } }}>
-                <ListItemIcon><ExitToAppIcon sx={{ color: 'white' }} /></ListItemIcon>
+              <ListItemButton
+                onClick={handleLogout}
+                sx={{ color: 'white', '&:hover': { color: '#ff8500' } }}
+              >
+                <ListItemIcon>
+                  <ExitToAppIcon sx={{ color: 'white' }} />
+                </ListItemIcon>
                 <ListItemText primary="Logout" />
               </ListItemButton>
             </List>
@@ -130,8 +146,13 @@ const Layout = ({ children }) => {
           {/* Footer Links */}
           <Box sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="body2" sx={{ color: '#687891' }}>
-              <Link to="/privacy" style={{ textDecoration: 'none', color: 'inherit' }}>Privacy Policy</Link> |
-              <Link to="/terms" style={{ textDecoration: 'none', color: 'inherit', marginLeft: 8 }}>Terms of Service</Link>
+              <Link to="/privacy" style={{ textDecoration: 'none', color: 'inherit' }}>
+                Privacy Policy
+              </Link>{' '}
+              |
+              <Link to="/terms" style={{ textDecoration: 'none', color: 'inherit', marginLeft: 8 }}>
+                Terms of Service
+              </Link>
             </Typography>
           </Box>
         </Drawer>
@@ -147,10 +168,6 @@ const Layout = ({ children }) => {
 };
 
 export default Layout;
-
-
-
-
 
 // Backup of Original
 
@@ -199,7 +216,7 @@ export default Layout;
 //               <i className="fas fa-home"></i> Home
 //             </Link>
 //             <Link className="nav-link" to="/model_settings">
-//               <i className="fas fa-cogs"></i> Model Settings
+//               <i className="fas fa-cogs"></i> SWATGenX
 //             </Link>
 //             <Link className="nav-link" to="/visualizations">
 //               <i className="fas fa-chart-bar"></i> Visualizations

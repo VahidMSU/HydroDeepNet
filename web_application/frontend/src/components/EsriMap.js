@@ -16,34 +16,49 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
       'esri/geometry/Polygon',
       'esri/geometry/Polyline',
       'esri/geometry/Extent',
-    ]).then(([Map, MapView, Graphic, GraphicsLayer, Polygon, Polyline, Extent]) => {
-      if (viewRef.current) return;
+      'esri/geometry/Point',
+      'esri/geometry/support/webMercatorUtils',
+    ]).then(
+      ([
+        Map,
+        MapView,
+        Graphic,
+        GraphicsLayer,
+        Polygon,
+        Polyline,
+        Extent,
+        Point,
+        webMercatorUtils,
+      ]) => {
+        if (viewRef.current) return;
 
-      const map = new Map({ basemap: 'topo-vector' });
-      view = new MapView({
-        container: mapRef.current,
-        map: map,
-        zoom: 5,
-        center: [-90, 38],
-      });
+        const map = new Map({ basemap: 'topo-vector' });
+        view = new MapView({
+          container: mapRef.current,
+          map: map,
+          zoom: 5,
+          center: [-90, 38],
+        });
 
-      const polygonLayer = new GraphicsLayer();
-      const streamLayer = new GraphicsLayer();
-      const lakeLayer = new GraphicsLayer();
-      map.addMany([polygonLayer, streamLayer, lakeLayer]);
+        const polygonLayer = new GraphicsLayer();
+        const streamLayer = new GraphicsLayer();
+        const lakeLayer = new GraphicsLayer();
+        map.addMany([polygonLayer, streamLayer, lakeLayer]);
 
-      viewRef.current = { view, polygonLayer, streamLayer, lakeLayer };
+        viewRef.current = { view, polygonLayer, streamLayer, lakeLayer };
 
-      view.on('pointer-move', (event) => {
-        const screenPoint = { x: event.x, y: event.y };
-        view.toMap(screenPoint).then((mapPoint) => {
-          const coordDiv = document.getElementById('coordinateInfo');
-          if (coordDiv && mapPoint) {
-            coordDiv.innerText = `Lat: ${mapPoint.latitude.toFixed(6)}, Lon: ${mapPoint.longitude.toFixed(6)}`;
+        view.on('pointer-move', (event) => {
+          const point = view.toMap(event);
+          if (point) {
+            const geographic = webMercatorUtils.webMercatorToGeographic(point);
+            const coordDiv = document.getElementById('coordinateInfo');
+            if (coordDiv) {
+              coordDiv.innerText = `Lat: ${geographic.latitude.toFixed(6)}, Lon: ${geographic.longitude.toFixed(6)}`;
+            }
           }
         });
-      });
-    });
+      },
+    );
 
     return () => {
       if (view) {
