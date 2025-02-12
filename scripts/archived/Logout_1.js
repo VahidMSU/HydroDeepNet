@@ -1,5 +1,5 @@
 import React from 'react';
-import LogoutForm from '../forms/LogoutForm'; // Import the new component
+import LogoutForm from '../forms/LogoutForm.js'; // Import the new component
 import { Container } from '../../styles/Logout.tsx'; // Import styled components
 
 const LogoutTemplate = ({ handleConfirmLogout, handleCancelLogout }) => {

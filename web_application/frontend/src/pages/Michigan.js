@@ -1,6 +1,5 @@
 import React from 'react';
-import MichiganTemplate from '../components/templates/MichiganTemplate.js';
-import '../styles/Michigan.tsx'; // Ensure the path is correct
+import MichiganTemplate from '../components/templates/Michigan.js';
 
 const Michigan = () => {
   return <MichiganTemplate />;

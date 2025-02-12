@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../styles/TermsAndConditions.tsx'; // Import the new TSX file
+import '../../styles/TermsConditions.tsx'; // Import the new TSX file
 
 const TermsAndConditionsTemplate = () => {
   const bodyStyle = {
