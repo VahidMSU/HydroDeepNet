@@ -6,7 +6,7 @@ import {
   ImageCard,
   Modal,
   ModalClose,
-} from '../../styles/MichiganTemplate.tsx'; // Import styled components
+} from '../../styles/Michigan.tsx'; // Import styled components
 
 const MichiganTemplate = () => {
   const images = [

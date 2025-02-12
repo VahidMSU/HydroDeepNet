@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import HydroGeoDataset from '../components/templates/HydroGeoDataset';
-import HydroGeoDatasetForm from '../components/forms/HydroGeoDataset';
+import HydroGeoDataset from '../../web_application/frontend/src/components/templates/HydroGeoDataset';
+import HydroGeoDatasetForm from '../../web_application/frontend/src/components/forms/HydroGeoDataset';
 
 const HydroGeoDatasetPage = () => {
   const [formData, setFormData] = useState({

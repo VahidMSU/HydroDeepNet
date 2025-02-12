@@ -1,22 +1,54 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import LogoutTemplate from '../components/templates/Logout'; // Import the new LogoutTemplate component
-import '../styles/Logout.tsx'; // Adjust the path if necessary
+import styled from 'styled-components';
 
+// Styled Components
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 2rem;
+`;
+
+// Logout Form Component
+const LogoutForm = ({ handleConfirmLogout, handleCancelLogout }) => {
+  return (
+    <div className="logout-buttons text-center">
+      <button
+        id="confirm-logout"
+        className="logout-btn btn btn-danger"
+        onClick={handleConfirmLogout}
+      >
+        Yes, Logout
+      </button>
+      <button
+        id="cancel-logout"
+        className="cancel-btn btn btn-secondary"
+        onClick={handleCancelLogout}
+      >
+        Cancel
+      </button>
+    </div>
+  );
+};
+
+// Main Logout Component
 const Logout = () => {
   const navigate = useNavigate();
 
   const handleConfirmLogout = async () => {
     try {
       const response = await fetch('/api/logout', {
-        method: 'POST', // Ensure this matches the backend method
-        credentials: 'include', // Ensures cookies are sent
+        method: 'POST',
+        credentials: 'include',
       });
 
       const data = await response.json();
       if (data.status === 'success') {
         console.log('Logout successful:', data.message);
-        navigate('/login'); // Redirect user to login
+        navigate('/login');
       } else {
         console.error('Logout failed:', data.message);
       }
@@ -27,15 +59,18 @@ const Logout = () => {
   };
 
   const handleCancelLogout = () => {
-    // Navigate back to the previous page
-    navigate(-1); // Go back one step in history
+    navigate(-1);
   };
 
   return (
-    <LogoutTemplate
-      handleConfirmLogout={handleConfirmLogout}
-      handleCancelLogout={handleCancelLogout}
-    />
+    <Container>
+      <h1>Logout</h1>
+      <p>Are you sure you want to log out?</p>
+      <LogoutForm
+        handleConfirmLogout={handleConfirmLogout}
+        handleCancelLogout={handleCancelLogout}
+      />
+    </Container>
   );
 };
 
