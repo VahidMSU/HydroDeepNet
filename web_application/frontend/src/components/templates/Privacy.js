@@ -1,41 +1,8 @@
 import React from 'react';
-import '../../styles/PrivacyTemplate.tsx'; // Import the new TSX file
+import { bodyStyle, headerStyle, mainStyle, footerStyle } from '../../styles/Privacy.tsx';
 
 const PrivacyTemplate = () => {
-  const bodyStyle = {
-    fontFamily: 'Arial, sans-serif',
-    margin: '40px',
-    padding: '20px',
-    backgroundColor: '#f9f9f9',
-    color: '#333',
-    lineHeight: '1.6',
-  };
-
-  const headerStyle = {
-    background: '#004471',
-    color: 'white',
-    padding: '15px',
-    textAlign: 'center',
-    borderRadius: '5px',
-  };
-
-  const mainStyle = {
-    background: 'white',
-    padding: '20px',
-    borderRadius: '5px',
-    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
-    marginTop: '20px',
-  };
-
-  const footerStyle = {
-    textAlign: 'center',
-    marginTop: '20px',
-    padding: '10px',
-    background: '#004471',
-    color: 'white',
-    borderRadius: '5px',
-  };
-
+ 
   return (
     <div style={bodyStyle}>
       <header style={headerStyle}>

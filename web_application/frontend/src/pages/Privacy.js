@@ -1,5 +1,5 @@
 import React from 'react';
-import PrivacyTemplate from '../components/templates/PrivacyTemplate';
+import PrivacyTemplate from '../components/templates/Privacy';
 
 const PrivacyPolicy = () => {
   return <PrivacyTemplate />;

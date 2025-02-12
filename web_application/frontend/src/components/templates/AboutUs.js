@@ -5,7 +5,7 @@ import {
   ContentSection,
   ContactSection,
   ProjectLinks,
-} from '../../styles/AboutUsTemplate.tsx';
+} from '../../styles/AboutUs.tsx';
 
 const AboutUsTemplate = () => {
   return (

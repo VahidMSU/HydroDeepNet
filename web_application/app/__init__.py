@@ -1,6 +1,10 @@
 ## /data/SWATGenXApp/codes/web_application/app/__init__.py
 import sys
 import os
+import requests
+import time
+import threading
+from functools import lru_cache
 from flask import Flask, abort, jsonify
 from flask_talisman import Talisman
 from config import Config
@@ -58,7 +62,6 @@ def create_app():
     def on_connect():
         logger.info('Client connected')
         emit('message', {'data': 'Connected to WebSocket!'})
-
 
     @socketio.on('disconnect')
     def on_disconnect():

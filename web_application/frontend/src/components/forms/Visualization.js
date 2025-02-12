@@ -1,6 +1,18 @@
 import React from 'react';
 import { Box } from '@mui/material';
 
+import {
+  FormContainer,
+  FormGrid,
+  FormGroup,
+  FormLabel,
+  FormSelect,
+  FormInput,
+  HelpText,
+  SubmitButton,
+  ErrorMessage,
+} from '../../styles/Visualization.tsx';
+
 const VisualizationForm = ({
   watersheds,
   selectedWatershed,
@@ -25,17 +37,14 @@ const VisualizationForm = ({
   };
 
   return (
-    <form id="visualization_form" className="form-container" onSubmit={handleSubmit}>
+    <FormContainer onSubmit={handleSubmit} id="visualization_form">
       <Box display="flex" justifyContent="center">
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="NAME" className="form-label">
-              Watershed Name
-            </label>
-            <select
+        <FormGrid>
+          <FormGroup>
+            <FormLabel htmlFor="NAME">Watershed Name</FormLabel>
+            <FormSelect
               name="NAME"
               id="NAME"
-              className="form-select"
               required
               value={selectedWatershed}
               onChange={(e) => setSelectedWatershed(e.target.value)}
@@ -46,33 +55,27 @@ const VisualizationForm = ({
                   {w}
                 </option>
               ))}
-            </select>
-          </div>
+            </FormSelect>
+          </FormGroup>
 
-          <div className="form-group ensemble-group">
-            <label htmlFor="ver" className="form-label">
-              Ensemble
-            </label>
-            <input
+          <FormGroup className="ensemble-group">
+            <FormLabel htmlFor="ver">Ensemble</FormLabel>
+            <FormInput
               type="text"
               name="ver"
               id="ver"
-              className="form-control"
               placeholder="Enter Ensemble Version"
               required
               value={ensemble}
               onChange={(e) => setEnsemble(e.target.value)}
             />
-          </div>
+          </FormGroup>
 
-          <div className="form-group">
-            <label htmlFor="variable" className="form-label">
-              Variable Name
-            </label>
-            <select
+          <FormGroup>
+            <FormLabel htmlFor="variable">Variable Name</FormLabel>
+            <FormSelect
               name="variable"
               id="variable"
-              className="form-select"
               multiple
               value={selectedVariables}
               onChange={handleVariableChange}
@@ -82,32 +85,25 @@ const VisualizationForm = ({
                   {variable}
                 </option>
               ))}
-            </select>
-            <small id="variable-help" className="form-text text-muted">
-              Hold Ctrl/Cmd to select multiple variables.
-            </small>
-          </div>
-        </div>
+            </FormSelect>
+            <HelpText id="variable-help">Hold Ctrl/Cmd to select multiple variables.</HelpText>
+          </FormGroup>
+        </FormGrid>
       </Box>
 
-      <div className="text-center mt-4">
-        <button
-          type="submit"
-          className="btn btn-primary btn-lg px-4"
-          id="show_visualizations"
-          aria-label="Show visualizations"
-        >
+      <Box display="flex" justifyContent="center" mt={4}>
+        <SubmitButton type="submit" id="show_visualizations" aria-label="Show visualizations">
           <i className="fas fa-chart-bar me-2" aria-hidden="true"></i>
           Show Visualizations
-        </button>
-      </div>
+        </SubmitButton>
+      </Box>
 
       {errorMessage && (
-        <div id="error_message" className="alert alert-danger text-center mt-3" role="alert">
+        <ErrorMessage id="error_message" role="alert">
           {errorMessage}
-        </div>
+        </ErrorMessage>
       )}
-    </form>
+    </FormContainer>
   );
 };
 

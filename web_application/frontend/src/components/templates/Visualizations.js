@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import VisualizationForm from '../forms/Visualization.js';
+import { Box } from '@mui/material';
 import {
   Body,
   FormContainer,
@@ -18,8 +19,7 @@ import {
   StyledCircularProgress,
   ErrorMessage,
   LoadingContainer,
-} from '../../styles/VisualizationsDashboard.tsx';
-import { Box } from '@mui/material';
+} from '../../styles/Visualization.tsx';
 
 const VisualizationsDashboardTemplate = () => {
   const navigate = useNavigate();
