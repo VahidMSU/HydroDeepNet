@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './pages/Layout';
 import {
   Home,
-  ModelSettings,
+  SWATGenX,
   Visualizations,
   Michigan,
   VisionSystem,
@@ -28,7 +28,7 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={PRIVATE_MODE ? <PrivateRoute><Home /></PrivateRoute> : <Home />} />
-          <Route path="/model_settings" element={PRIVATE_MODE ? <PrivateRoute><ModelSettings /></PrivateRoute> : <ModelSettings />} />
+          <Route path="/model_settings" element={PRIVATE_MODE ? <PrivateRoute><SWATGenX /></PrivateRoute> : <SWATGenX />} />
           <Route path="/visualizations" element={PRIVATE_MODE ? <PrivateRoute><Visualizations /></PrivateRoute> : <Visualizations />} />
           <Route path="/michigan" element={PRIVATE_MODE ? <PrivateRoute><Michigan /></PrivateRoute> : <Michigan />} />
           <Route path="/vision_system" element={PRIVATE_MODE ? <PrivateRoute><VisionSystem /></PrivateRoute> : <VisionSystem />} />

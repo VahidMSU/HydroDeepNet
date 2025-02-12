@@ -130,9 +130,19 @@ const MapComponent = ({ setFormData, onGeometryChange, centerCoordinates }) => {
       view = new MapView({
         container: 'viewDiv',
         map,
-        center: [-90, 38],
-        zoom: 4,
-        constraints: { snapToZoom: true, rotationEnabled: false },
+        center: [-85.6024, 44.3148], // Center on Michigan
+        zoom: 7, // Zoom level to show most of Michigan
+        constraints: {
+          snapToZoom: true,
+          rotationEnabled: false,
+          geometry: {
+            type: 'extent',
+            xmin: -89.5, // Western boundary
+            ymin: 41.5, // Southern boundary
+            xmax: -82.5, // Eastern boundary
+            ymax: 47.0, // Northern boundary
+          },
+        },
         popup: {
           dockEnabled: true,
           dockOptions: { position: 'bottom-right', breakpoint: false },

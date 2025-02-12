@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import ModelSettingsForm from '../forms/ModelSettings.js';
-import { Row, Column } from '../../styles/ModelSettings.tsx';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMap, faSliders, faGears, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import ModelSettingsForm from '../forms/SWATGenX.js';
+import { Row, Column, SectionTitle } from '../../styles/SWATGenX.tsx'; // Added SectionTitle import
 import EsriMap from '../EsriMap.js';
 import { HeaderTitle, Section, Card } from '../../styles/Layout.tsx';
 
@@ -10,9 +12,11 @@ import {
   Content,
   ContentWrapper,
   MapWrapper,
-} from '../../styles/ModelSettings.tsx';
+  DescriptionContainer,
+  InfoBox,
+} from '../../styles/SWATGenX.tsx';
 
-const ModelSettingsTemplate = () => {
+const SWATGenXTemplate = () => {
   const [stationList] = useState([]);
   const [stationInput, setStationInput] = useState('');
   const [stationData, setStationData] = useState(null);
@@ -74,8 +78,30 @@ const ModelSettingsTemplate = () => {
   return (
     <ContainerFluid>
       <HeaderTitle style={{ margin: '0 0 15px 0' }}>
-        Create SWAT+ Models for USGS Streamgages
+        <FontAwesomeIcon icon={faMap} /> SWATGenX – SWAT+ Model Creation Tool
       </HeaderTitle>
+
+      <DescriptionContainer>
+        <InfoBox>
+          <p>
+            <strong>SWATGenX</strong> is a dedicated tool for generating <strong>SWAT+</strong>{' '}
+            models for any
+            <strong> USGS streamgage stations</strong>. Users can locate a station by searching for
+            a name or providing a site number. Once selected, users can configure model settings,
+            including:
+          </p>
+          <ul>
+            <li>Selecting land use/soil and DEM resolution</li>
+            <li>Enabling calibration, sensitivity analysis, and validation</li>
+            <li>Invoking SWATGenX to generate the model</li>
+          </ul>
+          <p>
+            The generated models will be available in the **user dashboard**, where they can be
+            downloaded for further analysis.
+          </p>
+        </InfoBox>
+      </DescriptionContainer>
+
       <Content>
         <Row>
           <Column width={0.32} minWidth="350px" mobileMinWidth="100%">
@@ -83,13 +109,15 @@ const ModelSettingsTemplate = () => {
               style={{
                 height: '100%',
                 margin: 0,
-                padding: '1.5rem', // Increased padding
+                padding: '1.5rem',
                 overflow: 'auto',
               }}
             >
-              <Section style={{ padding: '0 1.5rem' }}>
-                {' '}
-                {/* Added horizontal padding */}
+              <Section>
+                <SectionTitle>
+                  <FontAwesomeIcon icon={faGears} className="icon" />
+                  Model Configuration
+                </SectionTitle>
                 <ModelSettingsForm
                   stationList={stationList}
                   stationInput={stationInput}
@@ -113,12 +141,11 @@ const ModelSettingsTemplate = () => {
               </Section>
             </ContentWrapper>
           </Column>
+
           <Column width={0.68} minWidth="650px" mobileMinWidth="100%" className="map-column">
             <MapWrapper>
               <Card style={{ height: '100%', margin: 0 }}>
                 <CardBody style={{ padding: '0.75rem' }}>
-                  {' '}
-                  {/* Adjusted padding */}
                   <EsriMap
                     geometries={stationData?.geometries || []}
                     streamsGeometries={stationData?.streams_geometries || []}
@@ -134,4 +161,4 @@ const ModelSettingsTemplate = () => {
   );
 };
 
-export default ModelSettingsTemplate;
+export default SWATGenXTemplate;
