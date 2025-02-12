@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMap, faSliders, faGears, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import {
+  faMap,
+  faSliders,
+  faGears,
+  faChartLine,
+  faChevronDown,
+  faChevronUp,
+} from '@fortawesome/free-solid-svg-icons';
 import ModelSettingsForm from '../forms/SWATGenX.js';
 import { Row, Column, SectionTitle } from '../../styles/SWATGenX.tsx'; // Added SectionTitle import
 import EsriMap from '../EsriMap.js';
@@ -17,6 +24,7 @@ import {
 } from '../../styles/SWATGenX.tsx';
 
 const SWATGenXTemplate = () => {
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(true);
   const [stationList] = useState([]);
   const [stationInput, setStationInput] = useState('');
   const [stationData, setStationData] = useState(null);
@@ -78,28 +86,50 @@ const SWATGenXTemplate = () => {
   return (
     <ContainerFluid>
       <HeaderTitle style={{ margin: '0 0 15px 0' }}>
-        <FontAwesomeIcon icon={faMap} /> SWATGenX – SWAT+ Model Creation Tool
+        <FontAwesomeIcon icon={faSliders} />
+        SWATGenX – SWAT+ Model Creation Tool
+        <FontAwesomeIcon icon={faChartLine} style={{ marginLeft: '10px' }} />
       </HeaderTitle>
 
       <DescriptionContainer>
-        <InfoBox>
-          <p>
-            <strong>SWATGenX</strong> is a dedicated tool for generating <strong>SWAT+</strong>{' '}
-            models for any
-            <strong> USGS streamgage stations</strong>. Users can locate a station by searching for
-            a name or providing a site number. Once selected, users can configure model settings,
-            including:
-          </p>
-          <ul>
-            <li>Selecting land use/soil and DEM resolution</li>
-            <li>Enabling calibration, sensitivity analysis, and validation</li>
-            <li>Invoking SWATGenX to generate the model</li>
-          </ul>
-          <p>
-            The generated models will be available in the **user dashboard**, where they can be
-            downloaded for further analysis.
-          </p>
-        </InfoBox>
+        <div
+          className="description-header"
+          onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+          style={{
+            cursor: 'pointer',
+            padding: '10px',
+            backgroundColor: '#f5f5f5',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderRadius: '4px',
+            marginBottom: isDescriptionOpen ? '10px' : '0',
+          }}
+        >
+          <strong>Description</strong>
+          <FontAwesomeIcon icon={isDescriptionOpen ? faChevronUp : faChevronDown} />
+        </div>
+
+        {isDescriptionOpen && (
+          <InfoBox>
+            <p>
+              <strong>SWATGenX</strong> is a dedicated tool for generating <strong>SWAT+</strong>{' '}
+              models for any
+              <strong> USGS streamgage stations</strong>. Users can locate a station by searching
+              for a name or providing a site number. Once selected, users can configure model
+              settings, including:
+            </p>
+            <ul>
+              <li>Selecting land use/soil and DEM resolution</li>
+              <li>Enabling calibration, sensitivity analysis, and validation</li>
+              <li>Invoking SWATGenX to generate the model</li>
+            </ul>
+            <p>
+              The generated models will be available in the **user dashboard**, where they can be
+              downloaded for further analysis.
+            </p>
+          </InfoBox>
+        )}
       </DescriptionContainer>
 
       <Content>
