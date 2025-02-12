@@ -13,29 +13,40 @@ const AboutUsTemplate = () => {
       <SectionTitle>About HydroDeepNet</SectionTitle>
 
       <ContentSection>
-        <h3>Project Overview</h3>
-        <p>
-          HydroDeepNet is an innovative platform developed and designed to streamline the creation and advancement of hydrological and
-          deep learning models. This project represents a significant advancement in predictive
-          ability for estimating various hydrological variables required for accurate water
-          management, making it more accessible and efficient for researchers and practitioners.
-        </p>
-
         <h3>Mission</h3>
         <p>
-          Our mission is to democratize hydrological modeling by providing researchers and water
-          resource managers with powerful, user-friendly tools for creating and analyzing SWAT+
-          models. We aim to facilitate better understanding and management of water resources
-          through advanced modeling capabilities.
+          HydroDeepNet is a web-based platform that provides hydrological modeling tools for
+          researchers, practitioners, and students. Our mission is to democratize hydrological
+          modeling by offering user-friendly interfaces, automation, and deep learning capabilities
+          for hydrological research and applications.
+        </p>
+        <h3>SWATGenX</h3>
+        <p>
+          SWATGenX automates the creation of SWAT+ models for any USGS streamgage station. Users can
+          search by station name or site number, configure calibration, sensitivity analysis, and
+          validation settings, and generate hydrological models directly from the platform.
         </p>
 
-        <h3>Key Features</h3>
-        <ul>
-          <li>Automated SWAT+ model generation for any USGS streamgage station</li>
-          <li>Integrated calibration and validation capabilities</li>
-          <li>Advanced sensitivity analysis tools</li>
-          <li>User-friendly interface for model parameterization</li>
-        </ul>
+        <h3>Vision System for Deep Learning</h3>
+        <p>
+          The Vision System enables deep learning-based hydrological modeling. It allows users to
+          design, train, and deploy models with custom configurations to predict hydrological
+          variables using satellite, climate, and geospatial datasets.
+        </p>
+
+        <h3>HydroGeoDataset</h3>
+        <p>
+          HydroGeoDataset compiles national datasets such as MODIS, PRISM, LOCA2, and Wellogic,
+          alongside deep learning-derived data. It provides high-resolution hydrological,
+          geological, and climate data for Michigan's Lower Peninsula.
+        </p>
+
+        <h3>Modeling & Data Outputs</h3>
+        <p>
+          Users can generate spatiotemporal simulations, time-series predictions, and
+          high-resolution GIS outputs. The system supports real-time data visualization, model
+          comparisons, and downloadable results for further analysis.
+        </p>
       </ContentSection>
 
       <ContactSection>
