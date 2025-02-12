@@ -22,13 +22,13 @@ const LayoutTemplate = ({ children, handleLogout }) => {
       <GlobalStyle />
       {localStorage.getItem('authToken') && (
         <Sidebar>
-          <h2>Navigation</h2>
+          <h2>Naviation</h2>
           <nav>
             <NavLink to="/">
               <i className="fas fa-home"></i> Home
             </NavLink>
             <NavLink to="/model_settings">
-              <i className="fas fa-cogs"></i> Model Settings
+              <i className="fas fa-cogs"></i> SWATGenX
             </NavLink>
             <NavLink to="/visualizations">
               <i className="fas fa-chart-bar"></i> Visualizations

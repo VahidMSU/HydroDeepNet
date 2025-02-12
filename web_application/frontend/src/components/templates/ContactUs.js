@@ -2,39 +2,38 @@ import React from 'react';
 import ContactUsForm from '../forms/ContactUs.js';
 import {
   ContactUsContainer,
-  Card as ContactUsCard,
-  CardBody as ContactUsCardBody,
-  TextCenter as ContactUsIntroText,
-} from '../../styles/ContactUs.tsx'; // Import styled components
+  ContactHeader,
+  ContactCard,
+  CardBody,
+  Alert,
+} from '../../styles/ContactUs.tsx';
 
 const ContactUsTemplate = ({ handleFormSubmit, flashMessages, setFlashMessages }) => {
   return (
     <ContactUsContainer>
-      <ContactUsIntroText>
+      <ContactHeader>
         <h2>Contact Us</h2>
-      </ContactUsIntroText>
-      <ContactUsCard>
-        <ContactUsCardBody>
-          <ContactUsIntroText>
-            <p>
-              Have questions, feedback, or collaboration ideas? We'd love to hear from you! Please
-              fill out the form below, and we'll get back to you as soon as possible.
-            </p>
-          </ContactUsIntroText>
+        <p>
+          Have questions, feedback, or collaboration ideas? We'd love to hear from you! Please fill
+          out the form below, and we'll get back to you as soon as possible.
+        </p>
+      </ContactHeader>
 
+      <ContactCard>
+        <CardBody>
           {flashMessages.length > 0 &&
             flashMessages.map((msg, idx) => (
-              <div key={idx} className={`alert alert-${msg.category}`} role="alert">
+              <Alert key={idx} className={`alert-${msg.category}`}>
                 {msg.text}
-                <button type="button" className="close" onClick={() => setFlashMessages([])}>
-                  &times;
+                <button type="button" onClick={() => setFlashMessages([])}>
+                  ×
                 </button>
-              </div>
+              </Alert>
             ))}
 
           <ContactUsForm onSubmit={handleFormSubmit} />
-        </ContactUsCardBody>
-      </ContactUsCard>
+        </CardBody>
+      </ContactCard>
     </ContactUsContainer>
   );
 };

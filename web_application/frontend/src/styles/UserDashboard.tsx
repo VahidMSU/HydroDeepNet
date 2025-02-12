@@ -1,37 +1,159 @@
 /** @jsxImportSource @emotion/react */
 import styled from '@emotion/styled';
 
-const UserDashboardContainer = styled.div`
+const colors = {
+  background: '#2b2b2c',
+  surface: '#444e5e',
+  accent: '#ff8500',
+  accentHover: '#ffa533',
+  text: '#ffffff',
+  border: '#ff8500',
+  error: '#ff4444'
+};
+
+export const DashboardContainer = styled.div`
+  padding: 2rem;
+  background-color: ${colors.background};
+  min-height: 100vh;
+  color: ${colors.text};
+`;
+
+export const DashboardHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+  
+  h1 {
+    color: ${colors.accent};
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 3px solid ${colors.accent};
+    padding-bottom: 1rem;
+  }
+`;
+
+export const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+`;
+
+export const FileCard = styled.div`
+  background-color: ${colors.surface};
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+`;
+
+export const FileHeader = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 80%;
-  margin: 0 auto;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .icon {
+    color: ${colors.accent};
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    color: ${colors.text};
+    margin: 0;
+    font-size: 1.1rem;
+  }
 `;
 
-const Title = styled.h1`
-  font-size: 2.5rem;
-  color: #333;
-  margin-bottom: 20px;
+export const FileInfo = styled.div`
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+
+  p {
+    margin: 0.5rem 0;
+  }
 `;
 
-const DirectoryList = styled.div`
-  width: 100%;
-  margin-bottom: 30px;
+export const ActionButton = styled.button`
+  background-color: ${colors.accent};
+  color: ${colors.text};
+  border: none;
+  border-radius: 6px;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: ${colors.accentHover};
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .icon {
+    font-size: 1rem;
+  }
 `;
 
-const FileList = styled.div`
-  width: 100%;
-  margin-bottom: 30px;
+export const BreadcrumbNav = styled.div`
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  button {
+    background: none;
+    border: none;
+    color: ${colors.accent};
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: rgba(255, 133, 0, 0.1);
+    }
+  }
+
+  span {
+    color: ${colors.text};
+    opacity: 0.7;
+  }
 `;
 
-const ErrorMessage = styled.div`
-  color: red;
-  margin-bottom: 20px;
+export const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.7);
+
+  .icon {
+    font-size: 3rem;
+    color: ${colors.accent};
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin-bottom: 1rem;
+  }
 `;
 
-export { UserDashboardContainer, Title, DirectoryList, FileList, ErrorMessage };
+export const ErrorMessage = styled.div`
+  background-color: rgba(255, 68, 68, 0.1);
+  border: 1px solid ${colors.error};
+  color: ${colors.error};
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+`;

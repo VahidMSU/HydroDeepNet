@@ -1,4 +1,3 @@
-//HydroGeoDataset.js
 import React, { useState, useEffect } from 'react';
 import MapComponent from '../MapComponent';
 import HydroGeoDatasetForm from '../forms/HydroGeoDataset';
@@ -8,8 +7,16 @@ import {
   MapContainer,
   DataDisplay,
   Title,
+  InfoSection,
+  InfoContent,
+  SectionHeader,
+  DataResults,
+  Collapsible,
+  CollapsibleHeader,
+  CollapsibleContent,
 } from '../../styles/HydroGeoDataset.tsx';
 import * as webMercatorUtils from '@arcgis/core/geometry/support/webMercatorUtils';
+
 const HydroGeoDataset = () => {
   const [formData, setFormData] = useState({
     min_latitude: '',
@@ -23,6 +30,7 @@ const HydroGeoDataset = () => {
   const [availableVariables, setAvailableVariables] = useState([]);
   const [availableSubvariables, setAvailableSubvariables] = useState([]);
   const [data, setData] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Fetch available variables on component mount
   useEffect(() => {
@@ -35,7 +43,6 @@ const HydroGeoDataset = () => {
         console.error('Error fetching options:', error);
       }
     };
-
     fetchOptions();
   }, []);
 
@@ -82,11 +89,8 @@ const HydroGeoDataset = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Log full formData before sending
     console.log('Submitting data with formData:', JSON.stringify(formData, null, 2));
 
-    // Check if polygon exists and convert it to JSON string
     let payload = { ...formData };
     if (formData.geometry && formData.geometry.rings) {
       payload.polygon_coordinates = JSON.stringify(
@@ -116,6 +120,53 @@ const HydroGeoDataset = () => {
   return (
     <PageLayout>
       <Sidebar>
+        <SectionHeader>HydroGeoDataset</SectionHeader>
+
+        <Collapsible>
+          <CollapsibleHeader onClick={() => setIsCollapsed(!isCollapsed)}>
+            {isCollapsed ? '▶' : '▼'} Dataset Overview
+          </CollapsibleHeader>
+          {!isCollapsed && (
+            <CollapsibleContent>
+              <InfoSection>
+                <InfoContent>
+                  <p>
+                    <strong>HydroGeoDataset</strong> is an integrated geospatial data platform
+                    providing access to high-resolution hydrological, environmental, and climate
+                    datasets. It combines data from publicly available sources and deep
+                    learning-based hydrological modeling outputs.
+                  </p>
+                  <ul>
+                    <li>
+                      <strong>Public Datasets:</strong> CDL, NLCD, MODIS, LOCA2, PRISM, Wellogic
+                    </li>
+                    <li>
+                      <strong>Hydrological Modeling Outputs:</strong> SWAT+, MODFLOW-generated
+                      recharge estimates
+                    </li>
+                    <li>
+                      <strong>Groundwater Data:</strong> Wellogic well records, EBK-interpolated
+                      hydraulic properties
+                    </li>
+                    <li>
+                      <strong>Land Cover & Terrain Features:</strong> Derived from MODIS, NLCD,
+                      LANDFIRE, and DEM
+                    </li>
+                    <li>
+                      <strong>Availability:</strong> Currently limited to Michigan Lower Peninsula
+                    </li>
+                  </ul>
+                  <p>
+                    Users can extract environmental and groundwater attributes based on spatial
+                    queries, enabling research in hydrology, groundwater management, and climate
+                    impact analysis.
+                  </p>
+                </InfoContent>
+              </InfoSection>
+            </CollapsibleContent>
+          )}
+        </Collapsible>
+
         {/* Form Section */}
         <HydroGeoDatasetForm
           formData={formData}
@@ -129,7 +180,9 @@ const HydroGeoDataset = () => {
         {data && (
           <DataDisplay>
             <Title>Results</Title>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
+            <DataResults>
+              <pre>{JSON.stringify(data, null, 2)}</pre>
+            </DataResults>
           </DataDisplay>
         )}
       </Sidebar>
