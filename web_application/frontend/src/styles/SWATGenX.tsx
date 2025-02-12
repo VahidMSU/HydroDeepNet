@@ -465,6 +465,12 @@ export const DescriptionContainer = styled.div`
     color: #ff8500;
     font-weight: 500;
   }
+
+  margin-bottom: 20px;
+  
+  .description-header:hover {
+    background-color: #e9e9e9 !important;
+  }
 `;
 
 export const InfoBox = styled.div`
