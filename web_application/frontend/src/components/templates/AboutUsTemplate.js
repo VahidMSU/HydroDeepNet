@@ -1,54 +1,57 @@
 import React from 'react';
-import '../../styles/AboutUsTemplate.tsx'; // Import the new TSX file
+import {
+  AboutContainer,
+  SectionTitle,
+  ContentSection,
+  ContactSection,
+  ProjectLinks,
+} from '../../styles/AboutUsTemplate.tsx';
 
 const AboutUsTemplate = () => {
   return (
-    <div>
-      <h2 className="mb-4">About Us</h2>
-      <div className="card">
-        <div className="card-body">
-          <p>
-            This project was funded by the <strong>MSU Institute of Water Research</strong> with the
-            goal of addressing critical challenges in hydrological modeling and water resource
-            management in Michigan. Our focus is to develop a scalable, physically informed deep
-            learning model that predicts high-resolution hydrological variables, especially
-            groundwater recharge, with applications across various watersheds in the United States.
-          </p>
+    <AboutContainer>
+      <SectionTitle>About HydroDeepNet</SectionTitle>
 
-          <h3>Key Aspects</h3>
-          <ol>
-            <li>A scalable framework for hydrological data modeling across the United States.</li>
-            <li>
-              A deep learning architecture capable of high-resolution, spatiotemporal predictions.
-            </li>
-            <li>
-              Facilitate collaboration by creating a platform for researchers to access data and
-              models.
-            </li>
-          </ol>
-          <h4>Developer Information</h4>
-          <p>
-            For more technical details, or to collaborate, please contact us via email at:{' '}
-            <a
-              href="https://bitbucket.org/vahidrafiei/workspace/overview/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              rafieiva@msu.edu
-            </a>
-            . The project&apos;s source code is available on Bitbucket:{' '}
-            <a
-              href="https://bitbucket.org/vahidrafiei/swatgenx/src/main/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              SWATGenX
-            </a>
-            .
-          </p>
-        </div>
-      </div>
-    </div>
+      <ContentSection>
+        <h3>Project Overview</h3>
+        <p>
+          HydroDeepNet is an innovative platform developed and designed to streamline the creation and advancement of hydrological and
+          deep learning models. This project represents a significant advancement in predictive
+          ability for estimating various hydrological variables required for accurate water
+          management, making it more accessible and efficient for researchers and practitioners.
+        </p>
+
+        <h3>Mission</h3>
+        <p>
+          Our mission is to democratize hydrological modeling by providing researchers and water
+          resource managers with powerful, user-friendly tools for creating and analyzing SWAT+
+          models. We aim to facilitate better understanding and management of water resources
+          through advanced modeling capabilities.
+        </p>
+
+        <h3>Key Features</h3>
+        <ul>
+          <li>Automated SWAT+ model generation for any USGS streamgage station</li>
+          <li>Integrated calibration and validation capabilities</li>
+          <li>Advanced sensitivity analysis tools</li>
+          <li>User-friendly interface for model parameterization</li>
+        </ul>
+      </ContentSection>
+
+      <ContactSection>
+        <h3>Contact & Resources</h3>
+        <ProjectLinks>
+          <a href="mailto:rafieiva@msu.edu">Contact Us</a>
+          <a
+            href="https://bitbucket.org/vahidrafiei/swatgenx/src/main/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Source Code Repository
+          </a>
+        </ProjectLinks>
+      </ContactSection>
+    </AboutContainer>
   );
 };
 

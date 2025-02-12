@@ -1,6 +1,6 @@
 // pages/index.js is a barrel file that exports all the pages in one place.
 export { default as Home } from './Home';
-export { default as ModelSettings } from './ModelSettings';
+export { default as SWATGenX } from './SWATGenX';
 export { default as Visualizations } from './VisualizationsDashboard';
 export { default as Michigan } from './Michigan';
 export { default as VisionSystem } from './VisionSystem';
