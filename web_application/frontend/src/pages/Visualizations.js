@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Toolbar, Typography } from '@mui/material';
-import VisualizationsDashboardTemplate from '../components/templates/VisualizationsDashboard.js';
+import VisualizationsDashboardTemplate from '../components/templates/Visualizations.js';
 
 const VisualizationsDashboard = () => {
   return (

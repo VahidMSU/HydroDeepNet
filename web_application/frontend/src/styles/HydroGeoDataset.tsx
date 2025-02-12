@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import styled from '@emotion/styled';
 import { Box, Button } from '@mui/material';
-import './variables.ts'; // Ensure this path is correct or the file exists
+//import './variables.ts'; // Ensure this path is correct or the file exists
 
 // Main layout container
 export const PageLayout = styled.div`
