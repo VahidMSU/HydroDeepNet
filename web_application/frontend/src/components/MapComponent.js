@@ -14,7 +14,7 @@ import Search from '@arcgis/core/widgets/Search';
 import SnappingOptions from '@arcgis/core/views/interactive/snapping/SnappingOptions';
 import * as webMercatorUtils from '@arcgis/core/geometry/support/webMercatorUtils';
 import '@arcgis/core/assets/esri/themes/light/main.css';
-import '../styles/map-widgets.css';
+//import '../styles/map-widgets.css';
 
 const updatePointFields = (lat, lon, setFormData) => {
   setFormData((prev) => ({
@@ -96,7 +96,7 @@ const updatePolygonFields = (polygon, setFormData) => {
   }));
 };
 
-const MapComponent = ({ setFormData, onGeometryChange, centerCoordinates }) => {
+const MapComponent = ({ geometries, setFormData, onGeometryChange, centerCoordinates }) => {
   const viewRef = useRef(null);
 
   const handleDrawEvent = useCallback(
@@ -117,7 +117,7 @@ const MapComponent = ({ setFormData, onGeometryChange, centerCoordinates }) => {
 
   // Initialize map only once on mount
   useEffect(() => {
-    let view, sketch, legend, basemapToggle, measurement, coordConversion, layerList, search, home;
+    let view, sketch, legend, basemapToggle, measurement, coordConversion, search;
     const initialize = async () => {
       const graphicsLayer = new GraphicsLayer({
         title: 'Drawing Layer',
@@ -155,7 +155,7 @@ const MapComponent = ({ setFormData, onGeometryChange, centerCoordinates }) => {
       });
       try {
         await view.when();
-        // Initialize widgets (sketch, legend, basemapToggle, measurement, scaleBar, coordConversion, layerList, search)
+        // Initialize widgets (sketch, legend, basemapToggle, measurement, scaleBar, coordConversion, search)
         sketch = new Sketch({
           view,
           layer: graphicsLayer,
@@ -175,15 +175,6 @@ const MapComponent = ({ setFormData, onGeometryChange, centerCoordinates }) => {
         measurement = new Measurement({ view, activeTool: 'distance' });
         const scaleBar = new ScaleBar({ view, unit: 'dual' });
         coordConversion = new CoordinateConversion({ view });
-        layerList = new LayerList({
-          view,
-          listItemCreatedFunction: (event) => {
-            const item = event.item;
-            if (item.layer.type !== 'group') {
-              item.panel = { content: 'legend', open: true };
-            }
-          },
-        });
         search = new Search({ view, popupEnabled: true, position: 'top-left' });
         // Add widgets to the view
         view.ui.add(search, 'top-right');
@@ -240,6 +231,15 @@ const MapComponent = ({ setFormData, onGeometryChange, centerCoordinates }) => {
       viewRef.current.goTo({ center: [parseFloat(longitude), parseFloat(latitude)] });
     }
   }, [centerCoordinates]);
+
+  useEffect(() => {
+    if (viewRef.current) {
+      const cleanup = handleDrawEvent();
+      return () => {
+        cleanup();
+      };
+    }
+  }, [viewRef, setFormData]); // Added setFormData to dependencies
 
   return (
     <>

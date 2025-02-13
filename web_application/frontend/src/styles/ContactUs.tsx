@@ -27,35 +27,35 @@ export const ContactUsContainer = styled.div`
 export const ContactHeader = styled.div`
   text-align: center;
   margin-bottom: 3rem;
-  
-  h2 {
-    color: ${colors.accent};
-    font-size: 2.8rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 3px solid ${colors.accent};
-    padding-bottom: 1.2rem;
-    position: relative;
-    
-    &:after {
-      content: '';
-      position: absolute;
-      bottom: -3px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 3px;
-      background-color: ${colors.accentHover};
-    }
-  }
+`;
 
-  p {
-    color: ${colors.labelText};
-    font-size: 1.2rem;
-    line-height: 1.8;
-    max-width: 700px;
-    margin: 0 auto;
-    opacity: 0.9;
+export const HeaderTitle = styled.h2`
+  color: ${colors.accent};
+  font-size: 2.8rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid ${colors.accent};
+  padding-bottom: 1.2rem;
+  position: relative;
+  
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: ${colors.accentHover};
   }
+`;
+
+export const HeaderText = styled.p`
+  color: ${colors.labelText};
+  font-size: 1.2rem;
+  line-height: 1.8;
+  max-width: 700px;
+  margin: 0 auto;
+  opacity: 0.9;
 `;
 
 export const ContactCard = styled.div`

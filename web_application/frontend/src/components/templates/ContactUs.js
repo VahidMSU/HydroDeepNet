@@ -6,17 +6,19 @@ import {
   ContactCard,
   CardBody,
   Alert,
+  HeaderTitle,
+  HeaderText,
 } from '../../styles/ContactUs.tsx';
 
 const ContactUsTemplate = ({ handleFormSubmit, flashMessages, setFlashMessages }) => {
   return (
     <ContactUsContainer>
       <ContactHeader>
-        <h2>Contact Us</h2>
-        <p>
+        <HeaderTitle>Contact Us</HeaderTitle>
+        <HeaderText>
           Have questions, feedback, or collaboration ideas? We'd love to hear from you! Please fill
           out the form below, and we'll get back to you as soon as possible.
-        </p>
+        </HeaderText>
       </ContactHeader>
 
       <ContactCard>

@@ -1,5 +1,14 @@
-// componenets/SearchForm.js
 import React, { useState } from 'react';
+import {
+  CardBody,
+  StyledInput,
+  StyledButton,
+  Section,
+  SearchResults,
+  SearchResultItem,
+  Label,
+  TitleText,
+} from '../styles/SWATGenX.tsx';
 
 function SearchForm({ setStationData, setLoading }) {
   const [searchInput, setSearchInput] = useState('');
@@ -36,39 +45,34 @@ function SearchForm({ setStationData, setLoading }) {
   };
 
   return (
-    <div className="card">
-      <div className="card-body">
-        {/* Search Form */}
-        <div className="form-group">
-          <label>Search Site Name:</label>
-          <input
-            type="text"
-            className="form-control"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Enter site name"
-          />
-          <button className="btn btn-secondary mt-2" onClick={handleSearch}>
-            Search
-          </button>
-        </div>
+    <CardBody>
+      <Section>
+        <TitleText>Search Site Name:</TitleText>
+        <StyledInput
+          type="text"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Enter site name"
+        />
+        <StyledButton onClick={handleSearch} style={{ marginTop: '0.5rem' }}>
+          Search
+        </StyledButton>
+      </Section>
 
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <ul>
-            {searchResults.map((site) => (
-              <li
-                key={site.SiteNumber}
-                style={{ cursor: 'pointer', color: 'blue' }}
-                onClick={() => handleStationSelect(site.SiteNumber)}
-              >
-                <strong>{site.SiteName}</strong> (Number: {site.SiteNumber})
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
+      {searchResults.length > 0 && (
+        <SearchResults>
+          {searchResults.map((site) => (
+            <SearchResultItem
+              key={site.SiteNumber}
+              onClick={() => handleStationSelect(site.SiteNumber)}
+            >
+              <strong>{site.SiteName}</strong>
+              <span>(Number: {site.SiteNumber})</span>
+            </SearchResultItem>
+          ))}
+        </SearchResults>
+      )}
+    </CardBody>
   );
 }
 

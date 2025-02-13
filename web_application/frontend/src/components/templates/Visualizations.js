@@ -19,7 +19,9 @@ import {
   StyledCircularProgress,
   ErrorMessage,
   LoadingContainer,
-} from '../../styles/Visualization.tsx';
+  Card,
+  CardBody,
+} from '../../styles/Visualizations.tsx';
 
 const VisualizationsDashboardTemplate = () => {
   const navigate = useNavigate();
@@ -100,9 +102,10 @@ const VisualizationsDashboardTemplate = () => {
 
   return (
     <Body>
-      <FormContainer maxWidth="lg">
+      {/* Change FormContainer to render as a div to avoid nested forms */}
+      <FormContainer as="div" $maxWidth="lg">
         <Box display="flex" justifyContent="center" width="100%">
-          <PageTitle variant="h1">SWAT+ Model Visualizations</PageTitle>
+          <PageTitle $variant="h1">SWAT+ Model Visualizations</PageTitle>
         </Box>
 
         {/* Description Section */}
@@ -166,24 +169,30 @@ const VisualizationsDashboardTemplate = () => {
           style={{ display: showResults ? 'block' : 'none' }}
           aria-labelledby="results-title"
         >
-          <SectionTitle variant="h2" id="results-title">
+          {/* Use transient prop for SectionTitle */}
+          <SectionTitle $variant="h2" id="results-title">
             Spatiotemporal Animations (GIFs)
           </SectionTitle>
 
-          <GifContainer>
-            {visualizationResults && visualizationResults.length > 0 ? (
-              visualizationResults.map((gif, idx) => (
-                <GifWrapper key={idx}>
-                  <img src={gif} alt={`Animation ${idx + 1}`} />
-                  <DownloadButton href={gif} download={`Visualization_${idx + 1}.gif`}>
-                    Download
-                  </DownloadButton>
-                </GifWrapper>
-              ))
-            ) : (
-              <NoResults>No visualizations available.</NoResults>
-            )}
-          </GifContainer>
+          {/* Wrap results in Card for better styling */}
+          <Card>
+            <CardBody>
+              <GifContainer>
+                {visualizationResults && visualizationResults.length > 0 ? (
+                  visualizationResults.map((gif, idx) => (
+                    <GifWrapper key={idx}>
+                      <img src={gif} alt={`Animation ${idx + 1}`} />
+                      <DownloadButton href={gif} download={`Visualization_${idx + 1}.gif`}>
+                        Download
+                      </DownloadButton>
+                    </GifWrapper>
+                  ))
+                ) : (
+                  <NoResults>No visualizations available.</NoResults>
+                )}
+              </GifContainer>
+            </CardBody>
+          </Card>
         </section>
       </FormContainer>
     </Body>

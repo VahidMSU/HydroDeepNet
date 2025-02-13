@@ -1,30 +1,55 @@
 import styled from 'styled-components';
 import { CircularProgress } from '@mui/material';
 
+// Define our color palette
+const colors = {
+  background: '#2b2b2c',    // Dark background
+  surface: '#2b2b2c',       // Surface for containers/cards
+  surfaceLight: '#2b2b2c',
+  accent: '#ff8500',        // Bright accent color
+  accentHover: '#00202e',
+  accentAlt: '#ff6361',
+  text: '#ffd380',          // Main text color (lighter grey/white)
+  textSecondary: '#bbbbbb',
+  textMuted: '#ffd380',
+  border: '#687891',
+  borderAccent: '#00202e',
+  inputBg: '#bbbbbb',
+  headerBg: '#2b2b2c',
+  TitleText: '#00202e',
+  SectionText: '#00202e',
+  FieldText: 'white'
+};
+
 // Layout components
 export const Body = styled.div`
   padding: 2rem;
+  background-color: ${colors.background};
+  color: ${colors.text};
 `;
 
-export const PageTitle = styled.h1`
+export const PageTitle = styled.h1<{ $variant?: string }>`
   font-size: 2rem;
   margin-bottom: 2rem;
-  color: #333;
+  color: ${colors.text};
 `;
 
 // Form related components
-export const FormContainer = styled.form`
+export const FormContainer = styled.form<{ $maxWidth?: string }>`
   padding: 2rem;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: ${({ $maxWidth }) => $maxWidth || 'none'};
 `;
 
 export const FormGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   gap: 2rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 `;
 
 export const FormGroup = styled.div`
@@ -105,24 +130,35 @@ export const ErrorMessage = styled.div`
 `;
 
 // Additional required exports
-export const SectionTitle = styled.h2`
+export const SectionTitle = styled.h2<{ $variant?: string }>`
   font-size: 1.5rem;
   margin: 2rem 0;
-  color: #333;
+  color: ${colors.text};
 `;
 
 export const GifContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
   margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr); // maximum 4 columns on wider screens
+  }
 `;
 
 export const GifWrapper = styled.div`
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
 `;
 
 export const DownloadButton = styled.a`
@@ -164,6 +200,16 @@ export const CollapsibleContent = styled.div`
   padding: 1rem;
 `;
 
+export const CollapsibleText = styled.p`
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+`;
+
+export const HeaderIcon = styled.span`
+  margin-right: 8px;
+`;
+
 // Loading components
 export const LoadingContainer = styled.div`
   display: flex;
@@ -187,4 +233,32 @@ export const DescriptionContainer = styled.div`
       margin-bottom: 0;
     }
   }
+`;
+
+export const Description = styled.p`
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: #333;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+export const VisualizationSection = styled.section`
+  // Additional styling if needed
+`;
+
+// New Card components for styling improvements
+export const Card = styled.div`
+  background-color: ${colors.surface};
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid ${colors.border};
+`;
+
+export const CardBody = styled.div`
+  padding: 1rem;
 `;
