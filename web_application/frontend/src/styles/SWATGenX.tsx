@@ -1,377 +1,42 @@
 /** @jsxImportSource @emotion/react */
 import styled from '@emotion/styled';
-import { Box, Button } from '@mui/material';
 
-// Dark theme colors
+// Updated dark theme color palette
 const colors = {
-  background: '#2b2b2c',
-  surface: '#444e5e',
-  accent: '#ff8500',
-  accentHover: '#ffa533',
-  text: '#ffffff',
-  border: '#ff8500',
-  disabled: '#666666',
-  error: '#ff4444',
+  background: '#2b2b2c',    // Dark background
+  surface: '#2b2b2c',       // Surface for containers/cards (matches description container)
+  surfaceLight: '#2b2b2c',  // Using the same for slight contrast if needed
+  accent: '#ff8500',        // Bright accent color
+  accentHover: '#00202e',   // Same accent for simplicity; can tweak if required
+  accentAlt: '#ff6361',     // Alternative accent (for titles etc.)
+  text: '#ffd380',          // Main text color (lighter grey/white)
+  textSecondary: '#bbbbbb', // Secondary text (medium grey)
+  textMuted: '#ffd380',     // Muted text (darker grey)
+  border: '#687891',         // Use secondary color for borders
+  borderAccent: '#00202e',   // Accent border
+  inputBg: '#bbbbbb',        // Match surface for inputs
+  headerBg: '#2b2b2c',       // Header same as background
+  TitleText: '#00202e',      // Title text color
+  SectionText: '#00202e',   // Section text color
+  FieldText: "white"      // Field text color
 };
 
-// Base styles
-const baseInputStyles = `
-  background-color: ${colors.background};
-  border: 2px solid ${colors.accent};
-  border-radius: 6px;
-  color: ${colors.text};
-  font-family: 'Roboto', sans-serif;
-  font-size: 1rem;
-  padding: 0.8rem;
-  transition: all 0.2s ease-in-out;
+export const FieldText = colors.FieldText;
 
-  &:focus {
-    outline: none;
-    border-color: ${colors.accentHover};
-    box-shadow: 0 0 0 2px rgba(255, 133, 0, 0.2);
-  }
-
-  &:hover {
-    border-color: ${colors.accentHover};
-  }
+// New component for titles with black font
+export const HeaderTitle = styled.h1`
+  color: #000000;
+  // ...other title styles as needed...
 `;
 
-// Styled components
-export const PageLayout = styled.div`
-  display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 20px;
-  height: 100vh;
-  padding: 20px;
-  background-color: ${colors.background};
-`;
-
-// Enhanced form field styles
-export const StyledForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 2rem;
-  background-color: ${colors.surface};
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 133, 0, 0.1);
-`;
-
-export const FormSection = styled.div`
-  position: relative;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: ${colors.background};
-  border-radius: 8px;
-  border: 1px solid ${colors.border};
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(255, 133, 0, 0.1);
-  }
-`;
-
-export const SectionTitle = styled.h3`
-  color: ${colors.accent};
-  font-size: 1.3rem;
-  font-weight: 500;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 2px solid ${colors.accent};
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-
-  .icon {
-    font-size: 1.2rem;
-  }
-`;
-
-export const FormFieldGroup = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-`;
-
-export const FormField = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-`;
-
-export const Label = styled.label`
-  color: ${colors.accent};
-  font-size: 0.95rem;
-  font-weight: 500;
-  margin-bottom: 0.3rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  .icon {
-    font-size: 1rem;
-    opacity: 0.8;
-  }
-`;
-
-export const InputWrapper = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-export const Input = styled.input`
-  width: 100%;
-  padding: 0.9rem 1rem;
-  background-color: ${colors.background};
-  border: 2px solid ${colors.border};
-  border-radius: 6px;
-  color: ${colors.text};
-  font-size: 1rem;
-  transition: all 0.2s ease-in-out;
-
-  &:focus {
-    outline: none;
-    border-color: ${colors.accentHover};
-    box-shadow: 0 0 0 3px rgba(255, 133, 0, 0.2);
-  }
-
-  &:hover:not(:disabled) {
-    border-color: ${colors.accentHover};
-  }
-
-  &:disabled {
-    background-color: ${colors.disabled};
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-  }
-`;
-
-export const Select = styled.select`
-  width: 100%;
-  padding: 0.9rem 1rem;
-  background-color: ${colors.background};
-  border: 2px solid ${colors.border};
-  border-radius: 6px;
-  color: ${colors.text};
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff8500'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1.5rem;
-
-  &:focus {
-    outline: none;
-    border-color: ${colors.accentHover};
-    box-shadow: 0 0 0 3px rgba(255, 133, 0, 0.2);
-  }
-
-  &:hover:not(:disabled) {
-    border-color: ${colors.accentHover};
-  }
-
-  option {
-    background-color: ${colors.background};
-    color: ${colors.text};
-    padding: 0.8rem;
-  }
-`;
-
-export const CheckboxGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1.2rem;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-`;
-
-export const CheckboxWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem;
-  border-radius: 6px;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: rgba(255, 133, 0, 0.1);
-  }
-
-  input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    accent-color: ${colors.accent};
-    cursor: pointer;
-
-    &:checked {
-      & + label {
-        color: ${colors.accent};
-      }
-    }
-  }
-
-  label {
-    color: ${colors.text};
-    cursor: pointer;
-    user-select: none;
-    font-size: 0.95rem;
-  }
-`;
-
-export const StationInfoCard = styled.div`
-  background-color: ${colors.background};
-  border: 1px solid ${colors.border};
-  border-radius: 8px;
-  padding: 1.2rem;
-  margin-top: 1rem;
-
-  h4 {
-    color: ${colors.accent};
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    color: ${colors.text};
-    margin: 0.5rem 0;
-    font-size: 0.9rem;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  span.label {
-    color: ${colors.accent};
-    font-weight: 500;
-  }
-`;
-
-export const SubmitButton = styled(Button)`
-  background-color: ${colors.accent};
-  color: ${colors.text};
-  padding: 0.8rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  border-radius: 6px;
-  text-transform: none;
-  margin-top: 1rem;
-  transition: all 0.2s ease-in-out;
-
-  &:hover {
-    background-color: ${colors.accentHover};
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    background-color: ${colors.disabled};
-    color: rgba(255, 255, 255, 0.5);
-  }
-`;
-
-export const ErrorMessage = styled.div`
-  color: ${colors.error};
-  background-color: rgba(255, 68, 68, 0.1);
-  border: 1px solid ${colors.error};
-  border-radius: 6px;
-  padding: 0.8rem;
-  margin: 1rem 0;
-  font-size: 0.9rem;
-`;
-
-const ContainerFluid = styled.div`
-  padding: 15px 25px 15px 15px;  // Added right padding
-  background-color: #f8f9fa;
-  min-height: 100vh;
-  max-width: 100vw;
-`;
-
-export const ContentWrapper = styled.div`
-  flex-grow: 1;
-  margin-left: 270px;
-  padding: 2.5rem;
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  overflow-y: auto;
-  height: calc(100vh - 220px);
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-  }
-
-  @media (max-width: 768px) {
-    margin-left: 0;
-    height: auto;
-    max-height: 700px;
-  }
-`;
-
-export const FooterContainer = styled.footer`
-  width: 10%;
-  margin-left: 0;
-  background-color: #343a40;
-  color: #343a40;
-  text-align: center;
-  padding: 15px;
-  font-size: 10px;
-  border-top: 1px solid #343a40;
-  position: fixed;
-  bottom: 0;
-
-  a {
-    color: #d8dbde;
-    text-decoration: none;
-    margin: 0 10px;
-    font-weight: 500;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const Title = styled.h2`
-  text-align: center;
-  margin: 40px 0;
-  color: #333;
-`;
-
-const Row = styled.div`
+export const Row = styled.div`
   display: flex;
   flex-wrap: wrap;
   width: 100%;
   height: 100%;
-  gap: 1.5rem;  // Increased gap between columns
+  gap: 1.5rem;
   margin: 0;
-  padding: 0;  // Removed small horizontal padding
-`;
-
-export const Content = styled.main`
-  margin-left: 65px;  // Reduced margin to move closer to sidebar
-  padding: 0 20px 0 0;  // Added right padding
-  display: flex;
-  flex-wrap: wrap;
-  width: calc(100vw - 85px);  // Adjusted for new spacing
-  height: calc(100vh - 30px); // Minimal spacing for header
-  overflow: hidden;
-  box-sizing: border-box;
-
-  @media (max-width: 768px) {
-    margin-left: 0;
-    width: 100vw;
-    padding: 0 10px;
-  }
+  padding: 0;
 `;
 
 interface ColumnProps {
@@ -380,7 +45,7 @@ interface ColumnProps {
   mobileMinWidth?: string;
 }
 
-const Column = styled.div<ColumnProps>`
+export const Column = styled.div<ColumnProps>`
   flex: ${props => props.width || 1};
   min-width: ${props => props.minWidth || '400px'};
   height: 100%;
@@ -397,42 +62,83 @@ const Column = styled.div<ColumnProps>`
   }
 `;
 
+export const SectionTitle = styled.h3`
+  color: ${colors.accentAlt};   // Use new accentAlt for titles
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 2px solid ${colors.accentAlt};
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+  .icon {
+    font-size: 1.2rem;
+    color: ${colors.accentAlt};
+  }
+`;
+
+export const CardBody = styled.div`
+  padding: 0.75rem;
+`;
+
+export const ContainerFluid = styled.div`
+  padding: 15px 25px 15px 15px;
+  background-color: ${colors.background};
+  background-image: none; // Removed gradient to keep it solid grey
+  min-height: 100vh;
+  max-width: 100vw;
+`;
+
+export const Content = styled.main`
+  margin-left: 65px;
+  padding: 0 20px 0 0;
+  display: flex;
+  flex-wrap: nowrap;  // Changed from "wrap" to "nowrap" to keep columns fixed in place
+  width: calc(100vw - 85px);
+  height: calc(100vh - 30px);
+  overflow: hidden;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100vw;
+    padding: 0 10px;
+  }
+`;
+
+export const ContentWrapper = styled.div`
+  flex-grow: 1;
+  margin-left: 270px;
+  padding: 2.5rem;
+  background-color: ${colors.surface};
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow-y: auto;
+  border: 1px solid ${colors.border};
+  transition: all 0.4s;
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    height: auto;
+    max-height: none;
+  }
+`;
+
 export const MapWrapper = styled(ContentWrapper)`
-  height: 100% !important;
   width: 100%;
   margin: 0;
-  padding: 1rem 1.5rem 1rem 1rem;  // Increased right padding
+  padding: 1rem 1.5rem 1rem 1rem;
   position: sticky;
   top: 0;
   overflow: hidden;
-  transform: none !important;
-
-  &:hover {
-    transform: none !important;
-  }
-
+  height: 100%;   // Ensure the map container fills its parent height
   @media (max-width: 1400px) {
-    height: 80vh !important;
+    height: auto !important;
   }
-`;
-
-const Card = styled.div`
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  margin-bottom: 2rem;
-  border: 1px solid #eef0f2;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-
-  &:hover {
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-    border-color: #e0e4e8;
-  }
-`;
-
-const CardBody = styled.div`
-  padding: 0.75rem;  // Adjusted padding
 `;
 
 export const DescriptionContainer = styled.div`
@@ -442,90 +148,185 @@ export const DescriptionContainer = styled.div`
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   color: white;
-
-  p {
-    margin-bottom: 1rem;
-    line-height: 1.6;
-    
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  ul {
-    margin: 1rem 0;
-    padding-left: 1.5rem;
-  }
-
-  li {
-    margin-bottom: 0.5rem;
-  }
-
-  strong {
-    color: #ff8500;
-    font-weight: 500;
-  }
-
   margin-bottom: 20px;
-  
-  .description-header:hover {
-    background-color: #e9e9e9 !important;
-  }
 `;
 
 export const InfoBox = styled.div`
-  background-color: #2b2b2c;
-  border: 1px solid #ff8500;
-  border-radius: 8px;
+  background-color: ${colors.surfaceLight};
+  border: 1px solid ${colors.border};
+  border-radius: 12px;
   padding: 1.5rem;
   margin-top: 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+
+  label {
+    color: #000000; // Force characteristics text to black
+  }
 
   p {
-    color: white;
+    color: #000000; // Force description/characteristics results to black
     margin-bottom: 1rem;
-  }
-
-  ul {
-    color: white;
-    list-style-type: disc;
-    margin-left: 1.5rem;
-  }
-
-  li {
-    margin-bottom: 0.5rem;
-  }
-
-  strong {
-    color: #ff8500;
+    line-height: 1.6;
   }
 `;
 
-export const FormContainer = styled(Box)({
-  padding: '20px',
-  borderRadius: '12px',
-  backgroundColor: '#2b2b2c',
-  color: 'white',
-  '& .MuiInputBase-root': {
-    color: 'white',
-  },
-  '& .MuiFormLabel-root': {
-    color: '#ff8500',
-  },
-  '& .MuiOutlinedInput-root': {
-    '& fieldset': {
-      borderColor: '#ff8500',
-    },
-    '&:hover fieldset': {
-      borderColor: '#ff8500',
-    },
-  },
-});
+interface DescriptionHeaderProps {
+  isOpen?: boolean;
+}
 
-export const FormGroupLabel = styled('label')({
-  display: 'block',
-  marginBottom: '5px',
-  fontWeight: 'bold',
-  textAlign: 'match-parent',
-});
+export const DescriptionHeader = styled.div<DescriptionHeaderProps>`
+  cursor: pointer;
+  padding: 12px 16px;
+  background-color: ${colors.headerBg};
+  color: ${colors.textSecondary};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+  margin-bottom: ${props => props.isOpen ? '10px' : '0'};
+  border: 1px solid ${colors.border};
+  
+  &:hover {
+    background-color: ${colors.surfaceLight};
+    color: ${colors.text};
+  }
+`;
 
-export { ContainerFluid, Title, Row, Column, Card, CardBody };
+export const StrongText = styled.strong`
+  color: ${colors.accentAlt};
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+`;
+export const TitleText = styled.h4`
+  color: ${colors.TitleText};
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+`;
+
+
+export const ListElement = styled.ul`
+  color: white;
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  
+  li {
+    margin-bottom: 0.5rem;
+  }
+`;
+
+export const Section = styled.section`
+  color: ${colors.SectionText};
+  width: 100%;
+  height: 100%;
+`;
+
+export const ModelContainer = styled.div`
+  background-color: #444e5e;
+  padding: 24px;
+  margin: 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: white;
+  margin-bottom: 20px;
+`;
+
+export const StyledInput = styled.input`
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid ${colors.border};
+  border-radius: 8px;
+  background-color: ${colors.inputBg};
+  color: ${colors.FieldText};
+  font-size: 1rem;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: ${colors.borderAccent};
+    outline: none;
+    box-shadow: 0 0 0 2px ${colors.borderAccent}33;
+  }
+
+  &::placeholder {
+    color: #000000; // Force placeholder text to be black
+  }
+
+  &[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+  }
+`;
+
+export const StyledButton = styled.button`
+  background-color: ${colors.accent};
+  color: ${colors.text};
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    background-color: ${colors.accentHover};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background-color: ${colors.border};
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+`;
+
+export const SearchResults = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  background-color: ${colors.surfaceLight};
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid ${colors.border};
+`;
+
+export const SearchResultItem = styled.li`
+  padding: 0.75rem 1rem;
+  margin: 0;
+  cursor: pointer;
+  color: ${colors.textSecondary};
+  border-bottom: 1px solid ${colors.border};
+  transition: all 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: ${colors.surface};
+    color: ${colors.text};
+  }
+
+  strong {
+    color: ${colors.accent};
+    margin-right: 0.5rem;
+    font-weight: 500;
+  }
+`;
+
+export const Label = styled.label`
+  color: ${colors.textSecondary};
+  margin-bottom: 0.5rem;
+  display: block;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+`;

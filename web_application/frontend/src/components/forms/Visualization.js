@@ -11,7 +11,7 @@ import {
   HelpText,
   SubmitButton,
   ErrorMessage,
-} from '../../styles/Visualization.tsx';
+} from '../../styles/Visualizations.tsx';
 
 const VisualizationForm = ({
   watersheds,

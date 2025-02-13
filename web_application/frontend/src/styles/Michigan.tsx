@@ -61,3 +61,22 @@ export const ModalClose = styled.span`
   font-size: 2rem;
   cursor: pointer;
 `;
+
+export const CardTitle = styled.h4`
+  padding: 10px;
+  background-color: #f9f9f9;
+  font-size: 1.1rem;
+  color: #555;
+  margin: 0;
+`;
+
+export const ImageElement = styled.img`
+  width: 100%;
+  height: auto;
+`;
+
+export const ModalImage = styled.img`
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+`;
