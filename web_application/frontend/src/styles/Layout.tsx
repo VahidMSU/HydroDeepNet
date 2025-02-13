@@ -70,6 +70,13 @@ export const Card = styled.div`
   margin-bottom: 20px;
 `;
 
+export const CardBody = styled.div`
+  color: "#2c4875";
+  padding: 1.25rem;
+  background-color: #fff;
+  border-radius: 0.375rem;
+`;
+
 export const CheckboxContainer = styled.div`
   display: flex;
   align-items: center;

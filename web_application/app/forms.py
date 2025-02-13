@@ -19,9 +19,9 @@ import re
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from flask_wtf import FlaskForm
-class RegistrationForm(FlaskForm):
+class SignUpForm(FlaskForm):
     """
-    RegistrationForm is a Flask-WTF form used for user registration.
+    SignUp orm is a Flask-WTF form used for user SignUp 
 
     This form collects the username, email, password, and confirmation of the password from the user.
     It includes validation methods to ensure that the username and email are unique and that the password meets the complexity requirements.
@@ -31,7 +31,7 @@ class RegistrationForm(FlaskForm):
         email (StringField): The email address of the user.
         password (PasswordField): The password for the user account.
         confirm_password (PasswordField): A field to confirm the user's password.
-        submit (SubmitField): A button to submit the registration form.
+        submit (SubmitField): A button to submit the SignUp form.
 
     Methods:
         validate_username(username): Validates that the username is unique.

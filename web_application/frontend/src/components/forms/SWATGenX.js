@@ -1,6 +1,8 @@
 import React from 'react';
 import SearchForm from '../SearchForm';
 import StationDetails from '../StationDetails';
+import { CardBody } from '../../styles/Layout.tsx';
+import { StyledInput, StyledButton, Section, InfoBox, StrongText } from '../../styles/SWATGenX.tsx';
 
 const ModelSettingsForm = ({
   stationList,
@@ -23,94 +25,88 @@ const ModelSettingsForm = ({
   setLoading,
 }) => {
   return (
-    <div className="card shadow p-3 mb-4">
-      <div className="card-body">
-        <SearchForm setStationData={setStationData} setLoading={setLoading} />
+    <CardBody>
+      <SearchForm setStationData={setStationData} setLoading={setLoading} />
 
-        <div className="form-group mt-3">
-          <label>USGS Station Number:</label>
-          <input
-            type="text"
-            className="form-control"
-            value={stationInput}
-            onChange={(e) => setStationInput(e.target.value)}
-            placeholder="Enter station number"
-            list="station_list"
-          />
-          <datalist id="station_list">
-            {stationList.map((station, index) => (
-              <option key={index} value={station} />
-            ))}
-          </datalist>
-        </div>
+      <Section>
+        <label>USGS Station Number:</label>
+        <StyledInput
+          type="text"
+          value={stationInput}
+          onChange={(e) => setStationInput(e.target.value)}
+          placeholder="Enter station number"
+          list="station_list"
+        />
+        <datalist id="station_list">
+          {stationList.map((station, index) => (
+            <option key={index} value={station} />
+          ))}
+        </datalist>
+      </Section>
 
-        {stationData && <StationDetails stationData={stationData} />}
+      {stationData && <StationDetails stationData={stationData} />}
 
-        <div className="form-group">
-          <label>Landuse/Soil Resolution:</label>
-          <input
-            type="text"
-            className="form-control"
-            value={lsResolution}
-            onChange={(e) => setLsResolution(e.target.value)}
-          />
-        </div>
+      <Section>
+        <label>Landuse/Soil Resolution:</label>
+        <StyledInput
+          type="text"
+          value={lsResolution}
+          onChange={(e) => setLsResolution(e.target.value)}
+        />
+      </Section>
 
-        <div className="form-group">
-          <label>DEM Resolution:</label>
-          <input
-            type="text"
-            className="form-control"
-            value={demResolution}
-            onChange={(e) => setDemResolution(e.target.value)}
-          />
-        </div>
+      <Section>
+        <label>DEM Resolution:</label>
+        <StyledInput
+          type="text"
+          value={demResolution}
+          onChange={(e) => setDemResolution(e.target.value)}
+        />
+      </Section>
 
-        {/* Calibration, Sensitivity, Validation Flags */}
-        <div className="form-check mt-2">
-          <input
-            type="checkbox"
-            className="form-check-input"
-            id="calibrationFlag"
-            checked={calibrationFlag}
-            onChange={(e) => setCalibrationFlag(e.target.checked)}
-          />
-          <label className="form-check-label" htmlFor="calibrationFlag">
-            Calibration
+      <InfoBox>
+        <Section>
+          <label>
+            <StyledInput
+              type="checkbox"
+              checked={calibrationFlag}
+              onChange={(e) => setCalibrationFlag(e.target.checked)}
+            />
+            <StrongText>Calibration</StrongText>
           </label>
-        </div>
+        </Section>
 
-        <div className="form-check">
-          <input
-            type="checkbox"
-            className="form-check-input"
-            id="sensitivityFlag"
-            checked={sensitivityFlag}
-            onChange={(e) => setSensitivityFlag(e.target.checked)}
-          />
-          <label className="form-check-label" htmlFor="sensitivityFlag">
-            Sensitivity Analysis
+        <Section>
+          <label>
+            <StyledInput
+              type="checkbox"
+              checked={sensitivityFlag}
+              onChange={(e) => setSensitivityFlag(e.target.checked)}
+            />
+            <StrongText>Sensitivity Analysis</StrongText>
           </label>
-        </div>
+        </Section>
 
-        <div className="form-check">
-          <input
-            type="checkbox"
-            className="form-check-input"
-            id="validationFlag"
-            checked={validationFlag}
-            onChange={(e) => setValidationFlag(e.target.checked)}
-          />
-          <label className="form-check-label" htmlFor="validationFlag">
-            Validation
+        <Section>
+          <label>
+            <StyledInput
+              type="checkbox"
+              checked={validationFlag}
+              onChange={(e) => setValidationFlag(e.target.checked)}
+            />
+            <StrongText>Validation</StrongText>
           </label>
-        </div>
+        </Section>
+      </InfoBox>
 
-        <button className="btn btn-primary mt-3 w-100" onClick={handleSubmit}>
-          Run Model
-        </button>
-      </div>
-    </div>
+      <StyledButton
+        onClick={handleSubmit}
+        disabled={loading}
+        style={{ marginTop: '1rem', width: '100%' }}
+      >
+        {loading ? 'Processing...' : 'Run Model'}
+      </StyledButton>
+    </CardBody>
   );
 };
 
