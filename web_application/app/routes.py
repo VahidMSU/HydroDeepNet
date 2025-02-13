@@ -1,21 +1,13 @@
-## /data/SWATGenXApp/codes/web_application/app/routes.py
-
 from flask import (url_for, request,
 				jsonify, current_app, session,send_file,
-				send_from_directory, redirect)
+				send_from_directory)
 from app.sftp_manager import create_sftp_user  # Import the SFTP user creation function
-
 from flask_login import (login_user, logout_user,
 						login_required, current_user)
 from app.extensions import csrf
 from app.models import User, ContactMessage
-
-from app.forms import (RegistrationForm, LoginForm, 
-						ContactForm, ModelSettingsForm, 
-						HydroGeoDatasetForm)
-
-from app.extensions import db
-from functools import partial, wraps
+from app.forms import (SignUpForm,
+						ContactForm)
 from multiprocessing import Process
 from app.utils import (find_station, get_huc12_geometries, get_huc12_streams_geometries,
 						get_huc12_lakes_geometries, send_verification_email, check_existing_models,
@@ -26,26 +18,13 @@ import numpy as np
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import pandas as pd
 from app.forms import VerificationForm
-import requests
 from werkzeug.utils import secure_filename
 import shutil
 import tempfile
 from app.decorators import conditional_login_required, conditional_verified_required
-
-def verified_required(f):
-	@wraps(f)
-	def decorated_function(*args, **kwargs):
-		if current_user.is_authenticated and not current_user.is_verified:
-			#flash("You must verify your email first!")
-			message = "You must verify your email first!"
-			#return redirect(url_for('verify'))
-			return jsonify({"status": "error", "message": message}), 403
-		return f(*args, **kwargs)
-	return decorated_function
-
-
-
 from app.utils import LoggerSetup
+from app.extensions import db
+from functools import partial
 
 class AppManager:
 	def __init__(self, app):
@@ -188,7 +167,7 @@ class AppManager:
 		@self.app.route('/signup', methods=['GET', 'POST'])
 		def signup():
 			self.app.logger.info("Sign Up route called")
-			form = RegistrationForm()
+			form = SignUpForm()
 
 			if form.validate_on_submit():
 				verification_code = send_verification_email(form.email.data)

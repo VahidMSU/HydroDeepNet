@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faMap,
   faSliders,
   faGears,
   faChartLine,
@@ -9,19 +8,25 @@ import {
   faChevronUp,
 } from '@fortawesome/free-solid-svg-icons';
 import ModelSettingsForm from '../forms/SWATGenX.js';
-import { Row, Column, SectionTitle } from '../../styles/SWATGenX.tsx'; // Added SectionTitle import
-import EsriMap from '../EsriMap.js';
-import { HeaderTitle, Section, Card } from '../../styles/Layout.tsx';
-
 import {
-  CardBody,
+  Row,
+  Column,
+  SectionTitle,
   ContainerFluid,
   Content,
   ContentWrapper,
   MapWrapper,
   DescriptionContainer,
   InfoBox,
+  DescriptionHeader,
+  StrongText,
+  FieldText,
+  ListElement,
+  Section,
+  ModelContainer, // Import ModelContainer
 } from '../../styles/SWATGenX.tsx';
+import EsriMap from '../EsriMap.js';
+import { HeaderTitle, Card, CardBody } from '../../styles/Layout.tsx';
 
 const SWATGenXTemplate = () => {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(true);
@@ -87,87 +92,74 @@ const SWATGenXTemplate = () => {
     <ContainerFluid>
       <HeaderTitle style={{ margin: '0 0 15px 0' }}>
         <FontAwesomeIcon icon={faSliders} />
-        SWATGenX – SWAT+ Model Creation Tool
+        <StrongText>SWATGenX – SWAT+ Model Creation Tool</StrongText>
         <FontAwesomeIcon icon={faChartLine} style={{ marginLeft: '10px' }} />
       </HeaderTitle>
-
-      <DescriptionContainer>
-        <div
-          className="description-header"
-          onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
-          style={{
-            cursor: 'pointer',
-            padding: '10px',
-            backgroundColor: '#f5f5f5',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            borderRadius: '4px',
-            marginBottom: isDescriptionOpen ? '10px' : '0',
-          }}
-        >
-          <strong>Description</strong>
-          <FontAwesomeIcon icon={isDescriptionOpen ? faChevronUp : faChevronDown} />
-        </div>
-
-        {isDescriptionOpen && (
-          <InfoBox>
-            <p>
-              <strong>SWATGenX</strong> is a dedicated tool for generating <strong>SWAT+</strong>{' '}
-              models for any
-              <strong> USGS streamgage stations</strong>. Users can locate a station by searching
-              for a name or providing a site number. Once selected, users can configure model
-              settings, including:
-            </p>
-            <ul>
-              <li>Selecting land use/soil and DEM resolution</li>
-              <li>Enabling calibration, sensitivity analysis, and validation</li>
-              <li>Invoking SWATGenX to generate the model</li>
-            </ul>
-            <p>
-              The generated models will be available in the **user dashboard**, where they can be
-              downloaded for further analysis.
-            </p>
-          </InfoBox>
-        )}
-      </DescriptionContainer>
 
       <Content>
         <Row>
           <Column width={0.32} minWidth="350px" mobileMinWidth="100%">
-            <ContentWrapper
-              style={{
-                height: '100%',
-                margin: 0,
-                padding: '1.5rem',
-                overflow: 'auto',
-              }}
-            >
+            <ContentWrapper style={{ margin: 0, padding: '1.5rem', overflow: 'auto' }}>
+              <DescriptionContainer>
+                <DescriptionHeader
+                  isOpen={isDescriptionOpen}
+                  onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+                >
+                  <FieldText>Description</FieldText>
+                  <FontAwesomeIcon icon={isDescriptionOpen ? faChevronUp : faChevronDown} />
+                </DescriptionHeader>
+
+                {isDescriptionOpen && (
+                  <InfoBox>
+                    <FieldText>
+                      SWATGenX is a dedicated tool for generating SWAT+ models for any USGS
+                      streamgage stations. Users can locate a station by searching for a name or
+                      providing a site number. Once selected, users can configure model settings,
+                      including:
+                    </FieldText>
+                    <ListElement>
+                      <StrongText>
+                        Selecting land use/soil and DEM resolution Enabling calibration, sensitivity
+                        analysis, and validation Invoking SWATGenX to generate the model
+                      </StrongText>
+                    </ListElement>
+                    <FieldText>
+                      The generated models will be available in the **user dashboard**, where they
+                      can be downloaded for further analysis.
+                    </FieldText>
+                  </InfoBox>
+                )}
+              </DescriptionContainer>
               <Section>
                 <SectionTitle>
                   <FontAwesomeIcon icon={faGears} className="icon" />
                   Model Configuration
                 </SectionTitle>
-                <ModelSettingsForm
-                  stationList={stationList}
-                  stationInput={stationInput}
-                  setStationInput={setStationInput}
-                  stationData={stationData}
-                  setStationData={setStationData}
-                  lsResolution={lsResolution}
-                  setLsResolution={setLsResolution}
-                  demResolution={demResolution}
-                  setDemResolution={setDemResolution}
-                  calibrationFlag={calibrationFlag}
-                  setCalibrationFlag={setCalibrationFlag}
-                  sensitivityFlag={sensitivityFlag}
-                  setSensitivityFlag={setSensitivityFlag}
-                  validationFlag={validationFlag}
-                  setValidationFlag={setValidationFlag}
-                  handleSubmit={handleSubmit}
-                  loading={loading}
-                  setLoading={setLoading}
-                />
+
+                <Card>
+                  <CardBody>
+                    <ModelSettingsForm
+                      stationList={stationList}
+                      stationInput={stationInput}
+                      setStationInput={setStationInput}
+                      stationData={stationData}
+                      setStationData={setStationData}
+                      lsResolution={lsResolution}
+                      setLsResolution={setLsResolution}
+                      demResolution={demResolution}
+                      setDemResolution={setDemResolution}
+                      calibrationFlag={calibrationFlag}
+                      setCalibrationFlag={setCalibrationFlag}
+                      sensitivityFlag={sensitivityFlag}
+                      setSensitivityFlag={setSensitivityFlag}
+                      validationFlag={validationFlag}
+                      setValidationFlag={setValidationFlag}
+                      handleSubmit={handleSubmit}
+                      loading={loading}
+                      setLoading={setLoading}
+                    />
+                  </CardBody>
+                </Card>
               </Section>
             </ContentWrapper>
           </Column>

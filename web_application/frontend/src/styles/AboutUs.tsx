@@ -134,3 +134,17 @@ export const ProjectLinks = styled.div`
     }
   }
 `;
+
+export const SectionHeader = styled.h3`
+  color: #ff8500;
+  font-size: 1.8rem;
+  margin: 2rem 0 1rem;
+`;
+
+export const ContentText = styled.p`
+  color: #cccccc;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+`;

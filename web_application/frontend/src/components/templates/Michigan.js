@@ -6,6 +6,9 @@ import {
   ImageCard,
   Modal,
   ModalClose,
+  CardTitle,
+  ImageElement,
+  ModalImage,
 } from '../../styles/Michigan.tsx'; // Import styled components
 
 const MichiganTemplate = () => {
@@ -80,13 +83,13 @@ const MichiganTemplate = () => {
       <ImageGrid>
         {images.map((image, index) => (
           <ImageCard key={index}>
-            <img
+            <ImageElement
               src={image.src}
               alt={image.alt}
               onClick={() => openModal(image)}
               data-index={index}
             />
-            <h4>{image.title}</h4>
+            <CardTitle>{image.title}</CardTitle>
           </ImageCard>
         ))}
       </ImageGrid>
@@ -94,8 +97,7 @@ const MichiganTemplate = () => {
       {modalOpen && currentImage && (
         <Modal id="imageModal" onClick={closeModal}>
           <ModalClose onClick={closeModal}>&times;</ModalClose>
-          <img
-            id="modalImage"
+          <ModalImage
             src={currentImage.src}
             alt={currentImage.alt}
             onClick={(e) => e.stopPropagation()} // Prevent modal close on image click
