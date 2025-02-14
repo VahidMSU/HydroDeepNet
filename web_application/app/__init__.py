@@ -50,6 +50,9 @@ def create_app():
             r"/login": {
                 "origins": ["http://localhost:3000", "https://ciwre-bae.campusad.msu.edu"],
             },
+            r"/signup": {
+                "origins": ["http://localhost:3000", "https://ciwre-bae.campusad.msu.edu"],
+            },
             r"/model-settings": {
                 "origins": ["http://localhost:3000", "https://ciwre-bae.campusad.msu.edu"],
             }
