@@ -1,3 +1,4 @@
+##/data/SWATGenXApp/codes/web_application/app/routes.py
 from flask import (url_for, request,
 				jsonify, current_app, session,send_file,
 				send_from_directory)
@@ -25,7 +26,7 @@ from app.decorators import conditional_login_required, conditional_verified_requ
 from app.utils import LoggerSetup
 from app.extensions import db
 from functools import partial
-
+import ast
 class AppManager:
 	def __init__(self, app):
 		self.app = app
@@ -42,23 +43,47 @@ class AppManager:
 			self.app.logger.info("Index route called. Redirecting to /home.")	
 			return jsonify({"status": "success", "redirect": "/home"})
 
-		@self.app.route('/verify', methods=['GET', 'POST'])
-		@login_required
+		@self.app.route('/api/verify', methods=['POST'])
 		def verify():
-			"""Email verification route."""
-			self.app.logger.info(f"Verification requested by user: {current_user.username}.")
-			form = VerificationForm()
-			if form.validate_on_submit():
-				code_entered = form.verification_code.data.strip()
-				if current_user.verification_code == code_entered:
-					current_user.is_verified = True
-					current_user.verification_code = None
-					db.session.commit()
-					self.app.logger.info(f"User `{current_user.username}` verified successfully.")
-					return jsonify({"status": "success", "redirect": "/home"})
-				self.app.logger.warning(f"Invalid verification code entered by `{current_user.username}`.")
-				return jsonify({"status": "error", "message": "Invalid verification code."}), 400
-			return jsonify({"title": "Verify", "message": "Enter your verification code."})
+			self.app.logger.info("Verification attempt received.")
+
+			data = request.get_json()
+			email = data.get('email', '').strip()
+			code_entered = data.get('verification_code', '').strip()
+
+			if not email or not code_entered:
+				return jsonify({"status": "error", "message": "Email and verification code are required."}), 400
+
+			user = User.query.filter_by(email=email).first()
+
+			if not user:
+				self.app.logger.warning(f"Verification failed: User with email `{email}` not found.")
+				return jsonify({"status": "error", "message": "User not found."}), 404
+
+			if user.is_verified:
+				self.app.logger.warning(f"Verification failed: User `{user.username}` is already verified.")
+				return jsonify({"status": "error", "message": "User is already verified."}), 400
+
+			if user.verification_code == code_entered:
+				user.is_verified = True
+				user.verification_code = None
+				db.session.commit()
+
+				self.app.logger.info(f"User `{user.username}` verified successfully. Creating SFTP account...")
+
+				sftp_result = create_sftp_user(user.username)
+				if sftp_result.get("status") != "success":
+					self.app.logger.error(f"SFTP creation failed for {user.username}: {sftp_result.get('error')}")
+					return jsonify({"status": "error", "message": "SFTP account creation failed. Contact support."}), 500
+
+				return jsonify({
+					"status": "success",
+					"message": "Verification successful. Please log in.",
+					"redirect": "/login"
+				})
+
+			self.app.logger.warning(f"Verification failed: Invalid code for user `{user.username}`.")
+			return jsonify({"status": "error", "message": "Invalid verification code."}), 400
 
 
 
@@ -155,58 +180,76 @@ class AppManager:
 
 			user = User.query.filter_by(username=username).first()
 			if user and user.check_password(password):
+				if not user.is_verified:
+					return jsonify({"error": "Email not verified. Please check your email."}), 403
+
 				login_user(user)
 				session.permanent = True
 				return jsonify({"success": True, "token": "someJWT"}), 200
 
-			else:
-				return jsonify({"error": "Invalid username or password"}), 401
-			
+			return jsonify({"error": "Invalid username or password"}), 401
 
-				
-		@self.app.route('/signup', methods=['GET', 'POST'])
+
+								
+		@self.app.route('/api/signup', methods=['POST'])
 		def signup():
-			self.app.logger.info("Sign Up route called")
-			form = SignUpForm()
+			self.app.logger.info("Sign Up route called via API")
+			data = request.get_json()
 
-			if form.validate_on_submit():
-				verification_code = send_verification_email(form.email.data)
-				self.app.logger.info("Form validated successfully")
+			username = data.get('username')
+			email = data.get('email')
+			password = data.get('password')
+			confirm_password = data.get('confirmPassword')
 
-				new_user = User(
-					username=form.username.data,
-					email=form.email.data,
-					password=form.password.data,
-					verification_code=verification_code
-				)
+			errors = {}
 
-				try:
-					db.session.add(new_user)
-					db.session.commit()
-					self.app.logger.info("User added to DB but not verified yet.")
+			if not username:
+				errors['username'] = 'Username is required'
+			elif User.query.filter_by(username=username).first():
+				errors['username'] = 'That username is taken. Please choose a different one.'
 
-					# ✅ Automatically create SFTP account
-					sftp_result = create_sftp_user(new_user.username)
-					if sftp_result.get("status") != "success":
-						self.app.logger.error(f"Failed to create SFTP for {new_user.username}: {sftp_result.get('error')}")
-						return jsonify({"status": "error", "message": "SFTP account creation failed. Contact support."})
+			if not email:
+				errors['email'] = 'Email is required'
+			elif User.query.filter_by(email=email).first():
+				errors['email'] = 'That email is already in use. Please choose a different one.'
 
-					# ✅ Log user in and redirect
-					login_user(new_user)
-					return jsonify({"status": "success", "message": "Check your email for verification code.", "redirect": "/verify"})
+			if not password:
+				errors['password'] = 'Password is required'
+			elif len(password) < 8:
+				errors['password'] = 'Password must be at least 8 characters long.'
+			elif not any(c.isupper() for c in password):
+				errors['password'] = 'Password must contain at least one uppercase letter.'
+			elif not any(c.islower() for c in password):
+				errors['password'] = 'Password must contain at least one lowercase letter.'
+			elif not any(c.isdigit() for c in password):
+				errors['password'] = 'Password must contain at least one number.'
+			elif not any(c in '@#$^&*()_+={}\[\]|\\:;"\'<>,.?/~`-' for c in password):
+				errors['password'] = 'Password must contain at least one special character.'
 
-				except Exception as e:
-					self.app.logger.error(f"Error adding user: {e}")
-					db.session.rollback()
-					return jsonify({"status": "error", "message": "An error occurred while creating the account."})
+			if password != confirm_password:
+				errors['confirmPassword'] = 'Passwords do not match.'
 
-			# ✅ If form is invalid, return errors
-			self.app.logger.error("Form validation failed")
-			return jsonify({
-				"title": "Sign Up",
-				"message": "Registration failed.",
-				"errors": form.errors
-			}), 400
+			if errors:
+				return jsonify({"status": "error", "message": "Validation failed", "errors": errors}), 400
+
+			try:
+				verification_code = send_verification_email(email)
+				new_user = User(username=username, email=email, password=password, verification_code=verification_code, is_verified=False)
+
+				db.session.add(new_user)
+				db.session.commit()
+				self.app.logger.info(f"User `{new_user.username}` created in unverified state. Verification email sent.")
+
+				# Do NOT create SFTP here!
+
+				return jsonify({"status": "success", "message": "Check your email for verification code.", "redirect": "/verify"})
+
+
+			except Exception as e:
+				db.session.rollback()
+				self.app.logger.error(f"Error creating user: {e}")
+				return jsonify({"status": "error", "message": "An error occurred while creating the account."}), 500
+
 
 
 		@self.app.route('/home', methods=['GET'])
@@ -396,38 +439,31 @@ class AppManager:
 				# If missing/empty, just return characteristics without geometry
 				self.app.logger.warning(f"No HUC12 data for station {station_no}")
 				return jsonify(characteristics)
-
 			# Parse the string as a Python list
-			import ast
 			try:
-				# This safely evaluates the string as a list:
+				#NOTE:This safely evaluates the string as a list:
 				# e.g. "['040500040703','040500040508']" -> ["040500040703", "040500040508"]
 				huc12_list = ast.literal_eval(huc12_str)
 			except Exception as e:
 				self.app.logger.error(f"Error parsing HUC12 list for {station_no}: {e}")
 				return jsonify({"error": "Failed to parse HUC12 data"}), 500
-
 			# Now call geometry functions safely
 			geometries = get_huc12_geometries(huc12_list)
 			streams_geometries, lake_identifier = get_huc12_streams_geometries(huc12_list)
 			lakes_geometries = get_huc12_lakes_geometries(huc12_list, lake_identifier)
-
 			if not geometries:
 				self.app.logger.error(f"No geometries found for HUC12s: {huc12_list}")
 			if not streams_geometries:
 				self.app.logger.error(f"No streams geometries found for HUC12s: {huc12_list}")
 			if not lakes_geometries:
 				self.app.logger.warning(f"No lakes geometries found for HUC12s: {huc12_list}")
-
 			# Add geometry data to the dictionary
 			characteristics['Num HUC12 subbasins'] = len(huc12_list)
 			characteristics['geometries'] = geometries
 			characteristics['streams_geometries'] = streams_geometries
 			characteristics['lakes_geometries'] = lakes_geometries
-
 			# Clean up if you don’t want that field in your final JSON
 			characteristics.pop('HUC12 ids of the watershed', None)
-
 			# Return as JSON
 			return jsonify(characteristics)
 
@@ -474,9 +510,6 @@ class AppManager:
 				return jsonify({"status": "success", "message": message, "redirect": "/contact"})
 			#return render_template('contact.html', form=form)
 			return jsonify({"title": "Contact", "message": "contact page", "form": form})
-
-
-		
 
 		@self.app.route('/hydro_geo_dataset', methods=['GET', 'POST'])
 		@conditional_login_required
@@ -609,7 +642,6 @@ class AppManager:
 		@conditional_verified_required
 		def vision_system():
 			self.app.logger.info("Vision System route called")
-			#return render_template('VisionSystem.html')
 			return jsonify({"title": "Vision System", "message": "Vision System page"})
 
 		@self.app.route('/michigan')
