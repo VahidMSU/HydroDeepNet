@@ -1,15 +1,42 @@
-// pages/Verify.js
+///data/SWATGenXApp/codes/web_application/frontend/src/pages/Verify.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import VerificationForm from '../components/forms/Verification'; // Import the new component
+import VerificationForm from '../components/forms/Verification';
 
 const Verify = () => {
   const [verificationCode, setVerificationCode] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const [email, setEmail] = useState('');
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Add your verification logic here, e.g., an API call.
-    console.log('Verification code submitted:', verificationCode);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      const response = await fetch('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, verification_code: verificationCode }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage(result.message || 'Verification successful!');
+        setTimeout(() => {
+          navigate('/login');
+        }, 1000);
+      } else {
+        setErrorMessage(result.message || 'Verification failed. Please try again.');
+      }
+    } catch (error) {
+      setErrorMessage('An error occurred. Please try again.');
+    }
   };
 
   return (
@@ -22,9 +49,15 @@ const Verify = () => {
               <p className="text-center">
                 Please enter the verification code we sent to your email.
               </p>
+
+              {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+              {successMessage && <div className="alert alert-success">{successMessage}</div>}
+
               <VerificationForm
                 verificationCode={verificationCode}
                 setVerificationCode={setVerificationCode}
+                email={email}
+                setEmail={setEmail}
                 handleSubmit={handleSubmit}
               />
             </div>
