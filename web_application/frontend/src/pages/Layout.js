@@ -1,3 +1,4 @@
+///data/SWATGenXApp/codes/web_application/frontend/src/pages/Layout.js
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -101,7 +102,7 @@ const Layout = ({ children }) => {
                 { text: 'User Dashboard', icon: <DashboardIcon />, path: '/user_dashboard' },
                 { text: 'Contact', icon: <EmailIcon />, path: '/contact' },
                 { text: 'About', icon: <InfoIcon />, path: '/about' },
-                { text: 'Sign Up', icon: <PersonAddIcon />, path: '/signup' },
+                //{ text: 'Sign Up', icon: <PersonAddIcon />, path: '/signup' },
               ].map((item) => (
                 <ListItemButton
                   key={item.text}
