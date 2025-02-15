@@ -71,6 +71,11 @@ def plot_annual_precipitation(VPUID, LEVEL, NAME):
 		'Average Monthly Precipitation ', NAME, 'Month'
 	)
 	plt.tight_layout()
+	### correct permision
+	path = os.path.join(SWATGenXPaths.swatgenx_outlet_path, VPUID ,LEVEL, NAME,'PRISM')
+	os.makedirs(path, exist_ok=True)
+	## permision
+	#os.chmod(path, 0o777)
 	plt.savefig(os.path.join(SWATGenXPaths.swatgenx_outlet_path, VPUID ,LEVEL, NAME,'PRISM','Annual_Precipitation.jpeg'), dpi=300)
 
 # TODO Rename this here and in `plot_annual_precipitation`

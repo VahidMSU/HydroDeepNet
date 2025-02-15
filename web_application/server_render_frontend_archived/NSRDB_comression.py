@@ -3,7 +3,7 @@ import os
 import multiprocessing
 
 # Define file path
-input_path = "/data/NSRDB/"
+input_path = "/data/SWATGenXApp/GenXAppData/NSRDB/"
 
 # Get list of HDF5 files
 files = [os.path.join(input_path, f) for f in os.listdir(input_path) if f.endswith('.h5')]
