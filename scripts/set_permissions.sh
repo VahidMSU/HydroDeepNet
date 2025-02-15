@@ -1,31 +1,46 @@
-#!/bin/sh
+#!/bin/bash
 
-# Set ownership to apache user (usually www-data)
-APACHE_USER="www-data"
-APACHE_GROUP="www-data"
+set -e  # Exit on any error
 
-# Process each directory
-echo "Setting permissions for /data/SWATGenXApp/GenXAppData"
-sudo chown -R $APACHE_USER:$APACHE_GROUP "/data/SWATGenXApp/GenXAppData"
-sudo chmod -R 755 "/data/SWATGenXApp/GenXAppData"
+BASE_DIR="/data/SWATGenXApp"
+CODES_DIR="${BASE_DIR}/codes"
+APPDATA_DIR="${BASE_DIR}/GenXAppData"
+USERS_DIR="${BASE_DIR}/Users"
+GROUP_NAME="users"
 
-echo "Setting permissions for /data/SWATGenXApp/Users"
-sudo chown -R $APACHE_USER:$APACHE_GROUP "/data/SWATGenXApp/Users"
-sudo chmod -R 755 "/data/SWATGenXApp/Users"
+# 1. Set ownership and permissions for the base directories
+echo "Setting ownership and permissions for base directories..."
+sudo chown -R www-data:${GROUP_NAME} "${BASE_DIR}"
+sudo chmod -R 2775 "${BASE_DIR}"
 
-echo "Setting permissions for /data/SWATGenXApp/codes/web_application/logs"
-sudo chown -R $APACHE_USER:$APACHE_GROUP "/data/SWATGenXApp/codes/web_application/logs"
-sudo chmod -R 777 "/data/SWATGenXApp/codes/web_application/logs"
+# Apply ACL to ensure future files inherit permissions
+sudo setfacl -R -m u:www-data:rwx -m g:${GROUP_NAME}:rwx "${BASE_DIR}"
+sudo setfacl -R -d -m u:www-data:rwx -m g:${GROUP_NAME}:rwx "${BASE_DIR}"
 
-# Set SELinux context if SELinux is enabled
-if command -v sestatus >/dev/null 2>&1; then
-    if sestatus | grep -q "SELinux status:\s*enabled"; then
-        echo "Setting SELinux context"
-        sudo semanage fcontext -a -t httpd_sys_content_t "/data/SWATGenXApp/GenXAppData(/.*)?"
-        sudo semanage fcontext -a -t httpd_sys_rw_content_t "/data/SWATGenXApp/Users(/.*)?"
-        sudo semanage fcontext -a -t httpd_log_t "/data/SWATGenXApp/codes/web_application/logs(/.*)?"
-        sudo restorecon -R -v /data/SWATGenXApp/
+# 2. Set permissions for specific subdirectories
+echo "Setting permissions for ${CODES_DIR}..."
+sudo chown -R www-data:${GROUP_NAME} "${CODES_DIR}"
+sudo chmod -R 2775 "${CODES_DIR}"
+sudo setfacl -R -m u:www-data:rwx -m g:${GROUP_NAME}:rwx "${CODES_DIR}"
+sudo setfacl -R -d -m u:www-data:rwx -m g:${GROUP_NAME}:rwx "${CODES_DIR}"
+
+echo "Setting permissions for ${APPDATA_DIR}..."
+sudo chown -R www-data:${GROUP_NAME} "${APPDATA_DIR}"
+sudo chmod -R 2775 "${APPDATA_DIR}"
+sudo setfacl -R -m u:www-data:rwx -m g:${GROUP_NAME}:rwx "${APPDATA_DIR}"
+sudo setfacl -R -d -m u:www-data:rwx -m g:${GROUP_NAME}:rwx "${APPDATA_DIR}"
+
+# 3. Set up permissions for user directories
+echo "Setting permissions for user directories..."
+for userdir in "${USERS_DIR}"/*; do
+    if [ -d "$userdir" ]; then
+        username=$(basename "$userdir")
+        echo "Configuring permissions for $userdir (User: $username)..."
+        sudo chown -R "${username}:${GROUP_NAME}" "$userdir"
+        sudo chmod -R 2775 "$userdir"
+        sudo setfacl -R -m u:"${username}":rwx -m u:www-data:rwx -m g:${GROUP_NAME}:rwx "$userdir"
+        sudo setfacl -R -d -m u:"${username}":rwx -m u:www-data:rwx -m g:${GROUP_NAME}:rwx "$userdir"
     fi
-fi
+done
 
-echo "Permissions set successfully!"
+echo "Permissions and ownership setup completed successfully!"

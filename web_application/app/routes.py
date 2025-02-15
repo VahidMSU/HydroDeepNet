@@ -43,6 +43,21 @@ class AppManager:
 			self.app.logger.info("Index route called. Redirecting to /home.")	
 			return jsonify({"status": "success", "redirect": "/home"})
 
+
+		@self.app.route('/api/visualization/<name>/<ver>/<variable>', methods=['GET'])
+		@conditional_login_required
+		@conditional_verified_required
+		def serve_visualization(name, ver, variable):
+			video_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/verifications_videos"
+			gif_file = os.path.join(video_path, f"{ver}_{variable}_animation.gif")
+
+			if not os.path.exists(gif_file):
+				return jsonify({"error": "Visualization not found"}), 404
+
+			return send_file(gif_file, mimetype='image/gif')
+
+
+
 		@self.app.route('/api/verify', methods=['POST'])
 		def verify():
 			self.app.logger.info("Verification attempt received.")

@@ -1,11 +1,7 @@
 ## /data/SWATGenXApp/codes/web_application/app/__init__.py
 import sys
 import os
-import requests
-import time
-import threading
-from functools import lru_cache
-from flask import Flask, abort, jsonify
+from flask import Flask, abort
 from flask_talisman import Talisman
 from config import Config
 from app.extensions import csrf, db, login_manager
@@ -74,8 +70,8 @@ def create_app():
     # Load configurations
     app.config.from_object(Config)
     app.config.update({
-        'SESSION_COOKIE_SECURE': True,
-        'REMEMBER_COOKIE_SECURE': True,
+        'SESSION_COOKIE_SECURE': False,  # ✅ Disable HTTPS for local testing
+        'REMEMBER_COOKIE_SECURE': False,  # ✅ Disable HTTPS for local testing  
         'SESSION_COOKIE_HTTPONLY': True,
         'SESSION_COOKIE_SAMESITE': 'None',
         'PREFERRED_URL_SCHEME': 'https'
