@@ -24,15 +24,23 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
-    setFlashMessages([]);
 
     const newErrors = {};
-    if (!formData.username) newErrors.username = 'Username is required';
-    if (!formData.email) newErrors.email = 'Email is required';
-    if (!formData.password) newErrors.password = 'Password is required';
-    if (!formData.confirmPassword) newErrors.confirmPassword = 'Confirm Password is required';
-    if (formData.password !== formData.confirmPassword)
+    if (!formData.username) {
+      newErrors.username = 'Username is required';
+    }
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    }
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    }
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Confirm Password is required';
+    }
+    if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
+    }
 
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
@@ -42,19 +50,18 @@ const SignUp = () => {
     try {
       const response = await fetch('/api/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(formData),
       });
 
       const result = await response.json();
       if (response.ok) {
         setFlashMessages([{ category: 'info', text: result.message }]);
-        if (result.redirect) {
-          navigate(result.redirect); // Use backend-supplied redirect
-        }
+        navigate('/login'); // Redirect to login after successful signup
       } else {
         setFlashMessages([{ category: 'error', text: result.message }]);
-        if (result.errors) setErrors(result.errors); // Display validation errors if provided
       }
     } catch (error) {
       setFlashMessages([

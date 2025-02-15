@@ -2,7 +2,7 @@ import h5py
 import os
 
 # Define input path
-input_path = "/data/NSRDB/"
+input_path = "/data/SWATGenXApp/GenXAppData/NSRDB/"
 files = [os.path.join(input_path, f) for f in os.listdir(input_path) if f.endswith('.h5') and "filtered" not in f]
 
 # List of keys to keep

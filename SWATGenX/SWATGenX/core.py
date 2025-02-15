@@ -116,7 +116,7 @@ class SWATGenXCore:
 	def extract_prism_data(self):
 		"""Extracts PRISM data for the watershed."""
 		extract_PRISM_parallel(self.paths, self.VPUID, self.LEVEL, self.NAME, self.list_of_huc12s)
-		plot_annual_precipitation(self.VPUID, self.LEVEL, self.NAME)
+		#plot_annual_precipitation(self.VPUID, self.LEVEL, self.NAME)
 		writing_swatplus_cli_files(self.paths, self.VPUID, self.LEVEL, self.NAME)
 		self.logger.info(f"Model extraction completed for {self.NAME}")
 
@@ -246,9 +246,12 @@ class SWATGenXCore:
 
 		self.logger.info(f"QSWAT+ processes are completed for {self.NAME}, {self.VPUID}")
 		self.extract_metereological_data()
-
-		run_swatplus_editor(self.paths, self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
-
+		self.logger.info(f"Extracted metereological data for {self.NAME}")
+		try:
+			run_swatplus_editor(self.paths, self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
+		except Exception as e:
+			self.logger.error(f"Error in running SWAT+ Editor for {self.NAME}: {e}")
+			return None
 		self.write_meta_file()
 
 		fetch_streamflow_for_watershed(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
