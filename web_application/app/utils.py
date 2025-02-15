@@ -379,9 +379,9 @@ def single_model_creation(username, site_no, ls_resolution, dem_resolution):
     try:
         commander = SWATGenXCommand(config)
         model_path = commander.execute()
-        logger.info(f"Model created successfully: {model_path}") 
+        logger.info(f"CommandX: Model created successfully: {model_path}") 
     except Exception as e:
-        logger.error(f"Model creation failed: {e}")
+        logger.error(f"CommandX: Model creation failed: {e}")
 
        
     # Calibration, validation, sensitivity analysis
@@ -394,8 +394,8 @@ def single_model_creation(username, site_no, ls_resolution, dem_resolution):
     try:
         shutil.make_archive(output_path, 'zip', model_path)
     except Exception as e:
-        logger.error(f"Model creation failed for site_no: {site_no}")
-    logger.info(f"Model creation successful for site_no: {site_no}")
+        logger.error(f"WebApp: failed for site_no: {site_no}")
+    logger.info(f"WebApp: Model creation successful for site_no: {site_no}")
     
     return f"{output_path}.zip"
 

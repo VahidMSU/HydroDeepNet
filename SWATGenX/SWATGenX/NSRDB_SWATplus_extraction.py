@@ -73,12 +73,12 @@ class NSRDB_contructor:
 
 	def extract_from_file(self,f):
 		data = f[self.variable][:, self.nsrdb_indexes]
-		self.logger.info(f"NSRDB data shape before getting attr: {data.shape}")	
+		#self.logger.info(f"NSRDB data shape before getting attr: {data.shape}")	
 		scale = f[self.variable].attrs['psm_scale_factor']
-		self.logger.info(f"NSRDB data scale factor: {scale}")
+		#self.logger.info(f"NSRDB data scale factor: {scale}")
 		data = np.divide(data, scale)
 		data = np.array(data)  # data shape is (17568, len(NSRDB_index_SW
-		self.logger.info(f"NSRDB data shape after scaling: {data.shape}")
+		#self.logger.info(f"NSRDB data shape after scaling: {data.shape}")
 		if self.variable == 'ghi':
 			# convert the unit from W/m^2 (30min) to MJ/m^2/day
 			data = data.reshape(-1, 48, data.shape[1])  # Reshape to (days, intervals per day, indices)
@@ -86,19 +86,21 @@ class NSRDB_contructor:
 			daily_data = data.sum(axis=1)  # Sum over intervals to get daily energy
 			converter = 1 / 1e6  # Convert J to MJ
 			daily_data = daily_data * converter
+			#self.logger.info(f"NSRDB data shape after conversion: {daily_data.shape}")	
 		elif self.variable in ['wind_speed', 'relative_humidity']:
 			daily_data = data.reshape(-1, 48, data.shape[1]).mean(axis=1)
+			#self.logger.info(f"NSRDB data shape after conversion: {daily_data.shape}")
 
 		return daily_data
 
 	def fetch_nsrdb(self, year):
-		if os.path.exists(f'/data/NSRDB/nsrdb_{year}_full_filtered.h5'):
-			file_path = f'/data/NSRDB/nsrdb_{year}_full_filtered.h5'
-			with h5py.File(file_path, mode='r') as f:
-				self.logger.info(f"Extracting {self.variable} for year {year} from CIWRE-BAE server... ")
-				daily_data = self.extract_from_file(f)
-		else:
-			self.logger.error(f"File {file_path} does not exist")
+		
+		file_path = f'/data/SWATGenXApp/GenXAppData/NSRDB/nsrdb_{year}_full_filtered.h5'
+		with h5py.File(file_path, mode='r') as f:
+			#self.logger.info(f"Extracting {self.variable} for year {year} from CIWRE-BAE server... ")
+			daily_data = self.extract_from_file(f)
+
+		#self.logger.info(f"NSRDB data shape for year {year}: {daily_data.shape}")
 		return daily_data
 
 	def write_to_file(self,data_all):
@@ -111,7 +113,7 @@ class NSRDB_contructor:
 			try:
 				row = self.NSRD_PRISM[self.NSRD_PRISM.NSRDB_index == nsrdb_idx].row.values[0]
 				col = self.NSRD_PRISM[self.NSRD_PRISM.NSRDB_index == nsrdb_idx].col.values[0]
-				self.logger.info(f"NSRDB_index: {nsrdb_idx}, row: {row}, col: {col}")
+				#self.logger.info(f"NSRDB_index: {nsrdb_idx}, row: {row}, col: {col}")
 				with open(os.path.join(self.output_path, f"r{row}_c{col}.{self.swat_dict[self.variable]}"), 'w') as f:
 					f.write(f"NSRDB(/nrel/nsrdb/v3/nsrdb_{self.years[0]}-{self.years[-1]}).INDEX:{nsrdb_idx}\n")
 					## write lat lon of the SWAT locations
@@ -142,11 +144,12 @@ class NSRDB_contructor:
 			for NSRDB_index, row, col in zip(self.NSRD_PRISM.NSRDB_index.values, self.NSRD_PRISM.row.values, self.NSRD_PRISM.col.values):
 				if (row, col) not in written_rows_cols:
 					written_rows_cols.add((row, col))
-					self.logger.info(f"NSRDB_index: {NSRDB_index}, row: {row}, col: {col}, {self.variable}")	
+					#self.logger.info(f"NSRDB_index: {NSRDB_index}, row: {row}, col: {col}, {self.variable}")	
 					f.write(f"r{row}_c{col}.{self.swat_dict[self.variable]}\n")
 
 	def run(self):
 		try:
+
 			self.extract_SWAT_PRISM_locations()
 			data_all = []
 			for year in self.years:
