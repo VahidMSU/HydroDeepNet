@@ -1,15 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import styled from '@emotion/styled';
+import colors from './colors.tsx';
 
-const colors = {
-  background: '#2b2b2c',
-  surface: '#444e5e',
-  accent: '#ff8500',
-  accentHover: '#ffa533',
-  text: '#ffffff',
-  border: '#ff8500',
-  error: '#ff4444'
-};
 
 export const DashboardContainer = styled.div`
   padding: 2rem;

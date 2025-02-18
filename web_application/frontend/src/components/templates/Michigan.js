@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import {
-  Container,
-  HeaderTitle,
+  MichiganContainer,
+  MichiganTitle,
+  ContentWrapper,
   ImageGrid,
   ImageCard,
+  CardTitle,
   Modal,
   ModalClose,
-  CardTitle,
-  ImageElement,
   ModalImage,
-} from '../../styles/Michigan.tsx'; // Import styled components
+} from '../../styles/Michigan.tsx';
 
 const MichiganTemplate = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentImage, setCurrentImage] = useState(null);
+
   const images = [
     {
       src: `${process.env.REACT_APP_PUBLIC_URL}/static/images/models_boundary_huc12_huc8.jpeg`,
@@ -60,9 +63,6 @@ const MichiganTemplate = () => {
     },
   ];
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentImage, setCurrentImage] = useState(null);
-
   const openModal = (image) => {
     setCurrentImage(image);
     setModalOpen(true);
@@ -77,34 +77,31 @@ const MichiganTemplate = () => {
   };
 
   return (
-    <Container>
-      <HeaderTitle>Michigan LP Hydrologic Modeling Coverage and Performance</HeaderTitle>
+    <MichiganContainer>
+      <MichiganTitle>Michigan LP Hydrologic Modeling Coverage and Performance</MichiganTitle>
 
-      <ImageGrid>
-        {images.map((image, index) => (
-          <ImageCard key={index}>
-            <ImageElement
-              src={image.src}
-              alt={image.alt}
-              onClick={() => openModal(image)}
-              data-index={index}
-            />
-            <CardTitle>{image.title}</CardTitle>
-          </ImageCard>
-        ))}
-      </ImageGrid>
+      <ContentWrapper>
+        <ImageGrid>
+          {images.map((image, index) => (
+            <ImageCard key={index} onClick={() => openModal(image)}>
+              <img src={image.src} alt={image.alt} style={{ width: '100%', height: 'auto' }} />
+              <CardTitle>{image.title}</CardTitle>
+            </ImageCard>
+          ))}
+        </ImageGrid>
+      </ContentWrapper>
 
       {modalOpen && currentImage && (
-        <Modal id="imageModal" onClick={closeModal}>
+        <Modal onClick={closeModal}>
           <ModalClose onClick={closeModal}>&times;</ModalClose>
           <ModalImage
             src={currentImage.src}
             alt={currentImage.alt}
-            onClick={(e) => e.stopPropagation()} // Prevent modal close on image click
+            onClick={(e) => e.stopPropagation()}
           />
         </Modal>
       )}
-    </Container>
+    </MichiganContainer>
   );
 };
 
