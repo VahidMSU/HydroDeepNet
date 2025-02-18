@@ -1,12 +1,24 @@
 import React, { useState } from 'react';
-import ContactUsTemplate from '../components/templates/ContactUs'; // Import the new ContactUsTemplate component
+import axios from 'axios';
+import ContactUsTemplate from '../components/templates/ContactUs';
 
 const ContactUs = () => {
   const [flashMessages, setFlashMessages] = useState([]);
 
-  const handleFormSubmit = (formData) => {
-    console.log('Submitted:', formData);
-    setFlashMessages([{ category: 'success', text: 'Your message has been sent!' }]);
+  const handleFormSubmit = async (formData) => {
+    try {
+      const response = await axios.post('/contact', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      setFlashMessages([{ category: 'success', text: response.data.message }]);
+    } catch (error) {
+      const errorMsg =
+        error.response?.data?.message || 'Failed to submit the message. Please try again later.';
+      setFlashMessages([{ category: 'error', text: errorMsg }]);
+    }
   };
 
   return (

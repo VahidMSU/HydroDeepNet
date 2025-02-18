@@ -1,9 +1,9 @@
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-//import '../css/Layout.css'; // Ensure the path is correct
+import colors from './colors.tsx';
 
 export const GlobalStyle = createGlobalStyle`
   body {
-    background-color: #f8f9fa;
+    background-color: ${colors.background};
     text-size-adjust: 100%;
   }
 `;
@@ -11,17 +11,14 @@ export const GlobalStyle = createGlobalStyle`
 export const HeaderTitle = styled.h1`
   text-align: center;
   margin-bottom: 30px;
-  color: #333;
+  color: ${colors.TitleText};
   font-size: 2.5rem;
   font-weight: bold;
-  text-align: -webkit-match-parent;
-  text-align: match-parent;
 `;
 
-
 export const Sidebar = styled.nav`
-  background-color: #343a40;
-  color: white;
+  background-color: ${colors.surfaceDark};
+  color: ${colors.text};
   width: 250px;
   padding: 20px;
   position: fixed;
@@ -32,29 +29,27 @@ export const Sidebar = styled.nav`
   backdrop-filter: blur(10px);
 
   h2 {
-    color: #ffc107;
+    color: ${colors.accent};
     font-weight: bold;
     margin-bottom: 30px;
   }
 `;
 
 export const NavLink = styled.a`
-  color: #adb5bd;
+  color: ${colors.textSecondary};
   margin: 15px 0;
   display: flex;
   align-items: center;
   text-decoration: none;
 
   &:hover {
-    color: #ffffff;
+    color: ${colors.text};
   }
 
   i {
     margin-right: 10px;
   }
 `;
-
-
 
 export const ViewDiv = styled.div`
   flex: 2;
@@ -127,8 +122,8 @@ export const LoadingIndicator = styled.div`
 `;
 
 export const Button = styled.button`
-  background-color: #007bff;
-  color: #fff;
+  background-color: ${colors.accent};
+  color: ${colors.text};
   padding: 10px 20px;
   border-radius: 5px;
   text-decoration: none;
@@ -138,13 +133,13 @@ export const Button = styled.button`
   cursor: pointer;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: ${colors.accentHover};
   }
 `;
 
 export const ButtonPrimary = styled(Button)`
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: ${colors.accent};
+  border-color: ${colors.accent};
   padding: 0.625rem 1.5rem;
   font-weight: 500;
   text-transform: capitalize;
@@ -152,7 +147,7 @@ export const ButtonPrimary = styled(Button)`
   transition: background-color 0.3s ease, transform 0.3s ease;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: ${colors.accentHover};
     transform: scale(1.05);
   }
 
@@ -178,7 +173,6 @@ export const FormControl = styled.input`
     box-shadow: 0 0 0 0.125rem rgba(0, 123, 255, 0.25);
   }
 `;
-
 
 export const Modal = styled.div`
   display: none;

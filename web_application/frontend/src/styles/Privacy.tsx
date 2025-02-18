@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-
+import colors from './colors.tsx';
 export const bodyStyle = {
   fontFamily: 'Arial, sans-serif',
   margin: '40px',

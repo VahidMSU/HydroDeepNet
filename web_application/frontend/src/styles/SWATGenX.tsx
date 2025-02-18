@@ -1,32 +1,17 @@
 /** @jsxImportSource @emotion/react */
 import styled from '@emotion/styled';
-
 // Updated dark theme color palette
-const colors = {
-  background: '#2b2b2c',    // Dark background
-  surface: '#2b2b2c',       // Surface for containers/cards (matches description container)
-  surfaceLight: '#2b2b2c',  // Using the same for slight contrast if needed
-  accent: '#ff8500',        // Bright accent color
-  accentHover: '#00202e',   // Same accent for simplicity; can tweak if required
-  accentAlt: '#ff6361',     // Alternative accent (for titles etc.)
-  text: '#ffd380',          // Main text color (lighter grey/white)
-  textSecondary: '#bbbbbb', // Secondary text (medium grey)
-  textMuted: '#ffd380',     // Muted text (darker grey)
-  border: '#687891',         // Use secondary color for borders
-  borderAccent: '#00202e',   // Accent border
-  inputBg: '#bbbbbb',        // Match surface for inputs
-  headerBg: '#2b2b2c',       // Header same as background
-  TitleText: '#00202e',      // Title text color
-  SectionText: '#00202e',   // Section text color
-  FieldText: "white"      // Field text color
-};
+import colors from './colors.tsx';
 
 export const FieldText = colors.FieldText;
 
 // New component for titles with black font
 export const HeaderTitle = styled.h1`
-  color: #000000;
-  // ...other title styles as needed...
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 2.5rem;
+  font-weight: bold;
 `;
 
 export const Row = styled.div`

@@ -1,4 +1,6 @@
+///data/SWATGenXApp/codes/web_application/frontend/src/components/forms/ContactUs.js
 import React, { useState } from 'react';
+import { FormGroup, Label, Input, TextArea, SubmitButton } from '../../styles/ContactUs.tsx';
 
 const ContactUsForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -24,9 +26,9 @@ const ContactUsForm = ({ onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="form-group">
-        <label htmlFor="name">Name:</label>
-        <input
+      <FormGroup>
+        <Label htmlFor="name">Name:</Label>
+        <Input
           type="text"
           id="name"
           name="name"
@@ -35,10 +37,10 @@ const ContactUsForm = ({ onSubmit }) => {
           value={formData.name}
           onChange={handleChange}
         />
-      </div>
-      <div className="form-group">
-        <label htmlFor="email">Email:</label>
-        <input
+      </FormGroup>
+      <FormGroup>
+        <Label htmlFor="email">Email:</Label>
+        <Input
           type="email"
           id="email"
           name="email"
@@ -47,10 +49,10 @@ const ContactUsForm = ({ onSubmit }) => {
           value={formData.email}
           onChange={handleChange}
         />
-      </div>
-      <div className="form-group">
-        <label htmlFor="message">Message:</label>
-        <textarea
+      </FormGroup>
+      <FormGroup>
+        <Label htmlFor="message">Message:</Label>
+        <TextArea
           id="message"
           name="message"
           rows="5"
@@ -58,21 +60,21 @@ const ContactUsForm = ({ onSubmit }) => {
           required
           value={formData.message}
           onChange={handleChange}
-        ></textarea>
-      </div>
-      <div className="form-group">
-        <input
+        />
+      </FormGroup>
+      <FormGroup>
+        <Input
           type="checkbox"
           id="newsletter"
           name="newsletter"
           checked={formData.newsletter}
           onChange={handleChange}
         />
-        <label htmlFor="newsletter">Subscribe to our newsletter</label>
-      </div>
-      <button type="submit" className="btn-submit">
-        Submit
-      </button>
+        <Label htmlFor="newsletter" style={{ display: 'inline', marginLeft: '10px' }}>
+          Subscribe to our newsletter
+        </Label>
+      </FormGroup>
+      <SubmitButton type="submit">Submit</SubmitButton>
     </form>
   );
 };

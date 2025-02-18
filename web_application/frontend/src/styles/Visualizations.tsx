@@ -1,25 +1,7 @@
 import styled from 'styled-components';
 import { CircularProgress } from '@mui/material';
-
-// Define our color palette
-const colors = {
-  background: '#2b2b2c',    // Dark background
-  surface: '#2b2b2c',       // Surface for containers/cards
-  surfaceLight: '#2b2b2c',
-  accent: '#ff8500',        // Bright accent color
-  accentHover: '#00202e',
-  accentAlt: '#ff6361',
-  text: '#ffd380',          // Main text color (lighter grey/white)
-  textSecondary: '#bbbbbb',
-  textMuted: '#ffd380',
-  border: '#687891',
-  borderAccent: '#00202e',
-  inputBg: '#bbbbbb',
-  headerBg: '#2b2b2c',
-  TitleText: '#00202e',
-  SectionText: '#00202e',
-  FieldText: 'white'
-};
+import colors from './colors.tsx';
+// Simplified color palette
 
 // Layout components
 export const Body = styled.div`
@@ -31,13 +13,13 @@ export const Body = styled.div`
 export const PageTitle = styled.h1<{ $variant?: string }>`
   font-size: 2rem;
   margin-bottom: 2rem;
-  color: ${colors.text};
+  color: ${colors.TitleText};
 `;
 
 // Form related components
 export const FormContainer = styled.form<{ $maxWidth?: string }>`
   padding: 2rem;
-  background-color: #ffffff;
+  background-color: ${colors.surface};
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   max-width: ${({ $maxWidth }) => $maxWidth || 'none'};
@@ -60,22 +42,23 @@ export const FormGroup = styled.div`
 
 export const FormLabel = styled.label`
   font-weight: 600;
-  color: #333;
+  color: ${colors.textSecondary};
   margin-bottom: 0.5rem;
 `;
 
 export const FormSelect = styled.select`
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid ${colors.border};
   border-radius: 4px;
   font-size: 1rem;
-  background-color: #fff;
+  background-color: ${colors.inputBg};
+  color: ${colors.FieldText};
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: #2196f3;
+    border-color: ${colors.borderAccent};
     outline: none;
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    box-shadow: 0 0 0 2px ${colors.borderAccent}33;
   }
 
   &[multiple] {
@@ -85,28 +68,29 @@ export const FormSelect = styled.select`
 
 export const FormInput = styled.input`
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid ${colors.border};
   border-radius: 4px;
   font-size: 1rem;
-  background-color: #fff;
+  background-color: ${colors.inputBg};
+  color: ${colors.FieldText};
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: #2196f3;
+    border-color: ${colors.borderAccent};
     outline: none;
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    box-shadow: 0 0 0 2px ${colors.borderAccent}33;
   }
 `;
 
 export const HelpText = styled.small`
   font-size: 0.875rem;
-  color: #666;
+  color: ${colors.textSecondary};
   margin-top: 0.25rem;
 `;
 
 export const SubmitButton = styled.button`
-  background-color: #2196f3;
-  color: white;
+  background-color: ${colors.accent};
+  color: ${colors.text};
   padding: 0.75rem 2rem;
   border: none;
   border-radius: 4px;
@@ -116,13 +100,13 @@ export const SubmitButton = styled.button`
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: #1976d2;
+    background-color: ${colors.accentHover};
   }
 `;
 
 export const ErrorMessage = styled.div`
-  color: #d32f2f;
-  background-color: #ffebee;
+  color: ${colors.accentAlt};
+  background-color: ${colors.surfaceLight};
   padding: 1rem;
   border-radius: 4px;
   margin-top: 1rem;
@@ -141,69 +125,84 @@ export const GifContainer = styled.div`
   gap: 2rem;
   margin-top: 2rem;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-
-  @media (min-width: 1200px) {
-    grid-template-columns: repeat(4, 1fr); // maximum 4 columns on wider screens
-  }
 `;
 
 export const GifWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
 
   img {
     width: 100%;
     height: auto;
-    object-fit: contain;
+    object-fit: cover;
   }
 `;
 
 export const DownloadButton = styled.a`
-  background-color: #4caf50;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  color: #ff8500;
   text-decoration: none;
-  
+  padding: 0.5rem 1rem;
+  border: 2px solid #ff8500;
+  border-radius: 8px;
+  margin-top: 1rem;
+  display: inline-block;
+  transition: all 0.3s ease;
+
   &:hover {
-    background-color: #388e3c;
+    background-color: #ff8500;
+    color: #ffffff;
   }
 `;
 
 export const NoResults = styled.div`
   text-align: center;
   padding: 2rem;
-  color: #666;
+  color: ${colors.textSecondary};
 `;
 
 // Collapsible components
 export const Collapsible = styled.div`
   margin: 1rem 0;
-  border: 1px solid #ddd;
+  border: 1px solid ${colors.border};
   border-radius: 4px;
 `;
-
+export const HeaderTitle = styled.h1`
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 2.5rem;
+  font-weight: bold;
+`;
 export const CollapsibleHeader = styled.div`
   padding: 1rem;
   cursor: pointer;
-  background-color: #f5f5f5;
+  background-color: ${colors.surfaceLight};
+  color: ${colors.text};
   
   &:hover {
-    background-color: #eeeeee;
+    background-color: ${colors.surface};
   }
 `;
 
 export const CollapsibleContent = styled.div`
   padding: 1rem;
+  color: ${colors.text};
 `;
 
 export const CollapsibleText = styled.p`
-  color: #333;
+  color: ${colors.text};
   line-height: 1.6;
   margin-bottom: 1rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 export const HeaderIcon = styled.span`
@@ -218,27 +217,24 @@ export const LoadingContainer = styled.div`
 `;
 
 export const StyledCircularProgress = styled(CircularProgress)`
-  color: #2196f3;
+  color: ${colors.accent};
 `;
 
 // Content components
 export const DescriptionContainer = styled.div`
-  margin: 2rem 0;
-  line-height: 1.6;
-  
-  p {
-    margin-bottom: 1rem;
-    
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
+  background-color: #444e5e;
+  padding: 24px;
+  margin: 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: white;
+  margin-bottom: 20px;
 `;
 
 export const Description = styled.p`
   margin-bottom: 1rem;
   line-height: 1.6;
-  color: #333;
+  color: ${colors.text};
   
   &:last-child {
     margin-bottom: 0;
@@ -257,8 +253,44 @@ export const Card = styled.div`
   padding: 1rem;
   margin: 1rem 0;
   border: 1px solid ${colors.border};
+  color: ${colors.text};
 `;
 
 export const CardBody = styled.div`
   padding: 1rem;
+`;
+
+export const VisualizationContainer = styled.div`
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  color: #ffffff;
+`;
+
+export const VisualizationTitle = styled.h2`
+  color: #ff8500;
+  font-size: 2.8rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 3px solid #ff8500;
+  padding-bottom: 1.2rem;
+  position: relative;
+  text-align: center;
+  
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: #ffa533;
+  }
+`;
+
+export const ContentWrapper = styled.div`
+  background-color: #444e5e;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 `;
