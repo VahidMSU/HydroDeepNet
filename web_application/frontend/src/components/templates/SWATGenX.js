@@ -1,12 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faSliders,
-  faGears,
-  faChartLine,
-  faChevronDown,
-  faChevronUp,
-} from '@fortawesome/free-solid-svg-icons';
+import { faGears, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import ModelSettingsForm from '../forms/SWATGenX.js';
 import {
   Row,
@@ -23,7 +17,6 @@ import {
   FieldText,
   ListElement,
   Section,
-  ModelContainer, // Import ModelContainer
 } from '../../styles/SWATGenX.tsx';
 import EsriMap from '../EsriMap.js';
 import { HeaderTitle, Card, CardBody } from '../../styles/Layout.tsx';
@@ -39,7 +32,10 @@ const SWATGenXTemplate = () => {
   const [sensitivityFlag, setSensitivityFlag] = useState(false);
   const [validationFlag, setValidationFlag] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackType, setFeedbackType] = useState(''); // 'success' | 'error'
 
+  // Fetch station data (optional in future, depending on your data source)
   useEffect(() => {
     if (stationData) {
       console.log('Station details:', stationData);
@@ -47,6 +43,12 @@ const SWATGenXTemplate = () => {
   }, [stationData]);
 
   const handleSubmit = async () => {
+    if (!stationInput.trim() && !stationData) {
+      setFeedbackMessage('Please provide a valid station number or select a station.');
+      setFeedbackType('error');
+      return;
+    }
+
     const formData = {
       stationInput,
       lsResolution,
@@ -54,16 +56,14 @@ const SWATGenXTemplate = () => {
       calibrationFlag,
       sensitivityFlag,
       validationFlag,
-      site_no: stationData?.SiteNumber || stationInput,
+      site_no: stationData?.SiteNumber || stationInput.trim(),
     };
 
     console.log('Submitting model settings:', formData);
 
-    if (!stationInput) {
-      alert(
-        'Notice: Default settings are being used for Landuse/Soil Resolution (250) and DEM Resolution (30).',
-      );
-    }
+    setLoading(true);
+    setFeedbackMessage('');
+    setFeedbackType('');
 
     try {
       const response = await fetch('/model-settings', {
@@ -74,32 +74,35 @@ const SWATGenXTemplate = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Model creation error:', errorData);
-        alert(`Error: ${errorData.error || 'Unknown error'}`);
-        return;
+        throw new Error(errorData.error || 'Unknown error occurred.');
       }
 
       const data = await response.json();
       console.log('Model creation response:', data);
-      alert('Model creation started!');
+
+      setFeedbackMessage('Model creation started successfully!');
+      setFeedbackType('success');
     } catch (error) {
-      console.error('Error submitting model settings:', error);
-      alert('Could not submit model settings. See console for details.');
+      console.error('Model creation failed:', error);
+      setFeedbackMessage(`Failed to start model creation: ${error.message}`);
+      setFeedbackType('error');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <ContainerFluid>
-      <HeaderTitle style={{ margin: '0 0 15px 0' }}>
-        <FontAwesomeIcon icon={faSliders} />
+      <HeaderTitle style={{ marginBottom: '15px' }}>
         <StrongText>SWATGenX – SWAT+ Model Creation Tool</StrongText>
-        <FontAwesomeIcon icon={faChartLine} style={{ marginLeft: '10px' }} />
       </HeaderTitle>
 
       <Content>
         <Row>
-          <Column width={0.32} minWidth="350px" mobileMinWidth="100%">
-            <ContentWrapper style={{ margin: 0, padding: '1.5rem', overflow: 'auto' }}>
+          {/* Left Panel - Form and Description */}
+          <Column width={0.35} minWidth="350px" mobileMinWidth="100%">
+            <ContentWrapper style={{ margin: 0, padding: '1.5rem' }}>
+              {/* Description Section */}
               <DescriptionContainer>
                 <DescriptionHeader
                   isOpen={isDescriptionOpen}
@@ -112,24 +115,28 @@ const SWATGenXTemplate = () => {
                 {isDescriptionOpen && (
                   <InfoBox>
                     <FieldText>
-                      SWATGenX is a dedicated tool for generating SWAT+ models for any USGS
-                      streamgage stations. Users can locate a station by searching for a name or
-                      providing a site number. Once selected, users can configure model settings,
-                      including:
+                      SWATGenX is an automated tool for creating SWAT+ models using USGS streamgage
+                      stations. You can locate a station by searching its site number or name.
+                      Configure your model by adjusting:
                     </FieldText>
                     <ListElement>
                       <StrongText>
-                        Selecting land use/soil and DEM resolution Enabling calibration, sensitivity
-                        analysis, and validation Invoking SWATGenX to generate the model
+                        - Landuse/Soil and DEM resolution
+                        <br />
+                        - Enable calibration, sensitivity analysis, and validation
+                        <br />
+                        - Start automatic model generation
                       </StrongText>
                     </ListElement>
                     <FieldText>
-                      The generated models will be available in the **user dashboard**, where they
-                      can be downloaded for further analysis.
+                      Once generated, your models will appear in the <StrongText>User Dashboard</StrongText>,
+                      where you can download or visualize them.
                     </FieldText>
                   </InfoBox>
                 )}
               </DescriptionContainer>
+
+              {/* Model Settings Form */}
               <Section>
                 <SectionTitle>
                   <FontAwesomeIcon icon={faGears} className="icon" />
@@ -158,15 +165,28 @@ const SWATGenXTemplate = () => {
                       loading={loading}
                       setLoading={setLoading}
                     />
+                    {/* Feedback Message */}
+                    {feedbackMessage && (
+                      <div
+                        style={{
+                          marginTop: '10px',
+                          color: feedbackType === 'success' ? 'green' : 'red',
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {feedbackMessage}
+                      </div>
+                    )}
                   </CardBody>
                 </Card>
               </Section>
             </ContentWrapper>
           </Column>
 
-          <Column width={0.68} minWidth="650px" mobileMinWidth="100%" className="map-column">
+          {/* Right Panel - Map */}
+          <Column width={0.65} minWidth="600px" mobileMinWidth="100%">
             <MapWrapper>
-              <Card style={{ height: '100%', margin: 0 }}>
+              <Card style={{ height: '100%' }}>
                 <CardBody style={{ padding: '0.75rem' }}>
                   <EsriMap
                     geometries={stationData?.geometries || []}

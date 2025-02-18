@@ -1,27 +1,28 @@
 import { styled } from '@mui/material/styles';
 import { Box, Button } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
+import colors from './colors.tsx';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#d2691e',
-      dark: '#a0522d',
+      main: colors.accent,
+      dark: colors.accentHover,
     },
     secondary: {
-      main: '#2f4f4f',
-      dark: '#1e3d3d',
+      main: colors.accentAlt,
+      dark: colors.surfaceDark,
     },
     background: {
-      default: '#1e1e1e',
-      paper: '#2d2d2d',
+      default: colors.background,
+      paper: colors.surface,
     },
     text: {
-      primary: '#dcdcdc',
-      secondary: '#a9a9a9',
+      primary: colors.text,
+      secondary: colors.textSecondary,
     },
     error: {
-      main: '#ff6347',
+      main: colors.error,
     },
   },
   spacing: 4,
@@ -64,25 +65,31 @@ const theme = createTheme({
   },
 });
 
-export default theme;
-
-
 const Body = styled('body')({
-  backgroundColor: '#f8f9fa',
+  backgroundColor: colors.background,
   textSizeAdjust: '100%',
 });
 
 const Card = styled(Box)({
-  border: 'none',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  border: `1px solid ${colors.border}`,
+  boxShadow: `0 4px 8px ${colors.overlayBg}`,
   backdropFilter: 'blur(10px)',
+  backgroundColor: colors.surface,
 });
 
 const BtnPrimary = styled(Button)({
   display: 'flex',
   alignItems: 'center',
   textAlign: 'match-parent',
+  backgroundColor: colors.accent,
+  color: colors.text,
+  '&:hover': {
+    backgroundColor: colors.accentHover,
+  },
   '& i': {
     marginRight: theme.spacing(0.5),
   },
 });
+
+export default theme;
+export { Body, Card, BtnPrimary };

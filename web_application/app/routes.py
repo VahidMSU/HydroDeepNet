@@ -352,17 +352,12 @@ class AppManager:
 						})
 
 			return jsonify(contents)
-
 		@self.app.route('/download/<path:filename>', methods=['GET'])
 		@conditional_login_required
 		def download_user_file(filename):
-			"""
-			Securely serves individual files from the user's directory.
-			"""
 			user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
 			full_path = os.path.join(user_dir, filename)
 
-			# Security check: Ensure the requested file is within the user's directory
 			if not full_path.startswith(user_dir) or not os.path.isfile(full_path):
 				self.app.logger.error(f"File not found or access denied: {full_path}")
 				return jsonify({'error': 'File not found or access denied'}), 404
@@ -374,34 +369,27 @@ class AppManager:
 		@self.app.route('/download-directory/<path:dirpath>', methods=['GET'])
 		@conditional_login_required
 		def download_directory(dirpath):
-			"""
-			Compresses the requested directory into a ZIP file and serves it for download.
-			"""
 			user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
 			full_dir_path = os.path.join(user_dir, dirpath)
 
-			# Ensure the requested directory is within the user's allowed directory
 			if not full_dir_path.startswith(user_dir) or not os.path.isdir(full_dir_path):
 				self.app.logger.error(f"Unauthorized directory access or not found: {full_dir_path}")
 				return jsonify({'error': 'Directory not found or access denied'}), 404
 
 			self.app.logger.info(f"Creating ZIP for directory: {full_dir_path}")
 
-			# Create a temporary ZIP file
 			with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
-				zip_path = tmp_zip.name  # Temporary file path
+				zip_path = tmp_zip.name
 
-			# Create ZIP archive
 			try:
-				shutil.make_archive(zip_path[:-4], 'zip', full_dir_path)  # Strip .zip from tempfile path
+				shutil.make_archive(zip_path[:-4], 'zip', full_dir_path)
 			except Exception as e:
 				self.app.logger.error(f"Failed to create ZIP: {e}")
 				return jsonify({'error': 'Failed to create ZIP file'}), 500
 
 			zip_file_name = f"{os.path.basename(dirpath)}.zip"
-			final_zip_path = zip_path[:-4] + ".zip"  # Ensure proper file name
+			final_zip_path = zip_path[:-4] + ".zip"
 
-			# Ensure ZIP exists before sending
 			if not os.path.exists(final_zip_path):
 				self.app.logger.error(f"ZIP file missing: {final_zip_path}")
 				return jsonify({'error': 'ZIP file not found'}), 500
@@ -498,33 +486,34 @@ class AppManager:
 			self.app.logger.info("Model Confirmation route called")
 			#return render_template('model_confirmation.html')
 			return jsonify({"title": "Model Confirmation", "message": "Model confirmation page"})
-
-		@self.app.route('/contact', methods=['GET', 'POST'])
+		
+		@self.app.route('/contact', methods=['POST'])
 		@conditional_login_required
 		@conditional_verified_required
 		def contact():
 			self.app.logger.info("Contact route called")
-			form = ContactForm()
-			if form.validate_on_submit():
-				name = form.name.data
-				email = form.email.data
-				message = form.message.data
-				contact_message = ContactMessage(name=name, email=email, message=message)
-				try:
-					db.session.add(contact_message)
-					db.session.commit()
-					self.app.logger.info(f"Message from {name} added to the database")	
-					#flash('Your message has been sent successfully!')
-					message = "Your message has been sent successfully!"
-				except Exception as e:
-					self.app.logger.error(f"Error adding message to the database: {e}")	
-					db.session.rollback()
-					#flash('An error occurred while sending the message. Please try again.')
-					message = "An error occurred while sending the message. Please try again."
-				#return redirect(url_for('contact'))
-				return jsonify({"status": "success", "message": message, "redirect": "/contact"})
-			#return render_template('contact.html', form=form)
-			return jsonify({"title": "Contact", "message": "contact page", "form": form})
+
+			data = request.get_json()
+			if not data:
+				return jsonify({"status": "error", "message": "Invalid JSON data"}), 400
+
+			name = data.get('name')
+			email = data.get('email')
+			message = data.get('message')
+
+			if not all([name, email, message]):
+				return jsonify({"status": "error", "message": "All fields are required"}), 400
+
+			contact_message = ContactMessage(name=name, email=email, message=message)
+			try:
+				db.session.add(contact_message)
+				db.session.commit()
+				self.app.logger.info(f"Message from {name} added to the database")
+				return jsonify({"status": "success", "message": "Your message has been sent successfully!"})
+			except Exception as e:
+				self.app.logger.error(f"Error adding message to the database: {e}")
+				db.session.rollback()
+				return jsonify({"status": "error", "message": "An error occurred while sending the message."}), 500
 
 		@self.app.route('/hydro_geo_dataset', methods=['GET', 'POST'])
 		@conditional_login_required
