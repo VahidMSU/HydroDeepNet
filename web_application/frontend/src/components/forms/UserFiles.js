@@ -1,39 +1,11 @@
 ///data/SWATGenXApp/codes/web_application/frontend/src/components/forms/UserFiles.js
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faFolder, faFile } from '@fortawesome/free-solid-svg-icons';
-import {
-  FileContainer,
-  DirectoryButton,
-  DownloadButton,
-  ErrorMessage,
-  GoUpButton,
-  DirectoryContainer,
-  FileList,
-  DirectoryItem,
-  FileItem,
-} from '../../styles/UserFilesStyles.tsx';
-
 const UserFilesForm = ({
   contents,
   handleDirectoryClick,
   handleDownloadFile,
   handleDownloadDirectory,
   errorMessage,
-  username, // Add username prop
 }) => {
-  const handleFileDownload = (url) => {
-    const fullUrl = `/data/SWATGenXApp/Users/${username}/SWATplus_by_VPUID/${url}`;
-    console.log(`Downloading file from URL: ${fullUrl}`);
-    handleDownloadFile(fullUrl);
-  };
-
-  const handleDirectoryDownload = (url) => {
-    const fullUrl = `/data/SWATGenXApp/Users/${username}/SWATplus_by_VPUID/${url}`;
-    console.log(`Downloading directory from URL: ${fullUrl}`);
-    handleDownloadDirectory(fullUrl);
-  };
-
   return (
     <FileContainer>
       {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
@@ -46,7 +18,7 @@ const UserFilesForm = ({
             <DirectoryButton onClick={() => handleDirectoryClick(directory.path)}>
               <FontAwesomeIcon icon={faFolder} /> {directory.name}
             </DirectoryButton>
-            <DownloadButton onClick={() => handleDirectoryDownload(directory.download_zip_url)}>
+            <DownloadButton onClick={() => handleDownloadDirectory(directory.download_zip_url)}>
               <FontAwesomeIcon icon={faDownload} />
             </DownloadButton>
           </DirectoryItem>
@@ -58,7 +30,7 @@ const UserFilesForm = ({
             <span>
               <FontAwesomeIcon icon={faFile} /> {file.name}
             </span>
-            <DownloadButton onClick={() => handleFileDownload(file.download_url)}>
+            <DownloadButton onClick={() => handleDownloadFile(file.download_url)}>
               <FontAwesomeIcon icon={faDownload} />
             </DownloadButton>
           </FileItem>
@@ -67,5 +39,3 @@ const UserFilesForm = ({
     </FileContainer>
   );
 };
-
-export default UserFilesForm;
