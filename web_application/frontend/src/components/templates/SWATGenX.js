@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGears, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import ModelSettingsForm from '../forms/SWATGenX.js';
@@ -124,13 +124,13 @@ const SWATGenXTemplate = () => {
                         - Landuse/Soil and DEM resolution
                         <br />
                         - Enable calibration, sensitivity analysis, and validation
-                        <br />
-                        - Start automatic model generation
+                        <br />- Start automatic model generation
                       </StrongText>
                     </ListElement>
                     <FieldText>
-                      Once generated, your models will appear in the <StrongText>User Dashboard</StrongText>,
-                      where you can download or visualize them.
+                      Once generated, your models will appear in the{' '}
+                      <StrongText>User Dashboard</StrongText>, where you can download or visualize
+                      them.
                     </FieldText>
                   </InfoBox>
                 )}
