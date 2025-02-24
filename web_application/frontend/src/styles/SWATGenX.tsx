@@ -177,11 +177,11 @@ export const DescriptionHeader = styled.div<DescriptionHeaderProps>`
   }
 `;
 
-export const StrongText = styled.strong`
-  color: ${colors.accentAlt};
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+export const StrongText = styled.span`
+  color: black;
+  font-weight: bold;
 `;
+
 export const TitleText = styled.h4`
   color: ${colors.TitleText};
   font-weight: 600;

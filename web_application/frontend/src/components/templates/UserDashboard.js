@@ -1,6 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Typography, Grid2, Card, CardContent, Button, Breadcrumbs, Link, Alert } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Grid, // Changed from Grid2 to Grid
+  Card,
+  CardContent,
+  Button,
+  Breadcrumbs,
+  Link,
+  Alert,
+} from '@mui/material';
 import { styled } from '@mui/system';
 import FolderIcon from '@mui/icons-material/Folder';
 import FilePresentIcon from '@mui/icons-material/InsertDriveFile';
@@ -69,13 +79,15 @@ const UserDashboardTemplate = ({
   currentPath = '',
   handleDirectoryClick,
   handleDownloadFile,
-  errorMessage,
+  errorMessage = '', // Use default parameter here
 }) => {
   const pathParts = currentPath ? currentPath.split('/').filter(Boolean) : [];
 
   return (
     <DashboardContainer>
-      <DashboardHeader variant="h1" sx={{ fontWeight: 'bold', mb: 3}}>User Dashboard</DashboardHeader>
+      <DashboardHeader variant="h1" sx={{ fontWeight: 'bold', mb: 3 }}>
+        User Dashboard
+      </DashboardHeader>
 
       {/* Error Message */}
       {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
@@ -85,7 +97,7 @@ const UserDashboardTemplate = ({
         <Link
           component="button"
           underline="hover"
-          variant='h4'
+          variant="h4"
           sx={{ color: '#ffa533', fontWeight: 'bold', mt: 3 }}
           onClick={() => handleDirectoryClick('')}
         >
@@ -105,10 +117,10 @@ const UserDashboardTemplate = ({
       </Breadcrumbs>
 
       {/* Directory and File Grid */}
-      <Grid2 container spacing={3} justifyContent="center" alignItems="center">
+      <Grid container spacing={3} justifyContent="center" alignItems="center">
         {/* Directories */}
         {contents.directories.map((dir, index) => (
-          <Grid2 item xs={12} sm={6} md={4} key={`dir-${index}`}>
+          <Grid item xs={12} sm={6} md={4} key={`dir-${index}`}>
             <FileCard>
               <CardContent>
                 <FileHeader>
@@ -122,12 +134,12 @@ const UserDashboardTemplate = ({
                 </ActionButton>
               </CardContent>
             </FileCard>
-          </Grid2>
+          </Grid>
         ))}
 
         {/* Files */}
         {contents.files.map((file, index) => (
-          <Grid2 item xs={12} sm={6} md={4} key={`file-${index}`}>
+          <Grid item xs={12} sm={6} md={4} key={`file-${index}`}>
             <FileCard>
               <CardContent>
                 <FileHeader>
@@ -141,20 +153,20 @@ const UserDashboardTemplate = ({
                 </ActionButton>
               </CardContent>
             </FileCard>
-          </Grid2>
+          </Grid>
         ))}
 
         {/* Empty State */}
         {contents.directories.length === 0 && contents.files.length === 0 && (
-          <Grid2 item xs={12}>
+          <Grid item xs={12}>
             <EmptyState>
               <FolderIcon sx={{ fontSize: 60, color: '#ffa533' }} />
               <Typography variant="h5">No Files Found</Typography>
               <Typography>This folder is empty</Typography>
             </EmptyState>
-          </Grid2>
+          </Grid>
         )}
-      </Grid2>
+      </Grid>
     </DashboardContainer>
   );
 };
@@ -169,13 +181,6 @@ UserDashboardTemplate.propTypes = {
   handleDirectoryClick: PropTypes.func.isRequired,
   handleDownloadFile: PropTypes.func.isRequired,
   errorMessage: PropTypes.string,
-};
-
-// Add default props
-UserDashboardTemplate.defaultProps = {
-  contents: { directories: [], files: [] },
-  currentPath: '',
-  errorMessage: '',
 };
 
 export default UserDashboardTemplate;
