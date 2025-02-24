@@ -31,7 +31,7 @@ def create_app():
     app = Flask(
         __name__,
         static_url_path='/static',
-        static_folder='/data/SWATGenXApp/GenXAppData'
+        static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'build', 'static')
     )
 
     CORS(app)  # Enable CORS for all routes

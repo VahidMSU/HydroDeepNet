@@ -7,11 +7,11 @@ from functools import partial
 try:
 	from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 	from SWATGenX.utils import get_all_VPUIDs
-	from SWATGenX.core import SWATGenXCore_run
+	from SWATGenX.core import SWATGenXCore_helper
 except Exception:
 	from SWATGenXConfigPars import SWATGenXPaths
 	from utils import get_all_VPUIDs
-	from core import SWATGenXCore_run
+	from core import SWATGenXCore_helper
 
 from concurrent.futures import ProcessPoolExecutor, as_completed, wait, FIRST_COMPLETED
 
@@ -26,9 +26,11 @@ class SWATGenXCommand:
 			swatgenx_config (dict): Configuration settings for the SWATGenX command.
 		"""
 		self.config = swatgenx_config
+		
 		self.paths = SWATGenXPaths(**swatgenx_config)
 		
-		self.logger = LoggerSetup(verbose=True, rewrite=True).setup_logger("SWATGenXCommand")
+		self.logger = LoggerSetup(verbose=True, report_path=self.paths.report_path,
+							rewrite=True).setup_logger("SWATGenXCommand")
 		self.logger.info(f"usernames: {self.config.get('username')}, outpath: {self.paths.swatgenx_outlet_path}")		
 		#self.logger.info(f"extracted_swat_prism_path: {self.paths.extracted_swat_prism_path}")	
 		#os.makedirs(self.paths.extracted_swat_prism_path, exist_ok=True)
@@ -200,7 +202,7 @@ class SWATGenXCommand:
 						"list_of_huc12s": list_of_huc12s
 					})
 
-					wrapped_SWATGenXCore = partial(SWATGenXCore_run, config_copy)
+					wrapped_SWATGenXCore = partial(SWATGenXCore_helper, config_copy)
 
 					# Throttle if too many futures are already in flight
 					while len(futures) >= max_queue_size:
@@ -263,7 +265,7 @@ class SWATGenXCommand:
 					})
 
 					# Prepare function call
-					wrapped_SWATGenXCore = partial(SWATGenXCore_run, self.paths, self.config)
+					wrapped_SWATGenXCore = partial(SWATGenXCore_helper, self.paths, self.config)
 
 					# If the queue is already full, wait until at least one finishes
 					while len(futures) >= max_queue_size:
