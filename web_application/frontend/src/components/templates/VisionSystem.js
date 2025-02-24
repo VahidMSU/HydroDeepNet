@@ -14,19 +14,11 @@ import {
 } from '../../styles/VisionSystem.tsx';
 
 const VisionSystemTemplate = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalImage, setModalImage] = useState('');
   const videoRefs = useRef([]);
   const mainVideoRef = useRef(null);
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [mediaType, setMediaType] = useState(null); // 'video' or 'image'
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Close the modal.
-  const closeModal = () => {
-    setModalOpen(false);
-    setModalImage('');
-  };
 
   // Batch numbers for the prediction videos (1 through 6).
   const batches = useMemo(() => [1, 2, 3, 4, 5, 6], []);
@@ -134,9 +126,9 @@ const VisionSystemTemplate = () => {
     });
   }, [setupVideoSync]);
 
-  // Update video rendering
+  // Update video rendering with a key prop
   const renderVideo = (src, index) => (
-    <VideoContainer onClick={() => handleMediaClick(src, 'video', index)}>
+    <VideoContainer key={`video-${index}`} onClick={() => handleMediaClick(src, 'video', index)}>
       <video ref={(el) => (videoRefs.current[index] = el)} loop muted playsInline autoPlay>
         <source src={src} type="video/mp4" />
       </video>
@@ -185,7 +177,7 @@ const VisionSystemTemplate = () => {
               renderVideo(
                 process.env.REACT_APP_PUBLIC_URL +
                   `/static/videos/predictions_vs_ground_truth_batch_${batch}_0_fixed.mp4`,
-                index,
+                index + 1, // Added +1 to avoid conflict with main video index
               ),
             )}
           </VideoGrid>
@@ -193,30 +185,28 @@ const VisionSystemTemplate = () => {
 
         <section>
           <SectionHeader>Overview of GeoCNN</SectionHeader>
-          <SectionText>
+          <div>
+            {' '}
+            {/* Changed from SectionText to div */}
             GeoCNN efficiently handles:
             <ul>
-              <li>
+              <li key="datasets">
                 <strong>Large Datasets:</strong> Fast loading/reloading of multi-year monthly data.
               </li>
-              <li>
+              <li key="inputs">
                 <strong>Multi-Scale Inputs:</strong> Incorporates MODIS, PRISM, soil, and land cover
                 info.
               </li>
-              <li>
+              <li key="architectures">
                 <strong>Powerful Architectures:</strong> CNN-Transformers and fully
                 Transformer-based models.
               </li>
-              <li>
+              <li key="flexibility">
                 <strong>Spatial & Temporal Flexibility:</strong> Custom skip connections, attention,
                 and advanced up/down-sampling.
               </li>
             </ul>
-            Target variables (e.g., ET) are observed at 250m resolution across Michigan. Data gaps
-            are filled using water masks, mean interpolation, and global scaling from 0 to 1.
-            Invalid areas (like Lake Michigan) are marked to help the model distinguish land vs.
-            water.
-          </SectionText>
+          </div>
         </section>
 
         <section>
@@ -233,25 +223,24 @@ const VisionSystemTemplate = () => {
 
         <section>
           <SectionHeader>Deep Learning Models</SectionHeader>
-          <SectionText>
+          <div>
+            {' '}
+            {/* Changed from SectionText to div */}
             <ul>
-              <li>
+              <li key="inception">
                 <strong>Inception-LSTM:</strong> Combines spatial feature extraction with LSTM-based
                 temporal modeling.
               </li>
-              <li>
+              <li key="cnn">
                 <strong>CNN-Transformers:</strong> Uses a CNN down-sampling path and a Transformer
                 encoder for time steps.
               </li>
-              <li>
+              <li key="transformer">
                 <strong>Fully Transformer-Based:</strong> Omits convolutional operations entirely,
                 focusing on spatiotemporal attention.
               </li>
             </ul>
-            Multiple iterations (V1–V8) refined hyperparameters (positional encodings, attention
-            mechanisms, learning rates, and more). Removing batch normalization from most layers
-            helped stabilize training, except in squeeze-and-excitation blocks.
-          </SectionText>
+          </div>
         </section>
 
         <section>
@@ -273,56 +262,45 @@ const VisionSystemTemplate = () => {
 
         <section>
           <SectionHeader>CNN-Transformer Architecture</SectionHeader>
-          <SectionText>
+          <div>
+            {' '}
+            {/* Changed from SectionText to div */}
             Our final CNN-Transformer processes inputs of shape [B, T, C, H, W]—batch, time steps,
             channels, height, width. Key elements include:
             <ul>
-              <li>
+              <li key="downsampling">
                 <strong>Down-Sampling Pathway:</strong> Deformable convolutions, SE blocks,
                 coordinate attention for hierarchical spatial features.
               </li>
-              <li>
+              <li key="encoder">
                 <strong>Transformer Encoder:</strong> Fourier-based positional encoding and
                 multi-head attention for temporal modeling.
               </li>
-              <li>
+              <li key="upsampling">
                 <strong>Up-Sampling Pathway:</strong> Sub-pixel convolution and skip connections to
                 restore spatial resolution.
               </li>
             </ul>
-          </SectionText>
-          <VideoContainer>
-            <img
-              src={`${process.env.REACT_APP_PUBLIC_URL}/static/images/CNN-Transformer.png`}
-              alt="CNN-Transformer Architecture"
-              onClick={() =>
-                handleMediaClick(
-                  `${process.env.REACT_APP_PUBLIC_URL}/static/images/CNN-Transformer.png`,
-                  'image',
-                  batches.length + 1,
-                )
-              }
-            />
-          </VideoContainer>
+          </div>
         </section>
 
         <section>
           <SectionHeader>Specialized Loss Function</SectionHeader>
-          <SectionText>
+          <div>
+            {' '}
+            {/* Changed from SectionText to div */}
             GeoCNN uses a custom loss that evaluates:
             <ul>
-              <li>
+              <li key="spatial">
                 <strong>Spatial Dimensions:</strong> Penalizes boundary errors, outliers, and
                 no-value regions.
               </li>
-              <li>
+              <li key="temporal">
                 <strong>Temporal Dimensions:</strong> Seasonal performance in winter, spring,
                 summer, and fall.
               </li>
             </ul>
-            This ensures that the model captures both local spatial structures and broader seasonal
-            trends.
-          </SectionText>
+          </div>
         </section>
 
         {selectedMedia && (
