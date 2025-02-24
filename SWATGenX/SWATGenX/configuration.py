@@ -77,6 +77,8 @@ def check_configuration(VPUID, landuse_epoch) -> str:
         print('Loaded raster CRS', src.crs)
         EPSG = src.crs.to_string()
 
+    print('DEBUG-----> DEM crs:', EPSG)
+    print('DEBUG-----> streams crs:', streams.crs.to_string())
     if streams.crs.to_string().split(' ')[1].split('=')[-1] != EPSG.split(':')[-1][-2:]:
         print('streams crs:', streams.crs.to_string().split(' ')[1].split('=')[-1])
         print('DEM crs:', EPSG.split(':')[-1])

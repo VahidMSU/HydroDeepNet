@@ -21,6 +21,10 @@ os.makedirs(LOG_DIR, exist_ok=True)
 # Initialize the Flask app
 app = create_app()
 
+# Configure static files path
+app.static_folder = os.path.join(os.path.dirname(__file__), 'frontend', 'build', 'static')
+app.static_url_path = '/static'
+
 # Set up SocketIO with CORS allowed
 socketio = SocketIO(app, cors_allowed_origins="*")
 

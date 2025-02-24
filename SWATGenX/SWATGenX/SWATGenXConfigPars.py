@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 import os
-
+#/data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXConfigPars.py
 @dataclass
 class SWATGenXPaths:
+    overwrite: bool = True  
     base_path: str = "/data/SWATGenXApp/GenXAppData/"
     codes_path: str = "/data/SWATGenXApp/codes/SWATGenX/"
     SWATPlusEditor_path: str = '/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api'
@@ -39,8 +40,8 @@ class SWATGenXPaths:
     gSSURGO_CONUS_gdb_path: str = f"{base_path}Soil/gSSURGO_CONUS/gSSURGO_CONUS.gdb"
     
     # Software Paths
-    wgn_db: str = "/data/SWATGenXApp/swatplus_installation/swatplus_wgn.sqlite"
-    QSWATPlus_env_path: str = '/home/rafieiva/.local/share/QGIS/QGIS3/profiles/default/python/plugins/QSWATPlusLinux3_64/'
+    wgn_db: str = "/data/SWATGenXApp/codes/swatplus_installation/swatplus_wgn.sqlite"
+    QSWATPlus_env_path: str = '/usr/share/qgis/python/plugins/QSWATPlusLinux3_64'
     runQSWATPlus_path: str = "/data/SWATGenXApp/codes/scripts/runQSWATPlus.sh"
     swat_exe: str = "/data/SWATGenXApp/codes/bin/swatplus"
     bin_path: str = "/data/SWATGenXApp/codes/bin/"
@@ -111,6 +112,4 @@ class SWATGenXPaths:
         
         if self.username is not None:
             self.swatgenx_outlet_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
-            self.extracted_swat_prism_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.station_name}/PRISM"
-            os.makedirs(self.extracted_swat_prism_path, exist_ok=True)
-                
+            self.report_path: str = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
