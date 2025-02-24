@@ -21,8 +21,8 @@ const Message = styled.div`
   padding: 10px;
   border-radius: 8px;
   max-width: 80%;
-  ${({ messageType }) =>
-    messageType === 'bot'
+  ${({ $messageType }) =>
+    $messageType === 'bot'
       ? `
     background: #e3f2fd;
     margin-right: auto;
@@ -33,7 +33,7 @@ const Message = styled.div`
   `}
 `;
 
-const CHATBOT_API_URL = 'http://35.9.219.76:5000/api/generate';
+const CHATBOT_API_URL = 'http://localhost:5000/api/chatbot'; // Now calls Flask instead of Ollama directly
 
 const ChatInterface = ({ dataResults }) => {
   const [messages, setMessages] = useState([]);
@@ -42,28 +42,26 @@ const ChatInterface = ({ dataResults }) => {
   const generateChatbotResponse = async (data) => {
     setIsLoading(true);
     try {
-      const prompt = `Analyze this environmental data and provide insights: ${JSON.stringify(data)}`;
       const response = await fetch(CHATBOT_API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: 'deepseek-r1:70b',
-          prompt: prompt,
+          prompt: `Analyze this environmental data summary: ${JSON.stringify(data).slice(0, 500)}...`,
           stream: false,
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const result = await response.json();
       return result.response || "Sorry, I couldn't analyze the data.";
     } catch (error) {
       console.error('Error calling chatbot API:', error);
-      return 'Sorry, I encountered an error analyzing the data.';
+      return `Error: ${error.message}`;
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +69,6 @@ const ChatInterface = ({ dataResults }) => {
 
   React.useEffect(() => {
     if (dataResults) {
-      // Add user's data as a message
       setMessages((prev) => [
         ...prev,
         {
@@ -81,7 +78,6 @@ const ChatInterface = ({ dataResults }) => {
         },
       ]);
 
-      // Get chatbot response
       generateChatbotResponse(dataResults).then((response) => {
         setMessages((prev) => [
           ...prev,
@@ -98,7 +94,7 @@ const ChatInterface = ({ dataResults }) => {
     <ChatContainer>
       <ChatMessages>
         {messages.map((message, index) => (
-          <Message key={index} messageType={message.messageType}>
+          <Message key={index} $messageType={message.messageType}>
             <div>{message.text}</div>
             {message.data && (
               <pre style={{ fontSize: '0.8em', marginTop: '10px' }}>
@@ -107,7 +103,7 @@ const ChatInterface = ({ dataResults }) => {
             )}
           </Message>
         ))}
-        {isLoading && <Message messageType="bot">Analyzing data...</Message>}
+        {isLoading && <Message $messageType="bot">Analyzing data...</Message>}
       </ChatMessages>
     </ChatContainer>
   );

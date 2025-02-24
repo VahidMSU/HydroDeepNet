@@ -1,93 +1,160 @@
-///data/SWATGenXApp/codes/web_application/frontend/src/components/templates/UserDashboard.js
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types';
-import {
-  DashboardContainer,
-  DashboardHeader,
-  ContentGrid,
-  FileCard,
-  FileHeader,
-  FileInfo,
-  ActionButton,
-  BreadcrumbNav,
-  EmptyState,
-  ErrorMessage,
-} from '../../styles/UserDashboard.tsx';
+import { Box, Typography, Grid2, Card, CardContent, Button, Breadcrumbs, Link, Alert } from '@mui/material';
+import { styled } from '@mui/system';
+import FolderIcon from '@mui/icons-material/Folder';
+import FilePresentIcon from '@mui/icons-material/InsertDriveFile';
+import DownloadIcon from '@mui/icons-material/Download';
 
+// Styled Components
+const DashboardContainer = styled(Box)({
+  maxWidth: '1000px',
+  margin: '2rem auto',
+  padding: '2rem',
+  backgroundColor: '#444e5e',
+  borderRadius: '16px',
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+});
+
+const DashboardHeader = styled(Typography)({
+  color: 'white',
+  fontSize: '2.5rem',
+  textAlign: 'center',
+  marginBottom: '1rem',
+});
+
+const FileCard = styled(Card)({
+  backgroundColor: '#ffffff',
+  borderRadius: '8px',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: '0 5px 15px rgba(255, 133, 0, 0.3)',
+  },
+});
+
+const FileHeader = styled(Typography)({
+  display: 'flex',
+  alignItems: 'center',
+  fontSize: '1.2rem',
+  fontWeight: 600,
+  color: '#2b2b2c',
+});
+
+const FileInfo = styled(Typography)({
+  fontSize: '0.9rem',
+  color: '#555',
+});
+
+const ActionButton = styled(Button)({
+  backgroundColor: '#e67500',
+  color: '#ffffff',
+  padding: '0.5rem 1rem',
+  fontSize: '1rem',
+  fontWeight: 600,
+  '&:hover': {
+    backgroundColor: '#ff8500',
+  },
+});
+
+const EmptyState = styled(Box)({
+  textAlign: 'center',
+  color: '#ffffff',
+  marginTop: '2rem',
+});
+
+// UserDashboard Component
 const UserDashboardTemplate = ({
   contents = { directories: [], files: [] },
   currentPath = '',
   handleDirectoryClick,
   handleDownloadFile,
-  handleDownloadDirectory,
   errorMessage,
 }) => {
-  // Only split the path if it exists and is not empty
   const pathParts = currentPath ? currentPath.split('/').filter(Boolean) : [];
 
   return (
     <DashboardContainer>
-      <DashboardHeader>
-        <h1>User Dashboard</h1>
-      </DashboardHeader>
+      <DashboardHeader variant="h1" sx={{ fontWeight: 'bold', mb: 3}}>User Dashboard</DashboardHeader>
 
-      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+      {/* Error Message */}
+      {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 
-      <BreadcrumbNav>
-        <button onClick={() => handleDirectoryClick('')}>Home</button>
-        {pathParts.length > 0 &&
-          pathParts.map((part, index) => (
-            <React.Fragment key={index}>
-              <span>/</span>
-              <button onClick={() => handleDirectoryClick(pathParts.slice(0, index + 1).join('/'))}>
-                {part}
-              </button>
-            </React.Fragment>
-          ))}
-      </BreadcrumbNav>
+      {/* Breadcrumb Navigation */}
+      <Breadcrumbs sx={{ color: 'white' }}>
+        <Link
+          component="button"
+          underline="hover"
+          variant='h4'
+          sx={{ color: '#ffa533', fontWeight: 'bold', mt: 3 }}
+          onClick={() => handleDirectoryClick('')}
+        >
+          Home
+        </Link>
+        {pathParts.map((part, index) => (
+          <Link
+            key={index}
+            component="button"
+            underline="hover"
+            sx={{ color: '#ffffff' }}
+            onClick={() => handleDirectoryClick(pathParts.slice(0, index + 1).join('/'))}
+          >
+            {part}
+          </Link>
+        ))}
+      </Breadcrumbs>
 
-      <ContentGrid>
+      {/* Directory and File Grid */}
+      <Grid2 container spacing={3} justifyContent="center" alignItems="center">
+        {/* Directories */}
         {contents.directories.map((dir, index) => (
-          <FileCard key={`dir-${index}`}>
-            <FileHeader>
-              <FontAwesomeIcon icon="folder" className="icon" />
-              <h3>{dir.name}</h3>
-            </FileHeader>
-            <FileInfo>
-              <p>Created: {new Date(dir.created).toLocaleDateString()}</p>
-              <p>{dir.items} items</p>
-            </FileInfo>
-            <ActionButton onClick={() => handleDirectoryClick(dir.path)}>
-              <FontAwesomeIcon icon="folder" className="icon" /> Open
-            </ActionButton>
-          </FileCard>
+          <Grid2 item xs={12} sm={6} md={4} key={`dir-${index}`}>
+            <FileCard>
+              <CardContent>
+                <FileHeader>
+                  <FolderIcon sx={{ color: '#ffa533', mr: 1 }} />
+                  {dir.name}
+                </FileHeader>
+                <FileInfo>Created: {new Date(dir.created).toLocaleDateString()}</FileInfo>
+                <FileInfo>{dir.items} items</FileInfo>
+                <ActionButton fullWidth onClick={() => handleDirectoryClick(dir.path)}>
+                  Open Folder
+                </ActionButton>
+              </CardContent>
+            </FileCard>
+          </Grid2>
         ))}
 
+        {/* Files */}
         {contents.files.map((file, index) => (
-          <FileCard key={`file-${index}`}>
-            <FileHeader>
-              <FontAwesomeIcon icon="file" className="icon" />
-              <h3>{file.name}</h3>
-            </FileHeader>
-            <FileInfo>
-              <p>Size: {file.size}</p>
-              <p>Modified: {new Date(file.modified).toLocaleDateString()}</p>
-            </FileInfo>
-            <ActionButton onClick={() => handleDownloadFile(file.download_url)}>
-              <FontAwesomeIcon icon="download" className="icon" /> Download
-            </ActionButton>
-          </FileCard>
+          <Grid2 item xs={12} sm={6} md={4} key={`file-${index}`}>
+            <FileCard>
+              <CardContent>
+                <FileHeader>
+                  <FilePresentIcon sx={{ color: '#2b2b2c', mr: 1 }} />
+                  {file.name}
+                </FileHeader>
+                <FileInfo>Size: {file.size}</FileInfo>
+                <FileInfo>Modified: {new Date(file.modified).toLocaleDateString()}</FileInfo>
+                <ActionButton fullWidth onClick={() => handleDownloadFile(file.download_url)}>
+                  <DownloadIcon sx={{ mr: 1 }} /> Download
+                </ActionButton>
+              </CardContent>
+            </FileCard>
+          </Grid2>
         ))}
 
+        {/* Empty State */}
         {contents.directories.length === 0 && contents.files.length === 0 && (
-          <EmptyState>
-            <FontAwesomeIcon icon="folder-open" className="icon" />
-            <h3>No Files Found</h3>
-            <p>This folder is empty</p>
-          </EmptyState>
+          <Grid2 item xs={12}>
+            <EmptyState>
+              <FolderIcon sx={{ fontSize: 60, color: '#ffa533' }} />
+              <Typography variant="h5">No Files Found</Typography>
+              <Typography>This folder is empty</Typography>
+            </EmptyState>
+          </Grid2>
         )}
-      </ContentGrid>
+      </Grid2>
     </DashboardContainer>
   );
 };
@@ -101,7 +168,6 @@ UserDashboardTemplate.propTypes = {
   currentPath: PropTypes.string,
   handleDirectoryClick: PropTypes.func.isRequired,
   handleDownloadFile: PropTypes.func.isRequired,
-  handleDownloadDirectory: PropTypes.func.isRequired,
   errorMessage: PropTypes.string,
 };
 

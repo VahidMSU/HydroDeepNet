@@ -4,23 +4,7 @@ import { ContactContainer, ContactTitle, ContentWrapper, Alert } from '../../sty
 
 const ContactUsTemplate = ({ handleFormSubmit, flashMessages, setFlashMessages }) => {
   return (
-    <ContactContainer>
-      <ContactTitle>Contact Us</ContactTitle>
-
-      <ContentWrapper>
-        {flashMessages.length > 0 &&
-          flashMessages.map((msg, idx) => (
-            <Alert key={idx} type={msg.category}>
-              {msg.text}
-              <button type="button" onClick={() => setFlashMessages([])}>
-                ×
-              </button>
-            </Alert>
-          ))}
-
-        <ContactUsForm onSubmit={handleFormSubmit} />
-      </ContentWrapper>
-    </ContactContainer>
+    <ContactUsForm onSubmit={handleFormSubmit} />
   );
 };
 

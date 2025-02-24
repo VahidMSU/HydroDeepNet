@@ -3,20 +3,59 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import VisualizationForm from '../forms/Visualization.js';
 import {
-  VisualizationContainer,
-  VisualizationTitle,
-  ContentWrapper,
-  GifContainer,
-  GifWrapper,
-  DownloadButton,
-  Collapsible,
-  CollapsibleHeader,
-  CollapsibleContent,
-  ErrorMessage,
-  LoadingContainer,
-  StyledCircularProgress,
-} from '../../styles/Visualizations.tsx';
+  Box,
+  Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Button,
+  Grid,
+  CircularProgress,
+  Card,
+  CardMedia,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { styled } from '@mui/system';
 
+// Styled Components
+const VisualizationContainer = styled(Box)({
+  margin: '2rem auto',
+  padding: '2rem',
+  borderRadius: '16px',
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+  backgroundColor: '#444e5e',
+  color: 'white',
+  textAlign: 'center',
+});
+
+const VisualizationTitle = styled(Typography)({
+  fontSize: '2.5rem',
+  fontWeight: 'bold',
+  marginBottom: '1.5rem',
+});
+
+const ErrorMessage = styled(Typography)({
+  color: '#ff3333',
+  fontWeight: 'bold',
+  marginTop: '1rem',
+});
+
+const LoadingContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  marginTop: '1.5rem',
+});
+
+const DownloadButton = styled(Button)({
+  marginTop: '0.5rem',
+  backgroundColor: '#e67500',
+  color: 'white',
+  '&:hover': {
+    backgroundColor: '#ff8500',
+  },
+});
+
+// Component
 const VisualizationsDashboardTemplate = () => {
   const navigate = useNavigate();
   // Form states
@@ -30,14 +69,13 @@ const VisualizationsDashboardTemplate = () => {
   const [visualizationResults, setVisualizationResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Fetch dropdown options on component mount
   useEffect(() => {
     const fetchOptions = async () => {
       try {
         const response = await axios.get('/get_options');
-        console.log('GET /get_options response:', response.data); // Logging after GET request
+        console.log('GET /get_options response:', response.data);
         setWatersheds(response.data.names);
         setAvailableVariables(response.data.variables);
       } catch (error) {
@@ -64,7 +102,7 @@ const VisualizationsDashboardTemplate = () => {
     }
 
     setErrorMessage('');
-    setLoading(true); // Show loading state
+    setLoading(true);
 
     console.log('POST /visualizations params:', {
       NAME: selectedWatershed,
@@ -90,70 +128,80 @@ const VisualizationsDashboardTemplate = () => {
         setShowResults(false);
       })
       .finally(() => {
-        setLoading(false); // Hide loading state
+        setLoading(false);
       });
   };
 
   return (
     <VisualizationContainer>
-      <VisualizationTitle>Visualizations Dashboard</VisualizationTitle>
+      <VisualizationTitle variant="h1">Visualizations Dashboard</VisualizationTitle>
 
-      <ContentWrapper>
-        <Collapsible>
-          <CollapsibleHeader onClick={() => setIsCollapsed(!isCollapsed)}>
-            {isCollapsed ? '▶' : '▼'} Description
-          </CollapsibleHeader>
-          {!isCollapsed && (
-            <CollapsibleContent>
-              <p>
-                This dashboard provides access to the latest available visualizations of calibrated
-                SWAT+ models. Users can select a watershed, model ensemble, and variables to
-                generate visualizations.
-              </p>
-            </CollapsibleContent>
-          )}
-        </Collapsible>
+      {/* Collapsible Description */}
+      <Accordion sx={{ backgroundColor: '#333', color: 'white', borderRadius: '8px', marginBottom: '1rem' }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'white' }} />}>
+          <Typography variant="h6">Description</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>
+            This dashboard provides access to the latest available visualizations of calibrated
+            SWAT+ models. Users can select a watershed, model ensemble, and variables to generate
+            visualizations.
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
 
-        <VisualizationForm
-          watersheds={watersheds}
-          selectedWatershed={selectedWatershed}
-          setSelectedWatershed={setSelectedWatershed}
-          ensemble={ensemble}
-          setEnsemble={setEnsemble}
-          availableVariables={availableVariables}
-          selectedVariables={selectedVariables}
-          setSelectedVariables={setSelectedVariables}
-          handleSubmit={handleSubmit}
-          errorMessage={errorMessage}
-        />
+      {/* Visualization Form */}
+      <VisualizationForm
+        watersheds={watersheds}
+        selectedWatershed={selectedWatershed}
+        setSelectedWatershed={setSelectedWatershed}
+        ensemble={ensemble}
+        setEnsemble={setEnsemble}
+        availableVariables={availableVariables}
+        selectedVariables={selectedVariables}
+        setSelectedVariables={setSelectedVariables}
+        handleSubmit={handleSubmit}
+        errorMessage={errorMessage}
+      />
 
-        {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
+      {/* Error Message */}
+      {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
 
-        {loading && (
-          <LoadingContainer>
-            <StyledCircularProgress size={40} />
-          </LoadingContainer>
-        )}
+      {/* Loading Indicator */}
+      {loading && (
+        <LoadingContainer>
+          <CircularProgress size={40} sx={{ color: '#ff8500' }} />
+        </LoadingContainer>
+      )}
 
-        {showResults && (
-          <section>
-            <GifContainer>
-              {visualizationResults && visualizationResults.length > 0 ? (
-                visualizationResults.map((gif, idx) => (
-                  <GifWrapper key={idx}>
-                    <img src={gif} alt={`Animation ${idx + 1}`} />
-                    <DownloadButton href={gif} download={`Visualization_${idx + 1}.gif`}>
+      {/* Results Section */}
+      {showResults && (
+        <Box sx={{ marginTop: '2rem' }}>
+          <Grid container spacing={2} justifyContent="center">
+            {visualizationResults.length > 0 ? (
+              visualizationResults.map((gif, idx) => (
+                <Grid item xs={12} sm={6} md={4} key={idx}>
+                  <Card sx={{ backgroundColor: '#222', borderRadius: '8px', padding: '0.5rem' }}>
+                    <CardMedia
+                      component="img"
+                      image={gif}
+                      alt={`Visualization ${idx + 1}`}
+                      sx={{ borderRadius: '8px', maxHeight: '250px', objectFit: 'contain' }}
+                    />
+                    <DownloadButton href={gif} download={`Visualization_${idx + 1}.gif`} fullWidth>
                       Download
                     </DownloadButton>
-                  </GifWrapper>
-                ))
-              ) : (
-                <p>No visualizations available.</p>
-              )}
-            </GifContainer>
-          </section>
-        )}
-      </ContentWrapper>
+                  </Card>
+                </Grid>
+              ))
+            ) : (
+              <Typography variant="h6" sx={{ color: 'white', marginTop: '1rem' }}>
+                No visualizations available.
+              </Typography>
+            )}
+          </Grid>
+        </Box>
+      )}
     </VisualizationContainer>
   );
 };

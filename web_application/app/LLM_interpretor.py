@@ -9,14 +9,21 @@ OLLAMA_SERVER = "http://35.9.219.76:5000"  # Update with your Ollama server's IP
 def chat_with_deepseek(prompt):
     """
     Sends a POST request to the remote Ollama server and retrieves the response.
+    curl -X POST http://35.9.219.76:5000/api/generate -H "Content-Type: application/json" -d '{"model": "deepseek-r1:70b", "prompt": "What is the capital of France?", "stream": false}'
     """
+    if not prompt:
+        return "Error: Empty prompt provided."
+    
     try:
+        print(f"Sending prompt to DeepSeek")
         response = requests.post(
             f"{OLLAMA_SERVER}/api/generate",
-            json={"model": "mistral-7b", "prompt": prompt, "stream": True},
+            json={"model": "deepseek-r1:70b", "prompt": prompt, "stream": True},
             timeout=60,  # Adjust timeout as needed
             stream=True
         )
+
+        print(f"Received response from DeepSeek {response}")
 
         # Process streaming response
         response_text = ""
@@ -81,7 +88,7 @@ if __name__ == "__main__":
 
 
     # Save response to file
-    output_path = "landcover_analysis.txt"
+    output_path = "/data/SWATGenXApp/codes/web_application/app/landcover_analysis.txt"
     with open(output_path, "w") as file:
         file.write(response)
 
