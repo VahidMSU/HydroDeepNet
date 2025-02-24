@@ -4,11 +4,9 @@ from flask import (url_for, request,
 				send_from_directory)
 from app.sftp_manager import create_sftp_user  # Import the SFTP user creation function
 from flask_login import (login_user, logout_user,
-						login_required, current_user)
+						current_user)
 from app.extensions import csrf
 from app.models import User, ContactMessage
-from app.forms import (SignUpForm,
-						ContactForm)
 from multiprocessing import Process
 from app.utils import (find_station, get_huc12_geometries, get_huc12_streams_geometries,
 						get_huc12_lakes_geometries, send_verification_email, check_existing_models,
@@ -18,7 +16,6 @@ import json
 import numpy as np
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import pandas as pd
-from app.forms import VerificationForm
 from werkzeug.utils import secure_filename
 import shutil
 import tempfile
@@ -27,6 +24,9 @@ from app.utils import LoggerSetup
 from app.extensions import db
 from functools import partial
 import ast
+from flask import send_from_directory
+import requests
+from flask import Flask, request, jsonify
 class AppManager:
 	def __init__(self, app):
 		self.app = app
@@ -34,27 +34,73 @@ class AppManager:
 		log_dir = "/data/SWATGenXApp/codes/web_application/logs"
 		self.app.logger = LoggerSetup(log_dir, rewrite=False).setup_logger("FlaskApp")
 		self.app.logger.info("AppManager initialized!")
-    
+
 	def init_routes(self):
-		@self.app.route('/')
+		@self.app.route('/api/index')
 		@conditional_login_required
 		@conditional_verified_required
 		def index():
-			self.app.logger.info("Index route called. Redirecting to /home.")	
-			return jsonify({"status": "success", "redirect": "/home"})
+			return jsonify({"status": "success", "message": "Welcome to the API!"})
 
+		@self.app.route('/static/images/<path:filename>')
+		def serve_images(filename):
+			return send_from_directory('/data/SWATGenXApp/GenXAppData/images', filename)
 
-		@self.app.route('/api/visualization/<name>/<ver>/<variable>', methods=['GET'])
+		@self.app.route('/static/videos/<path:filename>')
+		def serve_videos(filename):
+			return send_from_directory('/data/SWATGenXApp/GenXAppData/videos', filename)
+
+		@self.app.route('/static/visualizations/<name>/<ver>/<variable>.gif', methods=['GET'])
 		@conditional_login_required
 		@conditional_verified_required
 		def serve_visualization(name, ver, variable):
+			"""
+			Serve visualization GIFs with proper error handling
+			"""
 			video_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/verifications_videos"
-			gif_file = os.path.join(video_path, f"{ver}_{variable}_animation.gif")
+			gif_file = f"{ver}_{variable}_animation.gif"
+			full_path = os.path.join(video_path, gif_file)
 
-			if not os.path.exists(gif_file):
+			if not os.path.exists(full_path):
+				self.app.logger.error(f"Visualization not found: {full_path}")
 				return jsonify({"error": "Visualization not found"}), 404
 
-			return send_file(gif_file, mimetype='image/gif')
+			try:
+				return send_file(full_path, mimetype='image/gif')
+			except Exception as e:
+				self.app.logger.error(f"Error serving visualization: {e}")
+				return jsonify({"error": "Error serving visualization"}), 500
+
+
+		@self.app.route('/', defaults={'path': ''})
+		@self.app.route('/<path:path>')
+		def serve_frontend(path):
+			frontend_build_dir = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'build')
+			
+			# First try to serve static files
+			if path.startswith('static/'):
+				return send_from_directory(os.path.join(frontend_build_dir), path)
+			
+			# Then try to serve the file directly if it exists
+			if path and os.path.exists(os.path.join(frontend_build_dir, path)):
+				return send_from_directory(frontend_build_dir, path)
+			
+			# Default to serving index.html
+			return send_from_directory(frontend_build_dir, 'index.html')
+
+
+		@self.app.route('/api/chatbot', methods=['POST'])
+		def chatbot_proxy():
+			"""Forwards requests from the frontend to the Ollama server."""
+			ollama_url = "http://35.9.219.76:5000/api/generate"
+
+			try:
+				data = request.get_json()
+				response = requests.post(ollama_url, json=data, timeout=60)
+				return jsonify(response.json())
+			
+			except requests.exceptions.RequestException as e:
+				return jsonify({"error": f"Failed to connect to Ollama: {str(e)}"}), 500
 
 
 
@@ -99,8 +145,6 @@ class AppManager:
 
 			self.app.logger.warning(f"Verification failed: Invalid code for user `{user.username}`.")
 			return jsonify({"status": "error", "message": "Invalid verification code."}), 400
-
-
 
 		@self.app.route('/privacy')
 		def privacy():
@@ -151,34 +195,49 @@ class AppManager:
 			variable = request.args.get('variable', default=None)
 
 			if not all([name, ver, variable]):
-				if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-					self.app.logger.error("Please provide NAME, Version, and Variable.")
-					return jsonify({"error": "Please provide NAME, Version, and Variable."}), 400
-				else:
-					self.app.logger.error("Please provide NAME, Version, and Variable.")
-					return jsonify({"title": "Visualizations", "message": "Please provide NAME, Version, and Variable."})
+				error_msg = "Please provide NAME, Version, and Variable."
+				self.app.logger.error(error_msg)
+				return jsonify({"error": error_msg}), 400
 
 			base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
+			if not os.path.exists(base_path):
+				error_msg = f"No visualization data found for watershed: {name}"
+				self.app.logger.error(error_msg)
+				return jsonify({"error": error_msg}), 404
+
 			video_path = os.path.join(base_path, "verifications_videos")
+			if not os.path.exists(video_path):
+				error_msg = f"No visualization videos found for watershed: {name}"
+				self.app.logger.error(error_msg)
+				return jsonify({"error": error_msg}), 404
 
 			variables = variable.split(",")
 			gif_urls = []
+			missing_vars = []
 
 			for var in variables:
 				gif_file = os.path.join(video_path, f"{ver}_{var}_animation.gif")
 				if os.path.exists(gif_file):
-					gif_urls.append(f"/static/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{var}_animation.gif")
+					gif_urls.append(f"/static/visualizations/{name}/{ver}/{var}.gif")
+				else:
+					missing_vars.append(var)
+					self.app.logger.warning(f"Missing visualization for {var} in {gif_file}")
 
 			if not gif_urls:
-				if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-					return jsonify({"error": f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}."}), 404
-				else:
-					return jsonify({"title": "Visualizations", "message": f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}."})
+				error_msg = f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}."
+				if missing_vars:
+					error_msg += f" Missing variables: {', '.join(missing_vars)}"
+				self.app.logger.error(error_msg)
+				return jsonify({"error": error_msg}), 404
 
-			if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-				return jsonify({"gif_files": gif_urls})
+			response_data = {
+				"gif_files": gif_urls
+			}
+			
+			if missing_vars:
+				response_data["warnings"] = f"Some variables were not found: {', '.join(missing_vars)}"
 
-			return jsonify({"title": "Visualizations", "message": "Visualizations page", "gif_files": gif_urls})
+			return jsonify(response_data)
 		
 		@csrf.exempt
 		@self.app.route('/api/login', methods=['POST'])
@@ -204,13 +263,10 @@ class AppManager:
 
 			return jsonify({"error": "Invalid username or password"}), 401
 
-
-								
 		@self.app.route('/api/signup', methods=['POST'])
 		def signup():
 			self.app.logger.info("Sign Up route called via API")
 			data = request.get_json()
-
 			username = data.get('username')
 			email = data.get('email')
 			password = data.get('password')
@@ -254,18 +310,12 @@ class AppManager:
 				db.session.add(new_user)
 				db.session.commit()
 				self.app.logger.info(f"User `{new_user.username}` created in unverified state. Verification email sent.")
-
 				# Do NOT create SFTP here!
-
 				return jsonify({"status": "success", "message": "Check your email for verification code.", "redirect": "/verify"})
-
-
 			except Exception as e:
 				db.session.rollback()
 				self.app.logger.error(f"Error creating user: {e}")
 				return jsonify({"status": "error", "message": "An error occurred while creating the account."}), 500
-
-
 
 		@self.app.route('/home', methods=['GET'])
 		@conditional_login_required
@@ -295,6 +345,13 @@ class AppManager:
 			)
 			# Perform model creation
 			try:
+				### if user is unknown, do not proceed
+
+				if current_user.is_anonymous:
+					self.app.logger.warning("User is not logged in. Using 'None' as username.")
+					import time
+					time.sleep(5)
+					return jsonify({"error": "User is not logged in"}), 403
 				wrapped_model_creation = partial(
 					single_model_creation,
 					current_user.username, site_no, ls_resolution, dem_resolution
@@ -410,7 +467,6 @@ class AppManager:
 				"message": "You have been logged out successfully.",
 				"redirect": "/login"
 			}), 200
-
 		
 		@self.app.route('/get_station_characteristics', methods=['GET'])
 		def get_station_characteristics():
@@ -469,7 +525,6 @@ class AppManager:
 			characteristics.pop('HUC12 ids of the watershed', None)
 			# Return as JSON
 			return jsonify(characteristics)
-
 
 		@self.app.route('/about')
 		@conditional_login_required
@@ -622,7 +677,6 @@ class AppManager:
 					message = f"Please provide either a point (latitude/longitude) or a range (min/max lat/lon)."
 					self.app.logger.error(message)
 					return jsonify({"title": "HydroGeoDataset", "message": message}), 400
-
 
 		@self.app.route('/get_subvariables', methods=['POST'])
 		@conditional_login_required

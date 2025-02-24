@@ -7,7 +7,7 @@ from SWATGenX.NHD_SWATPlus_Extractor import writing_swatplus_cli_files
 from SWATGenX.PRISM_extraction import extract_PRISM_parallel
 from SWATGenX.configuration import check_configuration
 from SWATGenX.generate_swatplus_shapes import generate_swatplus_shapes
-from SWATGenX.model_precipitation_info import plot_annual_precipitation
+#from SWATGenX.model_precipitation_info import plot_annual_precipitation
 from SWATGenX.runQSWATPlus import runQSWATPlus
 from SWATGenX.run_swatplusEditor import run_swatplus_editor
 from SWATGenX.SWATplus_streamflow import fetch_streamflow_for_watershed
@@ -15,7 +15,7 @@ from SWATGenX.NSRDB_SWATplus_extraction import NSRDB_extract
 from SWATGenX.SWATGenXLogging import LoggerSetup
 
 
-def SWATGenXCore_run(SWATGenXPaths, swatgenx_config):
+def SWATGenXCore_helper(SWATGenXPaths, swatgenx_config):
 	"""
 	Runs the SWATGenX model for the specified configuration.
 
@@ -52,9 +52,17 @@ class SWATGenXCore:
 		self.logger = self.setup_logger()
 		self.logger.info(f"SWATGenXCore: Starting the SWATGenX model for {self.site_no}")
 		self.logger.info(f"SWAT outlet: {self.paths.swatgenx_outlet_path}")
+		if config.get("overwrite", False):
+			self.logger.info("Overwriting the existing model")
+			## remove the existing model
+			if os.path.exists(self.paths.construct_path(self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.site_no, self.MODEL_NAME)):
+				shutil.rmtree(self.paths.construct_path(self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.site_no, self.MODEL_NAME))
+		else:
+			self.logger.info("Not overwriting the existing model")
+
 	def setup_logger(self):
 		"""Sets up the logger for the SWATGenXCore."""
-		logger = LoggerSetup(
+		logger = LoggerSetup(report_path=self.paths.swatgenx_outlet_path,
 			rewrite=False,
 			verbose=True,
 		)
@@ -138,11 +146,11 @@ class SWATGenXCore:
 			with open(meta_file_path, "w") as f:
 				self.write_meta_data(f)
 
-		if not os.path.exists("generated_models/"):
-			os.makedirs("generated_models/")
-		if not os.path.exists("generated_models/logs.txt"):
-			with open("generated_models/logs.txt", "w") as f:
-				self.write_meta_data(f)
+		#if not os.path.exists("generated_models/"):
+		#	os.makedirs("generated_models/")
+		#if not os.path.exists("generated_models/logs.txt"):
+		#	with open("generated_models/logs.txt", "w") as f:
+		#		self.write_meta_data(f)
 
 	def write_meta_data(self, f):
 		f.write(f"VPUID: {self.VPUID}\n")
@@ -204,6 +212,15 @@ class SWATGenXCore:
 
 	def process(self):
 		"""Core function to run the SWATGenX model for a given watershed."""
+		assert self.VPUID is not None, "VPUID is not provided"
+		assert self.LEVEL is not None, "LEVEL is not provided"
+		assert self.site_no is not None, "site_no is not provided"
+		assert self.landuse_product is not None, "landuse_product is not provided"
+		assert self.landuse_epoch is not None, "landuse_epoch is not provided"
+		assert self.ls_resolution is not None, "ls_resolution is not provided"
+		assert self.dem_resolution is not None, "dem_resolution is not provided"
+		assert self.MODEL_NAME is not None, "MODEL_NAME is not provided"
+		
 		self.EPSG = check_configuration(self.VPUID, self.landuse_epoch)
 		self.logger.info(f"SWATGenXCore: Beginning the extraction of the model for {self.site_no}")
 		self.NAME = self.site_no

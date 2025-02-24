@@ -9,10 +9,9 @@ export const ContactContainer = styled.div`
 `;
 
 export const ContactTitle = styled.h2`
-  color: #ff8500;
-  font-size: 2.8rem;
+  color: white;
+  font-size: 4rem;
   margin-bottom: 1.5rem;
-  border-bottom: 3px solid #ff8500;
   padding-bottom: 1.2rem;
   position: relative;
   text-align: center;
@@ -113,7 +112,7 @@ export const TextArea = styled.textarea`
 export const SubmitButton = styled.button`
   background-color: #ff8500;
   color: #ffffff;
-  padding: 1.2rem 2.5rem;
+  padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 8px;
   font-size: 1.1rem;

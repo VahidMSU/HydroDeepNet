@@ -1,8 +1,0 @@
-VPUID: 0410
-LEVEL: huc12
-self.NAME: 04194085
-MODEL_NAME: SWAT_MODEL_Web_Application
-landuse_product: NLCD
-landuse_epoch: 2021
-ls_resolution: 250
-dem_resolution: 30

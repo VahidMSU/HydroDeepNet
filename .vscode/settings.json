@@ -8,10 +8,10 @@
         }
     },
     "python.analysis.extraPaths": [
+        "/usr/share/qgis/python/plugins/QSWATPlusLinux3_64",
         "/data/SWATGenXApp/codes/SWATGenX",
         "/data/SWATGenXApp/codes/ModelProcessing",
         "/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api",
-        "/home/rafieiva/.local/share/QGIS/QGIS3/profiles/default/python/plugins/QSWATPlusLinux3_64/"
     ],
     "git.ignoreLimitWarning": true
 }

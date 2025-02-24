@@ -39,7 +39,7 @@ class SWATGenXPaths:
     gSSURGO_CONUS_gdb_path: str = f"{base_path}Soil/gSSURGO_CONUS/gSSURGO_CONUS.gdb"
     
     # Software Paths
-    wgn_db: str = "/data/SWATGenXApp/swatplus_installation/swatplus_wgn.sqlite"
+    wgn_db: str = "/data/SWATGenXApp/codes/swatplus_installation/swatplus_wgn.sqlite"
     QSWATPlus_env_path: str = '/home/rafieiva/.local/share/QGIS/QGIS3/profiles/default/python/plugins/QSWATPlusLinux3_64/'
     runQSWATPlus_path: str = "/data/SWATGenXApp/codes/SWATGenX/runQSWATPlus.sh"
     swat_exe: str = "/data/SWATGenXApp/codes/bin/swatplus"
