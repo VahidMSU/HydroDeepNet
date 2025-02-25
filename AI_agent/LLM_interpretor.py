@@ -1,7 +1,9 @@
 import contextlib
 import json
 import requests
-from utils import read_h5_file
+import sys
+sys.path.append("/data/SWATGenXApp/codes/web_application/")
+from app.utils import read_h5_file
 
 # Define Ollama API server details
 OLLAMA_SERVER = "http://35.9.219.76:5000"  # Update with your Ollama server's IP & port
@@ -13,7 +15,6 @@ def chat_with_deepseek(prompt):
     """
     if not prompt:
         return "Error: Empty prompt provided."
-    
     try:
         print(f"Sending prompt to DeepSeek")
         response = requests.post(
@@ -37,12 +38,12 @@ def chat_with_deepseek(prompt):
     except requests.exceptions.RequestException as e:
         return f"Error communicating with DeepSeek: {e}"
 
-def extract_data_for_polygon(lat_range, lon_range, years):
+
+def CDL_trend(lat_range, lon_range, years):
     """
     Extracts data for the given polygon across multiple years.
     """
     extracted_data = {}
-
     variable = "CDL"
     for year in years:
         subvariable = str(year)
@@ -52,7 +53,6 @@ def extract_data_for_polygon(lat_range, lon_range, years):
             address=f"{variable}/{subvariable}",
         ):
             extracted_data[year] = data
-
     return extracted_data
 
 if __name__ == "__main__":
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     years_to_analyze = list(range(2010, 2022))  # Extract data from 2010 to 2021
 
     # Extract data for the given polygon over multiple years
-    extracted_data = extract_data_for_polygon(
+    extracted_data = CDL_trend(
         lat_range=(min_latitude, max_latitude),
         lon_range=(min_longitude, max_longitude),
         years=years_to_analyze,
@@ -85,7 +85,6 @@ if __name__ == "__main__":
 
     # Query DeepSeek
     response = chat_with_deepseek(prompt)
-
 
     # Save response to file
     output_path = "/data/SWATGenXApp/codes/web_application/app/landcover_analysis.txt"
