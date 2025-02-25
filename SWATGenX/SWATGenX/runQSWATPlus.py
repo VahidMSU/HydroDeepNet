@@ -56,7 +56,7 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
     for i, line in enumerate(lines):
         if "Run the Python script with Xvfb (headless display)" in line:
             replacement = (
-                f'xvfb-run -a {python_executable} -c \''
+                f'su - {username} -c "xvfb-run -a {python_executable} -c \''  # Use su to switch to the specified user
                 f'from QSWATPlus3_64 import runHUCProject; '
                 f'runHUCProject(VPUID="{VPUID}", LEVEL="{LEVEL}", NAME="{NAME}", MODEL_NAME="{MODEL_NAME}", '
                 f'SWATGenXPaths_swatgenx_outlet_path="{SWATGenXPaths.swatgenx_outlet_path}")\'\n'

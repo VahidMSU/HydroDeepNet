@@ -73,8 +73,6 @@ def wrapped_model_processor(VPUID, LEVEL, NAME, MODEL_NAME, sensitivity_flag=Fal
 
 	
 
-
-
 def check_final_calibration(VPUID, LEVEL, NAME, MODEL_NAME):
 	path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/best_solution_{MODEL_NAME}.txt"
 	if not os.path.exists(path):

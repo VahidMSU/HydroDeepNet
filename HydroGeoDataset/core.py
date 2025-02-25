@@ -280,6 +280,7 @@ class DataImporter:
 		self.config['snowdas_h5_path'] = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/SNODAS.h5'
 		self.config['video'] = False if 'video' not in config else config['video']
 		self.config['aggregation'] = None if 'aggregation' not in config else config['aggregation']
+		self.config['bounding_box'] = None if 'bounding_box' not in config else config['bounding_box']
 		self.logger = LoggerSetup(os.getcwd(), rewrite=True).setup_logger("HydroGeoDataset")
 
 	def get_database_rows_cols(self):
@@ -759,7 +760,6 @@ class DataImporter:
 				#print(f"loaded rows: {rows}, cols: {cols}")
 
 			else:
-
 				self.logger.info(f"Size of the climate data: {pr.shape}, {tmax.shape}, {tmin.shape}")
 				rows, cols = self.get_database_rows_cols()
 
@@ -896,8 +896,11 @@ class DataImporter:
 
 		return pr, tmax, tmin
 
+	
+
 
 	def PRISM(self, start_year=None, end_year=None) -> np.ndarray:
+		"""Extract PRISM data within the specified time range."""
 		self.logger.info("Extracting PRISM data.")
 		if start_year is None:
 			assert 'start_year' in self.config, "start_year is not provided."
@@ -906,9 +909,10 @@ class DataImporter:
 			assert 'end_year' in self.config, "end_year is not provided."
 			end_year = self.config['end_year']
 
-		mask = self.get_mask()	
-
-		#self.logger.info(f"Size of the mask: {mask.shape}")
+		# Get the base mask
+		base_mask = self.get_mask()
+		self.logger.info(f"Base mask shape: {base_mask.shape}")
+		
 		ppts, tmaxs, tmins = [], [], []
 		PRISM_path = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/PRISM_ML_250m.h5'
 
@@ -916,31 +920,45 @@ class DataImporter:
 			self.logger.info(f"PRISM keys: {f.keys()}")
 			self.logger.info(f"Range of available years: {f['ppt'].keys()}")
 			
-			for year in range(start_year, end_year+1):	
+			for year in range(start_year, end_year+1):
 				self.logger.info(f"Size of the original PRISM data (year {year}): {f[f'ppt/{year}/data'].shape}")
 				self.logger.info(f"Extracting PRISM data for the year {year}.")
 
 				if self.config['huc8'] is not None:
 					row_min, row_max, col_min, col_max = self.get_huc8_ranges(self.config['database_path'], self.config['huc8'])
+				elif self.config['bounding_box'] is not None:
+					desired_min_lat = self.config['bounding_box'][1]
+					desired_max_lat = self.config['bounding_box'][3]
+					desired_min_lon = self.config['bounding_box'][0]
+					desired_max_lon = self.config['bounding_box'][2]
+					row_min, row_max, col_min, col_max = get_rowcol_range_by_latlon(desired_min_lat, desired_max_lat, desired_min_lon, desired_max_lon)
 				else:
-					row_max, row_min, col_max, col_min = None, None, None, None
+					row_min, row_max, col_min, col_max = None, None, None, None
 
-				ppt = f[f'ppt/{year}/data'][:, row_min:row_max, col_min:col_max]
-				tmax = f[f'tmax/{year}/data'][:, row_min:row_max, col_min:col_max]
-				tmin = f[f'tmin/{year}/data'][:, row_min:row_max, col_min:col_max]
+				# Extract the data
+				ppt = f[f'ppt/{year}/data'][:] if row_min is None else f[f'ppt/{year}/data'][:, row_min:row_max, col_min:col_max]
+				tmax = f[f'tmax/{year}/data'][:] if row_min is None else f[f'tmax/{year}/data'][:, row_min:row_max, col_min:col_max]
+				tmin = f[f'tmin/{year}/data'][:] if row_min is None else f[f'tmin/{year}/data'][:, row_min:row_max, col_min:col_max]
+				
+				# Create time-aware mask by broadcasting base mask
+				if row_min is not None:
+					mask = base_mask[row_min:row_max, col_min:col_max]
+				else:
+					mask = base_mask
+					
+				time_mask = np.broadcast_to(mask, ppt.shape)
+				self.logger.info(f"Time mask shape: {time_mask.shape}, Data shape: {ppt.shape}")
 
-				self.logger.info(f"Mask shape: {mask.shape}")
-				self.logger.info(f"Size of the PRISM data after cropping (year {year}): {ppt.shape}, {tmax.shape}, {tmin.shape}")
-
-				ppt = np.where(mask != 1, -999, ppt)
-				tmax = np.where(mask != 1, -999, tmax)
-				tmin = np.where(mask != 1, -999, tmin)
+				# Apply mask
+				ppt = np.where(time_mask != 1, -999, ppt)
+				tmax = np.where(time_mask != 1, -999, tmax)
+				tmin = np.where(time_mask != 1, -999, tmin)
 
 				ppts.append(ppt)
 				tmaxs.append(tmax)
 				tmins.append(tmin)
-		print(f"ppt shape: {ppt.shape}, tmax shape: {tmax.shape}, tmin shape: {tmin.shape}")
-		# Concatenate along the first axis to form 3D arrays
+
+		# Concatenate along the time axis
 		ppts = np.concatenate(ppts, axis=0)
 		tmaxs = np.concatenate(tmaxs, axis=0)
 		tmins = np.concatenate(tmins, axis=0)
@@ -950,12 +968,12 @@ class DataImporter:
 			self.video_data(tmaxs, 'tmax_PRISM')
 			self.video_data(tmins, 'tmin_PRISM')
 		
-		## replace nan with -999
+		# Replace any remaining NaN values with -999
 		ppts = np.where(np.isnan(ppts), -999, ppts)
 		tmaxs = np.where(np.isnan(tmaxs), -999, tmaxs)
 		tmins = np.where(np.isnan(tmins), -999, tmins)
 			
-		self.logger.info(f"loaded PRISM data shape: {ppts.shape}, {tmaxs.shape}, {tmins.shape}")
+		self.logger.info(f"Final PRISM data shape: {ppts.shape}, {tmaxs.shape}, {tmins.shape}")
 		
 		if self.config['aggregation']:
 			ppts, tmaxs, tmins = self.aggregate_temporal_data(ppts, tmaxs, tmins)
