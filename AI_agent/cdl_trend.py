@@ -4,7 +4,7 @@ from scipy.spatial import cKDTree
 import pandas as pd
 import os
 import time
-
+from config import AgentConfig
 
 def cdl_trends(config):
     start_time = time.time()
@@ -12,31 +12,76 @@ def cdl_trends(config):
     
     lat_range = (config['bounding_box'][1], config['bounding_box'][3])
     lon_range = (config['bounding_box'][0], config['bounding_box'][2])
-    years = range(config['start_year'], config['end_year']+1)
+    
+    # Make sure years is always a list of integers
+    if isinstance(config['start_year'], str):
+        config['start_year'] = int(config['start_year'])
+    if isinstance(config['end_year'], str):
+        config['end_year'] = int(config['end_year'])
+        
+    years = list(range(config['start_year'], config['end_year']+1))
+    print(f"Querying years: {years}")
 
     extracted_data = {}
 
+    # First check which years are available
+    available_years = []
+    try:
+        with h5py.File(AgentConfig.HydroGeoDataset_ML_250_path, 'r') as f:
+            for year in years:
+                if f"CDL/{year}" in f:
+                    available_years.append(year)
+                else:
+                    print(f"Year {year} not found in dataset")
+
+        if not available_years:
+            print(f"Warning: None of the requested years {years} found in dataset")
+            # Try to find any available years in the dataset as fallback
+            with h5py.File(AgentConfig.HydroGeoDataset_ML_250_path, 'r') as f:
+                if 'CDL' in f:
+                    all_years = [int(y) for y in list(f['CDL'].keys()) if y.isdigit()]
+                    print(f"Available years in dataset: {all_years}")
+                    if all_years:
+                        closest_years = sorted(all_years, key=lambda y: min(abs(y - yr) for yr in years))
+                        use_years = closest_years[:3]  # Use up to 3 closest years
+                        print(f"Using fallback years: {use_years}")
+                        years = use_years
+    except Exception as e:
+        print(f"Error checking available years: {e}")
+
+    # Process each year
     for year in years:
         year_start = time.time()
-        if data := read_h5_file(
-            lat_range=lat_range,
-            lon_range=lon_range,
-            address=f"CDL/{year}",
-        ):
-            extracted_data[year] = data
-            print(f"CDL data extraction for year {year} took {time.time() - year_start:.2f} seconds")
+        try:
+            data = read_h5_file(
+                lat_range=lat_range,
+                lon_range=lon_range,
+                address=f"CDL/{year}",
+            )
+            if data:
+                # Store data using integer keys to ensure consistency
+                extracted_data[int(year)] = data
+                print(f"CDL data extraction for year {year} took {time.time() - year_start:.2f} seconds")
+        except Exception as e:
+            print(f"Error extracting CDL data for year {year}: {e}")
 
     total_time = time.time() - start_time
     print(f"Total CDL data extraction took {total_time:.2f} seconds")
+    
+    if not extracted_data:
+        print("Warning: No data could be extracted for any year")
+    else:
+        print(f"Successfully extracted data for years: {list(extracted_data.keys())}")
+
     return extracted_data
 
 
 def CDL_lookup(code):
-    df = pd.read_csv("/data/SWATGenXApp/GenXAppData/CDL/CDL_CODES.csv")
+    df = pd.read_csv(AgentConfig.CDL_CODES_path)
     return df[df['CODE'] == code].NAME.values[0]
 
 def get_coordinates(lat=None, lon=None, lat_range=None, lon_range=None):
-    with h5py.File("/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5", 'r') as f:
+    with h5py.File(AgentConfig.HydroGeoDataset_ML_250_path, 'r') as f:
         lat_ = f["geospatial/lat_250m"][:]
         lon_ = f["geospatial/lon_250m"][:]
         lat_ = np.where(lat_ == -999, np.nan, lat_)
@@ -59,7 +104,8 @@ def get_coordinates(lat=None, lon=None, lat_range=None, lon_range=None):
     
     return None, None
 
-def read_h5_file(address, lat=None, lon=None, lat_range=None, lon_range=None, path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"):
+
+def read_h5_file(address, lat=None, lon=None, lat_range=None, lon_range=None, path = AgentConfig.HydroGeoDataset_ML_250_path):
     
     if not os.path.exists(path):
         print(f"File not found: {path}")
@@ -101,3 +147,15 @@ def process_data(data, address):
         "mean": float(np.nanmean(data).round(2)),
         "std": float(np.nanstd(data).round(2)),
     }
+
+
+if __name__ == "__main__":
+    config = {
+        "RESOLUTION": 250,
+        "aggregation": "annual",
+        "start_year": 2010,
+        "end_year": 2012,
+        "bounding_box": [-85.5, 42.5, -85.0, 43.0]
+    }
+    cdl_trends(config)
+    print("Done.")
