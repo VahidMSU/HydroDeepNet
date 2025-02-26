@@ -3,9 +3,11 @@ import subprocess
 import requests
 import json
 import numpy as np
-from utils import read_h5_file, cdl_trends
+from cdl_trend import cdl_trends
 from prism import PRISM_Dataset
 import geopandas 
+from config import AgentConfig
+from model_selector import ModelSelector
 
 # Function to check if Ollama is running without using CPU
 def is_ollama_running():
@@ -15,13 +17,29 @@ def is_ollama_running():
     except requests.exceptions.RequestException:
         return False
 
-models = ["mistral:latest", "llama2:latest", "deepseek-r1:7b", "deepseek-r1:8b", "deepseek-r1:1.5b"]
-model = models[0]
-
-def chat_with_deepseek(prompt):
+def chat_with_deepseek(prompt, model=None, task=None):
+    """
+    Chat with language model, using the appropriate model for the task complexity
+    
+    Args:
+        prompt (str): The prompt text
+        model (str, optional): Specific model to use
+        task (str, optional): Task type for automatic model selection
+    """
     if not is_ollama_running():
         return "Error: Ollama is not running. Start it using 'ollama serve'."
-
+        
+    # Select appropriate model based on input parameters
+    if model is None:
+        if task:
+            model = ModelSelector.get_model_for_task(task)
+        else:
+            # Analyze prompt complexity
+            has_numbers = any(char.isdigit() for char in prompt)
+            model = ModelSelector.select_by_complexity(len(prompt), has_numbers)
+    
+    print(f"Using model: {model} for prompt length: {len(prompt)}")
+    
     try:
         response = requests.post(
             "http://localhost:11434/api/generate",
@@ -29,15 +47,27 @@ def chat_with_deepseek(prompt):
             timeout=60,
             stream=True,
         )
+        print(f"Model response status: {response.status_code}")  
+        
+        if response.status_code != 200:
+            print(f"Error response content: {response.content.decode('utf-8')}")
+            return f"Error: Received status code {response.status_code} from DeepSeek API."
+
         response_text = ""
         for line in response.iter_lines():
             if line:
-                with contextlib.suppress(json.JSONDecodeError):
+                try:
                     json_line = json.loads(line.decode("utf-8"))
-                    response_text += json_line.get("response", "")
-        return response_text.strip()
+                    if "response" in json_line:
+                        response_text += json_line["response"]
+                except json.JSONDecodeError:
+                    print(f"Warning: Could not parse line as JSON: {line}")
+                    continue
+        
+        return response_text.strip() or "No valid response received"
 
     except requests.exceptions.RequestException as e:
+        print(f"Error communicating with DeepSeek: {e}")
         return f"Error communicating with DeepSeek: {e}"
 
 def run_gdal_command(command):
@@ -52,7 +82,7 @@ def run_gdal_command(command):
 
 def get_bounding_box(county,state):
     
-    path = "/data/SWATGenXApp/GenXAppData/USGS/GovernmentUnits_National_GDB/GovernmentUnits_National_GDB.gdb/"
+    path = AgentConfig.USGS_governmental_path
 
     gdf = geopandas.read_file(path, layer="GU_CountyOrEquivalent")
     county_shape = gdf[(gdf["STATE_NAME"] == state) & (gdf["COUNTY_NAME"] == county)].to_crs("EPSG:4326")
@@ -97,12 +127,12 @@ def analyze_year_chunk(extracted_data, years, pr_data, tmax_data, tmin_data):
     Provide practical insights on how climate might have influenced farming decisions.
     """
     
-    return chat_with_deepseek(prompt)
+    return chat_with_deepseek(prompt, task="analysis")
 
 if __name__ == "__main__":
 
     min_lon, min_lat, max_lon, max_lat = get_bounding_box("Mecosta", "Michigan")
-    print(f"Bounding box for Mecosta County, Michigan (EPSG:4326): {min_lon, min_lat, max_lon, max_lat}")
+    print(f"Bounding box for the extracted County, Michigan (EPSG:4326): {min_lon, min_lat, max_lon, max_lat}")
 
     if min_lon:
         config = {
@@ -167,6 +197,7 @@ if __name__ == "__main__":
     """
 
     final_analysis = chat_with_deepseek(final_prompt)
+    print(f"\nFinal Summary:\n{final_analysis}")
     complete_report = '\n\n'.join(chunk_analyses + ["\nFinal Summary:\n" + final_analysis])
 
     output_path = "landcover_analysis.txt"

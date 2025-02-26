@@ -2,12 +2,13 @@ import numpy as np
 import h5py
 import pandas as pd
 import time
+from config import AgentConfig
 
 class PRISM_Dataset:
     def __init__(self, config):
         self.config = config
-        self.database_path = config.get('database_path', '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5')
-        self.prism_path = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/PRISM_ML_250m.h5'
+        self.database_path = AgentConfig.HydroGeoDataset_ML_250_path
+        self.prism_path = AgentConfig.PRISM_PATH
         self.base_mask = self._get_mask()
 
     def _get_mask(self):
@@ -61,7 +62,7 @@ class PRISM_Dataset:
         dates = pd.date_range(start=start_date, periods=total_days)
         
         if self.config['aggregation'] == 'monthly':
-            pr_monthly = [pr[(dates.year == year) & (dates.month == month), :, :].mean(axis=0)
+            pr_monthly = [pr[(dates.year == year) & (dates.month == month), :, :].sum(axis=0)
                         for year in np.unique(dates.year)
                         for month in range(1, 13) if np.sum((dates.year == year) & (dates.month == month)) > 0]
             
@@ -86,7 +87,7 @@ class PRISM_Dataset:
                 'SON': [9, 10, 11]
             }
 
-            pr_seasonal = [pr[np.isin(dates.month, months) & (dates.year == year), :, :].mean(axis=0)
+            pr_seasonal = [pr[np.isin(dates.month, months) & (dates.year == year), :, :].sum(axis=0)
                         for year in np.unique(dates.year)
                         for season, months in seasons.items()]
             
@@ -104,7 +105,7 @@ class PRISM_Dataset:
             print(f"Aggregated data shape (seasonal): {pr.shape}, {tmax.shape}, {tmin.shape}")
 
         elif self.config['aggregation'] == 'annual':
-            pr_annual = [pr[dates.year == year, :, :].mean(axis=0) for year in np.unique(dates.year)]
+            pr_annual = [pr[dates.year == year, :, :].sum(axis=0) for year in np.unique(dates.year)]
             tmax_annual = [tmax[dates.year == year, :, :].mean(axis=0) for year in np.unique(dates.year)]
             tmin_annual = [tmin[dates.year == year, :, :].mean(axis=0) for year in np.unique(dates.year)]
 
@@ -206,6 +207,12 @@ class PRISM_Dataset:
                 ppts = np.where(np.isnan(ppts), -999, ppts)
                 tmaxs = np.where(np.isnan(tmaxs), -999, tmaxs)
                 tmins = np.where(np.isnan(tmins), -999, tmins)
+
+                ppts = np.where(ppts == -999, np.nan, ppts)
+                tmaxs = np.where(tmaxs == -999, np.nan, tmaxs)
+                tmins = np.where(tmins == -999, np.nan, tmins)
+
+
                     
                 print(f"Final PRISM data shape: {ppts.shape}, {tmaxs.shape}, {tmins.shape}")
                 
@@ -238,9 +245,12 @@ class PRISM_Dataset:
         avg_start = time.time()
         ppts = np.nanmean(ppts, axis=(1, 2))
         tmaxs = np.nanmean(tmaxs, axis=(1, 2))
-        tmins = np.nanmean(tmins, axis=(1, 2))
+        tmins = np.nanmean(tmins, axis=(1, 2))      
         avg_time = time.time() - avg_start
         print(f"shape of ppts: {ppts.shape}, shape of tmaxs: {tmaxs.shape}, shape of tmins: {tmins.shape}") 
+        print(f"range of spatial average of total ppts: {np.min(ppts)}, {np.max(ppts)}")
+        print(f"range of spatial average annual tmaxs: {np.min(tmaxs)}, {np.max(tmaxs)}")
+        print(f"range of spatial average annual tmins: {np.min(tmins)}, {np.max(tmins)}")
         print(f"Spatial averaging took {avg_time:.2f} seconds")
         print(f"Total spatial average processing took {time.time() - start_time:.2f} seconds")
         
