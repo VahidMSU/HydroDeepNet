@@ -1,10 +1,11 @@
 from agent import chat_with_deepseek, analyze_year_chunk
 from get_county_bbox import get_bounding_box
-from utils import cdl_trends
+from cdl_trend import cdl_trends
 from prism import PRISM_Dataset
 import re
 import numpy as np
 from coordinator import AgentCoordinator
+from conversation_handler import ConversationalAgent
 
 class QuerySession:
     def __init__(self):
@@ -78,6 +79,10 @@ def parse_query(query, session):
         if match:
             county, state = match.groups()
             break
+    
+    # If no county is found, return invalid
+    if not county:
+        return {'valid': False, 'message': "Please specify a county name."}
     
     # Look for years with better pattern matching
     year_pattern = r'(?:19|20)\d{2}(?:\s*(?:to|[-])\s*(?:19|20)\d{2})?'
@@ -187,28 +192,73 @@ def generate_response(query_data, county_data):
     
     return analysis
 
+def process_query(self, query):
+    """Process user query in a more conversational manner."""
+    # First, understand the query
+    query_info = self.understand_query(query)
+    if not query_info:
+        return "I'm sorry, I couldn't understand your query. Could you please specify the county and year you're interested in?"
+    
+    # Fix any year extraction issues
+    if 'years' in query_info:
+        fixed_years = []
+        for year in query_info['years']:
+            # Fix common year extraction errors like '20' instead of '2010' 
+            if year < 100:  # This is likely an error
+                if year > 20:  # Probably 19xx
+                    fixed_years.append(1900 + year)
+                else:  # Probably 20xx
+                    fixed_years.append(2000 + year)
+            else:
+                fixed_years.append(year)
+        query_info['years'] = fixed_years
+        print(f"Fixed years: {fixed_years}")
+    
+    # Update conversation context
+    self.context.update_context(query_info)
+    
+    # Get the data
+    data = self.retrieve_data(query_info)
+    if not data:
+        return f"I'm sorry, I couldn't find data for {query_info.get('county')} County in {', '.join(map(str, query_info.get('years', [])))}."
+    
+    # Generate the response
+    response = self.generate_response(query, query_info, data)
+    
+    # Add proactive insights
+    response = self.enhance_response_with_insights(response, query_info, data)
+    
+    return response
+
 def interactive_session():
-    print("Welcome to the Multi-Agent County Analysis System!")
-    print("\nYou can ask questions like:")
-    print("- 'Analyze Mecosta County, Michigan'")
-    print("- 'How has the climate affected farming in Mecosta County?'")
-    print("- 'What were the main crops in 2010?'")
+    """Run an interactive session with the conversational agent."""
+    print("Welcome to the Agricultural Data Analysis Assistant!")
+    print("\nYou can ask me about:")
+    print("- Crop patterns in different counties")
+    print("- Climate data for specific regions")
+    print("- Agricultural trends over time")
+    print("\nExamples:")
+    print("- What's the major crop in Ingham County?")
+    print("- How was the climate in Mecosta County in 2015?")
+    print("- Tell me about soybean cultivation in Barry County from 2010-2015")
     print("\nType 'quit' to exit.")
-
-    coordinator = AgentCoordinator()
-
+    
+    agent = ConversationalAgent()
+    
     while True:
         query = input("\nWhat would you like to know? > ").strip()
         
         if query.lower() in ['quit', 'exit', 'q']:
+            print("Thank you for using the Agricultural Data Analysis Assistant. Goodbye!")
             break
             
         if not query:
             continue
-
-        response = coordinator.process_query(query)
+            
+        print("\nAnalyzing your query...")
+        response = agent.process_query(query)
         print("\nAnalysis:")
         print(response)
-
+        
 if __name__ == "__main__":
     interactive_session()
