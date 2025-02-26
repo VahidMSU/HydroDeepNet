@@ -5,9 +5,7 @@ import shutil
 
 def get_python_executable():
     venv_python = "/data/SWATGenXApp/codes/.venv/bin/python"
-
     return venv_python
-
 
 def get_real_uid_gid():
     uid = int(os.environ.get("SUDO_UID", os.getuid()))
@@ -50,6 +48,7 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
         lines.insert(1, env_header)
     else:
         lines.insert(0, env_header)
+
     print(f"Added environment variables to script")
 
     python_executable = get_python_executable()
