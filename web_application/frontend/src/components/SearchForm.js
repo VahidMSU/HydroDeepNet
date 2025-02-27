@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import {
-  CardBody,
-  StyledInput,
-  StyledButton,
-  Section,
+  SearchForm as StyledSearchForm,
+  SearchInputGroup,
+  SearchInputWrapper,
+  FormInput,
+  SearchButton,
   SearchResults,
   SearchResultItem,
-  Label,
-  TitleText,
 } from '../styles/SWATGenX.tsx';
 
 function SearchForm({ setStationData, setLoading }) {
@@ -45,19 +46,21 @@ function SearchForm({ setStationData, setLoading }) {
   };
 
   return (
-    <CardBody>
-      <Section>
-        <TitleText>Search Site Name:</TitleText>
-        <StyledInput
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Enter site name"
-        />
-        <StyledButton onClick={handleSearch} style={{ marginTop: '0.5rem' }}>
-          Search
-        </StyledButton>
-      </Section>
+    <StyledSearchForm>
+      <SearchInputGroup>
+        <label>Search Site Name:</label>
+        <SearchInputWrapper>
+          <FormInput
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Enter site name"
+          />
+          <SearchButton onClick={handleSearch}>
+            <FontAwesomeIcon icon={faSearch} />
+          </SearchButton>
+        </SearchInputWrapper>
+      </SearchInputGroup>
 
       {searchResults.length > 0 && (
         <SearchResults>
@@ -72,7 +75,7 @@ function SearchForm({ setStationData, setLoading }) {
           ))}
         </SearchResults>
       )}
-    </CardBody>
+    </StyledSearchForm>
   );
 }
 
