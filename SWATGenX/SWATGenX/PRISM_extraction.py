@@ -7,11 +7,10 @@ import numpy as np
 import pandas as pd
 import rasterio
 from functools import partial
-from multiprocessing import Process
+# Replace Process with ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 # Comment out if you don't need the fallback imports
 from SWATGenX.utils import get_all_VPUIDs, return_list_of_huc12s
-
-from multiprocessing import Process
 
 def extract_PRISM_parallel(SWATGenXPaths, VPUID, LEVEL, NAME, list_of_huc12s=None):
     """
@@ -36,6 +35,9 @@ class PRISMExtractor:
         self._prism_dir = SWATGenXPaths.PRISM_path
         self._outlet_dir = SWATGenXPaths.swatgenx_outlet_path
         self.SWAT_MODEL_PRISM_path = f"{self._outlet_dir}/{self.VPUID}/{self.LEVEL}/{self.NAME}/PRISM"
+        # Define max number of threads for our pool
+        self.max_workers = 4
+
     def _get_elevation(self, row, col):
         """Helper to extract DEM-based elevation using rasterio."""
         with rasterio.open(self.SWATGenXPaths.PRISM_dem_path) as src:
@@ -109,16 +111,11 @@ class PRISMExtractor:
         end_date = datetime.datetime(years[-1], 12, 31)
         date_range = pd.date_range(start_date, end_date)
         nbyr = years[-1] - years[0] + 1
-        processes = []
-        for row, col in zip(df.row, df.col):
-
-            #self.write_pcp_file(row, col, df, years, date_range, datasets, nbyr)
-            partial_write_pcp_file = partial(self.write_pcp_file, row, col, df, years, date_range, datasets, nbyr)
-            p = Process(target=partial_write_pcp_file)
-            p.start()
-            processes.append(p)
-        for p in processes:
-            p.join()
+        
+        # Replace Process-based parallelism with ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            for row, col in zip(df.row, df.col):
+                executor.submit(self.write_pcp_file, row, col, df, years, date_range, datasets, nbyr)
 
     def write_tmp_file(self, row, col, df, datasets_max, datasets_min, years, nbyr, date_range):
         filename = f"r{row}_c{col}.tmp"
@@ -147,6 +144,7 @@ class PRISMExtractor:
             f.write(f"{nbyr} 0 {lat} {lon} {elev}\n")
             for _, d in date_df.iterrows():
                 f.write(f"{d.YEAR}\t{d.DAY:03}\t{d.tmax:.2f}\t{d.tmin:.2f}\n")
+
     def generating_swatplus_tmp(self, df, datasets_max, datasets_min, years):
         """
         Generate SWAT+ temperature input files (tmax, tmin) for each grid cell.
@@ -156,16 +154,10 @@ class PRISMExtractor:
         date_range = pd.date_range(start_date, end_date)
         nbyr = years[-1] - years[0] + 1
 
-        processes = []
-        for row, col in zip(df.row, df.col):
-            #self.write_tmp_file(row, col, df, datasets_max, datasets_min, years, nbyr, date_range)
-            partial_write_tmp_file = partial(self.write_tmp_file, row, col, df, datasets_max, datasets_min, years, nbyr, date_range)
-            p = Process(target=partial_write_tmp_file)
-            p.start()
-            processes.append(p)
-        for p in processes:
-            p.join()
-
+        # Replace Process-based parallelism with ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            for row, col in zip(df.row, df.col):
+                executor.submit(self.write_tmp_file, row, col, df, datasets_max, datasets_min, years, nbyr, date_range)
 
     def run(self):
         """Orchestrates clipping and file generation for precipitation and temperature."""
@@ -189,47 +181,36 @@ class PRISMExtractor:
 
         years = np.arange(1990, 2023)
 
-        def run_ppt():
-            """Handles loading and processing of precipitation data."""
-            print("Loading PRISM ppt data...")
-            ppt_data = {}
-            for y in years:
-                path = f"{self._prism_dir}/CONUS/ppt/{y}.nc"
-                if os.path.exists(path):
-                    ppt_data[y] = xr.open_dataset(path)
-                else:
-                    print(f"Missing {path}")
-            t0 = datetime.datetime.now()
-            self.generating_swatplus_pcp(extracted_grid, ppt_data, years)
-            print(f"PCP extraction took {(datetime.datetime.now() - t0).total_seconds()} sec")
+        # Replace nested Process execution with direct function calls to avoid daemon issues
+        # Load precipitation data
+        print("Loading PRISM ppt data...")
+        ppt_data = {}
+        for y in years:
+            path = f"{self._prism_dir}/CONUS/ppt/{y}.nc"
+            if os.path.exists(path):
+                ppt_data[y] = xr.open_dataset(path)
+            else:
+                print(f"Missing {path}")
+        
+        t0 = datetime.datetime.now()
+        self.generating_swatplus_pcp(extracted_grid, ppt_data, years)
+        print(f"PCP extraction took {(datetime.datetime.now() - t0).total_seconds()} sec")
 
-        def run_tmp():
-            """Handles loading and processing of temperature data (tmax, tmin)."""
-            print("Loading PRISM temperature data...")
-            tmax_data, tmin_data = {}, {}
-            for y in years:
-                path_max = f"{self._prism_dir}/CONUS/tmax/{y}.nc"
-                path_min = f"{self._prism_dir}/CONUS/tmin/{y}.nc"
-                if os.path.exists(path_max) and os.path.exists(path_min):
-                    tmax_data[y] = xr.open_dataset(path_max)
-                    tmin_data[y] = xr.open_dataset(path_min)
-                else:
-                    print(f"Missing {path_max} or {path_min}")
-            t1 = datetime.datetime.now()
-            self.generating_swatplus_tmp(extracted_grid, tmax_data, tmin_data, years)
-            print(f"TMP extraction took {(datetime.datetime.now() - t1).total_seconds()} sec")
-
-        # Create two processes, one for PPT, one for TMP
-        p1 = Process(target=run_ppt)
-        p2 = Process(target=run_tmp)
-
-        # Start them in parallel
-        p1.start()
-        p2.start()
-
-        # Wait for both to complete
-        p1.join()
-        p2.join()
+        # Load temperature data
+        print("Loading PRISM temperature data...")
+        tmax_data, tmin_data = {}, {}
+        for y in years:
+            path_max = f"{self._prism_dir}/CONUS/tmax/{y}.nc"
+            path_min = f"{self._prism_dir}/CONUS/tmin/{y}.nc"
+            if os.path.exists(path_max) and os.path.exists(path_min):
+                tmax_data[y] = xr.open_dataset(path_max)
+                tmin_data[y] = xr.open_dataset(path_min)
+            else:
+                print(f"Missing {path_max} or {path_min}")
+        
+        t1 = datetime.datetime.now()
+        self.generating_swatplus_tmp(extracted_grid, tmax_data, tmin_data, years)
+        print(f"TMP extraction took {(datetime.datetime.now() - t1).total_seconds()} sec")
 
 if __name__ == "__main__":
     NAME = "04135700"
