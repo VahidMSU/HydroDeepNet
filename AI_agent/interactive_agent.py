@@ -1,16 +1,27 @@
-from agent import chat_with_deepseek, analyze_year_chunk
-from get_county_bbox import get_bounding_box
-from cdl_trend import cdl_trends
-from prism import PRISM_Dataset
+try:
+    from agent import analyze_year_chunk
+    from get_county_bbox import get_bounding_box
+    from cdl_trend import cdl_trends
+    from prism import PRISM_Dataset
+    from conversation_handler import ConversationalAgent
+    from coordinator import AgentCoordinator
+except ImportError:
+    from AI_agent.agent import analyze_year_chunk
+    from AI_agent.get_county_bbox import get_bounding_box
+    from AI_agent.cdl_trend import cdl_trends
+    from AI_agent.prism import PRISM_Dataset
+    from AI_agent.conversation_handler import ConversationalAgent
+    from AI_agent.coordinator import AgentCoordinator
+
+
 import re
-import numpy as np
-from coordinator import AgentCoordinator
-from conversation_handler import ConversationalAgent
+
 
 class QuerySession:
     def __init__(self):
         self.last_county = None
         self.last_state = None
+        self.last_years = None  # Added to store years for follow-up queries
 
 def analyze_specific_request(query, landcover_data):
     """Analyze specific data requests about the last analyzed region."""
@@ -150,47 +161,97 @@ def get_data_for_county(county, state, years):
         'bounding_box': [min_lon, min_lat, max_lon, max_lat],
     }
 
+    # Initialize result structure with None values
+    result = {
+        'config': config,
+        'climate': None,
+        'landcover': None
+    }
+
     try:
         # Get PRISM climate data
-        prism_dataset = PRISM_Dataset(config)
-        climate_data = prism_dataset.get_spatial_average_over_time()
-        if not all(x is not None and len(x) > 0 for x in climate_data):
-            print("Warning: Could not retrieve complete climate data")
-            return None
+        try:
+            prism_dataset = PRISM_Dataset(config)
+            climate_data = prism_dataset.get_spatial_average_over_time()
+            if all(x is not None and len(x) > 0 for x in climate_data):
+                result['climate'] = climate_data
+                print("Successfully retrieved climate data")
+            else:
+                print("Warning: Could not retrieve complete climate data")
+        except Exception as climate_e:
+            print(f"Error retrieving climate data: {climate_e}")
+            # Continue execution to at least try getting landcover data
 
         # Get CDL data
-        landcover_data = cdl_trends(config)
-        if not landcover_data:
-            print("Warning: Could not retrieve land cover data")
-            return None
+        try:
+            landcover_data = cdl_trends(config)
+            if landcover_data:
+                result['landcover'] = landcover_data
+                print("Successfully retrieved landcover data")
+            else:
+                print("Warning: Could not retrieve land cover data")
+        except Exception as landcover_e:
+            print(f"Error retrieving landcover data: {landcover_e}")
 
-        return {
-            'config': config,
-            'climate': climate_data,
-            'landcover': landcover_data
-        }
+        # Return whatever data we were able to retrieve
+        return result if (result['climate'] is not None or result['landcover'] is not None) else None
+        
     except Exception as e:
         print(f"Error retrieving data: {e}")
         return None
 
 def generate_response(query_data, county_data):
     """Generate AI response based on the data."""
-    if not county_data['landcover']:
+    # Determine what type of data is being requested
+    analysis_type = query_data.get('analysis_type', 'crop')
+    
+    # If asking about climate but we don't have climate data
+    if analysis_type == 'climate' and not county_data.get('climate'):
+        return "I'm sorry, but I don't have climate data available for this county and time period."
+        
+    # If asking about crops but we don't have landcover data
+    if analysis_type == 'crop' and not county_data.get('landcover'):
         return "I couldn't find land cover data for the specified period."
-
+        
+    # If we have both types of data or the requested type is available, continue with analysis
     years = query_data['years']
-    pr_prism, tmax_prism, tmin_prism = county_data['climate']
     
-    year_indices = [y - min(years) for y in years]
-    analysis = analyze_year_chunk(
-        county_data['landcover'],
-        years,
-        pr_prism[year_indices],
-        tmax_prism[year_indices],
-        tmin_prism[year_indices]
-    )
+    if analysis_type == 'climate' and county_data.get('climate'):
+        pr_prism, tmax_prism, tmin_prism = county_data['climate']
+        
+        # Format climate data for response
+        year_indices = [y - min(years) for y in years if y - min(years) < len(pr_prism)]
+        if not year_indices:
+            return "I don't have climate data for the specific years requested."
+            
+        climate_info = []
+        for i in year_indices:
+            year = min(years) + i
+            climate_info.append(f"Year {year}:\n- Precipitation: {float(pr_prism[i]):.1f} mm\n"
+                               f"- Average maximum temperature: {float(tmax_prism[i]):.1f}°C\n"
+                               f"- Average minimum temperature: {float(tmin_prism[i]):.1f}°C")
+                               
+        return "\n\n".join(climate_info)
     
-    return analysis
+    # For crop analysis or combined analysis, use the existing approach
+    if county_data.get('climate') and county_data.get('landcover'):
+        pr_prism, tmax_prism, tmin_prism = county_data['climate']
+        year_indices = [y - min(years) for y in years if y - min(years) < len(pr_prism)]
+        return analyze_year_chunk(
+            county_data['landcover'],
+            years,
+            pr_prism[year_indices],
+            tmax_prism[year_indices],
+            tmin_prism[year_indices]
+        )
+    elif county_data.get('landcover'):
+        # If we only have landcover data, analyze that alone
+        from AI_agent.specialized_agents import AnalysisAgent
+        analyzer = AnalysisAgent()
+        context = {'analysis_type': 'crop', 'focus': 'pattern', 'requested_years': years}
+        return analyzer.process(county_data, context)
+    
+    return "I couldn't find sufficient data to answer your query."
 
 def process_query(self, query):
     """Process user query in a more conversational manner."""
@@ -230,6 +291,32 @@ def process_query(self, query):
     
     return response
 
+def interactive_agent(query):
+    
+    """
+    Entry point for the chatbot API to process user queries.
+    This function handles queries and returns responses as strings.
+    
+    Args:
+        query (str): The user's query text
+        
+    Returns:
+        str: The agent's response to the query
+    """
+
+    try:
+        # Use the AgentCoordinator for enhanced processing
+        coordinator = AgentCoordinator()
+        response = coordinator.process_query(query)
+        return response
+        
+    except Exception as e:
+        # Log the error but return a user-friendly message
+        print(f"Error in interactive_agent: {e}")
+        import traceback
+        print(traceback.format_exc())
+        return "I'm sorry, I encountered an error while processing your request. Please try a different query or contact support if the issue persists."
+
 def interactive_session():
     """Run an interactive session with the conversational agent."""
     print("Welcome to the Agricultural Data Analysis Assistant!")
@@ -243,7 +330,8 @@ def interactive_session():
     print("- Tell me about soybean cultivation in Barry County from 2010-2015")
     print("\nType 'quit' to exit.")
     
-    agent = ConversationalAgent()
+    # Use coordinator instead of ConversationalAgent
+    coordinator = AgentCoordinator()
     
     while True:
         query = input("\nWhat would you like to know? > ").strip()
@@ -256,9 +344,15 @@ def interactive_session():
             continue
             
         print("\nAnalyzing your query...")
-        response = agent.process_query(query)
-        print("\nAnalysis:")
-        print(response)
+        try:
+            response = coordinator.process_query(query)
+            print("\nAnalysis:")
+            print(response)
+        except Exception as e:
+            print(f"\nError processing query: {e}")
+            import traceback
+            traceback.print_exc()
+            print("\nPlease try a different query.")
         
 if __name__ == "__main__":
     interactive_session()

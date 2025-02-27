@@ -1,6 +1,12 @@
-from base_agent import BaseAgent
-from agent import chat_with_deepseek
-from query_parsing_agent import QueryParsingAgent
+try:
+    from base_agent import BaseAgent
+    from agent import chat_with_deepseek
+    from query_parsing_agent import QueryParsingAgent
+except ImportError:
+    from AI_agent.base_agent import BaseAgent
+    from AI_agent.agent import chat_with_deepseek
+    from AI_agent.query_parsing_agent import QueryParsingAgent
+    
 import json
 import numpy as np
 
@@ -29,9 +35,14 @@ class DataRetrievalAgent(BaseAgent):
         super().__init__("DataRetriever", "Handles data retrieval from various sources", "data_retrieval")
     
     def process(self, query_info, context=None):
-        from get_county_bbox import get_bounding_box
-        from prism import PRISM_Dataset
-        from cdl_trend import cdl_trends
+        try:
+            from get_county_bbox import get_bounding_box
+            from prism import PRISM_Dataset
+            from cdl_trend import cdl_trends
+        except ImportError:
+            from AI_agent.get_county_bbox import get_bounding_box
+            from AI_agent.prism import PRISM_Dataset
+            from AI_agent.cdl_trend import cdl_trends
         
         # Fix county name formatting
         county = query_info['county'].replace(' county', '').replace(' County', '').title()

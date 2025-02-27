@@ -1,4 +1,8 @@
-from config import AgentConfig
+try:
+    from config import AgentConfig
+except ImportError:
+    from AI_agent.config import AgentConfig
+
 
 class ModelSelector:
     """Utility class to select appropriate models for different tasks"""

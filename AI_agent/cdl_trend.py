@@ -4,8 +4,12 @@ from scipy.spatial import cKDTree
 import pandas as pd
 import os
 import time
-from config import AgentConfig
 
+try:
+    from config import AgentConfig
+except ImportError:
+    from AI_agent.config import AgentConfig
+    
 def cdl_trends(config):
     start_time = time.time()
     print("Starting CDL data extraction...")

@@ -1,7 +1,11 @@
 import re
 import json
-from agent import chat_with_deepseek
-from model_selector import ModelSelector
+try:
+    from agent import chat_with_deepseek
+    from model_selector import ModelSelector
+except ImportError:
+    from AI_agent.agent import chat_with_deepseek
+    from AI_agent.model_selector import ModelSelector
 
 class QueryParsingAgent:
     """

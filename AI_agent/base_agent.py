@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
-from model_selector import ModelSelector
-
+try:
+    from model_selector import ModelSelector
+except ImportError:
+    from AI_agent.model_selector import ModelSelector
+    
 class BaseAgent(ABC):
     def __init__(self, name, description, task_type=None):
         self.name = name
