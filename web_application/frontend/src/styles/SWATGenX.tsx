@@ -1,317 +1,597 @@
-/** @jsxImportSource @emotion/react */
-import styled from '@emotion/styled';
-// Updated dark theme color palette
-import colors from './colors.tsx';
+import styled, { keyframes, css } from 'styled-components';
 
-export const FieldText = colors.FieldText;
-
-// New component for titles with black font
-export const HeaderTitle = styled.h1`
-  text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-  font-size: 2.5rem;
-  font-weight: bold;
+// Animations
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 `;
 
-export const Row = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  height: 100%;
-  gap: 1.5rem;
-  margin: 0;
-  padding: 0;
+const slideDown = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 250px;
+  }
 `;
 
-interface ColumnProps {
-  width?: number;
-  minWidth?: string;
-  mobileMinWidth?: string;
-}
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
 
-export const Column = styled.div<ColumnProps>`
-  flex: ${props => props.width || 1};
-  min-width: ${props => props.minWidth || '400px'};
-  height: 100%;
+// Main Container
+export const Container = styled.div`
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1c1c1e;
+  color: #ffd380;
+`;
 
-  &.map-column {
-    position: relative;
-    overflow: hidden;
+// Header
+export const Header = styled.header`
+  background: linear-gradient(to right, #1e1e1f, #2d2d30);
+  color: #ffd380;
+  padding: 12px 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  width: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid #ff8500;
+`;
+
+export const HeaderTitle = styled.h1`
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  color: #ff8500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.5px;
+`;
+
+export const TitleIcon = styled.span`
+  margin-right: 12px;
+  font-size: 1.4rem;
+  color: #ff8500;
+`;
+
+// Content Layout
+export const Content = styled.div`
+  display: flex;
+  height: calc(100vh - 60px);
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
   }
+`;
 
-  @media (max-width: 1400px) {
-    min-width: ${props => props.mobileMinWidth || '100%'};
+// Sidebar
+export const Sidebar = styled.div`
+  width: 360px;
+  min-width: 300px;
+  max-width: 40%;
+  background-color: #2b2b2c;
+  border-right: 1px solid #3a3a3c;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 100%;
+    height: 50%;
+    border-right: none;
+    border-bottom: 1px solid #3a3a3c;
+  }
+`;
+
+export const InfoPanel = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-bottom: 1px solid #3a3a3c;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+`;
+
+export const ConfigPanel = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-bottom: 1px solid #3a3a3c;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  overflow: hidden;
+`;
+
+// Panel header
+export const PanelHeader = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background-color: #2b2b2c;
+  cursor: pointer;
+  font-weight: 600;
+  color: #ffd380;
+  transition: all 0.2s ease;
+  border-left: 4px solid #ff8500;
+  
+  &:hover {
+    background-color: #3a3a3c;
+    padding-left: 18px;
+  }
+`;
+
+export const PanelIcon = styled.span`
+  margin-right: 10px;
+  color: #ff8500;
+  font-size: 1.1rem;
+`;
+
+export const ToggleIcon = styled.span<{ isOpen: boolean }>`
+  margin-left: auto;
+  color: #ff8500;
+  transition: transform 0.3s ease;
+  transform: ${props => props.isOpen ? 'rotate(180deg)' : 'rotate(0)'};
+`;
+
+// Panel content
+export const PanelContent = styled.div`
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: #bbbbbb;
+  box-sizing: border-box;
+  width: 100%;
+  background-color: #2b2b2c;
+  line-height: 1.5;
+  
+  p {
+    margin-bottom: 12px;
+    color: #bbbbbb;
+  }
+  
+  ul {
+    padding-left: 18px;
+    margin-bottom: 12px;
+    color: #bbbbbb;
+  }
+  
+  li {
+    margin-bottom: 6px;
+  }
+  
+  strong {
+    color: #ffd380;
+    font-weight: 600;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px;
+  }
+`;
+
+export const ConfigPanelContent = styled(PanelContent)`
+  flex: 1;
+  overflow-y: auto;
+`;
+
+// Map Container
+export const MapContainer = styled.div`
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background-color: #1c1c1e;
+  padding: 16px;
+  box-sizing: border-box;
+  min-width: 0;
+  
+  @media (max-width: 768px) {
+    height: 50%;
+    width: 100%;
+  }
+`;
+
+export const MapInnerContainer = styled.div`
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  border: 1px solid #3a3a3c;
+  position: relative;
+`;
+
+// Form Styles
+export const ModelSettingsFormContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+`;
+
+export const FormSection = styled.div`
+  background-color: #3a3a3c;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s ease;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 1px solid #505050;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    border-color: #687891;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 14px;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px;
   }
 `;
 
 export const SectionTitle = styled.h3`
-  color: ${colors.accentAlt};   // Use new accentAlt for titles
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.8rem;
-  border-bottom: 2px solid ${colors.accentAlt};
+  font-size: 1.05rem;
+  margin: 0 0 14px 0;
+  color: #ff8500;
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-
-  .icon {
-    font-size: 1.2rem;
-    color: ${colors.accentAlt};
-  }
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 133, 0, 0.3);
 `;
 
-export const CardBody = styled.div`
-  padding: 0.75rem;
+export const SectionIcon = styled.span`
+  color: #ff8500;
 `;
 
-export const ContainerFluid = styled.div`
-  padding: 15px 25px 15px 15px;
-  background-color: ${colors.background};
-  background-image: none; // Removed gradient to keep it solid grey
-  min-height: 100vh;
-  max-width: 100vw;
-`;
-
-export const Content = styled.main`
-  margin-left: 65px;
-  padding: 0 20px 0 0;
-  display: flex;
-  flex-wrap: nowrap;  // Changed from "wrap" to "nowrap" to keep columns fixed in place
-  width: calc(100vw - 85px);
-  height: calc(100vh - 30px);
-  overflow: hidden;
-  box-sizing: border-box;
-
+export const InputGroup = styled.div`
+  margin-bottom: 14px;
+  
   @media (max-width: 768px) {
-    margin-left: 0;
-    width: 100vw;
-    padding: 0 10px;
+    margin-bottom: 10px;
   }
 `;
 
-export const ContentWrapper = styled.div`
-  flex-grow: 1;
-  margin-left: 270px;
-  padding: 2.5rem;
-  background-color: ${colors.surface};
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  overflow-y: auto;
-  border: 1px solid ${colors.border};
-  transition: all 0.4s;
-
-  @media (max-width: 768px) {
-    margin-left: 0;
-    height: auto;
-    max-height: none;
-  }
+export const InputLabel = styled.label`
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #bbbbbb;
+  font-weight: 500;
 `;
 
-export const MapWrapper = styled(ContentWrapper)`
+export const FormInput = styled.input`
   width: 100%;
-  margin: 0;
-  padding: 1rem 1.5rem 1rem 1rem;
-  position: sticky;
-  top: 0;
-  overflow: hidden;
-  height: 100%;   // Ensure the map container fills its parent height
-  @media (max-width: 1400px) {
-    height: auto !important;
-  }
-`;
-
-export const DescriptionContainer = styled.div`
-  background-color: #444e5e;
-  padding: 24px;
-  margin: 20px 0;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  color: white;
-  margin-bottom: 20px;
-`;
-
-export const InfoBox = styled.div`
-  background-color: ${colors.surfaceLight};
-  border: 1px solid ${colors.border};
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 1rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-
-  label {
-    color: #000000; // Force characteristics text to black
-  }
-
-  p {
-    color: #000000; // Force description/characteristics results to black
-    margin-bottom: 1rem;
-    line-height: 1.6;
-  }
-`;
-
-interface DescriptionHeaderProps {
-  isOpen?: boolean;
-}
-
-export const DescriptionHeader = styled.div<DescriptionHeaderProps>`
-  cursor: pointer;
-  padding: 12px 16px;
-  background-color: ${colors.headerBg};
-  color: ${colors.textSecondary};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 8px;
-  margin-bottom: ${props => props.isOpen ? '10px' : '0'};
-  border: 1px solid ${colors.border};
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #505050;
+  font-size: 1rem;
+  background-color: #2b2b2c;
+  color: #ffffff;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
   
   &:hover {
-    background-color: ${colors.surfaceLight};
-    color: ${colors.text};
+    border-color: #687891;
   }
-`;
-
-export const StrongText = styled.span`
-  color: black;
-  font-weight: bold;
-`;
-
-export const TitleText = styled.h4`
-  color: ${colors.TitleText};
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-`;
-
-
-export const ListElement = styled.ul`
-  color: white;
-  list-style-type: disc;
-  margin-left: 1.5rem;
   
-  li {
-    margin-bottom: 0.5rem;
-  }
-`;
-
-export const Section = styled.section`
-  color: ${colors.SectionText};
-  width: 100%;
-  height: 100%;
-`;
-
-export const ModelContainer = styled.div`
-  background-color: #444e5e;
-  padding: 24px;
-  margin: 20px 0;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  color: white;
-  margin-bottom: 20px;
-`;
-
-export const StyledInput = styled.input`
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border: 1px solid ${colors.border};
-  border-radius: 8px;
-  background-color: ${colors.inputBg};
-  color: ${colors.FieldText};
-  font-size: 1rem;
-  transition: all 0.3s ease;
-
   &:focus {
-    border-color: ${colors.borderAccent};
     outline: none;
-    box-shadow: 0 0 0 2px ${colors.borderAccent}33;
-  }
-
-  &::placeholder {
-    color: #000000; // Force placeholder text to be black
-  }
-
-  &[type="checkbox"] {
-    width: auto;
-    margin-right: 8px;
+    border-color: #ff8500;
+    box-shadow: 0 0 0 2px rgba(255, 133, 0, 0.2);
+    background-color: #333333;
   }
 `;
 
-export const StyledButton = styled.button`
-  background-color: ${colors.accent};
-  color: ${colors.text};
-  padding: 12px 20px;
+export const CheckboxGroup = styled.div`
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+`;
+
+export const CheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #bbbbbb;
+  padding: 6px 0;
+  transition: color 0.2s;
+  
+  &:hover {
+    color: #ffd380;
+  }
+`;
+
+export const CheckboxInput = styled.input`
+  height: 0;
+  width: 0;
+  opacity: 0;
+  position: absolute;
+`;
+
+export const CheckboxCustom = styled.div<{ checked: boolean }>`
+  width: 20px;
+  height: 20px;
+  background-color: ${props => props.checked ? '#ff8500' : '#2b2b2c'};
+  border: 2px solid ${props => props.checked ? '#ff8500' : '#505050'};
+  border-radius: 4px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+  flex-shrink: 0;
+  
+  &:after {
+    content: '';
+    position: absolute;
+    display: ${props => props.checked ? 'block' : 'none'};
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    top: 2px;
+  }
+`;
+
+export const CheckboxText = styled.span`
+  margin-left: 8px;
+`;
+
+// Button styling
+export const SubmitButton = styled.button<{ isLoading: boolean }>`
+  background-color: ${props => props.isLoading ? '#5c5c5e' : '#ff8500'};
+  color: #1e1e1f;
+  padding: 12px 16px;
   border: none;
   border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  cursor: ${props => props.isLoading ? 'not-allowed' : 'pointer'};
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.25s ease;
+  margin-top: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-
+  font-size: 0.95rem;
+  
   &:hover {
-    background-color: ${colors.accentHover};
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: ${props => props.isLoading ? '#5c5c5e' : '#ffa733'};
+    transform: ${props => props.isLoading ? 'none' : 'translateY(-2px)'};
+    box-shadow: ${props => props.isLoading ? 'none' : '0 4px 8px rgba(255, 133, 0, 0.3)'};
   }
-
+  
   &:active {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    background-color: ${colors.border};
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+    transform: ${props => props.isLoading ? 'none' : 'translateY(0)'};
+    box-shadow: ${props => props.isLoading ? 'none' : '0 2px 4px rgba(255, 133, 0, 0.3)'};
   }
 `;
 
-export const SearchResults = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
-  background-color: ${colors.surfaceLight};
+export const ButtonIcon = styled.span`
+  font-size: 1.1rem;
+`;
+
+// Feedback messages
+export const FeedbackMessage = styled.div<{ type: 'success' | 'error' }>`
+  margin-top: 16px;
+  padding: 12px 14px;
   border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid ${colors.border};
+  font-weight: 500;
+  animation: ${fadeIn} 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  
+  ${props => props.type === 'success' && css`
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+  `}
+  
+  ${props => props.type === 'error' && css`
+    background-color: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+  `}
 `;
 
-export const SearchResultItem = styled.li`
-  padding: 0.75rem 1rem;
-  margin: 0;
-  cursor: pointer;
-  color: ${colors.textSecondary};
-  border-bottom: 1px solid ${colors.border};
-  transition: all 0.2s ease;
+export const FeedbackIcon = styled.span`
+  margin-right: 10px;
+  font-size: 1.2rem;
+`;
 
+// Station details
+export const StationDetailsContainer = styled.div`
+  background-color: rgba(255, 133, 0, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+  border-left: 4px solid #ff8500;
+`;
+
+export const StationName = styled.h4`
+  color: #ff8500;
+  margin: 0 0 12px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+export const StationIcon = styled.span`
+  color: #ff8500;
+  font-size: 1rem;
+`;
+
+export const StationInfoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const InfoItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+`;
+
+export const InfoIcon = styled.span`
+  color: #bbbbbb;
+  margin-top: 4px;
+  font-size: 0.9rem;
+`;
+
+export const InfoContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const InfoLabel = styled.label`
+  font-size: 0.8rem;
+  color: #9e9e9e;
+  margin-bottom: 3px;
+`;
+
+export const InfoValue = styled.span`
+  color: #ffd380;
+  font-size: 0.95rem;
+`;
+
+// Search form
+export const SearchForm = styled.div`
+  margin-bottom: 16px;
+`;
+
+export const SearchInputGroup = styled.div`
+  margin-bottom: 10px;
+`;
+
+export const SearchInputWrapper = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+export const SearchButton = styled.button<{ disabled?: boolean }>`
+  background-color: ${props => props.disabled ? '#5c5c5e' : '#ff8500'};
+  color: #1e1e1f;
+  border: none;
+  border-radius: 6px;
+  padding: 0 15px;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: ${props => props.disabled ? '#5c5c5e' : '#ffa733'};
+    box-shadow: ${props => props.disabled ? 'none' : '0 2px 6px rgba(255, 133, 0, 0.3)'};
+  }
+  
+  &:active {
+    background-color: ${props => props.disabled ? '#5c5c5e' : '#e06e00'};
+  }
+`;
+
+// Search results
+export const SearchResults = styled.div`
+  max-height: 250px;
+  overflow-y: auto;
+  margin-top: 12px;
+  border: 1px solid #505050;
+  border-radius: 8px;
+  background-color: #2b2b2c;
+  animation: ${slideDown} 0.3s ease-out;
+`;
+
+export const SearchResultItem = styled.div`
+  padding: 12px 14px;
+  border-bottom: 1px solid #3a3a3c;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
   &:last-child {
     border-bottom: none;
   }
-
+  
   &:hover {
-    background-color: ${colors.surface};
-    color: ${colors.text};
+    background-color: rgba(255, 133, 0, 0.1);
+    padding-left: 18px;
   }
-
+  
   strong {
-    color: ${colors.accent};
-    margin-right: 0.5rem;
-    font-weight: 500;
+    display: block;
+    color: #ffd380;
+    font-size: 0.95rem;
+    margin-bottom: 3px;
+  }
+  
+  span {
+    display: block;
+    color: #9e9e9e;
+    font-size: 0.85rem;
   }
 `;
 
-export const Label = styled.label`
-  color: ${colors.textSecondary};
-  margin-bottom: 0.5rem;
-  display: block;
-  font-weight: 500;
-  font-size: 0.95rem;
-  letter-spacing: 0.3px;
+// Loading spinner
+export const LoadingSpinner = styled.div`
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ffffff;
+  animation: ${spin} 1s ease-in-out infinite;
+  margin-right: 8px;
 `;
+
+
+
+

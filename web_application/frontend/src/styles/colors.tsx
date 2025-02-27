@@ -1,39 +1,52 @@
 const colors = {
-  background: '#2b2b2c',    // Dark background
-  surface: '#2b2b2c',       // Surface for containers/cards (matches description container)
-  surfaceLight: '#3a3a3c',  // Slightly lighter surface for subtle contrast
-  surfaceDark: '#1e1e1f',   // Darker surface for elevated or recessed components
-  accent: '#ff8500',        // Bright accent color (buttons, highlights)
-  accentHover: '#ffa733',   // Lighter accent for hover states
-  accentAlt: '#ff6361',     // Alternative accent (alerts, critical buttons)
-  text: '#ffd380',          // Main text color (lighter tone)
-  textSecondary: '#bbbbbb', // Secondary text (medium grey)
-  textMuted: '#9e9e9e',     // Muted text (darker grey)
-  textInverse: '#1e1e1f',   // For light text on light backgrounds
-  border: '#687891',        // Neutral border color
-  borderAccent: '#00202e',  // Border for emphasized elements
-  inputBg: '#4a4a4d',        // Input background, differentiated from surface
+  // Base theme colors
+  background: '#1c1c1e',      // Dark background
+  surface: '#2b2b2c',         // Surface for containers/cards
+  surfaceLight: '#3a3a3c',    // Slightly lighter surface for contrast
+  surfaceDark: '#1e1e1f',     // Darker surface for elevated components
+  
+  // Accent colors
+  accent: '#ff8500',          // Primary orange accent
+  accentHover: '#ffa733',     // Lighter orange for hover states
+  accentAlt: '#ff6361',       // Alternative accent (alerts, critical actions)
+  
+  // Informational colors
+  info: '#2196f3',           // Blue for informational elements (files)
+  success: '#4caf50',        // Green for success messages
+  warning: '#ff9800',        // Amber for warnings
+  error: '#f44336',          // Red for errors
+  
+  // Text colors
+  text: '#ffd380',           // Main text color (light orange)
+  textSecondary: '#bbbbbb',  // Secondary text (light grey)
+  textMuted: '#9e9e9e',      // Muted text (mid grey)
+  textInverse: '#1e1e1f',    // For text on light backgrounds
+  
+  // UI component colors
+  border: '#505050',         // Standard border color
+  borderLight: '#687891',    // Lighter border for hover states
+  inputBg: '#3a3a3c',        // Input field background
   inputText: '#ffffff',      // Input text color
-  inputBorder: '#687891',    // Input border for consistency
-  headerBg: '#2b2b2c',       // Header background same as base background
-  footerBg: '#1e1e1f',       // Footer background darker for visual grounding
-  overlayBg: 'rgba(0, 0, 0, 0.7)', // Modal overlay background
-  success: '#4caf50',        // Success color (messages, alerts)
-  warning: '#ff9800',        // Warning color (alerts, cautions)
-  error: '#f44336',          // Error color (form errors, failed actions)
-  info: '#2196f3',           // Info color (notifications, tooltips)
-  highlight: '#ffeb3b',      // Highlighted text background
+  
+  // Special UI elements
+  headerBg: '#2b2b2c',       // Header background
+  footerBg: '#1e1e1f',       // Footer background
+  overlayBg: 'rgba(0, 0, 0, 0.7)', // Modal overlay
+  highlight: '#ffeb3b',      // Text highlight color
   disabled: '#5c5c5e',       // Disabled elements
-  scrollbarTrack: '#2b2b2c', // Custom scrollbar track color
-  scrollbarThumb: '#555555', // Custom scrollbar thumb color
-  TitleText: '#00202e',      // Title text color
-  SectionText: '#00202e',    // Section text color
-  FieldText: 'black',        // Field text color
-  inputBackground: '#4a4a4d', // Input background color
-  shadowColor: '#00202e',     // Shadow color
-  labelText: '#00202e',       // Label text color 
-
+  
+  // Scrollbar
+  scrollbarTrack: '#1c1c1e', 
+  scrollbarThumb: '#3a3a3c',
+  
+  // File type colors
+  fileTypePdf: '#f44336',    // PDF files
+  fileTypeDoc: '#2196f3',    // Word documents
+  fileTypeSheet: '#4caf50',  // Spreadsheets
+  fileTypeImage: '#9c27b0',  // Images
+  fileTypeArchive: '#ff9800', // Archives
+  fileTypeCode: '#607d8b',   // Code files
+  fileTypeDefault: '#757575', // Default file type
 };
-
 
 export default colors;

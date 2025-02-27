@@ -1,8 +1,25 @@
 import React from 'react';
 import SearchForm from '../SearchForm';
 import StationDetails from '../StationDetails';
-import { CardBody } from '../../styles/Layout.tsx';
-import { StyledInput, StyledButton, Section, InfoBox, StrongText } from '../../styles/SWATGenX.tsx';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRuler, faLayerGroup, faMapMarkedAlt, faPlay } from '@fortawesome/free-solid-svg-icons';
+import {
+  ModelSettingsFormContainer,
+  FormSection,
+  SectionTitle,
+  SectionIcon,
+  InputGroup,
+  InputLabel,
+  FormInput,
+  CheckboxGroup,
+  CheckboxLabel,
+  CheckboxInput,
+  CheckboxCustom,
+  CheckboxText,
+  SubmitButton,
+  ButtonIcon,
+  LoadingSpinner,
+} from '../../styles/SWATGenX.tsx';
 
 const ModelSettingsForm = ({
   stationList,
@@ -25,88 +42,129 @@ const ModelSettingsForm = ({
   setLoading,
 }) => {
   return (
-    <CardBody>
-      <SearchForm setStationData={setStationData} setLoading={setLoading} />
+    <ModelSettingsFormContainer>
+      <FormSection>
+        <SectionTitle>
+          <SectionIcon>
+            <FontAwesomeIcon icon={faMapMarkedAlt} />
+          </SectionIcon>
+          Station Selection
+        </SectionTitle>
 
-      <Section>
-        <label>USGS Station Number:</label>
-        <StyledInput
-          type="text"
-          value={stationInput}
-          onChange={(e) => setStationInput(e.target.value)}
-          placeholder="Enter station number"
-          list="station_list"
-        />
-        <datalist id="station_list">
-          {stationList.map((station, index) => (
-            <option key={index} value={station} />
-          ))}
-        </datalist>
-      </Section>
+        <SearchForm setStationData={setStationData} setLoading={setLoading} />
 
-      {stationData && <StationDetails stationData={stationData} />}
+        <InputGroup>
+          <InputLabel htmlFor="station-number">USGS Station Number:</InputLabel>
+          <FormInput
+            id="station-number"
+            type="text"
+            value={stationInput}
+            onChange={(e) => setStationInput(e.target.value)}
+            placeholder="Enter station number"
+            list="station_list"
+          />
+          <datalist id="station_list">
+            {stationList.map((station, index) => (
+              <option key={index} value={station} />
+            ))}
+          </datalist>
+        </InputGroup>
 
-      <Section>
-        <label>Landuse/Soil Resolution:</label>
-        <StyledInput
-          type="text"
-          value={lsResolution}
-          onChange={(e) => setLsResolution(e.target.value)}
-        />
-      </Section>
+        {stationData && <StationDetails stationData={stationData} />}
+      </FormSection>
 
-      <Section>
-        <label>DEM Resolution:</label>
-        <StyledInput
-          type="text"
-          value={demResolution}
-          onChange={(e) => setDemResolution(e.target.value)}
-        />
-      </Section>
+      <FormSection>
+        <SectionTitle>
+          <SectionIcon>
+            <FontAwesomeIcon icon={faRuler} />
+          </SectionIcon>
+          Resolution Settings
+        </SectionTitle>
 
-      <InfoBox>
-        <Section>
-          <label>
-            <StyledInput
+        <InputGroup>
+          <InputLabel htmlFor="ls-resolution">Landuse/Soil Resolution:</InputLabel>
+          <FormInput
+            id="ls-resolution"
+            type="text"
+            value={lsResolution}
+            onChange={(e) => setLsResolution(e.target.value)}
+            placeholder="Enter resolution (e.g., 250)"
+          />
+        </InputGroup>
+
+        <InputGroup>
+          <InputLabel htmlFor="dem-resolution">DEM Resolution:</InputLabel>
+          <FormInput
+            id="dem-resolution"
+            type="text"
+            value={demResolution}
+            onChange={(e) => setDemResolution(e.target.value)}
+            placeholder="Enter resolution (e.g., 30)"
+          />
+        </InputGroup>
+      </FormSection>
+
+      <FormSection>
+        <SectionTitle>
+          <SectionIcon>
+            <FontAwesomeIcon icon={faLayerGroup} />
+          </SectionIcon>
+          Analysis Options
+        </SectionTitle>
+
+        <CheckboxGroup>
+          <CheckboxLabel>
+            <CheckboxInput
               type="checkbox"
               checked={calibrationFlag}
               onChange={(e) => setCalibrationFlag(e.target.checked)}
             />
-            <StrongText>Calibration</StrongText>
-          </label>
-        </Section>
+            <CheckboxCustom checked={calibrationFlag} />
+            <CheckboxText>Calibration</CheckboxText>
+          </CheckboxLabel>
+        </CheckboxGroup>
 
-        <Section>
-          <label>
-            <StyledInput
+        <CheckboxGroup>
+          <CheckboxLabel>
+            <CheckboxInput
               type="checkbox"
               checked={sensitivityFlag}
               onChange={(e) => setSensitivityFlag(e.target.checked)}
             />
-            <StrongText>Sensitivity Analysis</StrongText>
-          </label>
-        </Section>
+            <CheckboxCustom checked={sensitivityFlag} />
+            <CheckboxText>Sensitivity Analysis</CheckboxText>
+          </CheckboxLabel>
+        </CheckboxGroup>
 
-        <Section>
-          <label>
-            <StyledInput
+        <CheckboxGroup>
+          <CheckboxLabel>
+            <CheckboxInput
               type="checkbox"
               checked={validationFlag}
               onChange={(e) => setValidationFlag(e.target.checked)}
             />
-            <StrongText>Validation</StrongText>
-          </label>
-        </Section>
-      </InfoBox>
+            <CheckboxCustom checked={validationFlag} />
+            <CheckboxText>Validation</CheckboxText>
+          </CheckboxLabel>
+        </CheckboxGroup>
+      </FormSection>
 
-      <StyledButton
-        onClick={handleSubmit}
-        disabled={loading}
-        style={{ marginTop: '1rem', width: '100%' }}
-      >
-        {loading ? 'Processing...' : 'Run Model'}
-      </StyledButton>
-    </CardBody>
+      <SubmitButton onClick={handleSubmit} isLoading={loading} disabled={loading}>
+        {loading ? (
+          <>
+            <LoadingSpinner />
+            Processing...
+          </>
+        ) : (
+          <>
+            <ButtonIcon>
+              <FontAwesomeIcon icon={faPlay} />
+            </ButtonIcon>
+            Run Model
+          </>
+        )}
+      </SubmitButton>
+    </ModelSettingsFormContainer>
   );
 };
 

@@ -1,30 +1,85 @@
-// componenets/StationDetails.js
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faLocationDot,
+  faWater,
+  faRulerVertical,
+  faRulerHorizontal,
+  faMapMarkedAlt,
+} from '@fortawesome/free-solid-svg-icons';
+import {
+  StationDetailsContainer,
+  StationName,
+  StationIcon,
+  StationInfoContainer,
+  InfoItem,
+  InfoIcon,
+  InfoContent,
+  InfoLabel,
+  InfoValue,
+} from '../styles/SWATGenX.tsx';
 
-function StationDetails({ stationData }) {
-  if (!stationData) {
-    return null;
-  }
+const StationDetails = ({ stationData }) => {
+  if (!stationData) return null;
 
   return (
-    <div className="card mt-3">
-      <div className="card-body">
-        <h5>Station Characteristics</h5>
-        <ul>
-          {Object.entries(stationData) // ✅ Convert Object to Array
-            .filter(([key]) => key !== 'geometries') // ✅ Ignore geometries
-            .filter(([key]) => key !== 'streams_geometries') // ✅ Ignore streams_geometries
-            .filter(([key]) => key !== 'lakes_geometries') // ✅ Ignore lakes_geometries
+    <StationDetailsContainer>
+      <StationName>
+        <StationIcon>
+          <FontAwesomeIcon icon={faMapMarkedAlt} />
+        </StationIcon>
+        {stationData.SiteName || 'Station Details'}
+      </StationName>
 
-            .map(([key, value]) => (
-              <li key={key}>
-                <strong>{key}:</strong> {typeof value === 'object' ? JSON.stringify(value) : value}
-              </li>
-            ))}
-        </ul>
-      </div>
-    </div>
+      <StationInfoContainer>
+        <InfoItem>
+          <InfoIcon>
+            <FontAwesomeIcon icon={faLocationDot} />
+          </InfoIcon>
+          <InfoContent>
+            <InfoLabel>Site Number</InfoLabel>
+            <InfoValue>{stationData.SiteNumber || 'N/A'}</InfoValue>
+          </InfoContent>
+        </InfoItem>
+
+        <InfoItem>
+          <InfoIcon>
+            <FontAwesomeIcon icon={faWater} />
+          </InfoIcon>
+          <InfoContent>
+            <InfoLabel>Watershed Area</InfoLabel>
+            <InfoValue>
+              {stationData.DrainageArea ? `${stationData.DrainageArea} km²` : 'N/A'}
+            </InfoValue>
+          </InfoContent>
+        </InfoItem>
+
+        <InfoItem>
+          <InfoIcon>
+            <FontAwesomeIcon icon={faRulerVertical} />
+          </InfoIcon>
+          <InfoContent>
+            <InfoLabel>Latitude</InfoLabel>
+            <InfoValue>
+              {stationData.Latitude ? `${stationData.Latitude.toFixed(4)}°` : 'N/A'}
+            </InfoValue>
+          </InfoContent>
+        </InfoItem>
+
+        <InfoItem>
+          <InfoIcon>
+            <FontAwesomeIcon icon={faRulerHorizontal} />
+          </InfoIcon>
+          <InfoContent>
+            <InfoLabel>Longitude</InfoLabel>
+            <InfoValue>
+              {stationData.Longitude ? `${stationData.Longitude.toFixed(4)}°` : 'N/A'}
+            </InfoValue>
+          </InfoContent>
+        </InfoItem>
+      </StationInfoContainer>
+    </StationDetailsContainer>
   );
-}
+};
 
 export default StationDetails;
