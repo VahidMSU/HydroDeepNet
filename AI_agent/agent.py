@@ -3,11 +3,18 @@ import subprocess
 import requests
 import json
 import numpy as np
-from cdl_trend import cdl_trends
-from prism import PRISM_Dataset
 import geopandas 
-from config import AgentConfig
-from model_selector import ModelSelector
+
+try:
+    from cdl_trend import cdl_trends
+    from prism import PRISM_Dataset
+    from config import AgentConfig
+    from model_selector import ModelSelector
+except ImportError:
+    from AI_agent.cdl_trend import cdl_trends
+    from AI_agent.prism import PRISM_Dataset
+    from AI_agent.config import AgentConfig
+    from AI_agent.model_selector import ModelSelector
 
 # Function to check if Ollama is running without using CPU
 def is_ollama_running():

@@ -2,8 +2,11 @@ import numpy as np
 import h5py
 import pandas as pd
 import time
-from config import AgentConfig
-
+try:
+    from config import AgentConfig
+except ImportError:
+    from AI_agent.config import AgentConfig
+    
 class PRISM_Dataset:
     def __init__(self, config):
         self.config = config

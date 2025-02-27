@@ -3,6 +3,7 @@ import os
 
 # Define different model tiers based on task complexity
 MODELS = {
+    "very_large" : "deepseek-r1:70b", # For very complex tasks
     "large": "deepseek-r1:7b",    # For complex reasoning and analysis
     "medium": "deepseek-r1:1.5b", # For moderate tasks
     "small": "mistral:latest",    # For simpler tasks

@@ -1,5 +1,14 @@
 import React from 'react';
-import { Box, FormControl, InputLabel, Select, MenuItem, TextField, Button, Typography } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  Button,
+  Typography,
+} from '@mui/material';
 
 const HydroGeoDatasetForm = ({
   formData,
@@ -9,13 +18,17 @@ const HydroGeoDatasetForm = ({
   availableSubvariables,
 }) => {
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}
+    >
       {/* Variable Field */}
       <FormControl fullWidth>
         <InputLabel
           id="variable-label"
           sx={{
-            color: "#ff8500",
+            color: '#ff8500',
             bgcolor: 'white',
             px: 1,
             borderRadius: 1,
@@ -23,7 +36,7 @@ const HydroGeoDatasetForm = ({
               bgcolor: 'white',
               px: 1,
               borderRadius: 1,
-            }
+            },
           }}
         >
           Variable
@@ -53,7 +66,7 @@ const HydroGeoDatasetForm = ({
         <InputLabel
           id="subvariable-label"
           sx={{
-            color: "#ff8500",
+            color: '#ff8500',
             bgcolor: 'white',
             px: 1,
             borderRadius: 1,
@@ -61,7 +74,7 @@ const HydroGeoDatasetForm = ({
               bgcolor: 'white',
               px: 1,
               borderRadius: 1,
-            }
+            },
           }}
         >
           Subvariable
@@ -88,7 +101,9 @@ const HydroGeoDatasetForm = ({
 
       {/* Selected Coordinates */}
       <Box>
-        <Typography variant="subtitle1" sx={{ color: "#444e5e", fontWeight: "bold" }}>Selected Coordinates:</Typography>
+        <Typography variant="subtitle1" sx={{ color: '#444e5e', fontWeight: 'bold' }}>
+          Selected Coordinates:
+        </Typography>
         <TextField
           fullWidth
           value={formData.geometry ? 'Area selected on map' : 'Use map to select area'}
@@ -102,7 +117,9 @@ const HydroGeoDatasetForm = ({
 
       {/* Bounds */}
       <Box>
-        <Typography variant="subtitle1" sx={{ color: "#444e5e", fontWeight: "bold" }}>Bounds:</Typography>
+        <Typography variant="subtitle1" sx={{ color: '#444e5e', fontWeight: 'bold' }}>
+          Bounds:
+        </Typography>
         <TextField
           fullWidth
           value={
@@ -131,7 +148,7 @@ const HydroGeoDatasetForm = ({
             paddingX: 3,
             '&:hover': {
               backgroundColor: '#e67500',
-            }
+            },
           }}
         >
           Fetch Data
