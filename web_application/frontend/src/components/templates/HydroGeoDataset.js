@@ -1,19 +1,40 @@
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faSearch,
+  faMapMarkerAlt,
+  faLayerGroup,
+  faDatabase,
+  faRobot,
+  faMapMarkedAlt,
+  faInfoCircle,
+  faPaperPlane,
+  faChartBar,
+  faFilter,
+  faCompass,
+  faMapPin,
+  faSpinner,
+} from '@fortawesome/free-solid-svg-icons';
+
 import MapComponent from '../MapComponent';
 import HydroGeoDatasetForm from '../forms/HydroGeoDataset';
 import * as webMercatorUtils from '@arcgis/core/geometry/support/webMercatorUtils';
+
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Paper,
-  List,
-  ListItem,
-  Divider,
-} from '@mui/material';
+  HydroGeoContainer,
+  HydroGeoHeader,
+  ContentLayout,
+  QuerySidebar,
+  MapContainer,
+  ChatContainer,
+  ChatHeader,
+  ChatMessagesContainer,
+  MessageBubble,
+  MessageList,
+  ChatInputContainer,
+  ResultsContainer,
+  ThinkingIndicator,
+} from '../../styles/HydroGeoDataset.tsx';
 
 const HydroGeoDataset = () => {
   const [formData, setFormData] = useState({
@@ -61,7 +82,6 @@ const HydroGeoDataset = () => {
     fetchSubvariables();
   }, [formData.variable]);
 
-  // Initialize the chatbot when component mounts
   useEffect(() => {
     const initializeAgent = async () => {
       try {
@@ -101,7 +121,6 @@ const HydroGeoDataset = () => {
             // Keep the default message already set
           }
         } catch (error) {
-          // The default message is already set, just log the error
           console.error('Error initializing chatbot:', error);
         }
       } finally {
@@ -135,6 +154,7 @@ const HydroGeoDataset = () => {
     e.preventDefault();
     console.log('Submitting data:', JSON.stringify(formData, null, 2));
     try {
+      setIsLoading(true);
       const response = await fetch('/hydro_geo_dataset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -144,6 +164,8 @@ const HydroGeoDataset = () => {
       setData(result);
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -199,157 +221,85 @@ const HydroGeoDataset = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="column" p={3}>
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'white' }}>
-          HydroGeoDataset Overview
-        </Typography>
-        <Typography variant="h7" sx={{ color: 'white' }}>
-          HydroGeoDataset provides high-resolution hydrological, environmental, and climate data. It
-          includes datasets such as PRISM, LOCA2, and Wellogic records.
-        </Typography>
-      </Box>
+    <HydroGeoContainer>
+      <HydroGeoHeader>
+        <h1>
+          <FontAwesomeIcon icon={faDatabase} style={{ marginRight: '0.8rem' }} />
+          HydroGeoDataset Explorer
+        </h1>
+        <p>
+          Access high-resolution hydrological, environmental, and climate data including PRISM,
+          LOCA2, and Wellogic records through a simple interface. Select your area of interest and
+          data variables.
+        </p>
+      </HydroGeoHeader>
 
-      <Box mt={3} display="flex" gap={3}>
-        <Card sx={{ width: '30%', bgcolor: 'white', minHeight: '600px' }}>
-          <CardContent>
-            <Typography
-              variant="h4"
-              align="center"
-              sx={{ fontWeight: 'bold', color: '#2b2b2c', m: 2 }}
-            >
-              Data Query
-            </Typography>
-            <HydroGeoDatasetForm
-              formData={formData}
-              handleChange={handleChange}
-              handleSubmit={handleSubmit}
-              availableVariables={availableVariables}
-              availableSubvariables={availableSubvariables}
-            />
-          </CardContent>
-        </Card>
+      <ContentLayout>
+        <QuerySidebar>
+          <HydroGeoDatasetForm
+            formData={formData}
+            handleChange={handleChange}
+            handleSubmit={handleSubmit}
+            availableVariables={availableVariables}
+            availableSubvariables={availableSubvariables}
+            isLoading={isLoading}
+          />
+        </QuerySidebar>
 
-        <Box flex={1}>
+        <MapContainer>
           <MapComponent setFormData={setFormData} onGeometryChange={handleGeometryChange} />
-        </Box>
-      </Box>
-
-      {/* Chatbot Card */}
-      <Card sx={{ mt: 3, p: 2, bgcolor: 'white' }}>
-        <CardContent>
-          <Typography
-            variant="h4"
-            align="center"
-            sx={{ fontWeight: 'bold', color: '#2b2b2c', mb: 3 }}
-          >
-            HydroGeo Assistant
-          </Typography>
-
-          <Paper
-            elevation={3}
-            sx={{
-              height: '300px',
-              mb: 2,
-              p: 2,
-              overflowY: 'auto',
-              bgcolor: '#f9f9f9',
-            }}
-          >
-            <List>
-              {chatHistory.length === 0 ? (
-                <ListItem>
-                  <Typography variant="body1" color="textSecondary" sx={{ fontStyle: 'italic' }}>
-                    Initializing assistant...
-                  </Typography>
-                </ListItem>
-              ) : (
-                chatHistory.map((chat, index) => (
-                  <React.Fragment key={index}>
-                    <ListItem
-                      sx={{
-                        flexDirection: 'column',
-                        alignItems: chat.type === 'user' ? 'flex-end' : 'flex-start',
-                        mb: 1,
-                      }}
-                    >
-                      <Paper
-                        elevation={1}
-                        sx={{
-                          p: 1.5,
-                          maxWidth: '80%',
-                          bgcolor: chat.type === 'user' ? '#e3f2fd' : '#ffffff',
-                          borderRadius: '8px',
-                        }}
-                      >
-                        <Typography variant="body1">{chat.content}</Typography>
-                      </Paper>
-                    </ListItem>
-                    {index < chatHistory.length - 1 && <Divider variant="middle" />}
-                  </React.Fragment>
-                ))
-              )}
-              {isLoading && (
-                <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <Paper
-                    elevation={1}
-                    sx={{ p: 1.5, maxWidth: '80%', bgcolor: '#ffffff', borderRadius: '8px' }}
-                  >
-                    <Typography variant="body1">Thinking...</Typography>
-                  </Paper>
-                </ListItem>
-              )}
-            </List>
-          </Paper>
-
-          <Box component="form" onSubmit={handleChatSubmit} sx={{ display: 'flex', gap: 1 }}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder="Type your question here..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              sx={{
-                bgcolor: 'white',
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderColor: '#ccc',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#ff8500',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#ff8500',
-                  },
-                },
-              }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                bgcolor: '#ff8500',
-                '&:hover': {
-                  bgcolor: '#e67500',
-                },
-              }}
-              disabled={isLoading || !message.trim()}
-            >
-              Send
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
+        </MapContainer>
+      </ContentLayout>
 
       {data && (
-        <Card sx={{ mt: 3, p: 2 }}>
-          <Typography variant="h6">Results</Typography>
-          <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </Card>
+        <ResultsContainer>
+          <h2>
+            <FontAwesomeIcon icon={faChartBar} className="icon" />
+            Query Results
+          </h2>
+          <pre>{JSON.stringify(data, null, 2)}</pre>
+        </ResultsContainer>
       )}
-    </Box>
+
+      <ChatContainer>
+        <ChatHeader>
+          <h2>
+            <FontAwesomeIcon icon={faRobot} className="icon" />
+            HydroGeo Assistant
+          </h2>
+        </ChatHeader>
+
+        <ChatMessagesContainer>
+          <MessageList>
+            {chatHistory.map((chat, index) => (
+              <MessageBubble key={index} className={chat.type}>
+                {chat.content}
+              </MessageBubble>
+            ))}
+            {isLoading && (
+              <ThinkingIndicator>
+                <div className="dot"></div>
+                <div className="dot"></div>
+                <div className="dot"></div>
+              </ThinkingIndicator>
+            )}
+          </MessageList>
+        </ChatMessagesContainer>
+
+        <ChatInputContainer onSubmit={handleChatSubmit}>
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ask a question about the data..."
+            disabled={isLoading}
+          />
+          <button type="submit" disabled={isLoading || !message.trim()}>
+            <FontAwesomeIcon icon={faPaperPlane} className="icon" />
+          </button>
+        </ChatInputContainer>
+      </ChatContainer>
+    </HydroGeoContainer>
   );
 };
 
