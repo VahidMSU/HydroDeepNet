@@ -32,7 +32,8 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
     with open(new_runQSWATPlus_path, "r") as f:
         lines = f.readlines()
 
-    env_vars = ["PYTHONPATH", "QGIS_ROOT", "PYTHONHOME", "QT_PLUGIN_PATH", "GDAL_DATA", "PROJ_LIB", "PATH"]
+    env_vars = ["PYTHONPATH", "QGIS_ROOT", "PYTHONHOME", "QT_PLUGIN_PATH", "GDAL_DATA", "PROJ_LIB", "PATH", "DISPLAY"]
+
     header_lines = []
     for var in env_vars:
         val = os.environ.get(var, "")
@@ -40,6 +41,8 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
 
     header_lines.append('export SWATPLUS_DIR="/usr/local/share/SWATPlus"')
     header_lines.append('export TAUDEM5BIN="$SWATPLUS_DIR/TauDEM5Bin"')
+    # Add this line to ensure system binaries are available
+    header_lines.append('export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$TAUDEM5BIN:$PATH"')
     #header_lines.append('export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$TAUDEM5BIN:$PATH"')
 
     env_header = "\n".join(header_lines) + "\n\n"
@@ -55,7 +58,7 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
     for i, line in enumerate(lines):
         if "Run the Python script with Xvfb (headless display)" in line:
             replacement = (
-                f'su - {username} -c "xvfb-run -a {python_executable} -c \''  # Use su to switch to the specified user
+                f'/usr/bin/xvfb-run -a {python_executable} -c \''
                 f'from QSWATPlus3_64 import runHUCProject; '
                 f'runHUCProject(VPUID="{VPUID}", LEVEL="{LEVEL}", NAME="{NAME}", MODEL_NAME="{MODEL_NAME}", '
                 f'SWATGenXPaths_swatgenx_outlet_path="{SWATGenXPaths.swatgenx_outlet_path}")\'\n'

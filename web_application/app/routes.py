@@ -29,8 +29,12 @@ import requests
 from flask import Flask, request, jsonify
 import sys
 sys.path.append('/data/SWATGenXApp/codes/')
-
 from AI_agent.interactive_agent import interactive_agent
+import os
+from app.tasks import create_model_task
+
+
+
 class AppManager:
 	def __init__(self, app):
 		self.app = app
@@ -54,6 +58,7 @@ class AppManager:
 		def serve_videos(filename):
 			return send_from_directory('/data/SWATGenXApp/GenXAppData/videos', filename)
 
+		
 		@self.app.route('/static/visualizations/<name>/<ver>/<variable>.gif', methods=['GET'])
 		@conditional_login_required
 		@conditional_verified_required
@@ -377,8 +382,8 @@ class AppManager:
 
 			# Extract form data
 			site_no = data.get("site_no")
-			ls_resolution = data.get("ls_resolution", 500)
-			dem_resolution = data.get("dem_resolution", 250)
+			ls_resolution = data.get("ls_resolution", 250)
+			dem_resolution = data.get("dem_resolution", 30)
 
 			self.app.logger.info(
 				f"Model settings received for Station `{site_no}`: "
@@ -386,24 +391,31 @@ class AppManager:
 			)
 			# Perform model creation
 			try:
-				### if user is unknown, do not proceed
-
+				### if user is anonymous, do not proceed
 				if current_user.is_anonymous:
 					self.app.logger.warning("User is not logged in. Using 'None' as username.")
 					import time
 					time.sleep(5)
 					return jsonify({"error": "User is not logged in"}), 403
-				wrapped_model_creation = partial(
-					single_model_creation,
-					current_user.username, site_no, ls_resolution, dem_resolution
+					
+				# Submit task to Celery - proper import
+				task = create_model_task.delay(
+					current_user.username, 
+					site_no, 
+					ls_resolution, 
+					dem_resolution
 				)
-				process = Process(target=wrapped_model_creation)
-				process.start()
-				self.app.logger.info("Model creation process started successfully.")
-				return jsonify({"status": "success", "message": "Model creation started!"})
+				
+				self.app.logger.info(f"Model creation task {task.id} scheduled successfully.")
+				return jsonify({
+					"status": "success", 
+					"message": "Model creation started!",
+					"task_id": task.id
+				})
 			except Exception as e:
-				self.app.logger.error(f"Error starting model creation: {e}")
-				return jsonify({"error": "Failed to start model creation"}), 500
+				self.app.logger.error(f"Error scheduling model creation: {e}")
+				return jsonify({"error": f"Failed to start model creation: {str(e)}"}), 500
+
 
 		@self.app.route('/api/user_files', methods=['GET'])
 		@conditional_login_required
