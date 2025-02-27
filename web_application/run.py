@@ -2,6 +2,7 @@ import os
 import sys
 from flask_socketio import SocketIO
 from app import create_app
+from celery_app import celery
 
 # Ensure system paths are properly set
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')  # Add SWATGenX to sys.path
