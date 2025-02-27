@@ -1,11 +1,18 @@
-from agent import chat_with_deepseek
-from get_county_bbox import get_bounding_box
-from cdl_trend import cdl_trends
-from prism import PRISM_Dataset
+try:
+    from agent import chat_with_deepseek
+    from get_county_bbox import get_bounding_box
+    from cdl_trend import cdl_trends
+    from prism import PRISM_Dataset
+    from query_parsing_agent import QueryParsingAgent
+except ImportError:
+    from AI_agent.agent import chat_with_deepseek
+    from AI_agent.get_county_bbox import get_bounding_box
+    from AI_agent.cdl_trend import cdl_trends
+    from AI_agent.prism import PRISM_Dataset
+    from AI_agent.query_parsing_agent import QueryParsingAgent
+    
 import json
 import re
-from query_parsing_agent import QueryParsingAgent
-
 class ConversationContext:
     """Maintains context across multiple conversation turns."""
     def __init__(self):

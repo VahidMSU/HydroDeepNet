@@ -1,32 +1,49 @@
 import time
-from specialized_agents import (
-    QueryAnalysisAgent,
-    DataRetrievalAgent,
-    AnalysisAgent,
-    SynthesisAgent
-)
-from model_selector import ModelSelector
 try:
-    from debug_utils import log_query_info, log_data_structure
+    from specialized_agents import (
+        QueryAnalysisAgent,
+        DataRetrievalAgent,
+        AnalysisAgent,
+        SynthesisAgent
+    )
+    from county_info_agent import CountyInfoAgent
+    from query_agent import BaseQueryAgent
+    from model_selector import ModelSelector
+except ImportError:
+    from AI_agent.specialized_agents import (
+        QueryAnalysisAgent,
+        DataRetrievalAgent,
+        AnalysisAgent,
+        SynthesisAgent
+    )
+    from AI_agent.county_info_agent import CountyInfoAgent
+    from AI_agent.query_agent import BaseQueryAgent
+    from AI_agent.model_selector import ModelSelector
+    
+try:
+    from debug_utils import log_query_info, log_data_structure, timing_log
     DEBUG = True
 except ImportError:
     DEBUG = False
     def log_query_info(*args): pass
     def log_data_structure(*args): pass
+    def timing_log(*args): pass
 
 class AgentCoordinator:
     def __init__(self):
         self.agents = {
-            'query': QueryAnalysisAgent(),
+            'query': BaseQueryAgent(),
             'data': DataRetrievalAgent(),
             'analysis': AnalysisAgent(),
-            'synthesis': SynthesisAgent()
+            'synthesis': SynthesisAgent(),
+            'county_info': CountyInfoAgent()  # Add the new agent
         }
         self.context = {}
         # Session context to remember previous queries
         self.session = {
             'last_county': None,
             'last_state': None,
+            'last_years': None,
             'last_analysis_type': None,
             'last_focus': None
         }
@@ -34,17 +51,27 @@ class AgentCoordinator:
     def process_query(self, query):
         total_start = time.time()
         
-        # Step 1: Understand the query - use simple model
+        # Step 1: Understand the query using BaseQueryAgent
         query_start = time.time()
         query_info = self.agents['query'].process(query, {'session': self.session})
         query_time = time.time() - query_start
-        print(f"\nQuery analysis took {query_time:.2f} seconds")
+        if DEBUG:
+            timing_log("Query analysis", query_start, time.time())
+            print(f"Query analysis took {query_time:.2f} seconds")
         
         if not query_info:
-            return "I couldn't understand your query. Please provide more specific information."
+            return "I couldn't understand your query. Please provide more specific information about which county you're interested in."
         
-        if query_info.get('error'):
-            return query_info['message']
+        # Check if this is a general information request
+        if query_info.get('query_type') == 'general_info':
+            print(f"Processing general information request for {query_info['county']} County")
+            
+            # Update session context still
+            self.session['last_county'] = query_info.get('county')
+            self.session['last_state'] = query_info.get('state')
+            
+            # Use the county info agent to get the response
+            return self.agents['county_info'].process(query_info)
         
         # Store the original query for context
         query_info['query'] = query
@@ -56,6 +83,7 @@ class AgentCoordinator:
         # Update session context for future follow-up questions
         self.session['last_county'] = query_info.get('county')
         self.session['last_state'] = query_info.get('state')
+        self.session['last_years'] = query_info.get('years')
         self.session['last_analysis_type'] = query_info.get('analysis_type')
         self.session['last_focus'] = query_info.get('focus')
         
@@ -93,8 +121,8 @@ class AgentCoordinator:
         # Step 2: Retrieve data (only what's needed based on analysis type)
         data_start = time.time()
         data = self.agents['data'].process(query_info, self.context)
-        data_time = time.time() - data_start
-        print(f"Data retrieval took {data_time:.2f} seconds")
+        if DEBUG:
+            timing_log("Data retrieval", data_start, time.time())
         
         # Debug output
         if DEBUG:
@@ -109,8 +137,8 @@ class AgentCoordinator:
         # Step 3: Analyze data
         analysis_start = time.time()
         analysis = self.agents['analysis'].process(data, query_info)
-        analysis_time = time.time() - analysis_start
-        print(f"Data analysis took {analysis_time:.2f} seconds")
+        if DEBUG:
+            timing_log("Data analysis", analysis_start, time.time())
         
         # Skip synthesis for specific queries
         needs_synthesis = analysis_type == 'both'
@@ -120,10 +148,11 @@ class AgentCoordinator:
         # Step 4: Synthesize results
         synthesis_start = time.time()
         final_response = self.agents['synthesis'].process(analysis, self.context)
-        synthesis_time = time.time() - synthesis_start
-        print(f"Response synthesis took {synthesis_time:.2f} seconds")
+        if DEBUG:
+            timing_log("Response synthesis", synthesis_start, time.time())
         
-        total_time = time.time() - total_start
-        print(f"\nTotal processing time: {total_time:.2f} seconds\n")
+        if DEBUG:
+            total_time = time.time() - total_start
+            print(f"\nTotal processing time: {total_time:.2f} seconds\n")
         
         return final_response
