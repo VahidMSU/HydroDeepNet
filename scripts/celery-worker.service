@@ -1,0 +1,23 @@
+[Unit]
+Description=Celery Worker for Flask Application
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/data/SWATGenXApp/codes/web_application
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data/SWATGenXApp/codes/.venv/bin"
+Environment="FLASK_ENV=production"
+Environment="PYTHONPATH=/data/SWATGenXApp/codes"
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_worker worker --loglevel=info --concurrency=4
+
+# Restart policy
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/celery-worker.log
+StandardError=append:/data/SWATGenXApp/codes/web_application/logs/celery-worker-error.log
+
+[Install]
+WantedBy=multi-user.target
