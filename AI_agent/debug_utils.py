@@ -1,47 +1,35 @@
 def log_query_info(query_info):
-    """Log detailed information about a query for debugging purposes"""
-    print("\n--- Query Info Debug ---")
+    """Log structured information about a query."""
+    print("\n--- Query Information ---")
     print(f"County: {query_info.get('county')}")
     print(f"State: {query_info.get('state')}")
     print(f"Years: {query_info.get('years')}")
-    print(f"Analysis type: {query_info.get('analysis_type')}")
+    print(f"Analysis Type: {query_info.get('analysis_type')}")
     print(f"Focus: {query_info.get('focus')}")
-    print(f"Original query: {query_info.get('original_query', 'N/A')}")
     print("------------------------\n")
 
 def log_data_structure(data):
-    """Log the structure of a data object for debugging"""
-    print("\n--- Data Structure Debug ---")
-    
+    """Log structure of retrieved data."""
     if not data:
-        print("Data is None or empty")
-        print("------------------------\n")
+        print("No data retrieved")
         return
         
-    print("Keys in data:", list(data.keys()) if isinstance(data, dict) else "Not a dictionary")
-    
-    if isinstance(data, dict):
-        if 'config' in data:
-            print("\nConfig keys:", list(data['config'].keys()))
-            print(f"County in config: {data['config'].get('county')}")
-            print(f"State in config: {data['config'].get('state')}")
+    print("\n--- Retrieved Data Structure ---")
+    if 'config' in data:
+        print(f"Config: {type(data['config']).__name__} with {len(data['config'])} keys")
+        
+    if 'climate' in data and data['climate']:
+        try:
+            pr_data, tmax_data, tmin_data = data['climate']
+            print(f"Climate Data: precipitation[{len(pr_data)}], tmax[{len(tmax_data)}], tmin[{len(tmin_data)}]")
+        except:
+            print(f"Climate Data: {type(data['climate']).__name__}")
             
-        if 'climate' in data:
-            climate_data = data['climate']
-            if climate_data:
-                print("\nClimate data is present - shape:", 
-                      [arr.shape if hasattr(arr, 'shape') else len(arr) for arr in climate_data])
-            else:
-                print("\nClimate data is empty")
-                
-        if 'landcover' in data:
-            landcover_data = data['landcover']
-            if landcover_data:
-                print("\nLandcover data is present for years:", list(landcover_data.keys()))
-            else:
-                print("\nLandcover data is empty")
-                
-    print("------------------------\n")
+    if 'landcover' in data and data['landcover']:
+        print(f"Land Cover Data: {type(data['landcover']).__name__} with {len(data['landcover'])} years")
+        year_sample = next(iter(data['landcover'].keys()))
+        print(f"  Example Year ({year_sample}): {len(data['landcover'][year_sample])} land cover categories")
+    print("------------------------------\n")
 
 def log_landcover_data(landcover_data, years_requested):
     """Log detailed information about landcover data"""
@@ -117,3 +105,8 @@ def debug_query_info(query, query_info):
                 print(f"WARNING: Unusual year value: {year}")
                 
     print("------------------------\n")
+
+def timing_log(name, start_time, end_time):
+    """Log timing information for operations."""
+    duration = end_time - start_time
+    print(f"Operation '{name}' completed in {duration:.2f} seconds")

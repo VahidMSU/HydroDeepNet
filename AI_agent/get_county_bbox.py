@@ -1,9 +1,17 @@
-from config import AgentConfig
-
+try:
+    from config import AgentConfig
+except ImportError:
+    from AI_agent.config import AgentConfig
+    
 def get_bounding_box(county, state):
     import geopandas 
     import numpy as np
 
+    # Add validation for county and state inputs
+    if county is None or state is None:
+        print(f"Error: County or state cannot be None. Received county={county}, state={state}")
+        return None, None, None, None
+        
     path = AgentConfig.USGS_governmental_path
 
     try:
