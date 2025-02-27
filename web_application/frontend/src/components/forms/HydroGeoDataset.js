@@ -1,14 +1,24 @@
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Button,
-  Typography,
-} from '@mui/material';
+  faLayerGroup,
+  faChevronDown,
+  faMapMarkerAlt,
+  faSearchLocation,
+  faFilter,
+  faDatabase,
+  faSpinner,
+} from '@fortawesome/free-solid-svg-icons';
+
+import {
+  QuerySidebarHeader,
+  QuerySidebarContent,
+  FormGroup,
+  InputField,
+  SubmitButton,
+  InfoCard,
+  CoordinatesDisplay,
+} from '../../styles/HydroGeoDataset.tsx';
 
 const HydroGeoDatasetForm = ({
   formData,
@@ -16,145 +26,134 @@ const HydroGeoDatasetForm = ({
   handleSubmit,
   availableVariables,
   availableSubvariables,
+  isLoading,
 }) => {
+  const hasSelectedArea = Boolean(formData.geometry);
+
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{ display: 'flex', flexDirection: 'column', gap: 5 }}
-    >
-      {/* Variable Field */}
-      <FormControl fullWidth>
-        <InputLabel
-          id="variable-label"
-          sx={{
-            color: '#ff8500',
-            bgcolor: 'white',
-            px: 1,
-            borderRadius: 1,
-            '&.MuiInputLabel-shrink': {
-              bgcolor: 'white',
-              px: 1,
-              borderRadius: 1,
-            },
-          }}
-        >
-          Variable
-        </InputLabel>
-        <Select
-          labelId="variable-label"
-          id="variable"
-          name="variable"
-          value={formData.variable}
-          onChange={handleChange}
-          sx={{
-            bgcolor: 'white',
-            borderRadius: 1,
-          }}
-        >
-          <MenuItem value="">Select Variable</MenuItem>
-          {availableVariables.map((variable) => (
-            <MenuItem key={variable} value={variable}>
-              {variable}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+    <>
+      <QuerySidebarHeader>
+        <h2>
+          <FontAwesomeIcon icon={faFilter} className="icon" />
+          Query Parameters
+        </h2>
+      </QuerySidebarHeader>
 
-      {/* Subvariable Field */}
-      <FormControl fullWidth>
-        <InputLabel
-          id="subvariable-label"
-          sx={{
-            color: '#ff8500',
-            bgcolor: 'white',
-            px: 1,
-            borderRadius: 1,
-            '&.MuiInputLabel-shrink': {
-              bgcolor: 'white',
-              px: 1,
-              borderRadius: 1,
-            },
-          }}
-        >
-          Subvariable
-        </InputLabel>
-        <Select
-          labelId="subvariable-label"
-          id="subvariable"
-          name="subvariable"
-          value={formData.subvariable}
-          onChange={handleChange}
-          sx={{
-            bgcolor: 'white',
-            borderRadius: 1,
-          }}
-        >
-          <MenuItem value="">Select Subvariable</MenuItem>
-          {availableSubvariables.map((subvariable) => (
-            <MenuItem key={subvariable} value={subvariable}>
-              {subvariable}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <QuerySidebarContent>
+        <InfoCard>
+          <h3>
+            <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
+            Select Area
+          </h3>
+          <p>Use the map to draw a polygon around your area of interest.</p>
+        </InfoCard>
 
-      {/* Selected Coordinates */}
-      <Box>
-        <Typography variant="subtitle1" sx={{ color: '#444e5e', fontWeight: 'bold' }}>
-          Selected Coordinates:
-        </Typography>
-        <TextField
-          fullWidth
-          value={formData.geometry ? 'Area selected on map' : 'Use map to select area'}
-          sx={{
-            input: { color: '#ff8500' },
-            bgcolor: 'white',
-            borderRadius: 1,
-          }}
-        />
-      </Box>
+        <form onSubmit={handleSubmit}>
+          {/* Variable Select */}
+          <FormGroup>
+            <label>
+              <FontAwesomeIcon icon={faLayerGroup} className="icon" />
+              Variable
+            </label>
+            <InputField>
+              <select name="variable" value={formData.variable} onChange={handleChange} required>
+                <option value="">Select a variable</option>
+                {availableVariables.map((variable) => (
+                  <option key={variable} value={variable}>
+                    {variable}
+                  </option>
+                ))}
+              </select>
+              <FontAwesomeIcon icon={faChevronDown} className="select-arrow" />
+            </InputField>
+          </FormGroup>
 
-      {/* Bounds */}
-      <Box>
-        <Typography variant="subtitle1" sx={{ color: '#444e5e', fontWeight: 'bold' }}>
-          Bounds:
-        </Typography>
-        <TextField
-          fullWidth
-          value={
-            formData.min_latitude
-              ? `Lat: ${formData.min_latitude} to ${formData.max_latitude}, Lon: ${formData.min_longitude} to ${formData.max_longitude}`
-              : 'Use map to select area'
-          }
-          sx={{
-            input: { color: '#ff8500' },
-            bgcolor: 'white',
-            borderRadius: 1,
-          }}
-        />
-      </Box>
+          {/* Subvariable Select */}
+          {formData.variable && (
+            <FormGroup>
+              <label>
+                <FontAwesomeIcon icon={faFilter} className="icon" />
+                Subvariable
+              </label>
+              <InputField>
+                <select
+                  name="subvariable"
+                  value={formData.subvariable}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select a subvariable</option>
+                  {availableSubvariables.map((subvariable) => (
+                    <option key={subvariable} value={subvariable}>
+                      {subvariable}
+                    </option>
+                  ))}
+                </select>
+                <FontAwesomeIcon icon={faChevronDown} className="select-arrow" />
+              </InputField>
+            </FormGroup>
+          )}
 
-      {/* Fetch Data Button */}
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={!formData.geometry}
-          sx={{
-            backgroundColor: '#ff8500',
-            fontWeight: 'bold',
-            width: 'fit-content',
-            paddingX: 3,
-            '&:hover': {
-              backgroundColor: '#e67500',
-            },
-          }}
-        >
-          Fetch Data
-        </Button>
-      </Box>
-    </Box>
+          {/* Selected Area Display */}
+          <FormGroup>
+            <label>
+              <FontAwesomeIcon icon={faSearchLocation} className="icon" />
+              Selected Area
+            </label>
+            <CoordinatesDisplay>
+              <div className="title">
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
+                {hasSelectedArea ? 'Area Selected' : 'No Area Selected'}
+              </div>
+              <div className="value">
+                {hasSelectedArea
+                  ? `Polygon with ${formData.geometry.rings[0].length} vertices`
+                  : 'Use the map to draw a polygon'}
+              </div>
+            </CoordinatesDisplay>
+          </FormGroup>
+
+          {/* If bounds are defined, show them */}
+          {formData.min_latitude && (
+            <FormGroup>
+              <label>
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
+                Bounds
+              </label>
+              <CoordinatesDisplay>
+                <div className="title">
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
+                  Coordinate Bounds
+                </div>
+                <div className="value">
+                  Lat: {formData.min_latitude} to {formData.max_latitude}
+                  <br />
+                  Lon: {formData.min_longitude} to {formData.max_longitude}
+                </div>
+              </CoordinatesDisplay>
+            </FormGroup>
+          )}
+
+          {/* Submit Button */}
+          <SubmitButton
+            type="submit"
+            disabled={!hasSelectedArea || !formData.variable || !formData.subvariable || isLoading}
+          >
+            {isLoading ? (
+              <>
+                <FontAwesomeIcon icon={faSpinner} className="icon fa-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faDatabase} className="icon" />
+                Fetch Data
+              </>
+            )}
+          </SubmitButton>
+        </form>
+      </QuerySidebarContent>
+    </>
   );
 };
 
