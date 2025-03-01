@@ -4,18 +4,17 @@ MODIS data processing and visualization utilities.
 This module provides functions for analyzing, visualizing, and exporting
 MODIS remote sensing data extracted from HDF5 datasets.
 """
+import os
+import h5py
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from matplotlib.colors import LinearSegmentedColormap
-import pandas as pd
-import h5py
-import os
-import logging
-from typing import Dict, List, Any, Tuple, Optional, Union
-from datetime import datetime, timedelta
 import seaborn as sns
+import logging
 import calendar
+from datetime import datetime, timedelta
+from typing import Dict, List, Any, Tuple, Optional, Union
 from pathlib import Path
 
 # Configure logger
@@ -591,3 +590,533 @@ def create_modis_seasonal_plot(data: np.ndarray, product_name: str, start_year: 
     except Exception as e:
         logger.error(f"Error creating seasonal plot: {e}")
         return None
+
+def calculate_modis_anomalies(
+    data: np.ndarray, 
+    product_name: str, 
+    start_year: int, 
+    end_year: int,
+    baseline_years: Optional[List[int]] = None
+) -> Tuple[np.ndarray, np.ndarray, List[datetime]]:
+    """
+    Calculate anomalies from a baseline period.
+    
+    Args:
+        data: 3D numpy array of MODIS data with shape (time, y, x)
+        product_name: MODIS product identifier
+        start_year: Starting year of the data
+        end_year: Ending year of the data
+        baseline_years: Optional list of years to use as baseline (uses all available years if None)
+        
+    Returns:
+        Tuple containing:
+            - 1D numpy array of time series anomalies
+            - 2D numpy array of spatial mean anomalies
+            - List of datetime objects corresponding to the MODIS data
+    """
+    try:
+        # Calculate spatial mean for each time step
+        time_series = np.nanmean(data, axis=(1, 2))
+        
+        # Generate approximate dates
+        dates = get_modis_dates(product_name, start_year, end_year)
+        dates = dates[:len(time_series)]
+        
+        # Get product scale factor
+        scale_factor = MODIS_PRODUCTS.get(product_name, {}).get('scale_factor', 1.0)
+        
+        # Apply scale factor if needed
+        if scale_factor != 1.0:
+            time_series = time_series * scale_factor
+        
+        # Determine baseline years
+        if baseline_years is None:
+            # Use all years as baseline
+            baseline_years = list(range(start_year, end_year + 1))
+        
+        # Create arrays to store month indices and years
+        months = np.array([date.month for date in dates])
+        years = np.array([date.year for date in dates])
+        
+        # Calculate monthly climatology from baseline years
+        monthly_means = {}
+        for month in range(1, 13):
+            # For each month, get indices where:
+            # 1. month matches
+            # 2. year is in baseline years
+            indices = [i for i, (m, y) in enumerate(zip(months, years)) 
+                      if m == month and y in baseline_years]
+            
+            if indices:
+                # Calculate mean for this month
+                monthly_means[month] = np.nanmean(time_series[indices])
+            else:
+                monthly_means[month] = np.nan
+        
+        # Calculate anomalies for each time point
+        anomalies = np.zeros_like(time_series)
+        for i, (date, value) in enumerate(zip(dates, time_series)):
+            month = date.month
+            baseline = monthly_means.get(month, np.nan)
+            if not np.isnan(baseline) and not np.isnan(value):
+                anomalies[i] = value - baseline
+            else:
+                anomalies[i] = np.nan
+        
+        return anomalies, time_series, dates
+    
+    except Exception as e:
+        logger.error(f"Error calculating anomalies: {e}")
+        return np.array([]), np.array([]), []
+
+def create_modis_anomaly_plot(
+    data: np.ndarray,
+    product_name: str, 
+    start_year: int, 
+    end_year: int,
+    baseline_years: Optional[List[int]] = None,
+    output_path: Optional[str] = None,
+    figsize: Tuple[int, int] = (12, 8)
+) -> Optional[plt.Figure]:
+    """
+    Create a plot showing anomalies from a baseline period.
+    
+    Args:
+        data: 3D numpy array of MODIS data with shape (time, y, x)
+        product_name: MODIS product identifier
+        start_year: Starting year of the data
+        end_year: Ending year of the data
+        baseline_years: Optional list of years to use as baseline (uses all available years if None)
+        output_path: Path to save the figure (optional)
+        figsize: Figure dimensions (width, height) in inches
+        
+    Returns:
+        Matplotlib Figure object or None if error occurs
+    """
+    try:
+        # Calculate anomalies
+        anomalies, time_series, dates = calculate_modis_anomalies(
+            data, product_name, start_year, end_year, baseline_years
+        )
+        
+        if len(anomalies) == 0:
+            logger.warning("No anomaly data to plot")
+            return None
+        
+        # Get product info
+        product_info = MODIS_PRODUCTS.get(product_name, {
+            'description': product_name,
+            'units': '',
+            'scale_factor': 1.0
+        })
+        
+        # Create figure
+        fig, ax = plt.subplots(figsize=figsize)
+        
+        # Create the baseline period label
+        if baseline_years and len(baseline_years) > 0:
+            baseline_label = f"Baseline: {min(baseline_years)}-{max(baseline_years)}"
+        else:
+            baseline_label = f"Baseline: {start_year}-{end_year}"
+        
+        # Plot the anomalies
+        colormap = plt.cm.RdBu_r  # Red-Blue diverging colormap
+        colors = np.array(['r' if a > 0 else 'b' for a in anomalies])
+        
+        bars = ax.bar(dates, anomalies, color=colors, alpha=0.7, width=10)
+        
+        # Add zero line
+        ax.axhline(y=0, color='k', linestyle='-', linewidth=1)
+        
+        # Format x-axis as dates
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        ax.xaxis.set_major_locator(mdates.YearLocator())
+        fig.autofmt_xdate()
+        
+        # Add labels and title
+        ax.set_xlabel('Date', fontsize=12)
+        ax.set_ylabel(f"Anomaly ({product_info.get('units', '')})", fontsize=12)
+        ax.set_title(f"{product_info.get('description')} Anomalies", fontsize=14, fontweight='bold')
+        
+        # Add baseline text
+        ax.text(0.02, 0.95, baseline_label, transform=ax.transAxes, fontsize=10,
+                bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray', boxstyle='round,pad=0.5'))
+        
+        # Add a legend explaining the colors
+        from matplotlib.patches import Patch
+        legend_elements = [
+            Patch(facecolor='r', edgecolor='r', alpha=0.7, label='Above normal'),
+            Patch(facecolor='b', edgecolor='b', alpha=0.7, label='Below normal')
+        ]
+        ax.legend(handles=legend_elements, loc='upper right')
+        
+        # Add grid
+        ax.grid(True, linestyle='--', alpha=0.3)
+        
+        plt.tight_layout()
+        
+        # Save figure if path provided
+        if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            logger.info(f"Anomaly plot saved to {output_path}")
+        
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Error creating anomaly plot: {e}")
+        return None
+
+def create_modis_comparison_plot(
+    data_dict: Dict[str, np.ndarray],
+    product_names: Dict[str, str],
+    start_year: int,
+    end_year: int,
+    output_path: Optional[str] = None,
+    figsize: Tuple[int, int] = (12, 8),
+) -> Optional[plt.Figure]:
+    """
+    Create a comparison plot of multiple MODIS products.
+    
+    Args:
+        data_dict: Dictionary mapping product keys to data arrays
+        product_names: Dictionary mapping product keys to display names
+        start_year: First year of data
+        end_year: Last year of data
+        output_path: Path to save the figure (optional)
+        figsize: Figure dimensions (width, height) in inches
+        
+    Returns:
+        Matplotlib Figure object or None if error occurs
+    """
+    try:
+        if not data_dict:
+            logger.warning("No data to plot")
+            return None
+            
+        # Create figure
+        fig, ax = plt.subplots(figsize=figsize)
+        
+        # Store line objects for legend
+        lines = []
+        
+        # Process each product
+        for product_key, product_data in data_dict.items():
+            # Calculate spatial mean
+            time_series = np.nanmean(product_data, axis=(1, 2))
+            
+            # Get scale factor
+            scale_factor = MODIS_PRODUCTS.get(product_key, {}).get('scale_factor', 1.0)
+            if scale_factor != 1.0:
+                time_series = time_series * scale_factor
+            
+            # Generate dates
+            dates = get_modis_dates(product_key, start_year, end_year)
+            dates = dates[:len(time_series)]
+            
+            # Normalize time series (Z-score) for comparison
+            valid_mask = ~np.isnan(time_series)
+            if np.sum(valid_mask) > 1:
+                mean_val = np.nanmean(time_series)
+                std_val = np.nanstd(time_series)
+                if std_val > 0:
+                    normalized = (time_series - mean_val) / std_val
+                else:
+                    normalized = time_series - mean_val
+            else:
+                normalized = time_series
+                
+            # Plot the normalized time series
+            display_name = product_names.get(product_key, product_key)
+            line, = ax.plot(dates, normalized, '-o', markersize=3, linewidth=1.5, label=display_name)
+            lines.append(line)
+        
+        # Format x-axis as dates
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        ax.xaxis.set_major_locator(mdates.YearLocator())
+        fig.autofmt_xdate()
+        
+        # Add horizontal line at y=0
+        ax.axhline(y=0, color='gray', linestyle='--', linewidth=1, alpha=0.5)
+        
+        # Add labels and legend
+        ax.set_xlabel('Date', fontsize=12)
+        ax.set_ylabel('Normalized Value (Z-score)', fontsize=12)
+        ax.set_title('Comparison of MODIS Products (Normalized)', fontsize=14, fontweight='bold')
+        ax.legend(handles=lines, loc='upper right')
+        
+        # Add grid
+        ax.grid(True, linestyle='--', alpha=0.3)
+        
+        plt.tight_layout()
+        
+        # Save figure if path provided
+        if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            logger.info(f"Comparison plot saved to {output_path}")
+        
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Error creating comparison plot: {e}", exc_info=True)
+        return None
+
+def create_modis_spatial_animation(
+    data: np.ndarray, 
+    product_name: str,
+    start_year: int,
+    end_year: int,
+    output_path: Optional[str] = None,
+    interval: int = 300,  # Animation speed in ms
+    fps: int = 5,
+    dpi: int = 100,
+    figsize: Tuple[int, int] = (8, 8)
+) -> Optional[str]:
+    """
+    Create an animated GIF showing the spatial changes in MODIS data over time.
+    
+    Args:
+        data: 3D numpy array of MODIS data with shape (time, y, x)
+        product_name: MODIS product identifier
+        start_year: First year of data
+        end_year: Last year of data
+        output_path: Path to save the animation file (optional)
+        interval: Animation frame interval in milliseconds
+        fps: Frames per second for the animation
+        dpi: Resolution for saved animation
+        figsize: Figure dimensions (width, height) in inches
+        
+    Returns:
+        Path to the saved animation file or None if error occurs
+    """
+    try:
+        if data.size == 0:
+            logger.warning("No data to animate")
+            return None
+            
+        import matplotlib.animation as animation
+        
+        # Generate dates
+        dates = get_modis_dates(product_name, start_year, end_year)
+        dates = dates[:data.shape[0]]
+        
+        # Get product metadata
+        product_info = MODIS_PRODUCTS.get(product_name, {
+            'description': product_name,
+            'units': '',
+            'scale_factor': 1.0,
+            'color_map': 'viridis'
+        })
+        
+        # Apply scale factor
+        scale_factor = product_info.get('scale_factor', 1.0)
+        
+        # Create figure and initial plot
+        fig, ax = plt.subplots(figsize=figsize)
+        
+        # Choose colormap
+        cmap_name = product_info.get('color_map', 'viridis')
+        cmap = plt.get_cmap(cmap_name)
+        
+        # Determine min/max values for colorbar across all frames
+        valid_data = data[~np.isnan(data)]
+        if len(valid_data) > 0:
+            vmin = np.nanpercentile(data, 1) * scale_factor
+            vmax = np.nanpercentile(data, 99) * scale_factor
+        else:
+            vmin, vmax = 0, 1
+        
+        # Initial frame
+        frame_data = data[0] * scale_factor
+        masked_data = np.ma.masked_invalid(frame_data)
+        
+        im = ax.imshow(masked_data, cmap=cmap, vmin=vmin, vmax=vmax, interpolation='nearest')
+        title = ax.text(0.5, 1.05, f"{product_info.get('description')} - {dates[0].strftime('%Y-%m-%d')}", 
+                       transform=ax.transAxes, ha="center", fontsize=12)
+        
+        # Add colorbar
+        cbar = fig.colorbar(im, ax=ax, pad=0.01)
+        cbar.set_label(f"{product_info.get('description')} ({product_info.get('units', '')})")
+        
+        # Remove axes ticks
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_frame_on(True)
+        
+        # Function to update animation frame
+        def update_frame(frame_num):
+            if frame_num < len(dates):
+                frame_data = data[frame_num] * scale_factor
+                masked_data = np.ma.masked_invalid(frame_data)
+                im.set_array(masked_data)
+                title.set_text(f"{product_info.get('description')} - {dates[frame_num].strftime('%Y-%m-%d')}")
+            return im, title
+        
+        # Create animation
+        ani = animation.FuncAnimation(
+            fig, 
+            update_frame, 
+            frames=min(50, len(dates)),  # Limit to max 50 frames for performance
+            interval=interval, 
+            blit=False
+        )
+        
+        # Save animation if path provided
+        if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            ani.save(output_path, writer='pillow', fps=fps, dpi=dpi)
+            logger.info(f"Animation saved to {output_path}")
+            plt.close(fig)
+            return output_path
+        
+        return None
+        
+    except Exception as e:
+        logger.error(f"Error creating animation: {e}", exc_info=True)
+        plt.close()
+        return None
+
+def calculate_modis_statistics(
+    data: np.ndarray,
+    product_name: str,
+    start_year: int,
+    end_year: int
+) -> Dict[str, Any]:
+    """
+    Calculate comprehensive statistics for MODIS data.
+    
+    Args:
+        data: 3D numpy array of MODIS data with shape (time, y, x)
+        product_name: MODIS product identifier
+        start_year: First year of data
+        end_year: Last year of data
+        
+    Returns:
+        Dictionary containing various statistics
+    """
+    try:
+        if data.size == 0:
+            logger.warning("No data to calculate statistics")
+            return {}
+            
+        # Get product metadata
+        product_info = MODIS_PRODUCTS.get(product_name, {
+            'description': product_name,
+            'units': '',
+            'scale_factor': 1.0
+        })
+        
+        # Apply scale factor
+        scale_factor = product_info.get('scale_factor', 1.0)
+        
+        # Initialize statistics dictionary
+        stats = {
+            'product': product_name,
+            'description': product_info.get('description', product_name),
+            'units': product_info.get('units', ''),
+            'period': f"{start_year}-{end_year}"
+        }
+        
+        # Calculate temporal mean (spatial average for each timestep)
+        time_series = np.nanmean(data, axis=(1, 2)) * scale_factor
+        
+        # Basic statistics
+        stats['mean'] = float(np.nanmean(time_series))
+        stats['median'] = float(np.nanmedian(time_series))
+        stats['std'] = float(np.nanstd(time_series))
+        stats['min'] = float(np.nanmin(time_series))
+        stats['max'] = float(np.nanmax(time_series))
+        stats['range'] = stats['max'] - stats['min']
+        
+        # Generate dates
+        dates = get_modis_dates(product_name, start_year, end_year)
+        dates = dates[:len(time_series)]
+        
+        # Extract years and months
+        years = [date.year for date in dates]
+        months = [date.month for date in dates]
+        
+        # Calculate trend
+        if len(time_series) > 2:
+            try:
+                from scipy import stats as scipy_stats
+                # Use indices as x values (equal time steps)
+                x = np.arange(len(time_series))
+                mask = ~np.isnan(time_series)
+                
+                if np.sum(mask) > 2:  # Need at least 3 points
+                    slope, intercept, r_value, p_value, std_err = scipy_stats.linregress(
+                        x[mask], time_series[mask])
+                    
+                    stats['trend'] = {
+                        'slope': float(slope),
+                        'intercept': float(intercept),
+                        'r_value': float(r_value),
+                        'r_squared': float(r_value ** 2),
+                        'p_value': float(p_value),
+                        'std_err': float(std_err),
+                        'significant': p_value < 0.05
+                    }
+            except Exception as e:
+                logger.warning(f"Could not calculate trend: {e}")
+        
+        # Monthly statistics
+        monthly_stats = {}
+        for month in range(1, 13):
+            month_indices = [i for i, m in enumerate(months) if m == month]
+            if month_indices:
+                month_data = time_series[month_indices]
+                if len(month_data) > 0:
+                    monthly_stats[month] = {
+                        'mean': float(np.nanmean(month_data)),
+                        'median': float(np.nanmedian(month_data)),
+                        'std': float(np.nanstd(month_data)),
+                        'min': float(np.nanmin(month_data)),
+                        'max': float(np.nanmax(month_data)),
+                        'count': int(len(month_data))
+                    }
+        
+        stats['monthly'] = monthly_stats
+        
+        # Calculate anomalies
+        try:
+            anomalies, _, _ = calculate_modis_anomalies(data, product_name, start_year, end_year)
+            
+            # Count positive and negative anomalies
+            positive_count = np.sum(anomalies > 0)
+            negative_count = np.sum(anomalies < 0)
+            
+            stats['anomalies'] = {
+                'positive_count': int(positive_count),
+                'negative_count': int(negative_count),
+                'mean': float(np.nanmean(anomalies)),
+                'std': float(np.nanstd(anomalies)),
+                'max_positive': float(np.nanmax(anomalies)),
+                'max_negative': float(np.nanmin(anomalies))
+            }
+        except Exception as e:
+            logger.warning(f"Could not calculate anomalies: {e}")
+        
+        # Calculate spatial statistics for first timestep
+        if data.shape[0] > 0:
+            first_image = data[0] * scale_factor
+            valid_pixels = np.sum(~np.isnan(first_image))
+            total_pixels = first_image.size
+            
+            stats['spatial'] = {
+                'spatial_mean': float(np.nanmean(first_image)),
+                'spatial_median': float(np.nanmedian(first_image)),
+                'spatial_std': float(np.nanstd(first_image)),
+                'spatial_min': float(np.nanmin(first_image)),
+                'spatial_max': float(np.nanmax(first_image)),
+                'valid_pixels': int(valid_pixels),
+                'total_pixels': int(total_pixels),
+                'coverage_percent': float(valid_pixels / total_pixels * 100) if total_pixels > 0 else 0
+            }
+        
+        return stats
+        
+    except Exception as e:
+        logger.error(f"Error calculating statistics: {e}", exc_info=True)
+        return {}
