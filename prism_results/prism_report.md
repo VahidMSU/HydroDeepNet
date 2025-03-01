@@ -113,6 +113,14 @@ The seasonal analysis shows how climate variables vary throughout the year.
 
 ### Temperature Seasonality
 
+The highest temperatures typically occur in **July**, while the lowest temperatures are in **February**. The seasonal temperature range is approximately 28.4°C.
+
+### Precipitation Seasonality
+
+The wettest month is typically **April** (130.7 mm), while the driest month is **February** (36.1 mm).
+
+The wet season generally includes: April, May, June, July, August, October.
+
 ## Time Series Analysis
 
 The time series shows the change in climate variables over the entire period.
@@ -197,4 +205,4 @@ The complete dataset has been exported to CSV format. Access the data at: [prism
 
 ---
 
-*Report generated on 2025-02-28 at 19:58*
+*Report generated on 2025-02-28 at 20:35*
