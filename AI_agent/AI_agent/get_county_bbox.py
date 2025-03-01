@@ -1,8 +1,6 @@
-try:
-    from config import AgentConfig
-except ImportError:
-    from AI_agent.config import AgentConfig
-    
+
+from agent import AgentConfig
+
 def get_bounding_box(county, state):
     import geopandas 
     import numpy as np

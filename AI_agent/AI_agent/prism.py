@@ -3,10 +3,9 @@ import h5py
 import pandas as pd
 import time
 try:
-    from config import AgentConfig
-except ImportError:
     from AI_agent.config import AgentConfig
-    
+except ImportError:
+    from config import AgentConfig
 class PRISM_Dataset:
     def __init__(self, config):
         self.config = config
@@ -232,13 +231,6 @@ class PRISM_Dataset:
             except Exception as e:
                 print(f"Error processing data: {e}")
                 return None, None, None
-
-    def get_average_data(self):
-        ppts, tmaxs, tmins = self.get_data()
-        ppts = np.nansum(ppts, axis=0)
-        tmaxs = np.nanmean(tmaxs, axis=0)
-        tmins = np.nanmean(tmins, axis=0)
-        return ppts, tmaxs, tmins
     
     def get_spatial_average_over_time(self):
         
