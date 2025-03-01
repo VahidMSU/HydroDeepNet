@@ -596,5 +596,459 @@ def generate_cdl_report(
         logger.error(f"Error generating CDL report: {e}", exc_info=True)
         return ""
 
+def create_crop_diversity_plot(
+    cdl_data: Dict[int, Dict[str, Any]],
+    metric: str = "shannon",
+    output_path: Optional[str] = None,
+    figsize: Tuple[int, int] = (10, 6)
+) -> Optional[plt.Figure]:
+    """
+    Create a plot showing crop diversity metrics over time.
+    
+    Args:
+        cdl_data: Dictionary mapping years to land use data
+        metric: Diversity metric to use ('shannon' or 'richness')
+        output_path: Path to save the figure (optional)
+        figsize: Figure dimensions (width, height) in inches
+        
+    Returns:
+        Matplotlib Figure object or None if error occurs
+    """
+    try:
+        if not cdl_data:
+            logger.warning("No data to plot diversity metrics")
+            return None
+            
+        # Extract available years in ascending order
+        years = sorted(cdl_data.keys())
+        
+        # Calculate diversity metrics for each year
+        diversity_values = []
+        richness_values = []
+        
+        for year in years:
+            year_data = cdl_data[year]
+            # Get crop data (excluding metadata fields)
+            crop_data = {
+                k: v for k, v in year_data.items() 
+                if k not in ["Total Area", "unit"] and not k.endswith("(%)")
+            }
+            
+            # Skip if no crops found
+            if not crop_data:
+                diversity_values.append(0)
+                richness_values.append(0)
+                continue
+            
+            # Calculate species richness (number of crop types)
+            richness = len(crop_data)
+            richness_values.append(richness)
+            
+            # Calculate Shannon diversity index
+            total_area = sum(crop_data.values())
+            if total_area > 0:
+                proportions = [area / total_area for area in crop_data.values()]
+                shannon = -sum(p * np.log(p) for p in proportions if p > 0)
+                diversity_values.append(shannon)
+            else:
+                diversity_values.append(0)
+        
+        # Create plot
+        fig, ax1 = plt.subplots(figsize=figsize)
+        
+        # Plot the selected metric
+        if metric.lower() == "shannon":
+            color = "tab:blue"
+            ax1.set_ylabel("Shannon Diversity Index", fontsize=12, color=color)
+            line1 = ax1.plot(years, diversity_values, marker='o', linestyle='-', 
+                     color=color, linewidth=2, markersize=8)
+            ax1.tick_params(axis='y', labelcolor=color)
+            y_values = diversity_values
+            metric_name = "Shannon Diversity Index"
+        else:
+            color = "tab:green"
+            ax1.set_ylabel("Crop Richness (Count)", fontsize=12, color=color)
+            line1 = ax1.plot(years, richness_values, marker='o', linestyle='-', 
+                     color=color, linewidth=2, markersize=8)
+            ax1.tick_params(axis='y', labelcolor=color)
+            y_values = richness_values
+            metric_name = "Crop Richness"
+        
+        # Add a secondary axis for the other metric if they differ significantly
+        if metric.lower() == "shannon" and max(richness_values) > 0:
+            ax2 = ax1.twinx()
+            color = "tab:green"
+            ax2.set_ylabel("Crop Richness (Count)", fontsize=12, color=color)
+            line2 = ax2.plot(years, richness_values, marker='s', linestyle='--', 
+                     color=color, linewidth=1.5, markersize=6)
+            ax2.tick_params(axis='y', labelcolor=color)
+            ax1.legend(line1 + line2, ["Shannon Index", "Crop Count"], loc="upper left")
+        
+        # Set x-axis label and title
+        ax1.set_xlabel("Year", fontsize=12)
+        ax1.set_title(f"Crop Diversity Trends ({years[0]}-{years[-1]})", fontsize=14, fontweight='bold')
+        
+        # Make x-axis ticks for all years
+        ax1.set_xticks(years)
+        ax1.set_xticklabels(years, rotation=45)
+        
+        # Add grid
+        ax1.grid(True, linestyle='--', alpha=0.7)
+        
+        # Add data labels
+        for i, (year, val) in enumerate(zip(years, y_values)):
+            ax1.annotate(f"{val:.2f}", (year, val), 
+                        textcoords="offset points", 
+                        xytext=(0, 10), 
+                        ha='center',
+                        fontsize=9)
+        
+        plt.tight_layout()
+        
+        # Save figure if path provided
+        if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            logger.info(f"Diversity plot saved to {output_path}")
+            
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Error creating crop diversity plot: {e}", exc_info=True)
+        return None
+
+def create_crop_rotation_heatmap(
+    cdl_data: Dict[int, Dict[str, Any]],
+    top_n: int = 10,
+    output_path: Optional[str] = None,
+    figsize: Tuple[int, int] = (12, 10)
+) -> Optional[plt.Figure]:
+    """
+    Create a heatmap showing crop rotation patterns between consecutive years.
+    
+    Args:
+        cdl_data: Dictionary mapping years to land use data
+        top_n: Number of top crops to include in the rotation analysis
+        output_path: Path to save the figure (optional)
+        figsize: Figure dimensions (width, height) in inches
+        
+    Returns:
+        Matplotlib Figure object or None if error occurs
+    """
+    try:
+        if len(cdl_data) < 2:
+            logger.warning("Need at least two consecutive years of data to analyze rotations")
+            return None
+            
+        # Get consecutive years only
+        years = sorted(cdl_data.keys())
+        
+        # Find top N crops across all years
+        all_crops = {}
+        for year_data in cdl_data.values():
+            for crop, area in year_data.items():
+                if crop not in ["Total Area", "unit"] and not crop.endswith("(%)"):
+                    all_crops[crop] = all_crops.get(crop, 0) + area
+        
+        top_crops = [crop for crop, _ in sorted(all_crops.items(), 
+                                              key=lambda x: x[1], 
+                                              reverse=True)[:top_n]]
+        
+        # Initialize rotation matrix
+        rotation_matrix = np.zeros((len(top_crops), len(top_crops)))
+        
+        # Count transitions between consecutive years
+        for i in range(len(years) - 1):
+            year1, year2 = years[i], years[i+1]
+            year1_data = cdl_data[year1]
+            year2_data = cdl_data[year2]
+            
+            # Build rotation count matrix for top crops
+            for from_idx, from_crop in enumerate(top_crops):
+                from_area = year1_data.get(from_crop, 0)
+                if from_area == 0:
+                    continue
+                    
+                for to_idx, to_crop in enumerate(top_crops):
+                    to_area = year2_data.get(to_crop, 0)
+                    if to_area == 0:
+                        continue
+                    
+                    # Estimate rotation based on relative areas
+                    # This is a simplification since we don't have parcel-level data
+                    rotation_area = min(from_area, to_area)
+                    rotation_matrix[from_idx, to_idx] += rotation_area
+        
+        # Create heatmap
+        fig, ax = plt.subplots(figsize=figsize)
+        
+        # Normalize data for better visualization (percentage of source crop)
+        normalized_matrix = np.zeros_like(rotation_matrix)
+        row_sums = rotation_matrix.sum(axis=1)
+        
+        for i in range(rotation_matrix.shape[0]):
+            if row_sums[i] > 0:
+                normalized_matrix[i, :] = rotation_matrix[i, :] / row_sums[i] * 100
+        
+        # Create heatmap with customized colormap
+        cmap = plt.cm.YlOrRd
+        im = ax.imshow(normalized_matrix, cmap=cmap, aspect='auto')
+        
+        # Customize colorbar
+        cbar = fig.colorbar(im, ax=ax, pad=0.01)
+        cbar.set_label('Rotation Percentage (%)', rotation=270, labelpad=15)
+        
+        # Set ticks and labels
+        ax.set_xticks(np.arange(len(top_crops)))
+        ax.set_yticks(np.arange(len(top_crops)))
+        ax.set_xticklabels(top_crops, rotation=45, ha='right')
+        ax.set_yticklabels(top_crops)
+        
+        # Add labels and title
+        ax.set_xlabel('Following Year Crop', fontsize=12)
+        ax.set_ylabel('Previous Year Crop', fontsize=12)
+        ax.set_title(f'Crop Rotation Patterns ({years[0]}-{years[-1]})', 
+                    fontsize=14, fontweight='bold')
+        
+        # Add text annotations for significant rotations (>10%)
+        threshold = 10.0
+        for i in range(len(top_crops)):
+            for j in range(len(top_crops)):
+                if normalized_matrix[i, j] > threshold:
+                    ax.text(j, i, f"{normalized_matrix[i, j]:.1f}%", 
+                           ha="center", va="center", 
+                           color="white" if normalized_matrix[i, j] > 50 else "black",
+                           fontsize=9)
+        
+        plt.tight_layout()
+        
+        # Save figure if path provided
+        if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            logger.info(f"Crop rotation heatmap saved to {output_path}")
+            
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Error creating crop rotation heatmap: {e}", exc_info=True)
+        return None
+
+def calculate_agricultural_intensity(
+    cdl_data: Dict[int, Dict[str, Any]]
+) -> Dict[str, Any]:
+    """
+    Calculate metrics of agricultural intensity from CDL data.
+    
+    Args:
+        cdl_data: Dictionary mapping years to land use data
+        
+    Returns:
+        Dictionary of agricultural intensity metrics
+    """
+    try:
+        if not cdl_data:
+            logger.warning("No data to calculate agricultural intensity")
+            return {}
+            
+        years = sorted(cdl_data.keys())
+        
+        # Define crop categories
+        row_crops = ["Corn", "Soybeans", "Cotton", "Rice", "Sunflower", "Peanuts", "Tobacco", "Sweet Corn",
+                     "Sorghum", "Barley", "Millet", "Speltz", "Canola", "Flaxseed", "Safflower", 
+                     "Mustard", "Sugarcane"]
+                     
+        small_grains = ["Durum Wheat", "Spring Wheat", "Winter Wheat", "Other Small Grains", "Rye", "Oats"]
+        
+        perennial_crops = ["Alfalfa", "Other Hay/Non Alfalfa", "Clover/Wildflowers", 
+                         "Sod/Grass Seed", "Switchgrass", "Fallow/Idle Cropland", 
+                         "Grassland/Pasture", "Woody Wetlands", "Herbaceous Wetlands"]
+                         
+        specialty_crops = ["Fruits", "Vegetables", "Berries", "Cherries", "Peaches", "Apples", 
+                          "Grapes", "Christmas Trees", "Other Tree Crops", "Citrus", 
+                          "Pecans", "Almonds", "Walnuts", "Pistachios", "Oranges",
+                          "Pears", "Blueberries", "Cranberries"]
+        
+        # Initialize metrics
+        metrics = {
+            "Agricultural Intensity Index": 0.0,
+            "Row Crop Percentage": 0.0,
+            "Small Grains Percentage": 0.0,
+            "Perennial Cover Percentage": 0.0,
+            "Specialty Crops Percentage": 0.0,
+            "Dominant Crop": "",
+            "Crop Diversity (Shannon)": 0.0
+        }
+        
+        # Calculate metrics for most recent year
+        latest_year = years[-1]
+        latest_data = cdl_data[latest_year]
+        
+        # Extract crop areas (excluding metadata)
+        crop_data = {
+            k: v for k, v in latest_data.items() 
+            if k not in ["Total Area", "unit"] and not k.endswith("(%)")
+        }
+        
+        total_area = sum(crop_data.values())
+        if total_area == 0:
+            logger.warning("No crop area data available for analysis")
+            return metrics
+        
+        # Calculate row crop percentage
+        row_crop_area = sum(crop_data.get(crop, 0) for crop in row_crops)
+        row_crop_pct = row_crop_area / total_area * 100
+        metrics["Row Crop Percentage"] = row_crop_pct
+        
+        # Calculate small grains percentage
+        small_grain_area = sum(crop_data.get(crop, 0) for crop in small_grains)
+        small_grain_pct = small_grain_area / total_area * 100
+        metrics["Small Grains Percentage"] = small_grain_pct
+        
+        # Calculate perennial cover percentage
+        perennial_area = sum(crop_data.get(crop, 0) for crop in perennial_crops)
+        perennial_pct = perennial_area / total_area * 100
+        metrics["Perennial Cover Percentage"] = perennial_pct
+        
+        # Calculate specialty crop percentage
+        specialty_area = sum(crop_data.get(crop, 0) for crop in specialty_crops)
+        specialty_pct = specialty_area / total_area * 100
+        metrics["Specialty Crops Percentage"] = specialty_pct
+        
+        # Find dominant crop
+        if crop_data:
+            dominant_crop = max(crop_data.items(), key=lambda x: x[1])
+            metrics["Dominant Crop"] = f"{dominant_crop[0]} ({dominant_crop[1]/total_area*100:.1f}%)"
+        
+        # Calculate Shannon diversity
+        proportions = [area / total_area for area in crop_data.values() if area > 0]
+        shannon_index = -sum(p * np.log(p) for p in proportions)
+        metrics["Crop Diversity (Shannon)"] = shannon_index
+        
+        return metrics
+        
+    except Exception as e:
+        logger.error(f"Error calculating agricultural intensity: {e}", exc_info=True)
+        return {}
+
+def get_crop_categories(
+    cdl_data: Dict[int, Dict[str, Any]],
+    year: Optional[int] = None,
+    custom_categories: Optional[Dict[str, List[str]]] = None
+) -> Dict[str, float]:
+    """
+    Categorize crops into logical groups and calculate area for each category.
+    
+    Args:
+        cdl_data: Dictionary mapping years to land use data
+        year: Year to analyze (uses latest year if None)
+        custom_categories: Optional custom category definitions
+        
+    Returns:
+        Dictionary mapping category names to total areas
+    """
+    try:
+        if not cdl_data:
+            logger.warning("No data to categorize")
+            return {}
+            
+        # Select year (use latest if not specified)
+        if year is None or year not in cdl_data:
+            year = max(cdl_data.keys())
+            
+        year_data = cdl_data[year]
+        
+        # Define default crop categories
+        default_categories = {
+            "Row Crops": [
+                "Corn", "Soybeans", "Cotton", "Rice", "Sunflower", "Peanuts", 
+                "Tobacco", "Sweet Corn", "Popcorn or Ornamental Corn", "Sorghum", 
+                "Barley", "Millet", "Speltz", "Canola", "Flaxseed", "Safflower", 
+                "Mustard", "Sugarcane", "Sugar Beets"
+            ],
+            "Small Grains": [
+                "Durum Wheat", "Spring Wheat", "Winter Wheat", "Other Small Grains", 
+                "Rye", "Oats", "Triticale", "Buckwheat"
+            ],
+            "Perennial & Forage": [
+                "Alfalfa", "Other Hay/Non Alfalfa", "Clover/Wildflowers", 
+                "Sod/Grass Seed", "Switchgrass", "Fallow/Idle Cropland", 
+                "Grassland/Pasture", "Herbaceous Wetlands", 
+                "Pasture/Hay", "Pasture/Grass"
+            ],
+            "Fruits & Nuts": [
+                "Cherries", "Peaches", "Apples", "Grapes", "Citrus", 
+                "Pecans", "Almonds", "Walnuts", "Pistachios", "Oranges",
+                "Pears", "Plums", "Olives", "Avocados", "Nectarines", 
+                "Prunes", "Pomegranates", "Kiwi", "Apricots", "Other Tree Fruits",
+                "Blueberries", "Cranberries", "Other Tree Crops",
+                "Strawberries", "Raspberries", "Other Berries"
+            ],
+            "Vegetables": [
+                "Vegetables", "Potatoes", "Onions", "Tomatoes", "Peppers", 
+                "Lettuce", "Broccoli", "Carrots", "Celery", "Radishes", 
+                "Cucumbers", "Greens", "Garlic", "Beans", "Squash", 
+                "Asparagus", "Watermelons", "Pumpkins", "Cabbage"
+            ],
+            "Specialty Crops": [
+                "Herbs", "Christmas Trees", "Hops", "Mint", "Ginger", 
+                "Pineapple", "Flowers", "Gourds", "Coffee", "Ginseng",
+                "Nursery", "Greenhouse"
+            ],
+            "Fallow & Non-crop": [
+                "Fallow", "Developed", "Developed/Open Space", "Developed/Low Intensity",
+                "Developed/Med Intensity", "Developed/High Intensity",
+                "Barren", "Water", "Wetlands", "Forest", "Shrubland"
+            ]
+        }
+        
+        # Use custom categories if provided, otherwise use default
+        categories = custom_categories if custom_categories is not None else default_categories
+        
+        # Get crop data (excluding metadata fields)
+        crop_data = {
+            k: v for k, v in year_data.items() 
+            if k not in ["Total Area", "unit"] and not k.endswith("(%)")
+        }
+        
+        if not crop_data:
+            logger.warning(f"No crop data found for year {year}")
+            return {}
+            
+        # Calculate area for each category
+        result = {}
+        for category, crop_list in categories.items():
+            category_area = 0.0
+            for crop in crop_list:
+                # Look for exact matches as well as partial matches (for flexibility)
+                exact_match = crop_data.get(crop, 0)
+                category_area += exact_match
+                
+                # Add partial matches if applicable
+                if exact_match == 0:
+                    for crop_name, area in crop_data.items():
+                        if crop in crop_name and crop_name != crop:
+                            category_area += area
+            
+            if category_area > 0:
+                result[category] = category_area
+        
+        # Create an "Other" category for crops not captured in the above categories
+        categorized_crops = set()
+        for crop_list in categories.values():
+            categorized_crops.update(crop_list)
+            
+        other_area = sum(area for crop, area in crop_data.items() 
+                        if not any(cat_crop in crop for cat_crop in categorized_crops))
+        
+        if other_area > 0:
+            result["Other"] = other_area
+            
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error categorizing crops: {e}", exc_info=True)
+        return {}
+
 if __name__ == "__main__":
     print("CDL utilities module loaded. Import to use functions.")
