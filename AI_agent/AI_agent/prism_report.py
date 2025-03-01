@@ -12,6 +12,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import logging
 from pathlib import Path
+import calendar
 
 try:
     from AI_agent.config import AgentConfig
