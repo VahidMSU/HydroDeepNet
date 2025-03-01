@@ -1,0 +1,591 @@
+"""
+Report Generator - Generate comprehensive reports from various data sources.
+
+This script provides functionality to generate reports from different data sources
+including PRISM climate data, MODIS satellite data, CDL crop data, groundwater data,
+and governmental units.
+"""
+import os
+import sys
+import argparse
+import logging
+import concurrent.futures
+from pathlib import Path
+from typing import Dict, Any, Optional, List, Tuple, Callable
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("ReportGenerator")
+
+# Add the parent directory to the path to help with imports
+current_dir = Path(__file__).parent
+parent_dir = current_dir.parent
+if str(parent_dir) not in sys.path:
+    sys.path.append(str(parent_dir))
+
+try:
+    # Try importing with direct module path
+    from AI_agent.config import AgentConfig
+except ImportError:
+    try:
+        # Try importing as relative import
+        from .config import AgentConfig
+    except ImportError:
+        # Try importing from the current directory
+        from config import AgentConfig
+
+try:
+    # Import climate change analysis
+    from AI_agent.climate_change_analysis import ClimateChangeAnalysis
+except ImportError:
+    try:
+        from climate_change_analysis import ClimateChangeAnalysis
+    except ImportError:
+        logger.warning("Could not import ClimateChangeAnalysis - climate change reports will be unavailable")
+
+def generate_prism_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate a PRISM climate data report.
+    
+    Args:
+        config: Configuration dictionary with processing parameters
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating PRISM climate report...")
+        
+        # Import the necessary functions
+        try:
+            from prism_report import batch_process_prism
+            from prism_utilities import extract_prism_data
+        except ImportError:
+            try:
+                from AI_agent.prism_report import batch_process_prism
+                from AI_agent.prism_utilities import extract_prism_data
+            except ImportError:
+                from .prism_report import batch_process_prism
+                from .prism_utilities import extract_prism_data
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Process PRISM data and generate report
+        report_path = batch_process_prism(config, output_dir)
+        
+        if report_path:
+            logger.info(f"PRISM report generated: {report_path}")
+            return report_path
+        else:
+            logger.error("Failed to generate PRISM report")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating PRISM report: {e}", exc_info=True)
+        return None
+
+def generate_modis_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate MODIS data reports.
+    
+    Args:
+        config: Configuration dictionary
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating MODIS data reports...")
+        
+        # Import the necessary function
+        try:
+            from modis_report import run_comprehensive_report
+        except ImportError:
+            try:
+                from AI_agent.modis_report import run_comprehensive_report
+            except ImportError:
+                # Create a local version of the function with the same signature
+                def run_comprehensive_report(config, output_dir):
+                    # Import at runtime to avoid circular imports
+                    from modis_report import run_comprehensive_report as rcr
+                    return rcr(config, output_dir)
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Generate comprehensive report
+        report_path = run_comprehensive_report(config, output_dir)
+        
+        if report_path:
+            logger.info(f"MODIS report generated: {report_path}")
+            return report_path
+        else:
+            logger.error("Failed to generate MODIS report")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating MODIS report: {e}", exc_info=True)
+        return None
+
+def generate_cdl_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate Cropland Data Layer (CDL) report.
+    
+    Args:
+        config: Configuration dictionary
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating CDL report...")
+        
+        # Import the necessary function
+        try:
+            from cdl_report import analyze_cdl_data
+        except ImportError:
+            try:
+                from AI_agent.cdl_report import analyze_cdl_data
+            except ImportError:
+                from .cdl_report import analyze_cdl_data
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Generate CDL report
+        report_path = analyze_cdl_data(config=config, output_dir=output_dir)
+        
+        if report_path:
+            logger.info(f"CDL report generated: {report_path}")
+            return report_path
+        else:
+            logger.error("Failed to generate CDL report")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating CDL report: {e}", exc_info=True)
+        return None
+
+def generate_groundwater_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate groundwater data report.
+    
+    Args:
+        config: Configuration dictionary
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating groundwater report...")
+        
+        # Import the necessary class
+        try:
+            from groundwater_report import GroundwaterAnalyzer
+        except ImportError:
+            try:
+                from AI_agent.groundwater_report import GroundwaterAnalyzer
+            except ImportError:
+                from .groundwater_report import GroundwaterAnalyzer
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Initialize analyzer
+        analyzer = GroundwaterAnalyzer(bounding_box=config.get('bounding_box'))
+        
+        # Extract data
+        analyzer.extract_data()
+        
+        # Generate report
+        report_path = analyzer.generate_report(output_dir)
+        
+        if report_path:
+            logger.info(f"Groundwater report generated: {report_path}")
+            return report_path
+        else:
+            logger.error("Failed to generate groundwater report")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating groundwater report: {e}", exc_info=True)
+        return None
+
+def generate_governmental_units_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate governmental units report.
+    
+    Args:
+        config: Configuration dictionary
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating governmental units report...")
+        
+        # Import the necessary function
+        try:
+            from governmental_units_report import analyze_governmental_units
+        except ImportError:
+            try:
+                from AI_agent.governmental_units_report import analyze_governmental_units
+            except ImportError:
+                from .governmental_units_report import analyze_governmental_units
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Extract parameters from config
+        gdb_path = config.get('gdb_path', AgentConfig.USGS_governmental_path)
+        bbox = config.get('bounding_box')
+        
+        # Generate report
+        report_path = analyze_governmental_units(
+            gdb_path=gdb_path,
+            bounding_box=bbox,
+            output_dir=output_dir
+        )
+        
+        if report_path:
+            logger.info(f"Governmental units report generated: {report_path}")
+            return report_path
+        else:
+            logger.error("Failed to generate governmental units report")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating governmental units report: {e}", exc_info=True)
+        return None
+
+def generate_climate_change_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate climate change analysis report using LOCA2 data.
+    
+    Args:
+        config: Configuration dictionary with processing parameters
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating climate change analysis report...")
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Set up configuration for climate change analysis
+        cc_config = {
+            "RESOLUTION": config.get('RESOLUTION', 250),
+            "aggregation": config.get('aggregation', 'monthly'),
+            "bounding_box": config.get('bounding_box'),
+            "output_dir": output_dir,
+            "use_synthetic_data_fallback": config.get('use_synthetic_data_fallback', True)
+        }
+        
+        # Create analysis object
+        analysis = ClimateChangeAnalysis(cc_config)
+        
+        # Get historical configuration
+        hist_start_year = config.get('hist_start_year', 2000)
+        hist_end_year = config.get('hist_end_year', 2014)
+        model = config.get('cc_model', 'ACCESS-CM2')
+        ensemble = config.get('cc_ensemble', 'r1i1p1f1')
+        
+        historical_config = {
+            'start_year': hist_start_year,
+            'end_year': hist_end_year,
+            'model': model,
+            'ensemble': ensemble
+        }
+        
+        # Get future scenario configuration
+        fut_start_year = config.get('fut_start_year', 2045)
+        fut_end_year = config.get('fut_end_year', 2060)
+        scenario = config.get('cc_scenario', 'ssp245')
+        
+        scenario_configs = [
+            {
+                'name': scenario,
+                'start_year': fut_start_year,
+                'end_year': fut_end_year,
+                'model': model,
+                'ensemble': ensemble
+            }
+        ]
+        
+        # Extract data and run analysis
+        logger.info("Starting climate data extraction...")
+        success = analysis.extract_data(historical_config, scenario_configs)
+        
+        if success:
+            logger.info("Climate data extraction successful")
+            
+            # Calculate climate change metrics
+            metrics = analysis.calculate_climate_change_metrics()
+            logger.info("Climate change metrics calculated")
+            
+            # Generate visualizations
+            logger.info("Generating visualizations...")
+            
+            # Time series plots
+            analysis.plot_timeseries_comparison()
+            
+            # Spatial maps for key variables
+            for var in ['pr', 'tmax', 'tmin', 'tmean']:
+                analysis.plot_spatial_change_maps(variable=var)
+            
+            # Seasonal cycle plots if monthly data
+            if analysis.aggregation == 'monthly':
+                for var in ['pr', 'tmax', 'tmin']:
+                    for scenario_name in metrics.keys():
+                        analysis.plot_seasonal_cycle_comparison(
+                            variable=var, 
+                            scenario_name=scenario_name
+                        )
+            
+            # Generate comprehensive report
+            logger.info("Generating climate change report...")
+            report_path = analysis.generate_climate_change_report()
+            
+            if report_path:
+                logger.info(f"Climate change report generated: {report_path}")
+                return report_path
+            else:
+                logger.error("Failed to generate climate change report")
+                return None
+        else:
+            logger.error("Climate data extraction failed")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating climate change report: {e}", exc_info=True)
+        return None
+
+def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, parallel: bool = True) -> List[str]:
+    """
+    Generate a comprehensive report including all data sources.
+    
+    Args:
+        config: Configuration dictionary
+        output_dir: Directory to save report files
+        parallel: Whether to process reports in parallel
+        
+    Returns:
+        List of paths to generated reports
+    """
+    reports = []
+    
+    # Create main output directory
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Define report configurations
+    report_configs = [
+        {
+            'name': 'prism',
+            'dir': os.path.join(output_dir, "prism"),
+            'func': generate_prism_report,
+        },
+        {
+            'name': 'modis',
+            'dir': os.path.join(output_dir, "modis"),
+            'func': generate_modis_report,
+        },
+        {
+            'name': 'cdl',
+            'dir': os.path.join(output_dir, "cdl"), 
+            'func': generate_cdl_report,
+        },
+        {
+            'name': 'groundwater',
+            'dir': os.path.join(output_dir, "groundwater"),
+            'func': generate_groundwater_report,
+        },
+        {
+            'name': 'gov_units',
+            'dir': os.path.join(output_dir, "gov_units"),
+            'func': generate_governmental_units_report,
+        }
+    ]
+    
+    # Add climate change report if requested
+    if config.get('include_climate_change', False):
+        report_configs.append({
+            'name': 'climate_change',
+            'dir': os.path.join(output_dir, "climate_change"),
+            'func': generate_climate_change_report,
+        })
+    
+    if parallel:
+        # Generate reports in parallel
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Submit all report generation tasks
+            future_to_report = {
+                executor.submit(report_config['func'], config, report_config['dir']): report_config
+                for report_config in report_configs
+            }
+            
+            # Collect results as they complete
+            for future in concurrent.futures.as_completed(future_to_report):
+                report_config = future_to_report[future]
+                try:
+                    report_path = future.result()
+                    if report_path:
+                        logger.info(f"{report_config['name']} report generation completed")
+                        reports.append(report_path)
+                    else:
+                        logger.warning(f"{report_config['name']} report generation failed")
+                except Exception as exc:
+                    logger.error(f"{report_config['name']} report generation raised an exception: {exc}")
+    else:
+        # Generate reports sequentially
+        for report_config in report_configs:
+            report_path = report_config['func'](config, report_config['dir'])
+            if report_path:
+                reports.append(report_path)
+    
+    logger.info(f"Generated {len(reports)} reports in {output_dir}")
+    return reports
+
+def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: str, parallel: bool = True) -> List[str]:
+    """
+    Run the report generation for a specific type or all reports.
+    
+    Args:
+        report_type: Type of report to generate ('prism', 'modis', etc. or 'all')
+        config: Configuration dictionary
+        output_dir: Directory to save report files
+        parallel: Whether to process reports in parallel when type is 'all'
+        
+    Returns:
+        List of paths to generated reports
+    """
+    reports = []
+    
+    # Create output directory
+    os.makedirs(output_dir, exist_ok=True)
+    
+    if report_type == 'all':
+        # Generate all reports using parallel processing if enabled
+        reports = generate_comprehensive_report(config, output_dir, parallel)
+    else:
+        # Generate a specific report
+        report_dir = os.path.join(output_dir, report_type)
+        
+        # Map report type to its generator function
+        report_funcs = {
+            'prism': generate_prism_report,
+            'modis': generate_modis_report,
+            'cdl': generate_cdl_report,
+            'groundwater': generate_groundwater_report,
+            'gov_units': generate_governmental_units_report,
+            'climate_change': generate_climate_change_report
+        }
+        
+        if report_type in report_funcs:
+            report_path = report_funcs[report_type](config, report_dir)
+            if report_path:
+                reports.append(report_path)
+        else:
+            logger.error(f"Unknown report type: {report_type}")
+    
+    return reports
+
+def main():
+    """Parse command line arguments and generate reports."""
+    parser = argparse.ArgumentParser(description='Generate reports from various data sources')
+    
+    parser.add_argument('--type', choices=['prism', 'modis', 'cdl', 'groundwater', 'gov_units', 'climate_change', 'all'],
+                        default='all', help='Type of report to generate')
+    parser.add_argument('--output', type=str, default='reports',
+                       help='Output directory for reports')
+    parser.add_argument('--start-year', type=int, default=2010,
+                       help='Start year for analysis')
+    parser.add_argument('--end-year', type=int, default=2020,
+                       help='End year for analysis')
+    parser.add_argument('--min-lon', type=float, default=-85.444332,
+                       help='Minimum longitude of bounding box')
+    parser.add_argument('--min-lat', type=float, default=43.158148,
+                       help='Minimum latitude of bounding box')
+    parser.add_argument('--max-lon', type=float, default=-84.239256,
+                       help='Maximum longitude of bounding box')
+    parser.add_argument('--max-lat', type=float, default=44.164683,
+                       help='Maximum latitude of bounding box')
+    parser.add_argument('--resolution', type=int, default=250,
+                       help='Resolution for data analysis')
+    parser.add_argument('--aggregation', type=str, default='monthly',
+                       choices=['daily', 'monthly', 'seasonal', 'annual'],
+                       help='Temporal aggregation for climate data')
+    
+    # Climate change specific arguments
+    parser.add_argument('--hist-start-year', type=int, default=2000,
+                       help='Start year for historical climate period')
+    parser.add_argument('--hist-end-year', type=int, default=2014,
+                       help='End year for historical climate period')
+    parser.add_argument('--fut-start-year', type=int, default=2045,
+                       help='Start year for future climate period')
+    parser.add_argument('--fut-end-year', type=int, default=2060,
+                       help='End year for future climate period')
+    parser.add_argument('--cc-model', type=str, default='ACCESS-CM2',
+                       help='Climate model for climate change analysis')
+    parser.add_argument('--cc-ensemble', type=str, default='r1i1p1f1',
+                       help='Ensemble member for climate change analysis')
+    parser.add_argument('--cc-scenario', type=str, default='ssp245',
+                       help='Climate scenario for future projections')
+    parser.add_argument('--use-synthetic', action='store_true',
+                       help='Use synthetic data if actual data not available')
+    
+    # Parallel processing control
+    parser.add_argument('--sequential', action='store_true',
+                       help='Run report generation sequentially (disable parallel processing)')
+    
+    args = parser.parse_args()
+    
+    # Create basic configuration
+    config = {
+        'RESOLUTION': args.resolution,
+        'resolution': args.resolution,
+        'start_year': args.start_year,
+        'end_year': args.end_year,
+        'bounding_box': [args.min_lon, args.min_lat, args.max_lon, args.max_lat],
+        'aggregation': args.aggregation,
+        # Climate change specific config
+        'hist_start_year': args.hist_start_year,
+        'hist_end_year': args.hist_end_year,
+        'fut_start_year': args.fut_start_year,
+        'fut_end_year': args.fut_end_year,
+        'cc_model': args.cc_model,
+        'cc_ensemble': args.cc_ensemble,
+        'cc_scenario': args.cc_scenario,
+        'use_synthetic_data_fallback': args.use_synthetic,
+        'include_climate_change': args.type in ['climate_change', 'all']
+    }
+    
+    # Determine if we should use parallel processing
+    use_parallel = not args.sequential
+    
+    if use_parallel:
+        logger.info("Using parallel processing for report generation")
+    else:
+        logger.info("Using sequential processing for report generation")
+    
+    # Run report generation
+    reports = run_report_generation(args.type, config, args.output, parallel=use_parallel)
+    
+    logger.info(f"Report generation completed. Generated {len(reports)} reports in {args.output}")
+
+if __name__ == "__main__":
+    import time
+    start_time = time.time()
+    main()
+    print(f"Elapsed time: {time.time() - start_time:.2f} seconds")

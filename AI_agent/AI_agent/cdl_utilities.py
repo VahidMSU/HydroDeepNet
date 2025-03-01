@@ -26,7 +26,7 @@ def plot_cdl_trends(
     top_n: int = 5, 
     output_path: Optional[str] = None,
     figsize: Tuple[int, int] = (12, 8),
-    title: str = 'Crop Distribution Over Time',
+    title: str = 'Landcover Distribution Over Time',
     dpi: int = 300
 ) -> Optional[plt.Figure]:
     """
