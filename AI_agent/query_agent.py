@@ -1,12 +1,5 @@
-try:
-    from agent import chat_with_deepseek
-    from model_selector import ModelSelector
-    from base_agent import BaseAgent
-except ImportError:
-    from AI_agent.agent import chat_with_deepseek
-    from AI_agent.model_selector import ModelSelector
-    from AI_agent.base_agent import BaseAgent
-
+from conversation_handler import chat_with_deepseek
+from AI_agent.base_agent import BaseAgent
 import json
 import re
 
@@ -17,6 +10,7 @@ class BaseQueryAgent(BaseAgent):
         super().__init__("QueryParser", "Understands and parses user queries", "query_analysis")
         
     def process(self, query, context=None):
+        
         """
         Process a user query to extract structured information.
         

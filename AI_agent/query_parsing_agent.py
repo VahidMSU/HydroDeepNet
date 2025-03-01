@@ -1,11 +1,7 @@
 import re
 import json
-try:
-    from agent import chat_with_deepseek
-    from model_selector import ModelSelector
-except ImportError:
-    from AI_agent.agent import chat_with_deepseek
-    from AI_agent.model_selector import ModelSelector
+from agent import chat_with_deepseek
+from model_selector import ModelSelector
 
 class QueryParsingAgent:
     """
@@ -38,6 +34,20 @@ class QueryParsingAgent:
         Returns:
             dict: Structured information extracted from the query
         """
+        # Check for direct crop pattern questions first to avoid misclassification
+        if self._is_crop_pattern_question(query_text):
+            county = self._extract_county(query_text)
+            if county:
+                years = self._extract_years(query_text) or self.default_years
+                return {
+                    'county': county,
+                    'state': 'Michigan',
+                    'years': years,
+                    'analysis_type': 'crop',
+                    'focus': 'pattern',
+                    'query_type': 'crop'  # Explicitly mark as crop query
+                }
+        
         # Check if this is a follow-up question
         if session_context and self._is_followup_question(query_text):
             return self._handle_followup(query_text, session_context)
@@ -61,6 +71,24 @@ class QueryParsingAgent:
         except Exception as e:
             print(f"Error in AI query parsing: {e}")
             return self._fallback_parsing(query_text, session_context)
+    
+    def _is_crop_pattern_question(self, query_text):
+        """Check if query is specifically about crop patterns"""
+        query_lower = query_text.lower()
+        return (('major crop' in query_lower or 'main crop' in query_lower) and 
+                ('county' in query_lower or 'counties' in query_lower))
+    
+    def _extract_county(self, query):
+        """Extract county name from query text"""
+        county_match = re.search(r'([A-Za-z]+)\s+County', query, re.IGNORECASE)
+        if county_match:
+            return county_match.group(1).title()
+        return None
+    
+    def _extract_years(self, query):
+        """Extract years from query text"""
+        years = [int(year) for year in re.findall(r'(19|20)\d{2}', query)]
+        return years if years else None
     
     def _create_parsing_prompt(self, query_text, session_context):
         """Create a prompt for the AI to parse the query."""
@@ -236,6 +264,14 @@ class QueryParsingAgent:
         is_climate = any(word in query_text.lower() for word in 
                          ['climate', 'weather', 'temperature', 'rain', 'precipitation'])
         
+        # Determine if this is specifically about crops
+        is_crop = any(word in query_text.lower() for word in 
+                      ['crop', 'agriculture', 'farm', 'corn', 'soybean'])
+        
+        # Check for "major crop" pattern specifically
+        is_crop_pattern = ('major crop' in query_text.lower() or 
+                          'main crop' in query_text.lower())
+        
         # Use session context if available
         if not county and session_context and session_context.get('last_county'):
             county = session_context['last_county']
@@ -254,6 +290,10 @@ class QueryParsingAgent:
             'focus': 'pattern'
         }
         
+        # Add explicit query_type for crop pattern questions
+        if is_crop_pattern:
+            result['query_type'] = 'crop'
+            
         return result if county else None
     
     def _is_followup_question(self, query_text):
@@ -271,3 +311,31 @@ class QueryParsingAgent:
             r'instead',
         ]
         return any(re.search(pattern, query_text.lower()) for pattern in followup_indicators)
+
+
+if __name__ == "__main__":
+    # Test the query parsing agent
+    query_parser = QueryParsingAgent()
+    
+    # Test query with context
+    context = {
+        'last_county': 'Washtenaw',
+        'last_state': 'Michigan',
+        'last_years': [2010, 2011],
+        'last_analysis_type': 'crop',
+        'last_focus': 'Corn'
+    }
+    query = "What about 2012 for corn in that county?"
+    print(query_parser.parse_query(query, context))
+    
+    # Test a follow-up question
+    query = "How about 2013?"
+    print(query_parser.parse_query(query, context))
+    
+    # Test a new query
+    query = "What was the weather like in 2015 in Wayne County?"
+    print(query_parser.parse_query(query))
+    
+    # Test a more complex query
+    query = "Compare the corn patterns in 2010 and 2011 for Washtenaw and Wayne counties."
+    print(query_parser.parse_query(query))
