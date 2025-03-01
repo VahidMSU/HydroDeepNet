@@ -1,16 +1,8 @@
-try:
-    from agent import chat_with_deepseek
-    from get_county_bbox import get_bounding_box
-    from cdl_trend import cdl_trends
-    from prism import PRISM_Dataset
-    from query_parsing_agent import QueryParsingAgent
-except ImportError:
-    from AI_agent.agent import chat_with_deepseek
-    from AI_agent.get_county_bbox import get_bounding_box
-    from AI_agent.cdl_trend import cdl_trends
-    from AI_agent.prism import PRISM_Dataset
-    from AI_agent.query_parsing_agent import QueryParsingAgent
-    
+from agent import chat_with_deepseek
+from AI_agent.get_county_bbox import get_bounding_box
+from AI_agent.AI_agent.cdl import cdl_trends
+from AI_agent.prism import PRISM_Dataset
+from query_parsing_agent import QueryParsingAgent
 import json
 import re
 class ConversationContext:
@@ -650,3 +642,68 @@ class ConversationalAgent:
             response += suggestion
         
         return response
+
+
+# Test the conversational agent
+if __name__ == "__main__":
+    agent = ConversationalAgent()
+    
+    # Test a general information query
+    query = "What's the major crop in Ingham county in 2015?"
+    response = agent.process_query(query)
+    print(response)
+    
+    # Test a climate analysis query
+    query = "What was the climate like in Washtenaw county in 2010?"
+    response = agent.process_query(query)
+    print(response)
+    
+    # Test a combined analysis query
+    query = "What was the major crop in Washtenaw county in 2010 and how was the climate?"
+    response = agent.process_query(query)
+    print(response)
+    
+    # Test a follow-up question
+    query = "How about 2011?"
+    response = agent.process_query(query)
+    print(response)
+    
+    # Test a more complex query
+    query = "What's the major crop in Washtenaw county in 2010 and how was the climate? Compare to Ingham county."
+    response = agent.process_query(query)
+    print(response)
+    
+    # Test a specific crop query
+    query = "What's the major crop in Washtenaw county in 2010?"
+    response = agent.process_query(query)
+    print(response)
+    
+    # Test a more conversational query
+    query = "What was the climate like in Washtenaw county in 2010 and how did it affect agriculture?"
+    response = agent.process_query(query)
+    print(response)
+    
+    # Test a more conversational query with a follow-up
+    query = "What was the climate like in Washtenaw county in 2010?"
+    response = agent.process_query(query)
+    print(response)
+    
+    query = "How about 2011?"
+    response = agent.process_query(query)
+    print(response)
+    
+    query = "What was the major crop in Washtenaw county in 2010?"
+    response = agent.process_query(query)
+    print(response)
+    
+    query = "What was the major crop in Washtenaw county in 2011?"
+    response = agent.process_query(query)
+    print(response)
+    
+    query = "What was the major crop in Washtenaw county in 2012?"
+    response = agent.process_query(query)
+    print(response)
+    
+    query = "What was the major crop in Washtenaw county in 2013?"
+    response = agent.process_query(query)
+    print(response)

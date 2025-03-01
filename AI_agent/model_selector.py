@@ -1,7 +1,5 @@
-try:
-    from config import AgentConfig
-except ImportError:
-    from AI_agent.config import AgentConfig
+from AI_agent.config import AgentConfig
+
 
 
 class ModelSelector:
