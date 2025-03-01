@@ -1,19 +1,9 @@
-try:
-    from agent import analyze_year_chunk
-    from get_county_bbox import get_bounding_box
-    from cdl_trend import cdl_trends
-    from prism import PRISM_Dataset
-    from conversation_handler import ConversationalAgent
-    from coordinator import AgentCoordinator
-except ImportError:
-    from AI_agent.agent import analyze_year_chunk
-    from AI_agent.get_county_bbox import get_bounding_box
-    from AI_agent.cdl_trend import cdl_trends
-    from AI_agent.prism import PRISM_Dataset
-    from AI_agent.conversation_handler import ConversationalAgent
-    from AI_agent.coordinator import AgentCoordinator
-
-
+from agent import analyze_year_chunk
+from AI_agent.get_county_bbox import get_bounding_box
+from AI_agent.AI_agent.cdl import cdl_trends
+from AI_agent.prism import PRISM_Dataset
+from conversation_handler import ConversationalAgent
+from coordinator import AgentCoordinator
 import re
 
 
@@ -292,7 +282,6 @@ def process_query(self, query):
     return response
 
 def interactive_agent(query):
-    
     """
     Entry point for the chatbot API to process user queries.
     This function handles queries and returns responses as strings.
@@ -305,6 +294,11 @@ def interactive_agent(query):
     """
 
     try:
+        # Check for crop-specific queries that need to be handled precisely
+        query_lower = query.lower()
+        if 'major crop' in query_lower or 'main crop' in query_lower:
+            print("Detected crop pattern question, ensuring proper handling")
+        
         # Use the AgentCoordinator for enhanced processing
         coordinator = AgentCoordinator()
         response = coordinator.process_query(query)

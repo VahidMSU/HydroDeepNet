@@ -1,12 +1,11 @@
-try:
-    from base_agent import BaseAgent
-    from agent import chat_with_deepseek
-    from query_parsing_agent import QueryParsingAgent
-except ImportError:
-    from AI_agent.base_agent import BaseAgent
-    from AI_agent.agent import chat_with_deepseek
-    from AI_agent.query_parsing_agent import QueryParsingAgent
-    
+from conversation_handler import chat_with_deepseek
+from AI_agent.get_county_bbox import get_bounding_box
+from AI_agent.prism import PRISM_Dataset
+from AI_agent.AI_agent.cdl import cdl_trends
+from AI_agent.base_agent import BaseAgent
+from query_parsing_agent import QueryParsingAgent
+from AI_agent.data_cache import get_cached_data, cache_data
+from AI_agent.debug_utils import timed_function, log_error
 import json
 import numpy as np
 
@@ -15,88 +14,139 @@ class QueryAnalysisAgent(BaseAgent):
         super().__init__("QueryAnalyzer", "Specializes in understanding user queries", "query_analysis")
         self.parser = QueryParsingAgent()
     
+    @timed_function
     def process(self, query, context=None):
         """Use the AI parser to extract query information"""
         session = context.get('session') if context else None
         
-        # Use the AI parser
-        query_info = self.parser.parse_query(query, session)
-        
-        if not query_info:
+        try:
+            # Use the AI parser
+            query_info = self.parser.parse_query(query, session)
+            
+            if not query_info:
+                return {
+                    'error': True,
+                    'message': "Could not identify a county name in your query. Please include the county name followed by 'County' (e.g., 'Mecosta County')."
+                }
+                
+            return query_info
+        except Exception as e:
+            log_error("Error in query analysis", e)
             return {
                 'error': True,
-                'message': "Could not identify a county name in your query. Please include the county name followed by 'County' (e.g., 'Mecosta County')."
+                'message': f"Error analyzing query: {str(e)}"
             }
-            
-        return query_info
+
 
 class DataRetrievalAgent(BaseAgent):
     def __init__(self):
         super().__init__("DataRetriever", "Handles data retrieval from various sources", "data_retrieval")
-    
+    @timed_function
     def process(self, query_info, context=None):
         try:
-            from get_county_bbox import get_bounding_box
-            from prism import PRISM_Dataset
-            from cdl_trend import cdl_trends
-        except ImportError:
-            from AI_agent.get_county_bbox import get_bounding_box
-            from AI_agent.prism import PRISM_Dataset
-            from AI_agent.cdl_trend import cdl_trends
-        
-        # Fix county name formatting
-        county = query_info['county'].replace(' county', '').replace(' County', '').title()
-        state = query_info['state'].title()
-        
-        bbox = get_bounding_box(county, state)
-        if not bbox[0]:
-            return None
+            # Fix county name formatting
+            county = query_info['county'].replace(' county', '').replace(' County', '').title()
+            state = query_info['state'].title()
             
-        config = {
-            "RESOLUTION": 250,
-            "aggregation": "annual",
-            "start_year": int(min(query_info['years'])),
-            "end_year": int(max(query_info['years'])),
-            "bounding_box": bbox,
-            "county": county,  # Add county to config
-            "state": state     # Add state to config
-        }
-        
-        try:
-            # Determine which data types are needed based on the query type
-            analysis_type = query_info.get('analysis_type', 'crop')
+            # Create cache parameters for lookup
+            cache_params = {
+                'county': county,
+                'state': state,
+                'start_year': int(min(query_info['years'])),
+                'end_year': int(max(query_info['years'])),
+                'analysis_type': query_info.get('analysis_type', 'crop')
+            }
             
-            # Initialize data containers
-            climate_data = None
-            landcover_data = None
+            # Check if we have this data in cache
+            cached_data = get_cached_data('county_data', cache_params)
+            if cached_data:
+                print(f"Using cached data for {county} County, {state}")
+                return cached_data
             
-            # Only get climate data if needed (climate or both type queries)
-            if analysis_type in ['climate', 'both']:
-                climate_data = PRISM_Dataset(config).get_spatial_average_over_time()
-                
-            # Get landcover data if needed (crop or both type queries)
-            if analysis_type in ['crop', 'both', 'crop_percentage']:
-                landcover_data = cdl_trends(config)
-                if landcover_data:
-                    # Add county and state info to landcover data for reference
-                    for year_data in landcover_data.values():
-                        if isinstance(year_data, dict):
-                            year_data['county'] = county
-                            year_data['state'] = state
-                
-            # Validate that we got the data we need
-            if (analysis_type in ['climate', 'both'] and climate_data is None) or \
-               (analysis_type in ['crop', 'both', 'crop_percentage'] and landcover_data is None):
+            # If not in cache, retrieve the data
+            bbox = get_bounding_box(county, state)
+            if not bbox[0]:
+                log_error(f"Failed to get bounding box for {county} County, {state}")
                 return None
                 
-            # Return collected data
-            return {
-                'climate': climate_data,
-                'landcover': landcover_data,
-                'config': config
+            config = {
+                "RESOLUTION": 250,
+                "aggregation": "annual",
+                "start_year": int(min(query_info['years'])),
+                "end_year": int(max(query_info['years'])),
+                "bounding_box": bbox,
+                "county": county,  # Add county to config
+                "state": state     # Add state to config
             }
+            
+            try:
+                # Determine which data types are needed based on the query type
+                analysis_type = query_info.get('analysis_type', 'crop')
+                
+                # Initialize data containers
+                climate_data = None
+                landcover_data = None
+                
+                # Only get climate data if needed (climate or both type queries)
+                if analysis_type in ['climate', 'both']:
+                    climate_data = PRISM_Dataset(config).get_spatial_average_over_time()
+                    
+                # Get landcover data if needed (crop or both type queries)
+                if analysis_type in ['crop', 'both', 'crop_percentage']:
+                    landcover_data = cdl_trends(config)
+                    if landcover_data:
+                        # Add county and state info to landcover data for reference
+                        for year_data in landcover_data.values():
+                            if isinstance(year_data, dict):
+                                year_data['county'] = county
+                                year_data['state'] = state
+                    
+                # If we couldn't get data for the requested years, try nearby years as fallback
+                if (analysis_type in ['crop', 'both', 'crop_percentage'] and landcover_data is None):
+                    # Try to get data for nearby years
+                    for offset in [1, -1, 2, -2]:
+                        fallback_config = config.copy()
+                        fallback_config["start_year"] = int(min(query_info['years'])) + offset
+                        fallback_config["end_year"] = int(max(query_info['years'])) + offset
+                        
+                        print(f"Trying fallback years {fallback_config['start_year']}-{fallback_config['end_year']}")
+                        try:
+                            landcover_data = cdl_trends(fallback_config)
+                            if landcover_data:
+                                print(f"Using fallback data from years {fallback_config['start_year']}-{fallback_config['end_year']}")
+                                # Add county and state info
+                                for year_data in landcover_data.values():
+                                    if isinstance(year_data, dict):
+                                        year_data['county'] = county
+                                        year_data['state'] = state
+                                break
+                        except Exception as fallback_e:
+                            print(f"Fallback retrieval attempt failed: {fallback_e}")
+                    
+                # Validate that we got the data we need
+                if (analysis_type in ['climate', 'both'] and climate_data is None) or \
+                   (analysis_type in ['crop', 'both', 'crop_percentage'] and landcover_data is None):
+                    log_error(f"Failed to retrieve required data for {county} County, {state}")
+                    return None
+                    
+                # Create the result
+                result = {
+                    'climate': climate_data,
+                    'landcover': landcover_data,
+                    'config': config
+                }
+                
+                # Cache the result for future use
+                cache_data('county_data', cache_params, result, 
+                          f"{county} County, {state} ({config['start_year']}-{config['end_year']})")
+                
+                return result
+                
+            except Exception as e:
+                log_error(f"Error retrieving data for {county} County, {state}", e)
+                return None
         except Exception as e:
-            print(f"Error retrieving data: {e}")
+            log_error("Error in data retrieval process", e)
             return None
 
 class AnalysisAgent(BaseAgent):
@@ -124,8 +174,12 @@ class AnalysisAgent(BaseAgent):
                 return "Insufficient crop data for analysis"
                 
             # Check for specific crop queries like "what is the major crop"
-            if 'major' in context.get('query', '').lower() or context.get('focus') == 'pattern':
+            if ('major' in context.get('query', '').lower() or 
+                'main' in context.get('query', '').lower() or 
+                context.get('focus') == 'pattern'):
+                
                 year = context.get('requested_years', [2010])[0]  # Get the first requested year
+                print(f"Processing major crop analysis for {year}")
                 return self.get_major_crop_for_year(data['landcover'], year)
             else:
                 # Get the specific years requested in the query
@@ -140,18 +194,42 @@ class AnalysisAgent(BaseAgent):
     
     def get_major_crop_for_year(self, landcover_data, year):
         """Get the major crop for a specific year with a simple direct response."""
-        if str(year) not in landcover_data and year not in landcover_data:
-            return f"No crop data available for the year {year}"
-            
+        # Convert year to string if it exists as string key
         year_key = str(year) if str(year) in landcover_data else year
+        
+        # If the year isn't directly available, try to find the closest year
+        if year_key not in landcover_data:
+            available_years = [int(y) if isinstance(y, str) and y.isdigit() else y 
+                              for y in landcover_data.keys() if str(y).isdigit()]
+            if available_years:
+                year_key = min(available_years, key=lambda y: abs(int(y) - year))
+                print(f"Using {year_key} as closest available year to {year}")
+            else:
+                return f"No crop data available for the year {year} or nearby years"
+        
         year_data = landcover_data[year_key]
         
         # Filter to only consider actual crops (exclude non-crop categories)
+        non_crop_categories = ['Total Area', 'unit', 'county', 'state', 
+                             'Open Water', 'Developed/Open Space', 
+                             'Developed/Low Intensity', 'Developed/Med Intensity', 
+                             'Developed/High Intensity', 'Barren', 'Deciduous Forest', 
+                             'Evergreen Forest', 'Mixed Forest', 'Shrubland', 
+                             'Woody Wetlands', 'Herbaceous Wetlands']
+        
         all_crops = {}
         for category, crop_list in self.crop_categories.items():
             for crop in crop_list:
                 if crop in year_data:
                     all_crops[crop] = year_data[crop]
+        
+        # Also check for any crops not in our categories
+        for crop, area in year_data.items():
+            if (crop not in all_crops and 
+                crop not in non_crop_categories and 
+                isinstance(area, (int, float)) and 
+                area > 0):
+                all_crops[crop] = area
         
         if not all_crops:
             return f"No crop data available for {year}"
@@ -161,7 +239,7 @@ class AnalysisAgent(BaseAgent):
         
         # Calculate percentage
         total_area = year_data.get('Total Area', sum(all_crops.values()))
-        percentage = (major_crop[1] / total_area) * 100
+        percentage = (major_crop[1] / total_area) * 100 if total_area else 0
         
         # Format a simple response
         response = (
@@ -173,7 +251,7 @@ class AnalysisAgent(BaseAgent):
         # List other top crops
         other_crops = sorted(all_crops.items(), key=lambda x: x[1], reverse=True)[1:4]  # Get next 3 top crops
         for crop, area in other_crops:
-            crop_pct = (area / total_area) * 100
+            crop_pct = (area / total_area) * 100 if total_area else 0
             response += f"- {crop}: {area:.1f} hectares ({crop_pct:.1f}%)\n"
             
         return response

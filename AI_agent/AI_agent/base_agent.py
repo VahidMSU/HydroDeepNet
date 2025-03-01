@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
-try:
-    from model_selector import ModelSelector
-except ImportError:
-    from AI_agent.model_selector import ModelSelector
+from model_selector import ModelSelector    
     
 class BaseAgent(ABC):
     def __init__(self, name, description, task_type=None):
@@ -30,3 +27,5 @@ class BaseAgent(ABC):
         elif complexity == "low":
             return ModelSelector.get_model_for_task("data_retrieval")
         return self.model
+
+

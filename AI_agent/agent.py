@@ -4,17 +4,11 @@ import requests
 import json
 import numpy as np
 import geopandas 
+from AI_agent.config import AgentConfig
+from model_selector import ModelSelector  
+from AI_agent.prism import PRISM_Dataset
+from AI_agent.AI_agent.cdl import cdl_trends
 
-try:
-    from cdl_trend import cdl_trends
-    from prism import PRISM_Dataset
-    from config import AgentConfig
-    from model_selector import ModelSelector
-except ImportError:
-    from AI_agent.cdl_trend import cdl_trends
-    from AI_agent.prism import PRISM_Dataset
-    from AI_agent.config import AgentConfig
-    from AI_agent.model_selector import ModelSelector
 
 # Function to check if Ollama is running without using CPU
 def is_ollama_running():
@@ -212,3 +206,60 @@ if __name__ == "__main__":
         file.write(complete_report)
 
     print(f"Analysis completed. Response saved to {output_path}")
+
+
+
+if __name__ == "__main__":
+    min_lon, min_lat, max_lon, max_lat = get_bounding_box("Mecosta", "Michigan")
+    print(f"Bounding box for Ingham County, Michigan (EPSG:4326): {min_lon, min_lat, max_lon, max_lat}")
+
+    if min_lon:
+        config = {
+            "RESOLUTION": 250,
+            "huc8": None,
+            "video": False,
+            "aggregation": "annual",
+            "start_year": 2008,
+            "end_year": 2011,
+            'bounding_box': [min_lon, min_lat, max_lon, max_lat],
+        }
+    else:
+        config = {
+            "RESOLUTION": 250,
+            "huc8": None,
+            "video": False,
+            "aggregation": "annual",
+            "start_year": 2008,
+            "end_year": 2011,
+            'bounding_box': [-85.444332, 43.658148, -85.239256, 44.164683],
+        }
+
+    prism_dataset = PRISM_Dataset(config)
+    pr_prism, tmax_prism, tmin_prism = prism_dataset.get_spatial_average_over_time()
+
+    print(f"PRISM data shape: {pr_prism.shape}, {tmax_prism.shape}, {tmin_prism.shape}")
+    print("PRISM data:")
+    print(f"Precipitation: {pr_prism}")
+    print(f"Max Temperature: {tmax_prism}")
+    print(f"Min Temperature: {tmin_prism}")
+
+    extracted_data = cdl_trends(config)
+
+    if not extracted_data:
+        print("Error: No data found for any of the given years.")
+        exit(1)
+
+    years_to_analyze = np.arange(config['start_year'], config['end_year'] + 1)
+    year_chunks = chunk_years(years_to_analyze)
+    chunk_analyses = []
+
+    for chunk in year_chunks:
+        chunk_indices = [y - config['start_year'] for y in chunk]
+        analysis = analyze_year_chunk(
+            extracted_data,
+            chunk,
+            pr_prism[chunk_indices],
+            tmax_prism[chunk_indices],
+            tmin_prism[chunk_indices]
+        )
+        chunk_analyses.append(f"\nAnalysis for years {chunk}:\n{analysis}")
