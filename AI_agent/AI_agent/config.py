@@ -35,3 +35,5 @@ class AgentConfig:
     HydroGeoDataset_ML_250_path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
     CDL_CODES_path = "/data/SWATGenXApp/GenXAppData/CDL/CDL_CODES.csv"
     PRISM_PATH = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/PRISM_ML_250m.h5'
+    loca2_path = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/LOCA2_MLP.h5'
+    
