@@ -341,6 +341,9 @@ def generate_climate_change_report(config: Dict[str, Any], output_dir: str) -> O
         logger.error(f"Error generating climate change report: {e}", exc_info=True)
         return None
 
+# Add import for HTML conversion
+from AI_agent.html_report_converter import convert_markdown_to_html, create_report_index
+
 def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, parallel: bool = True) -> List[str]:
     """
     Generate a comprehensive report including all data sources.
@@ -354,6 +357,7 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
         List of paths to generated reports
     """
     reports = []
+    html_reports = []
     
     # Create main output directory
     os.makedirs(output_dir, exist_ok=True)
@@ -412,6 +416,13 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
                     if report_path:
                         logger.info(f"{report_config['name']} report generation completed")
                         reports.append(report_path)
+                        
+                        # Convert to HTML if it's a Markdown file
+                        if report_path.endswith('.md'):
+                            html_path = convert_markdown_to_html(report_path)
+                            if html_path:
+                                html_reports.append(html_path)
+                                logger.info(f"Converted to HTML: {html_path}")
                     else:
                         logger.warning(f"{report_config['name']} report generation failed")
                 except Exception as exc:
@@ -422,9 +433,24 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
             report_path = report_config['func'](config, report_config['dir'])
             if report_path:
                 reports.append(report_path)
+                
+                # Convert to HTML if it's a Markdown file
+                if report_path.endswith('.md'):
+                    html_path = convert_markdown_to_html(report_path)
+                    if html_path:
+                        html_reports.append(html_path)
+                        logger.info(f"Converted to HTML: {html_path}")
+    
+    # Create an index of all HTML reports
+    if html_reports:
+        index_path = create_report_index(output_dir)
+        if index_path:
+            logger.info(f"Created HTML report index: {index_path}")
     
     logger.info(f"Generated {len(reports)} reports in {output_dir}")
     return reports
+
+# Add input validation and logging to ensure coordinates are processed correctly
 
 def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: str, parallel: bool = True) -> List[str]:
     """
@@ -444,6 +470,58 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
     
+    # Validate the bounding box coordinates
+    try:
+        bbox = config.get('bounding_box', [])
+        if len(bbox) != 4:
+            logger.error(f"Invalid bounding box format: {bbox}")
+            with open(os.path.join(output_dir, "error_log.txt"), "a") as f:
+                f.write(f"ERROR: Invalid bounding box format: {bbox}\n")
+            return reports
+            
+        min_lon, min_lat, max_lon, max_lat = bbox
+        
+        # Convert to float if they are strings
+        min_lon = float(min_lon)
+        min_lat = float(min_lat)
+        max_lon = float(max_lon)
+        max_lat = float(max_lat)
+        
+        # Basic validation
+        if not (-90 <= min_lat <= 90 and -90 <= max_lat <= 90 and 
+                -180 <= min_lon <= 180 and -180 <= max_lon <= 180):
+            logger.error(f"Bounding box coordinates out of valid range: {bbox}")
+            with open(os.path.join(output_dir, "error_log.txt"), "a") as f:
+                f.write(f"ERROR: Bounding box coordinates out of valid range: {bbox}\n")
+            return reports
+            
+        # Ensure min is less than max
+        if min_lat > max_lat or min_lon > max_lon:
+            logger.warning(f"Swapping min/max coordinates in bounding box: {bbox}")
+            min_lat, max_lat = min(min_lat, max_lat), max(min_lat, max_lat)
+            min_lon, max_lon = min(min_lon, max_lon), max(min_lon, max_lon)
+            
+        # Update config with validated values
+        config['bounding_box'] = [min_lon, min_lat, max_lon, max_lat]
+        
+        # Log the validated bounding box
+        logger.info(f"Using bounding box: {min_lon}, {min_lat}, {max_lon}, {max_lat}")
+        
+    except Exception as e:
+        logger.error(f"Error validating bounding box: {e}")
+        with open(os.path.join(output_dir, "error_log.txt"), "a") as f:
+            f.write(f"ERROR: Error validating bounding box: {e}\n")
+        return reports
+    
+    # Save the config to a file for debugging
+    try:
+        with open(os.path.join(output_dir, "config.json"), "w") as f:
+            import json
+            json.dump(config, f, indent=2, default=str)
+    except Exception as e:
+        logger.warning(f"Could not save config to file: {e}")
+    
+    # Continue with report generation
     if report_type == 'all':
         # Generate all reports using parallel processing if enabled
         reports = generate_comprehensive_report(config, output_dir, parallel)
@@ -467,6 +545,30 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
                 reports.append(report_path)
         else:
             logger.error(f"Unknown report type: {report_type}")
+    
+    # After generating reports, convert them to HTML
+    try:
+        logger.info("Converting Markdown reports to HTML format...")
+        html_reports = []
+        
+        # Find all generated Markdown reports
+        for root, _, files in os.walk(output_dir):
+            for file in files:
+                if file.endswith('.md'):
+                    md_path = os.path.join(root, file)
+                    html_path = convert_markdown_to_html(md_path)
+                    if html_path:
+                        html_reports.append(html_path)
+        
+        if html_reports:
+            # Create HTML index
+            index_path = create_report_index(output_dir)
+            if index_path:
+                logger.info(f"Created HTML report index: {index_path}")
+                
+            logger.info(f"Converted {len(html_reports)} reports to HTML format")
+    except Exception as e:
+        logger.error(f"Error converting reports to HTML: {e}")
     
     return reports
 
