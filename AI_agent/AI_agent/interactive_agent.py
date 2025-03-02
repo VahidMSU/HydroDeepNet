@@ -1,10 +1,70 @@
 import re
-from get_county_bbox import get_bounding_box
-#from cdl import cdl_trends
-from agent import analyze_year_chunk
-from prism import PRISM_Dataset
-from coordinator import AgentCoordinator
-from conversation_handler import ConversationalAgent
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Handle all imports defensively
+try:
+    # Try direct import first (when module is in the same directory)
+    from get_county_bbox import get_bounding_box
+except ImportError:
+    # Fall back to relative import within the package
+    try:
+        from .get_county_bbox import get_bounding_box
+    except ImportError:
+        logger.warning("Could not import get_county_bbox, using fallback implementation")
+        def get_bounding_box(county_name=None, state_code=None):
+            """Fallback implementation"""
+            # Default to Michigan's bounding box
+            return (-86.5, 41.7, -82.4, 45.8)
+
+try:
+    from agent import analyze_year_chunk
+except ImportError:
+    try:
+        from .agent import analyze_year_chunk
+    except ImportError:
+        logger.warning("Could not import agent.analyze_year_chunk, using fallback implementation")
+        def analyze_year_chunk(landcover_data, years, precipitation=None, tmax=None, tmin=None):
+            """Fallback implementation"""
+            return "I'm sorry, but I can't analyze agricultural data at the moment."
+
+try:
+    from prism import PRISM_Dataset
+except ImportError:
+    try:
+        from .prism import PRISM_Dataset
+    except ImportError:
+        logger.warning("Could not import PRISM_Dataset, using fallback implementation")
+        class PRISM_Dataset:
+            def __init__(self, config):
+                self.config = config
+            def get_spatial_average_over_time(self):
+                return None, None, None
+
+try:
+    from coordinator import AgentCoordinator
+except ImportError:
+    try:
+        from .coordinator import AgentCoordinator
+    except ImportError:
+        logger.warning("Could not import AgentCoordinator, using fallback implementation")
+        class AgentCoordinator:
+            def process_query(self, query):
+                return "I'm sorry, my analysis capabilities are currently offline. Please try again later."
+
+try:
+    from conversation_handler import ConversationalAgent
+except ImportError:
+    try:
+        from .conversation_handler import ConversationalAgent
+    except ImportError:
+        logger.warning("Could not import ConversationalAgent, using fallback implementation")
+        class ConversationalAgent:
+            def __init__(self):
+                pass
 
 class QuerySession:
     def __init__(self):
@@ -293,10 +353,11 @@ def interactive_agent(query):
     """
 
     try:
-        # Check for crop-specific queries that need to be handled precisely
-        query_lower = query.lower()
-        if 'major crop' in query_lower or 'main crop' in query_lower:
-            print("Detected crop pattern question, ensuring proper handling")
+        logger.info(f"Processing query: {query}")
+        
+        # Simple fallback if AgentCoordinator isn't available
+        if not hasattr(AgentCoordinator, 'process_query'):
+            return "I'm sorry, I'm experiencing technical difficulties at the moment. Our team is working to restore full functionality soon."
         
         # Use the AgentCoordinator for enhanced processing
         coordinator = AgentCoordinator()
@@ -305,9 +366,9 @@ def interactive_agent(query):
         
     except Exception as e:
         # Log the error but return a user-friendly message
-        print(f"Error in interactive_agent: {e}")
+        logger.error(f"Error in interactive_agent: {e}")
         import traceback
-        print(traceback.format_exc())
+        logger.error(traceback.format_exc())
         return "I'm sorry, I encountered an error while processing your request. Please try a different query or contact support if the issue persists."
 
 def interactive_session():
@@ -323,8 +384,13 @@ def interactive_session():
     print("- Tell me about soybean cultivation in Barry County from 2010-2015")
     print("\nType 'quit' to exit.")
     
-    # Use coordinator instead of ConversationalAgent
-    coordinator = AgentCoordinator()
+    # Create a more robust instantiation
+    try:
+        coordinator = AgentCoordinator()
+    except Exception as e:
+        logger.error(f"Error creating AgentCoordinator: {e}")
+        coordinator = None
+        print("\nWARNING: Running in limited functionality mode due to initialization error.")
     
     while True:
         query = input("\nWhat would you like to know? > ").strip()
@@ -338,7 +404,10 @@ def interactive_session():
             
         print("\nAnalyzing your query...")
         try:
-            response = coordinator.process_query(query)
+            if coordinator:
+                response = coordinator.process_query(query)
+            else:
+                response = "Sorry, the analysis system is currently unavailable."
             print("\nAnalysis:")
             print(response)
         except Exception as e:
