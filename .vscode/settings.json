@@ -10,6 +10,7 @@
     "python.analysis.extraPaths": [
         "/usr/share/qgis/python/plugins/QSWATPlusLinux3_64",
         "/data/SWATGenXApp/codes/SWATGenX",
+        "/data/SWATGenXApp/codes/AI_agent",
         "/data/SWATGenXApp/codes/ModelProcessing",
         "/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api",
     ],

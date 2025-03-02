@@ -4,10 +4,11 @@ import requests
 import json
 import numpy as np
 import geopandas 
-from AI_agent.config import AgentConfig
-from model_selector import ModelSelector  
-from AI_agent.prism import PRISM_Dataset
-from AI_agent.AI_agent.cdl import cdl_trends
+
+from config import AgentConfig
+from model_selector import ModelSelector
+from prism import PRISM_Dataset
+#from cdl import cdl_trends
 
 
 # Function to check if Ollama is running without using CPU

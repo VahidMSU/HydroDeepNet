@@ -7,7 +7,9 @@ from specialized_agents import (
     SynthesisAgent
 )
 from county_info_agent import CountyInfoAgent
-from AI_agent.debug_utils import log_query_info, log_data_structure, timing_log
+from debug_utils import log_query_info, log_data_structure
+
+
 
 DEBUG = False
 

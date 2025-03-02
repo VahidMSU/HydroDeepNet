@@ -26,25 +26,9 @@ parent_dir = current_dir.parent
 if str(parent_dir) not in sys.path:
     sys.path.append(str(parent_dir))
 
-try:
-    # Try importing with direct module path
-    from AI_agent.config import AgentConfig
-except ImportError:
-    try:
-        # Try importing as relative import
-        from .config import AgentConfig
-    except ImportError:
-        # Try importing from the current directory
-        from config import AgentConfig
-
-try:
-    # Import climate change analysis
-    from AI_agent.climate_change_analysis import ClimateChangeAnalysis
-except ImportError:
-    try:
-        from climate_change_analysis import ClimateChangeAnalysis
-    except ImportError:
-        logger.warning("Could not import ClimateChangeAnalysis - climate change reports will be unavailable")
+# Try importing with direct module path
+from AI_agent.config import AgentConfig
+from AI_agent.climate_change_analysis import ClimateChangeAnalysis
 
 def generate_prism_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
     """
@@ -60,18 +44,10 @@ def generate_prism_report(config: Dict[str, Any], output_dir: str) -> Optional[s
     try:
         logger.info("Generating PRISM climate report...")
         
-        # Import the necessary functions
-        try:
-            from prism_report import batch_process_prism
-            from prism_utilities import extract_prism_data
-        except ImportError:
-            try:
-                from AI_agent.prism_report import batch_process_prism
-                from AI_agent.prism_utilities import extract_prism_data
-            except ImportError:
-                from .prism_report import batch_process_prism
-                from .prism_utilities import extract_prism_data
-        
+
+        from AI_agent.prism_report import batch_process_prism
+        from AI_agent.prism_utilities import extract_prism_data
+
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         
@@ -233,16 +209,9 @@ def generate_governmental_units_report(config: Dict[str, Any], output_dir: str) 
     try:
         logger.info("Generating governmental units report...")
         
-        # Import the necessary function
-        try:
-            from governmental_units_report import analyze_governmental_units
-        except ImportError:
-            try:
-                from AI_agent.governmental_units_report import analyze_governmental_units
-            except ImportError:
-                from .governmental_units_report import analyze_governmental_units
-        
-        # Create output directory
+
+        from AI_agent.governmental_units_report import analyze_governmental_units
+
         os.makedirs(output_dir, exist_ok=True)
         
         # Extract parameters from config
@@ -501,7 +470,7 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
     
     return reports
 
-def main():
+def generate_reports():
     """Parse command line arguments and generate reports."""
     parser = argparse.ArgumentParser(description='Generate reports from various data sources')
     
@@ -587,5 +556,5 @@ def main():
 if __name__ == "__main__":
     import time
     start_time = time.time()
-    main()
+    generate_reports()
     print(f"Elapsed time: {time.time() - start_time:.2f} seconds")

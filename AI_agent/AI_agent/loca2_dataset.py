@@ -5,13 +5,15 @@ import numpy as np
 import os
 import pandas as pd
 from scipy.spatial import cKDTree
-from Logger import LoggerSetup
+
 from matplotlib import animation, pyplot as plt
 
 try:
     from AI_agent.config import AgentConfig
+    from AI_agent.Logger import LoggerSetup
 except ImportError:
-    from config import AgentConfig
+    from .config import AgentConfig
+    from .Logger import LoggerSetup
 
 
 def list_of_cc_models(required_models="MPI-ESM1-2-HR", required_scenarios="historical"):

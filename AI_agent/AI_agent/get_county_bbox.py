@@ -1,4 +1,3 @@
-
 from agent import AgentConfig
 
 def get_bounding_box(county, state):
