@@ -28,7 +28,26 @@ const HydroGeoDatasetForm = ({
   availableSubvariables,
   isLoading,
 }) => {
-  const hasSelectedArea = Boolean(formData.geometry);
+  // Check if area is selected by verifying coordinate bounds
+  const hasSelectedArea = Boolean(
+    formData.min_latitude &&
+      formData.max_latitude &&
+      formData.min_longitude &&
+      formData.max_longitude,
+  );
+
+  // Debug logging to understand the form state
+  console.log('Form data in component:', {
+    hasArea: hasSelectedArea,
+    bounds: {
+      minLat: formData.min_latitude,
+      maxLat: formData.max_latitude,
+      minLon: formData.min_longitude,
+      maxLon: formData.max_longitude,
+    },
+    variable: formData.variable,
+    subvariable: formData.subvariable,
+  });
 
   return (
     <>
@@ -107,14 +126,14 @@ const HydroGeoDatasetForm = ({
               </div>
               <div className="value">
                 {hasSelectedArea
-                  ? `Polygon with ${formData.geometry.rings[0].length} vertices`
-                  : 'Use the map to draw a polygon'}
+                  ? `${formData.geometry_type || 'Area'} selected`
+                  : 'Use the map to draw a polygon or rectangle'}
               </div>
             </CoordinatesDisplay>
           </FormGroup>
 
           {/* If bounds are defined, show them */}
-          {formData.min_latitude && (
+          {hasSelectedArea && (
             <FormGroup>
               <label>
                 <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
@@ -151,6 +170,17 @@ const HydroGeoDatasetForm = ({
               </>
             )}
           </SubmitButton>
+
+          {/* Show explanation text if button is disabled */}
+          {(!hasSelectedArea || !formData.variable || !formData.subvariable) && (
+            <div style={{ marginTop: '10px', color: '#666', fontSize: '0.9rem' }}>
+              {!hasSelectedArea && <div>⚠️ Please draw an area on the map</div>}
+              {!formData.variable && <div>⚠️ Please select a variable</div>}
+              {formData.variable && !formData.subvariable && (
+                <div>⚠️ Please select a subvariable</div>
+              )}
+            </div>
+          )}
         </form>
       </QuerySidebarContent>
     </>
