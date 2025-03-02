@@ -18,6 +18,7 @@ import seaborn as sns
 import calendar
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.gridspec as gridspec
+from AI_agent.plot_utils import safe_figure, save_figure
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -434,149 +435,100 @@ def create_period_labels(start_year: int, end_year: int, aggregation: str = 'ann
         logger.warning(f"Unknown aggregation: {aggregation}")
         return []
 
-def plot_climate_timeseries(data: Dict[str, np.ndarray], start_year: int, end_year: int,
-                           aggregation: str = 'annual', output_path: Optional[str] = None,
-                           title: str = 'PRISM Climate Data', figsize: Tuple[int, int] = (12, 8)) -> Optional[plt.Figure]:
+def plot_climate_timeseries(data: Dict[str, np.ndarray], 
+                           start_year: int, 
+                           end_year: int,
+                           aggregation: str = 'monthly',
+                           output_path: Optional[str] = None,
+                           title: Optional[str] = None) -> bool:
     """
-    Create a time series plot of PRISM climate variables.
+    Create a time series plot of climate data.
     
     Args:
-        data: Dictionary with arrays of spatial means for each variable
-        start_year: First year in the data
-        end_year: Last year in the data
-        aggregation: Aggregation period ('monthly', 'seasonal', 'annual')
-        output_path: Path to save the figure (optional)
-        title: Plot title
-        figsize: Figure size as tuple (width, height)
+        data: Dictionary with climate variable arrays
+        start_year: Starting year
+        end_year: Ending year
+        aggregation: Temporal aggregation type
+        output_path: Path to save the plot
+        title: Optional title for the plot
         
     Returns:
-        Matplotlib Figure object or None if error occurs
+        True if successful, False otherwise
     """
     try:
-        # Check if we have data
         if not data:
             logger.warning("No data to plot")
-            return None
-        
-        # Get time series data and create labels
-        ts_data = {}
-        for var_name, var_data in data.items():
-            if var_name in PRISM_VARIABLES and var_data.size > 0:
-                ts_data[var_name] = var_data
-        
-        if not ts_data:
-            logger.warning("No valid time series data to plot")
-            return None
-        
-        # Create figure
-        fig, axes = plt.subplots(3, 1, figsize=figsize, sharex=True, 
-                                gridspec_kw={'height_ratios': [1, 1, 1.5]})
-        
-        # Create period labels based on aggregation type
-        period_labels = create_period_labels(start_year, end_year, aggregation)
-        
-        # Limit to the same length as the shortest data array
-        min_len = min(len(d) for d in ts_data.values())
-        period_labels = period_labels[:min_len]
-        
-        # Plot temperature data (TMAX, TMIN)
-        temp_ax = axes[0]
-        x_vals = np.arange(len(period_labels))
-        
-        if 'tmax' in ts_data and len(ts_data['tmax']) > 0:
-            tmax_data = ts_data['tmax'][:min_len]
-            temp_ax.plot(x_vals, tmax_data, 'r-', label='Max Temp', linewidth=1.5)
-        
-        if 'tmin' in ts_data and len(ts_data['tmin']) > 0:
-            tmin_data = ts_data['tmin'][:min_len]
-            temp_ax.plot(x_vals, tmin_data, 'b-', label='Min Temp', linewidth=1.5)
-        
-        temp_ax.set_ylabel('Temperature (°C)', fontsize=10)
-        temp_ax.grid(True, linestyle='--', alpha=0.6)
-        temp_ax.legend(loc='upper right')
-        temp_ax.set_title('Temperature Trends', fontsize=12)
-        
-        # Plot mean temperature data
-        tmean_ax = axes[1]
-        if 'tmean' in ts_data and len(ts_data['tmean']) > 0:
-            tmean_data = ts_data['tmean'][:min_len]
-            # Color based on value
-            colors = plt.cm.RdYlBu_r(np.interp(tmean_data, [np.min(tmean_data), np.max(tmean_data)], [0, 1]))
-            for i in range(len(x_vals) - 1):
-                tmean_ax.plot(x_vals[i:i+2], tmean_data[i:i+2], color=colors[i], linewidth=1.5)
+            return False
+
+        # Using the safe_figure context manager
+        with safe_figure(figsize=(12, 8)) as fig:
+            # Set up the figure
+            gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
             
-            # Add trend line
-            z = np.polyfit(x_vals, tmean_data, 1)
-            p = np.poly1d(z)
-            tmean_ax.plot(x_vals, p(x_vals), "k--", alpha=0.7, linewidth=1.0,
-                         label=f"Trend: {z[0]:.3f} °C/period")
+            # Temperature subplot
+            ax1 = fig.add_subplot(gs[0])
             
-            tmean_ax.set_ylabel('Mean Temp (°C)', fontsize=10)
-            tmean_ax.grid(True, linestyle='--', alpha=0.6)
-            tmean_ax.legend(loc='upper right')
-            tmean_ax.set_title('Mean Temperature with Trend', fontsize=12)
-        
-        # Plot precipitation data
-        ppt_ax = axes[2]
-        if 'ppt' in ts_data and len(ts_data['ppt']) > 0:
-            ppt_data = ts_data['ppt'][:min_len]
-            bar_color = plt.cm.Blues(np.interp(ppt_data, [np.min(ppt_data), np.max(ppt_data)], [0.2, 0.8]))
-            bars = ppt_ax.bar(x_vals, ppt_data, color=bar_color, edgecolor='blue', linewidth=0.5, alpha=0.7)
+            # Precipitation subplot
+            ax2 = fig.add_subplot(gs[1], sharex=ax1)
             
-            # Add seasonal average line if we have enough data
-            if len(ppt_data) >= 12 and aggregation == 'monthly':
-                # Calculate monthly averages for the period
-                monthly_avgs = np.zeros(12)
-                for i, val in enumerate(ppt_data):
-                    month_idx = i % 12
-                    monthly_avgs[month_idx] += val
-                # Divide by number of years
-                num_years = (end_year - start_year) + 1
-                monthly_avgs /= num_years
-                
-                # Repeat the monthly averages for the entire period
-                monthly_pattern = np.tile(monthly_avgs, num_years)[:len(ppt_data)]
-                ppt_ax.plot(x_vals, monthly_pattern, 'k-', label='Monthly Avg', linewidth=1, alpha=0.7)
+            # Create period labels
+            period_labels = create_period_labels(start_year, end_year, aggregation)
+            x = np.arange(len(period_labels))
             
-            ppt_ax.set_ylabel('Precipitation (mm)', fontsize=10)
-            ppt_ax.grid(True, linestyle='--', alpha=0.6)
+            # Plot temperature variables
+            temp_vars = ['tmean', 'tmax', 'tmin']
+            for var_name in temp_vars:
+                if var_name in data and len(data[var_name]) > 0:
+                    ax1.plot(x[:len(data[var_name])], data[var_name], 
+                           label=PRISM_VARIABLES[var_name]['description'], 
+                           color=PRISM_VARIABLES[var_name]['color'],
+                           linewidth=2)
             
-            # Add rolling average
-            if len(ppt_data) > 12:
-                window = 12 if aggregation == 'monthly' else 3
-                rolling_avg = np.convolve(ppt_data, np.ones(window)/window, mode='valid')
-                roll_x = x_vals[window-1:][:len(rolling_avg)]
-                ppt_ax.plot(roll_x, rolling_avg, 'r-', label=f'{window}-period Avg', linewidth=1.5)
-                ppt_ax.legend(loc='upper right')
+            # Plot precipitation
+            if 'ppt' in data and len(data['ppt']) > 0:
+                ax2.bar(x[:len(data['ppt'])], data['ppt'], 
+                       label='Precipitation', color='blue', alpha=0.7)
             
-            ppt_ax.set_title('Precipitation', fontsize=12)
-        
-        # X-axis labels
-        if aggregation == 'annual' or len(period_labels) <= 24:
-            # Show all labels for annual or if we have few data points
-            ppt_ax.set_xticks(x_vals)
-            ppt_ax.set_xticklabels(period_labels, rotation=45, ha='right')
-        else:
-            # Show subset of labels
-            step = max(1, len(period_labels) // 20)
-            ppt_ax.set_xticks(x_vals[::step])
-            ppt_ax.set_xticklabels(period_labels[::step], rotation=45, ha='right')
-        
-        plt.suptitle(title, fontsize=14, fontweight='bold')
-        plt.tight_layout()
-        plt.subplots_adjust(hspace=0.3)
-        
-        # Save if path provided
-        if output_path:
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
-            logger.info(f"Saved climate time series plot to {output_path}")
-        
-        return fig
-    
+            # Set labels and title
+            ax1.set_ylabel('Temperature (°C)')
+            ax1.set_title(title or f"Climate Data Time Series ({start_year}-{end_year})")
+            ax1.grid(True, linestyle='--', alpha=0.7)
+            ax1.legend()
+            
+            ax2.set_ylabel('Precipitation (mm)')
+            ax2.set_xlabel('Time Period')
+            ax2.grid(True, linestyle='--', alpha=0.7)
+            
+            # Set x-axis ticks based on aggregation
+            if aggregation == 'annual':
+                # For annual data, show all years
+                tick_indices = range(0, len(period_labels), max(1, len(period_labels) // 10))
+                ax2.set_xticks(tick_indices)
+                ax2.set_xticklabels([period_labels[i] for i in tick_indices], rotation=45)
+            elif aggregation == 'monthly':
+                # For monthly data, show January of each year
+                years = range(start_year, end_year + 1)
+                tick_indices = [period_labels.index(f"{year}-01") for year in years if f"{year}-01" in period_labels]
+                ax2.set_xticks(tick_indices)
+                ax2.set_xticklabels([f"{period_labels[i]}" for i in tick_indices], rotation=45)
+            else:
+                # Default tick behavior
+                tick_indices = range(0, len(period_labels), max(1, len(period_labels) // 10))
+                ax2.set_xticks(tick_indices)
+                ax2.set_xticklabels([period_labels[i] for i in tick_indices], rotation=45)
+            
+            plt.tight_layout()
+            
+            # Save figure if output path provided
+            if output_path:
+                return save_figure(fig, output_path)
+            
+            return True
+            
     except Exception as e:
-        logger.error(f"Error creating climate time series plot: {e}", exc_info=True)
-        return None
+        logger.error(f"Error plotting climate time series: {e}", exc_info=True)
+        plt.close('all')  # Emergency cleanup
+        return False
 
 def create_climate_spatial_plot(data: Dict[str, np.ndarray], time_index: int = 0,
                                output_path: Optional[str] = None, title: Optional[str] = None,

@@ -81,6 +81,16 @@ export const MapContainer = styled.div`
     height: 4px;
     background: linear-gradient(to right, ${colors.info}, ${colors.accent});
   }
+  
+  /* Add additional styles to ensure proper sizing */
+  display: flex;
+  flex-direction: column;
+  
+  /* Ensure the inner content takes full height */
+  & > div {
+    flex: 1;
+    min-height: 400px;
+  }
 `;
 
 export const QuerySidebarHeader = styled.div`
@@ -483,5 +493,247 @@ export const CoordinatesDisplay = styled.div`
     font-size: 0.9rem;
     overflow-x: auto;
     white-space: nowrap;
+  }
+`;
+
+export const TabContainer = styled.div`
+  margin-top: 1.5rem;
+`;
+
+export const TabNav = styled.div`
+  display: flex;
+  border-bottom: 2px solid ${colors.border};
+`;
+
+export const TabButton = styled.button`
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: ${colors.textSecondary};
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  
+  &:hover {
+    color: ${colors.accent};
+  }
+  
+  &.active {
+    color: ${colors.accent};
+    
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: ${colors.accent};
+    }
+  }
+`;
+
+export const TabContent = styled.div`
+  padding: 1.5rem 0;
+  display: none;
+  
+  &.active {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
+export const ReportForm = styled.form`
+  background: linear-gradient(160deg, ${colors.surface} 0%, ${colors.surfaceDark} 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+`;
+
+export const ReportFormHeader = styled.div`
+  margin-bottom: 1.5rem;
+  
+  h3 {
+    color: ${colors.accent};
+    margin-top: 0;
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    
+    .icon {
+      color: ${colors.accent};
+    }
+  }
+  
+  p {
+    color: ${colors.textSecondary};
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+`;
+
+export const ReportRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+export const ReportStatusContainer = styled.div`
+  margin-top: 1.5rem;
+  
+  h4 {
+    color: ${colors.accent};
+    margin-top: 0;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    .icon {
+      color: ${colors.accent};
+    }
+  }
+`;
+
+export const ReportList = styled.div`
+  margin-top: 1rem;
+`;
+
+export const ReportItem = styled.div`
+  background-color: ${colors.surface};
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid ${colors.accent};
+  
+  &.processing {
+    border-left-color: ${colors.info};
+  }
+  
+  &.failed {
+    border-left-color: ${colors.error};
+  }
+  
+  .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    
+    .report-title {
+      font-weight: 600;
+      color: ${colors.text};
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .report-date {
+      color: ${colors.textMuted};
+      font-size: 0.9rem;
+    }
+  }
+  
+  .report-details {
+    color: ${colors.textSecondary};
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .report-actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+    
+    button {
+      background-color: ${colors.surfaceDark};
+      color: ${colors.text};
+      border: 1px solid ${colors.border};
+      border-radius: 4px;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      &:hover {
+        background-color: ${colors.accent};
+        color: ${colors.textInverse};
+      }
+      
+      .icon {
+        font-size: 0.9rem;
+      }
+    }
+  }
+`;
+
+export const ReportProgressBar = styled.div`
+  height: 6px;
+  background-color: ${colors.surfaceDark};
+  border-radius: 3px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  
+  .progress-inner {
+    height: 100%;
+    background: linear-gradient(to right, ${colors.info}, ${colors.accent});
+    width: 0%;
+    transition: width 0.3s ease;
+    animation: progress-animation 1.5s infinite;
+  }
+  
+  @keyframes progress-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+`;
+
+export const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  
+  label {
+    color: ${colors.textSecondary};
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    .icon {
+      color: ${colors.accent};
+    }
+  }
+  
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
   }
 `;

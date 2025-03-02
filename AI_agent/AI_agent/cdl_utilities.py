@@ -13,6 +13,7 @@ import os
 import logging
 from pathlib import Path
 import seaborn as sns
+from AI_agent.plot_utils import safe_figure, save_figure, close_all_figures
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -364,108 +365,110 @@ def create_crop_change_plot(
         logger.error(f"Error creating crop change plot: {e}", exc_info=True)
         return None
 
-def create_crop_composition_pie(
-    cdl_data: Dict[int, Dict[str, Any]],
-    year: Optional[int] = None,
-    top_n: int = 5,
-    output_path: Optional[str] = None,
-    figsize: Tuple[int, int] = (10, 8)
-) -> Optional[plt.Figure]:
+def create_crop_composition_pie(cdl_data: Dict[int, Dict[str, Any]], year: int, 
+                              output_path: Optional[str] = None,
+                              figsize: Tuple[int, int] = (10, 8)) -> bool:
     """
     Create a pie chart showing crop composition for a specific year.
     
     Args:
         cdl_data: Dictionary mapping years to land use data
-        year: Year to visualize (uses latest year if None)
-        top_n: Number of top crops to display individually
+        year: Year to visualize
         output_path: Path to save the figure (optional)
-        figsize: Figure dimensions (width, height) in inches
+        figsize: Figure dimensions (width, height)
         
     Returns:
-        Matplotlib Figure object or None if error occurs
+        Boolean indicating success
     """
     try:
-        if not cdl_data:
-            logger.warning("No data to visualize")
-            return None
-            
-        # Select year (use latest if not specified)
-        if year is None or year not in cdl_data:
-            year = max(cdl_data.keys())
-            
+        # Make sure any previous figures are closed
+        close_all_figures()
+        
+        if year not in cdl_data:
+            logger.warning(f"Year {year} not found in data")
+            return False
+        
+        # Get data for the specified year
         year_data = cdl_data[year]
+        total_area = year_data.get("Total Area", 0)
         
-        # Get crop data (excluding metadata fields)
-        crop_data = {
-            k: v for k, v in year_data.items() 
-            if k not in ["Total Area", "unit"] and not k.endswith("%")
-        }
+        if total_area <= 0:
+            logger.warning(f"No area data for year {year}")
+            return False
         
-        if not crop_data:
-            logger.warning(f"No crop data found for year {year}")
-            return None
-            
-        # Sort crops by area
-        sorted_crops = sorted(crop_data.items(), key=lambda x: x[1], reverse=True)
+        # Filter items that are numeric values and not metadata or percentages
+        items = [(k, v) for k, v in year_data.items() 
+                if (isinstance(v, (int, float)) and 
+                    k not in ["Total Area", "unit"] and 
+                    not k.endswith("(%)") and
+                    v > 0)]
         
-        # Select top N crops and group the rest as "Other"
-        top_crops = sorted_crops[:top_n]
-        other_sum = sum(area for _, area in sorted_crops[top_n:])
+        if not items:
+            logger.warning(f"No crop data for year {year}")
+            return False
         
-        # Prepare data for pie chart
-        labels = [crop for crop, _ in top_crops]
-        if other_sum > 0:
-            labels.append("Other")
+        # Sort by area (descending) and get top items
+        items = sorted(items, key=lambda x: x[1], reverse=True)
+        top_items = items[:8]  # Top 8 crops
         
-        sizes = [area for _, area in top_crops]
-        if other_sum > 0:
-            sizes.append(other_sum)
-            
+        # Combine remaining items into "Other"
+        other_area = sum(v for _, v in items[8:])
+        if other_area > 0:
+            top_items.append(("Other", other_area))
+        
+        # Extract labels and values
+        labels = [k for k, _ in top_items]
+        values = [v for _, v in top_items]
+        
         # Calculate percentages for labels
-        total = sum(sizes)
-        pcts = [100 * s / total for s in sizes]
+        percentages = [v / total_area * 100 for v in values]
+        labels = [f"{l} ({p:.1f}%)" for l, p in zip(labels, percentages)]
         
-        # Create plot
-        fig, ax = plt.subplots(figsize=figsize)
-        
-        # Create pie chart with percentage labels
-        wedges, texts, autotexts = ax.pie(
-            sizes, 
-            labels=None,
-            autopct='',
-            startangle=90,
-            wedgeprops={'edgecolor': 'white', 'linewidth': 1},
-            explode=[0.05] * len(sizes)
-        )
-        
-        # Create legend with percentages
-        legend_labels = [f"{l} ({p:.1f}%)" for l, p in zip(labels, pcts)]
-        ax.legend(
-            wedges, legend_labels,
-            title="Crop Types",
-            loc="center left",
-            bbox_to_anchor=(1, 0, 0.5, 1)
-        )
-        
-        # Set equal aspect ratio to ensure circular pie
-        ax.set_aspect('equal')
-        
-        # Add title
-        ax.set_title(f'Crop Composition for {year}', fontsize=14, fontweight='bold')
-        
-        plt.tight_layout()
-        
-        # Save figure if path provided
-        if output_path:
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
-            logger.info(f"Pie chart saved to {output_path}")
+        # Create a unique figure
+        with safe_figure(figsize=figsize) as fig:
+            ax = fig.add_subplot(111)
             
-        return fig
+            # Create pie chart
+            explode = [0.05 if i == 0 else 0 for i in range(len(top_items))]
+            wedges, texts, autotexts = ax.pie(
+                values, 
+                explode=explode, 
+                labels=None,  # We'll add a legend instead
+                autopct=lambda p: f'{p:.1f}%' if p > 3 else '',
+                shadow=False, 
+                startangle=90,
+                wedgeprops={'linewidth': 1, 'edgecolor': 'white'}
+            )
+            
+            # Add legend
+            ax.legend(wedges, labels, title="Crop Types", 
+                    loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+            
+            # Set title
+            ax.set_title(f"Crop Composition in {year}", fontsize=14, fontweight='bold')
+            
+            # Ensure the pie chart is drawn as a circle
+            ax.axis('equal')
+            
+            # Set tight layout
+            fig.tight_layout()
+            
+            # Save if path provided
+            if output_path:
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                # Save with explicit path that includes CDL identifier to avoid conflicts
+                unique_path = output_path  
+                save_figure(fig, unique_path)
+                logger.info(f"Crop composition pie chart saved to {unique_path}")
+        
+        # Make sure figure is closed
+        close_all_figures()
+        return True
         
     except Exception as e:
-        logger.error(f"Error creating pie chart: {e}", exc_info=True)
-        return None
+        logger.error(f"Error creating crop composition pie: {e}", exc_info=True)
+        close_all_figures()  # Make sure to clean up
+        return False
 
 def generate_cdl_report(
     cdl_data: Dict[int, Dict[str, Any]],
