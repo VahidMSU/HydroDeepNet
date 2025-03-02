@@ -28,7 +28,8 @@ import {
   CheckboxContainer,
 } from '../styles/HydroGeoDataset.tsx';
 import InfoBox from './InfoBox';
-import { downloadReport, viewReport } from '../utils/reportDownloader';
+import { downloadReport, viewReport, checkReportStatus } from '../utils/reportDownloader';
+import { debugLog } from '../utils/debugUtils';
 
 const ReportGenerator = ({ formData }) => {
   const [reports, setReports] = useState([]);
@@ -190,6 +191,84 @@ const ReportGenerator = ({ formData }) => {
       return timestamp;
     }
   };
+
+  // Add a function to handle report actions with explicit ID
+  const handleReportAction = (action, reportId) => {
+    if (!reportId) {
+      console.error('Report ID is required for', action);
+      setError(`Unable to ${action}: Report ID is missing`);
+      return;
+    }
+
+    debugLog('Report action triggered', { action, reportId });
+
+    try {
+      if (action === 'download') {
+        downloadReport(reportId)
+          .then((success) => {
+            if (!success) {
+              setError(`Failed to download report ${reportId}`);
+            }
+          })
+          .catch((err) => {
+            console.error('Download error:', err);
+            setError(`Error downloading report: ${err.message}`);
+          });
+      } else if (action === 'view') {
+        // Use 'html' instead of 'pdf' as the default view format
+        viewReport(reportId, 'html')
+          .then((success) => {
+            if (!success) {
+              setError(`Failed to view report ${reportId}`);
+            }
+          })
+          .catch((err) => {
+            console.error('View error:', err);
+            setError(`Error viewing report: ${err.message}`);
+          });
+      }
+    } catch (err) {
+      console.error(`Error in ${action} action:`, err);
+      setError(`An error occurred during ${action}: ${err.message}`);
+    }
+  };
+
+  // Function to refresh report status periodically
+  const refreshReportStatus = async (reportId) => {
+    try {
+      const result = await checkReportStatus(reportId);
+      if (result.error) {
+        console.warn(`Error checking status for report ${reportId}:`, result.error);
+        return;
+      }
+
+      // Update this specific report in state
+      setReports((prev) =>
+        prev.map((report) =>
+          report.report_id === reportId ? { ...report, ...result.report } : report,
+        ),
+      );
+
+      return result.status;
+    } catch (e) {
+      console.error(`Failed to refresh status for report ${reportId}:`, e);
+    }
+  };
+
+  // Add polling for in-progress reports on component mount
+  useEffect(() => {
+    const processingReports = reports.filter((report) => report.status === 'processing');
+
+    if (processingReports.length === 0) return;
+
+    const pollInterval = setInterval(() => {
+      processingReports.forEach((report) => {
+        refreshReportStatus(report.report_id);
+      });
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [reports]);
 
   return (
     <div>
@@ -383,57 +462,74 @@ const ReportGenerator = ({ formData }) => {
             Your Reports
           </h4>
           <ReportList>
-            {reports.map((report) => (
-              <ReportItem key={report.report_id} className={report.status}>
-                <div className="report-header">
-                  <div className="report-title">
-                    <FontAwesomeIcon
-                      icon={
-                        report.status === 'processing'
-                          ? faSpinner
-                          : report.status === 'failed'
-                            ? faTimesCircle
-                            : faCheck
-                      }
-                      className={report.status === 'processing' ? 'fa-spin' : ''}
-                    />
-                    {report.report_type && `${report.report_type.toUpperCase()} Report`}
-                    {!report.report_type && 'Environmental Report'}
-                  </div>
-                  <div className="report-date">{formatTimestamp(report.timestamp)}</div>
-                </div>
+            {reports.map((report) => {
+              // Ensure report_id is available
+              const reportId = report.report_id || report.timestamp;
 
-                <div className="report-details">
-                  {report.status === 'processing' ? (
-                    <>
-                      <div>Report is being generated...</div>
-                      <ReportProgressBar>
-                        <div className="progress-inner" style={{ width: '60%' }}></div>
-                      </ReportProgressBar>
-                    </>
-                  ) : report.status === 'failed' ? (
-                    <div>Error: {report.error || 'Failed to generate report'}</div>
-                  ) : (
-                    <div>
-                      Report completed successfully. Generated {report.reports?.length || 0} files.
+              return (
+                <ReportItem key={reportId} className={report.status}>
+                  <div className="report-header">
+                    <div className="report-title">
+                      <FontAwesomeIcon
+                        icon={
+                          report.status === 'processing'
+                            ? faSpinner
+                            : report.status === 'failed'
+                              ? faTimesCircle
+                              : faCheck
+                        }
+                        className={report.status === 'processing' ? 'fa-spin' : ''}
+                      />
+                      {report.report_type && `${report.report_type.toUpperCase()} Report`}
+                      {!report.report_type && 'Environmental Report'}
+                    </div>
+                    <div className="report-date">{formatTimestamp(report.timestamp)}</div>
+                  </div>
+
+                  <div className="report-details">
+                    {report.status === 'processing' ? (
+                      <>
+                        <div>Report is being generated...</div>
+                        <ReportProgressBar>
+                          <div className="progress-inner" style={{ width: '60%' }}></div>
+                        </ReportProgressBar>
+                      </>
+                    ) : report.status === 'failed' ? (
+                      <div>Error: {report.error || 'Failed to generate report'}</div>
+                    ) : (
+                      <div>
+                        Report completed successfully. Generated {report.reports?.length || 0}{' '}
+                        files.
+                      </div>
+                    )}
+                  </div>
+
+                  {report.status === 'completed' && (
+                    <div className="report-actions">
+                      {/* Use the captured reportId in the onClick handlers */}
+                      <button
+                        onClick={() => {
+                          console.log('Download clicked for report ID:', reportId);
+                          handleReportAction('download', reportId);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faDownload} className="icon" />
+                        Download
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('View clicked for report ID:', reportId);
+                          handleReportAction('view', reportId);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faEye} className="icon" />
+                        View
+                      </button>
                     </div>
                   )}
-                </div>
-
-                {report.status === 'completed' && (
-                  <div className="report-actions">
-                    <button onClick={() => downloadReport(report.report_id)}>
-                      <FontAwesomeIcon icon={faDownload} className="icon" />
-                      Download
-                    </button>
-                    <button onClick={() => viewReport(report.report_id, 'pdf')}>
-                      <FontAwesomeIcon icon={faEye} className="icon" />
-                      View
-                    </button>
-                  </div>
-                )}
-              </ReportItem>
-            ))}
+                </ReportItem>
+              );
+            })}
           </ReportList>
         </ReportStatusContainer>
       )}
