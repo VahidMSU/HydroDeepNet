@@ -390,7 +390,7 @@ class AppManager:
 
 			self.app.logger.info(
 				f"Model settings received for Station `{site_no}`: "
-				f"LS Resolution: {ls_resolution}, DEM Resolution: {dem_resolution}"
+				"LS Resolution: {ls_resolution}, DEM Resolution: {dem_resolution}"
 			)
 			# Perform model creation
 			try:
@@ -977,18 +977,24 @@ class AppManager:
 		@conditional_verified_required
 		def download_report(report_id):
 			"""Download a generated report."""
+			if not report_id:
+				self.app.logger.error("Missing report ID in download request")
+				return jsonify({'error': 'Report ID is required'}), 400
+				
 			username = current_user.username
-			report_dir = os.path.join('/data/SWATGenXApp/Users', username,"Reports" , report_id)
+			report_dir = os.path.join('/data/SWATGenXApp/Users', username, "Reports", report_id)
+			
+			self.app.logger.info(f"Attempting to download report: {report_dir}")
 			
 			if not os.path.exists(report_dir) or not os.path.isdir(report_dir):
 				self.app.logger.error(f"Report directory not found: {report_dir}")
-				return jsonify({'error': 'Report not found'}), 404
+				return jsonify({'error': f'Report with ID {report_id} not found'}), 404
 			
 			# Check if the metadata file exists
 			metadata_path = os.path.join(report_dir, 'metadata.json')
 			if not os.path.exists(metadata_path):
 				self.app.logger.error(f"Report metadata not found: {metadata_path}")
-				return jsonify({'error': 'Report metadata not found'}), 404
+				return jsonify({'error': f'Report metadata for ID {report_id} not found'}), 404
 			
 			try:
 				# Read metadata to get report paths
@@ -996,13 +1002,17 @@ class AppManager:
 					metadata = json.load(f)
 				
 				# Create a ZIP file with all report files
-				zip_filename = f"{report_id}.zip"
+				zip_filename = f"{report_id}_reports.zip"
 				zip_path = os.path.join(tempfile.gettempdir(), zip_filename)
+				
+				# List of files included in the ZIP
+				included_files = []
 				
 				# Create a new ZIP file with all the reports
 				with zipfile.ZipFile(zip_path, 'w') as report_zip:
 					# Add metadata file
 					report_zip.write(metadata_path, os.path.basename(metadata_path))
+					included_files.append(metadata_path)
 					
 					# Add all report files
 					for report_path in metadata.get('reports', []):
@@ -1010,52 +1020,206 @@ class AppManager:
 							# Add file to ZIP with relative path from report directory
 							arcname = os.path.relpath(report_path, report_dir)
 							report_zip.write(report_path, arcname)
+							included_files.append(report_path)
 				
-				self.app.logger.info(f"Generated report ZIP file: {zip_path}")
-				return send_file(zip_path, mimetype='application/zip', 
-							   download_name=f"{report_id}_reports.zip", as_attachment=True)
+				self.app.logger.info(f"Generated report ZIP file: {zip_path} with {len(included_files)} files")
+				self.app.logger.debug(f"Files included: {included_files}")
+				
+				return send_file(
+					zip_path, 
+					mimetype='application/zip', 
+					download_name=zip_filename, 
+					as_attachment=True
+				)
 			
 			except Exception as e:
 				self.app.logger.error(f"Error creating report ZIP: {e}")
-				return jsonify({'error': 'Failed to create report package'}), 500
+				return jsonify({
+					'error': f'Failed to create report package: {str(e)}',
+					'report_id': report_id
+				}), 500
 
 		@self.app.route('/api/reports/<report_id>/view', methods=['GET'])
 		@conditional_login_required
 		@conditional_verified_required
 		def view_report(report_id):
 			"""View a specific report file."""
+			if not report_id:
+				self.app.logger.error("Missing report ID in view request")
+				return jsonify({'error': 'Report ID is required'}), 400
+				
 			username = current_user.username
-			report_dir = os.path.join('/data/SWATGenXApp/Users', username,"Reports" ,report_id)
+			report_dir = os.path.join('/data/SWATGenXApp/Users', username, "Reports", report_id)
+			
+			self.app.logger.info(f"Attempting to view report: {report_dir}")
 			
 			if not os.path.exists(report_dir) or not os.path.isdir(report_dir):
 				self.app.logger.error(f"Report directory not found: {report_dir}")
-				return jsonify({'error': 'Report not found'}), 404
+				return jsonify({'error': f'Report with ID {report_id} not found'}), 404
+			
+			 # First check for index.html in the root directory
+			index_path = os.path.join(report_dir, 'index.html')
+			if os.path.exists(index_path):
+				self.app.logger.info(f"Serving main index.html: {index_path}")
+				return send_file(index_path)
+				
+			# Get the report file type requested
+			file_type = request.args.get('type', 'html').lower()
+			self.app.logger.info(f"Looking for report file of type: {file_type}")
 			
 			# Check if the metadata file exists
 			metadata_path = os.path.join(report_dir, 'metadata.json')
-			if not os.path.exists(metadata_path):
-				self.app.logger.error(f"Report metadata not found: {metadata_path}")
-				return jsonify({'error': 'Report metadata not found'}), 404
 			
-			try:
-				# Read metadata to get report paths
-				with open(metadata_path, 'r') as f:
-					metadata = json.load(f)
+			# First priority: look for specific file type requested
+			if file_type == 'html':
+				# Look for HTML files in the report directory
+				html_files = []
+				for root, dirs, files in os.walk(report_dir):
+					for file in files:
+						if file.endswith('.html'):
+							html_path = os.path.join(root, file)
+							html_files.append(html_path)
 				
-				# Get the report file type requested
-				file_type = request.args.get('type', 'pdf').lower()
-				
-				# Find a report file of the requested type
-				for report_path in metadata.get('reports', []):
-					if report_path.lower().endswith(f'.{file_type}'):
+				# If we found HTML files, serve the first one
+				if html_files:
+					self.app.logger.info(f"Found {len(html_files)} HTML files, serving: {html_files[0]}")
+					return send_file(html_files[0])
+			
+			# If we have metadata, look for specified format
+			if os.path.exists(metadata_path):
+				try:
+					# Read metadata to get report paths
+					with open(metadata_path, 'r') as f:
+						metadata = json.load(f)
+					
+					# Look for files matching the requested type
+					for report_path in metadata.get('reports', []):
+						if report_path.lower().endswith(f'.{file_type}'):
+							if os.path.exists(report_path):
+								self.app.logger.info(f"Serving report file: {report_path}")
+								return send_file(report_path)
+					
+					# If no matching reports, list what's available
+					available_formats = set()
+					for report_path in metadata.get('reports', []):
 						if os.path.exists(report_path):
-							self.app.logger.info(f"Serving report file: {report_path}")
-							return send_file(report_path)
-				
-				# If no matching report was found
-				self.app.logger.error(f"No {file_type} report found in {report_dir}")
-				return jsonify({'error': f'No {file_type} report found'}), 404
+							_, ext = os.path.splitext(report_path)
+							if ext.startswith('.'):
+								ext = ext[1:]  # Remove the dot
+								available_formats.add(ext)
+					
+					self.app.logger.info(f"Available formats: {available_formats}")
+					
+					# If HTML was requested but not found in metadata, scan the directory
+					if file_type == 'html':
+						for root, dirs, files in os.walk(report_dir):
+							for file in files:
+								if file.endswith('.html'):
+									html_path = os.path.join(root, file)
+									self.app.logger.info(f"Found HTML file outside metadata: {html_path}")
+									return send_file(html_path)
+					
+					# No files of requested type found
+					return jsonify({
+						'error': f'No {file_type} report found',
+						'available_formats': list(available_formats)
+					}), 404
+					
+				except Exception as e:
+					self.app.logger.error(f"Error reading metadata: {e}")
+					# Fall back to directory scan
+					pass
 			
-			except Exception as e:
-				self.app.logger.error(f"Error serving report file: {e}")
-				return jsonify({'error': 'Failed to serve report file'}), 500
+			# Final fallback: look for any files matching the requested type
+			matching_files = []
+			for root, dirs, files in os.walk(report_dir):
+				for file in files:
+					if file.endswith(f'.{file_type}'):
+						matching_files.append(os.path.join(root, file))
+			
+			if matching_files:
+				self.app.logger.info(f"Found {len(matching_files)} matching files by scan, serving: {matching_files[0]}")
+				return send_file(matching_files[0])
+			
+			# If we got here, nothing was found
+			self.app.logger.error(f"No {file_type} report found in {report_dir}")
+			return jsonify({'error': f'No {file_type} report found in directory'}), 404
+
+		@self.app.route('/api/reports/<report_id>/status', methods=['GET'])
+		@conditional_login_required
+		@conditional_verified_required
+		def get_report_status(report_id):
+			"""Check the status of a report."""
+			if not report_id:
+				self.app.logger.error("Missing report ID in status check request")
+				return jsonify({'error': 'Report ID is required'}), 400
+				
+			username = current_user.username
+			report_dir = os.path.join('/data/SWATGenXApp/Users', username, "Reports", report_id)
+			
+			self.app.logger.info(f"Checking status of report: {report_dir}")
+			
+			# Check if report directory exists
+			if not os.path.exists(report_dir) or not os.path.isdir(report_dir):
+				self.app.logger.error(f"Report directory not found: {report_dir}")
+				return jsonify({
+					'status': 'not_found',
+					'error': f'Report with ID {report_id} not found'
+				}), 404
+			
+			# Look for metadata or error files
+			metadata_path = os.path.join(report_dir, 'metadata.json')
+			error_path = os.path.join(report_dir, 'error.json')
+			
+			# Return appropriate response based on which files exist
+			if os.path.exists(metadata_path):
+				try:
+					with open(metadata_path, 'r') as f:
+						metadata = json.load(f)
+					
+					# Add the report ID if not included
+					if 'report_id' not in metadata:
+						metadata['report_id'] = report_id
+						
+					# Make sure status is included
+					if 'status' not in metadata:
+						metadata['status'] = 'completed'
+						
+					return jsonify(metadata)
+				except Exception as e:
+					self.app.logger.error(f"Error reading report metadata: {e}")
+					return jsonify({
+						'status': 'error',
+						'report_id': report_id,
+						'error': f'Error reading report metadata: {str(e)}'
+					}), 500
+			
+			elif os.path.exists(error_path):
+				try:
+					with open(error_path, 'r') as f:
+						error_info = json.load(f)
+					
+					# Add the report ID if not included
+					if 'report_id' not in error_info:
+						error_info['report_id'] = report_id
+						
+					# Make sure status is included
+					if 'status' not in error_info:
+						error_info['status'] = 'failed'
+						
+					return jsonify(error_info)
+				except Exception as e:
+					self.app.logger.error(f"Error reading report error info: {e}")
+					return jsonify({
+						'status': 'error',
+						'report_id': report_id,
+						'error': f'Error reading report error info: {str(e)}'
+					}), 500
+			
+			else:
+				# Report is still processing
+				return jsonify({
+					'status': 'processing',
+					'report_id': report_id,
+					'message': 'Report is still being generated'
+				})
