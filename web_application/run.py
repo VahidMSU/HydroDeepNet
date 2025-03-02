@@ -6,6 +6,8 @@ from celery_app import celery
 
 # Ensure system paths are properly set
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')  # Add SWATGenX to sys.path
+sys.path.append('/data/SWATGenXApp/codes/AI_agent')  # Add AI_agent to sys.path
+
 
 # Configure Matplotlib cache directory
 os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib-cache'
