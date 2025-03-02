@@ -1,0 +1,22 @@
+{
+  "RESOLUTION": 250,
+  "resolution": 250,
+  "start_year": 2010,
+  "end_year": 2020,
+  "bounding_box": [
+    -85.444332,
+    43.158148,
+    -84.239256,
+    44.164683
+  ],
+  "aggregation": "monthly",
+  "hist_start_year": 2000,
+  "hist_end_year": 2014,
+  "fut_start_year": 2045,
+  "fut_end_year": 2060,
+  "cc_model": "ACCESS-CM2",
+  "cc_ensemble": "r1i1p1f1",
+  "cc_scenario": "ssp245",
+  "use_synthetic_data_fallback": false,
+  "include_climate_change": true
+}
