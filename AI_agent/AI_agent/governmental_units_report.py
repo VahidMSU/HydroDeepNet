@@ -169,83 +169,97 @@ def create_governmental_map(data: Dict[str, gpd.GeoDataFrame],
     Returns:
         Matplotlib Figure object
     """
-    # Create figure
-    fig, ax = plt.subplots(figsize=figsize)
-    
-    # Sort layers by plot order
-    layer_items = sorted(
-        [(name, gdf) for name, gdf in data.items() if name in GOVERNMENTAL_LAYERS],
-        key=lambda x: GOVERNMENTAL_LAYERS[x[0]]['plot_order']
-    )
-    
-    # Plot each layer
-    for layer_name, gdf in layer_items:
-        layer_info = GOVERNMENTAL_LAYERS[layer_name]
-        color = layer_info['plot_color']
+    try:
+        # Explicitly close any existing figures to prevent mix-ups
+        plt.close('all')
         
-        # Set edgecolor and facecolor based on the plot_color
-        edgecolor = 'black'
-        facecolor = color if color != 'none' else None
-        alpha = 0.6 if facecolor else None
+        # Create figure
+        fig, ax = plt.subplots(figsize=figsize)
         
-        # Plot the layer
-        gdf.plot(
-            ax=ax,
-            edgecolor=edgecolor,
-            facecolor=facecolor,
-            alpha=alpha,
-            linewidth=1 if layer_name == 'GU_StateOrTerritory' else 0.5
+        # Sort layers by plot order
+        layer_items = sorted(
+            [(name, gdf) for name, gdf in data.items() if name in GOVERNMENTAL_LAYERS],
+            key=lambda x: GOVERNMENTAL_LAYERS[x[0]]['plot_order']
         )
-    
-    # Add basemap if requested
-    if add_basemap:
-        try:
-            ctx.add_basemap(
-                ax, 
-                source=ctx.providers.OpenStreetMap.Mapnik,
-                zoom=10
-            )
-        except Exception as e:
-            logger.warning(f"Could not add basemap: {e}")
-    
-    # Add title and labels
-    layers_shown = [GOVERNMENTAL_LAYERS[name]['description'] for name, _ in layer_items]
-    ax.set_title(f"US Governmental Units\n({', '.join(layers_shown)})", fontsize=14)
-    
-    # Remove axis labels and ticks for map
-    ax.set_axis_off()
-    
-    # Add legend if multiple layers
-    if len(layer_items) > 1:
-        from matplotlib.patches import Patch
-        legend_elements = []
         
-        for layer_name, _ in layer_items:
+        # Plot each layer
+        for layer_name, gdf in layer_items:
             layer_info = GOVERNMENTAL_LAYERS[layer_name]
             color = layer_info['plot_color']
             
-            if color == 'none':
-                # Special case for outline-only layers
-                legend_elements.append(
-                    Patch(edgecolor='black', facecolor='white', label=layer_info['description'])
-                )
-            else:
-                legend_elements.append(
-                    Patch(facecolor=color, edgecolor='black', alpha=0.6, label=layer_info['description'])
-                )
+            # Set edgecolor and facecolor based on the plot_color
+            edgecolor = 'black'
+            facecolor = color if color != 'none' else None
+            alpha = 0.6 if facecolor else None
+            
+            # Plot the layer
+            gdf.plot(
+                ax=ax,
+                edgecolor=edgecolor,
+                facecolor=facecolor,
+                alpha=alpha,
+                linewidth=1 if layer_name == 'GU_StateOrTerritory' else 0.5
+            )
         
-        ax.legend(handles=legend_elements, loc='lower right', fontsize=10)
-    
-    # Tight layout
-    plt.tight_layout()
-    
-    # Save if output path provided
-    if output_path:
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        plt.savefig(output_path, dpi=300, bbox_inches='tight')
-        logger.info(f"Map saved to {output_path}")
-    
-    return fig
+        # Add basemap if requested
+        if add_basemap:
+            try:
+                ctx.add_basemap(
+                    ax, 
+                    source=ctx.providers.OpenStreetMap.Mapnik,
+                    zoom=10
+                )
+            except Exception as e:
+                logger.warning(f"Could not add basemap: {e}")
+        
+        # Add title and labels
+        layers_shown = [GOVERNMENTAL_LAYERS[name]['description'] for name, _ in layer_items]
+        ax.set_title(f"US Governmental Units\n({', '.join(layers_shown)})", fontsize=14)
+        
+        # Remove axis labels and ticks for map
+        ax.set_axis_off()
+        
+        # Add legend if multiple layers
+        if len(layer_items) > 1:
+            from matplotlib.patches import Patch
+            legend_elements = []
+            
+            for layer_name, _ in layer_items:
+                layer_info = GOVERNMENTAL_LAYERS[layer_name]
+                color = layer_info['plot_color']
+                
+                if color == 'none':
+                    # Special case for outline-only layers
+                    legend_elements.append(
+                        Patch(edgecolor='black', facecolor='white', label=layer_info['description'])
+                    )
+                else:
+                    legend_elements.append(
+                        Patch(facecolor=color, edgecolor='black', alpha=0.6, label=layer_info['description'])
+                    )
+            
+            ax.legend(handles=legend_elements, loc='lower right', fontsize=10)
+        
+        # Tight layout
+        plt.tight_layout()
+        
+        # Save if output path provided
+        if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            # Make filename unique to avoid collisions
+            unique_path = output_path
+            plt.savefig(unique_path, dpi=300, bbox_inches='tight')
+            logger.info(f"Map saved to {unique_path}")
+            
+            # Explicitly close the figure after saving
+            plt.close(fig)
+        
+        return fig
+        
+    except Exception as e:
+        logger.error(f"Error creating governmental map: {e}", exc_info=True)
+        plt.close('all')  # Make sure to clean up
+        return None
 
 def extract_unit_statistics(data: Dict[str, gpd.GeoDataFrame]) -> Dict[str, Dict[str, Any]]:
     """
@@ -355,8 +369,21 @@ def generate_governmental_report(data: Dict[str, gpd.GeoDataFrame],
     report_path = os.path.join(output_dir, "governmental_units_report.md")
     map_path = os.path.join(output_dir, "governmental_units_map.png")
     
-    # Generate map
-    create_governmental_map(data, output_path=map_path)
+    try:
+        # Generate map with explicit figure management
+        plt.close('all')  # Close any existing figures
+        create_governmental_map(data, output_path=map_path)
+        plt.close('all')  # Close again to ensure cleanup
+        
+        # Check if the map was created
+        if not os.path.exists(map_path):
+            logger.error(f"Failed to create governmental units map at {map_path}")
+            
+        # Rest of the report generation
+        # ...existing code...
+    except Exception as e:
+        logger.error(f"Error in map generation: {e}")
+        plt.close('all')  # Ensure cleanup on error
     
     # Open report file for writing
     with open(report_path, "w") as f:

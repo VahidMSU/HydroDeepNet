@@ -343,6 +343,8 @@ def generate_climate_change_report(config: Dict[str, Any], output_dir: str) -> O
 
 # Add import for HTML conversion
 from AI_agent.html_report_converter import convert_markdown_to_html, create_report_index
+# Add import for plot utilities
+from AI_agent.plot_utils import close_all_figures
 
 def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, parallel: bool = True) -> List[str]:
     """
@@ -399,47 +401,52 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
             'func': generate_climate_change_report,
         })
     
-    if parallel:
-        # Generate reports in parallel
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            # Submit all report generation tasks
-            future_to_report = {
-                executor.submit(report_config['func'], config, report_config['dir']): report_config
-                for report_config in report_configs
-            }
-            
-            # Collect results as they complete
-            for future in concurrent.futures.as_completed(future_to_report):
-                report_config = future_to_report[future]
-                try:
-                    report_path = future.result()
-                    if report_path:
-                        logger.info(f"{report_config['name']} report generation completed")
-                        reports.append(report_path)
-                        
-                        # Convert to HTML if it's a Markdown file
-                        if report_path.endswith('.md'):
-                            html_path = convert_markdown_to_html(report_path)
-                            if html_path:
-                                html_reports.append(html_path)
-                                logger.info(f"Converted to HTML: {html_path}")
-                    else:
-                        logger.warning(f"{report_config['name']} report generation failed")
-                except Exception as exc:
-                    logger.error(f"{report_config['name']} report generation raised an exception: {exc}")
-    else:
-        # Generate reports sequentially
-        for report_config in report_configs:
-            report_path = report_config['func'](config, report_config['dir'])
-            if report_path:
-                reports.append(report_path)
-                
-                # Convert to HTML if it's a Markdown file
-                if report_path.endswith('.md'):
-                    html_path = convert_markdown_to_html(report_path)
-                    if html_path:
-                        html_reports.append(html_path)
-                        logger.info(f"Converted to HTML: {html_path}")
+    try:
+        if parallel:
+            # Generate reports in parallel, but make sure we isolate each report type
+            # to prevent figure interference
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                # Process one report type at a time to prevent figure conflicts
+                for report_config in report_configs:
+                    future = executor.submit(report_config['func'], config, report_config['dir'])
+                    try:
+                        report_path = future.result()
+                        if report_path:
+                            logger.info(f"{report_config['name']} report generation completed")
+                            reports.append(report_path)
+                            
+                            # Make sure all figures are closed before converting to HTML
+                            close_all_figures()
+                            
+                            # Convert to HTML if it's a Markdown file
+                            if report_path.endswith('.md'):
+                                html_path = convert_markdown_to_html(report_path)
+                                if html_path:
+                                    html_reports.append(html_path)
+                                    logger.info(f"Converted to HTML: {html_path}")
+                        else:
+                            logger.warning(f"{report_config['name']} report generation failed")
+                    except Exception as exc:
+                        logger.error(f"{report_config['name']} report generation raised an exception: {exc}")
+                    
+                    # Ensure all figures are closed after each report type
+                    close_all_figures()
+        else:
+            # Generate reports sequentially
+            for report_config in report_configs:
+                report_path = report_config['func'](config, report_config['dir'])
+                if report_path:
+                    reports.append(report_path)
+                    
+                    # Convert to HTML if it's a Markdown file
+                    if report_path.endswith('.md'):
+                        html_path = convert_markdown_to_html(report_path)
+                        if html_path:
+                            html_reports.append(html_path)
+                            logger.info(f"Converted to HTML: {html_path}")
+    finally:
+        # Ensure all matplotlib figures are closed
+        close_all_figures()
     
     # Create an index of all HTML reports
     if html_reports:
@@ -521,33 +528,33 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
     except Exception as e:
         logger.warning(f"Could not save config to file: {e}")
     
-    # Continue with report generation
-    if report_type == 'all':
-        # Generate all reports using parallel processing if enabled
-        reports = generate_comprehensive_report(config, output_dir, parallel)
-    else:
-        # Generate a specific report
-        report_dir = os.path.join(output_dir, report_type)
-        
-        # Map report type to its generator function
-        report_funcs = {
-            'prism': generate_prism_report,
-            'modis': generate_modis_report,
-            'cdl': generate_cdl_report,
-            'groundwater': generate_groundwater_report,
-            'gov_units': generate_governmental_units_report,
-            'climate_change': generate_climate_change_report
-        }
-        
-        if report_type in report_funcs:
-            report_path = report_funcs[report_type](config, report_dir)
-            if report_path:
-                reports.append(report_path)
-        else:
-            logger.error(f"Unknown report type: {report_type}")
-    
-    # After generating reports, convert them to HTML
     try:
+        # Continue with report generation
+        if report_type == 'all':
+            # Generate all reports using parallel processing if enabled
+            reports = generate_comprehensive_report(config, output_dir, parallel)
+        else:
+            # Generate a specific report
+            report_dir = os.path.join(output_dir, report_type)
+            
+            # Map report type to its generator function
+            report_funcs = {
+                'prism': generate_prism_report,
+                'modis': generate_modis_report,
+                'cdl': generate_cdl_report,
+                'groundwater': generate_groundwater_report,
+                'gov_units': generate_governmental_units_report,
+                'climate_change': generate_climate_change_report
+            }
+            
+            if report_type in report_funcs:
+                report_path = report_funcs[report_type](config, report_dir)
+                if report_path:
+                    reports.append(report_path)
+            else:
+                logger.error(f"Unknown report type: {report_type}")
+        
+        # After generating reports, convert them to HTML
         logger.info("Converting Markdown reports to HTML format...")
         html_reports = []
         
@@ -568,7 +575,10 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
                 
             logger.info(f"Converted {len(html_reports)} reports to HTML format")
     except Exception as e:
-        logger.error(f"Error converting reports to HTML: {e}")
+        logger.error(f"Error in report generation: {e}")
+    finally:
+        # Always close all matplotlib figures to prevent memory leaks
+        close_all_figures()
     
     return reports
 
@@ -650,13 +660,21 @@ def generate_reports():
     else:
         logger.info("Using sequential processing for report generation")
     
-    # Run report generation
-    reports = run_report_generation(args.type, config, args.output, parallel=use_parallel)
-    
-    logger.info(f"Report generation completed. Generated {len(reports)} reports in {args.output}")
+    try:
+        # Run report generation
+        reports = run_report_generation(args.type, config, args.output, parallel=use_parallel)
+        
+        logger.info(f"Report generation completed. Generated {len(reports)} reports in {args.output}")
+    finally:
+        # Always close all matplotlib figures
+        close_all_figures()
 
 if __name__ == "__main__":
     import time
     start_time = time.time()
-    generate_reports()
+    try:
+        generate_reports()
+    finally:
+        # Ensure all matplotlib figures are closed
+        close_all_figures()
     print(f"Elapsed time: {time.time() - start_time:.2f} seconds")

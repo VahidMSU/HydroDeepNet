@@ -32,6 +32,9 @@ from AI_agent.interactive_agent import interactive_session
 from AI_agent.report_generator import generate_reports
 import os
 from app.tasks import create_model_task
+from datetime import datetime
+import threading
+import zipfile
 
 
 
@@ -665,7 +668,7 @@ class AppManager:
 				if not variable or not subvariable:
 					message = "Variable and Subvariable are required."
 					self.app.logger.error(message)
-					return jsonify({"title": "HydroGeoDataset", "message": message}), 400
+					return jsonify({"error": message}), 400
 
 				# Extract coordinates
 				latitude = data_payload.get('latitude')
@@ -675,27 +678,41 @@ class AppManager:
 				min_longitude = data_payload.get('min_longitude')
 				max_longitude = data_payload.get('max_longitude')
 
-				# Extract polygon if provided
+				# Extract polygon if provided and process it
 				polygon_coordinates = data_payload.get('polygon_coordinates')
 
 				if polygon_coordinates:
 					try:
-						vertices = json.loads(polygon_coordinates)
+						# Parse the polygon coordinates - handle both string and direct JSON
+						if isinstance(polygon_coordinates, str):
+							vertices = json.loads(polygon_coordinates)
+						else:
+							vertices = polygon_coordinates
+							
 						self.app.logger.info(f"Received polygon vertices: {vertices}")
 
-						# Convert polygon to bounding box
-						latitudes = [vertex['latitude'] for vertex in vertices]
-						longitudes = [vertex['longitude'] for vertex in vertices]
-						
-						min_latitude, max_latitude = min(latitudes), max(latitudes)
-						min_longitude, max_longitude = min(longitudes), max(longitudes)
-						
-						self.app.logger.info(f"Polygon bounds: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
-						latitude = longitude = None  # Reset single point
+						# Convert polygon to bounding box if needed
+						if isinstance(vertices, list) and vertices:
+							# Check if vertices is a list of coordinate objects or a list of coordinate pairs
+							if isinstance(vertices[0], dict) and 'latitude' in vertices[0] and 'longitude' in vertices[0]:
+								# Format: [{'latitude': x, 'longitude': y}, ...]
+								latitudes = [float(vertex['latitude']) for vertex in vertices]
+								longitudes = [float(vertex['longitude']) for vertex in vertices]
+							elif isinstance(vertices[0], (list, tuple)) and len(vertices[0]) >= 2:
+								# Format: [[lon, lat], ...]
+								latitudes = [float(vertex[1]) for vertex in vertices]
+								longitudes = [float(vertex[0]) for vertex in vertices]
+							else:
+								raise ValueError(f"Unrecognized vertices format: {vertices[0]}")
+								
+							min_latitude, max_latitude = min(latitudes), max(latitudes)
+							min_longitude, max_longitude = min(longitudes), max(longitudes)
+							
+							self.app.logger.info(f"Polygon bounds: ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
 
 					except Exception as e:
 						self.app.logger.error(f"Error parsing polygon coordinates: {e}")
-						return jsonify({"title": "HydroGeoDataset", "message": "Invalid polygon coordinates."}), 400
+						return jsonify({"error": f"Invalid polygon coordinates: {e}"}), 400
 
 				# Validate input (must have either a point or a bounding box)
 				if latitude and longitude:
@@ -707,10 +724,10 @@ class AppManager:
 							address=f"{variable}/{subvariable}"
 						)
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
-						return jsonify({"title": "HydroGeoDataset", "message": "Data fetched successfully", "data": data})
+						return jsonify({"message": "Data fetched successfully", "data": data})
 					except Exception as e:
 						self.app.logger.error(f"Error fetching data: {e}")
-						return jsonify({"title": "HydroGeoDataset", "message": f"Error fetching data: {e}"}), 500
+						return jsonify({"error": f"Error fetching data: {e}"}), 500
 
 				elif all([min_latitude, max_latitude, min_longitude, max_longitude]):
 					self.app.logger.info(f"Fetching data for {variable}/{subvariable} in range ({min_latitude}, {max_latitude}), ({min_longitude}, {max_longitude})")
@@ -721,15 +738,15 @@ class AppManager:
 							address=f"{variable}/{subvariable}"
 						)
 						data = {key: float(value) if isinstance(value, np.float32) else value for key, value in raw_data.items()}
-						return jsonify({"title": "HydroGeoDataset", "message": "Data fetched successfully", "data": data})
+						return jsonify({"message": "Data fetched successfully", "data": data})
 					except Exception as e:
 						self.app.logger.error(f"Error fetching data: {e}")
-						return jsonify({"title": "HydroGeoDataset", "message": f"Error fetching data: {e}"}), 500
+						return jsonify({"error": f"Error fetching data: {e}"}), 500
 
 				else:
 					message = f"Please provide either a point (latitude/longitude) or a range (min/max lat/lon)."
 					self.app.logger.error(message)
-					return jsonify({"title": "HydroGeoDataset", "message": message}), 400
+					return jsonify({"error": message}), 400
 
 		@self.app.route('/get_subvariables', methods=['POST'])
 		@conditional_login_required
@@ -782,3 +799,263 @@ class AppManager:
 			except Exception as e:
 				self.app.logger.error(f"Error searching for site: {e}")
 				return jsonify({"error": "An error occurred during the search"}), 500
+
+		@self.app.route('/api/generate_report', methods=['POST'])
+		@conditional_login_required
+		@conditional_verified_required
+		def generate_report():
+			"""Generate a report based on user-selected area and parameters."""
+			self.app.logger.info("Report generation request received")
+			
+			try:
+				data = request.get_json()
+				if not data:
+					return jsonify({"error": "No data received"}), 400
+				
+				# Extract and validate bounding box coordinates
+				min_latitude = float(data.get('min_latitude'))
+				max_latitude = float(data.get('max_latitude'))
+				min_longitude = float(data.get('min_longitude'))
+				max_longitude = float(data.get('max_longitude'))
+				
+				if not all([min_latitude, max_latitude, min_longitude, max_longitude]):
+					return jsonify({"error": "Bounding box coordinates are required"}), 400
+				
+				# Log the coordinates for debugging
+				self.app.logger.info(f"Coordinates: {min_longitude}, {min_latitude}, {max_longitude}, {max_latitude}")
+				
+				# Verify coordinate validity
+				if not (-90 <= min_latitude <= 90 and -90 <= max_latitude <= 90 and 
+						-180 <= min_longitude <= 180 and -180 <= max_longitude <= 180):
+					return jsonify({"error": "Invalid coordinate values"}), 400
+				
+				# Check if we're dealing with polygon coordinates and process them properly
+				polygon_coordinates = data.get('polygon_coordinates')
+				geometry_type = data.get('geometry_type', 'extent')
+				
+				if polygon_coordinates:
+					try:
+						# Try to parse the polygon coordinates if it's a string
+						if isinstance(polygon_coordinates, str):
+							coords = json.loads(polygon_coordinates)
+						else:
+							coords = polygon_coordinates
+							
+						self.app.logger.info(f"Using polygon with {len(coords)} vertices")
+						# Store the processed coordinates for later use if needed
+						processed_polygon = coords
+					except Exception as e:
+						self.app.logger.error(f"Error parsing polygon coordinates: {e}")
+						return jsonify({"error": f"Invalid polygon format: {e}"}), 400
+				
+				# Extract report parameters
+				report_type = data.get('report_type', 'all')
+				start_year = int(data.get('start_year', 2010))
+				end_year = int(data.get('end_year', 2020))
+				resolution = int(data.get('resolution', 250))
+				aggregation = data.get('aggregation', 'monthly')
+				include_climate_change = data.get('include_climate_change', False)
+				
+				# Create output directory for the report
+				username = current_user.username
+				timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+				output_dir = os.path.join('/data/SWATGenXApp/Users', username, "Reports", timestamp)
+				os.makedirs(output_dir, exist_ok=True)
+				
+				# Create configuration for report generator
+				config = {
+					'RESOLUTION': resolution,
+					'resolution': resolution,
+					'start_year': start_year,
+					'end_year': end_year,
+					'bounding_box': [min_longitude, min_latitude, max_longitude, max_latitude],
+					'aggregation': aggregation,
+					'include_climate_change': include_climate_change,
+					'geometry_type': geometry_type
+				}
+				
+				# Add polygon if available
+				if polygon_coordinates:
+					config['polygon_coordinates'] = processed_polygon
+				
+				# Log the configuration
+				self.app.logger.info(f"Report configuration: {config}")
+				
+				# Generate the report in a background thread to prevent blocking
+				def generate_report_task():
+					try:
+						# Import the report generator function
+						from AI_agent.report_generator import run_report_generation
+						
+						reports = run_report_generation(report_type, config, output_dir, parallel=True)
+						# Save report metadata to database or file for later retrieval
+						report_metadata = {
+							'username': username,
+							'timestamp': timestamp,
+							'report_type': report_type,
+							'bounding_box': [min_longitude, min_latitude, max_longitude, max_latitude],
+							'output_dir': output_dir,
+							'reports': reports,
+							'status': 'completed' if reports else 'failed'
+						}
+						
+						# Save metadata to file
+						with open(os.path.join(output_dir, 'metadata.json'), 'w') as f:
+							json.dump(report_metadata, f, indent=2)
+						
+						self.app.logger.info(f"Report generation completed: {output_dir}")
+					except Exception as e:
+						self.app.logger.error(f"Error generating report: {e}")
+						# Save error information
+						error_info = {
+							'username': username,
+							'timestamp': timestamp,
+							'error': str(e),
+							'status': 'failed'
+						}
+						with open(os.path.join(output_dir, 'error.json'), 'w') as f:
+							json.dump(error_info, f, indent=2)
+				
+				# Start the background task
+				thread = threading.Thread(target=generate_report_task)
+				thread.daemon = True
+				thread.start()
+
+					
+				return jsonify({
+					'status': 'success',
+					'message': 'Report generation started',
+					'report_id': timestamp,
+					'output_dir': output_dir
+				})
+			
+		
+			except Exception as e:
+				self.app.logger.error(f"Error initiating report generation: {e}")
+				return jsonify({"error": f"Failed to start report generation: {str(e)}"}), 500
+
+		@self.app.route('/api/get_reports', methods=['GET'])
+		@conditional_login_required
+		@conditional_verified_required
+		def get_reports():
+			"""Get a list of reports generated by the user."""
+			username = current_user.username
+			reports_dir = os.path.join('/data/SWATGenXApp/Users', username, "Reports")
+			
+			if not os.path.exists(reports_dir):
+				return jsonify({"reports": []})
+			
+			reports = []
+			for report_id in os.listdir(reports_dir):
+				report_path = os.path.join(reports_dir, report_id)
+				if os.path.isdir(report_path):
+					metadata_path = os.path.join(report_path, 'metadata.json')
+					error_path = os.path.join(report_path, 'error.json')
+					
+					if os.path.exists(metadata_path):
+						with open(metadata_path, 'r') as f:
+							metadata = json.load(f)
+						reports.append(metadata)
+					elif os.path.exists(error_path):
+						with open(error_path, 'r') as f:
+							error_info = json.load(f)
+						reports.append(error_info)
+					else:
+						# Report is still processing or was interrupted
+						reports.append({
+							'report_id': report_id,
+							'status': 'processing',
+							'timestamp': report_id
+						})
+			
+			# Sort by timestamp (newest first)
+			reports.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+			return jsonify({"reports": reports})
+
+		@self.app.route('/api/reports/<report_id>/download', methods=['GET'])
+		@conditional_login_required
+		@conditional_verified_required
+		def download_report(report_id):
+			"""Download a generated report."""
+			username = current_user.username
+			report_dir = os.path.join('/data/SWATGenXApp/Users', username,"Reports" , report_id)
+			
+			if not os.path.exists(report_dir) or not os.path.isdir(report_dir):
+				self.app.logger.error(f"Report directory not found: {report_dir}")
+				return jsonify({'error': 'Report not found'}), 404
+			
+			# Check if the metadata file exists
+			metadata_path = os.path.join(report_dir, 'metadata.json')
+			if not os.path.exists(metadata_path):
+				self.app.logger.error(f"Report metadata not found: {metadata_path}")
+				return jsonify({'error': 'Report metadata not found'}), 404
+			
+			try:
+				# Read metadata to get report paths
+				with open(metadata_path, 'r') as f:
+					metadata = json.load(f)
+				
+				# Create a ZIP file with all report files
+				zip_filename = f"{report_id}.zip"
+				zip_path = os.path.join(tempfile.gettempdir(), zip_filename)
+				
+				# Create a new ZIP file with all the reports
+				with zipfile.ZipFile(zip_path, 'w') as report_zip:
+					# Add metadata file
+					report_zip.write(metadata_path, os.path.basename(metadata_path))
+					
+					# Add all report files
+					for report_path in metadata.get('reports', []):
+						if os.path.exists(report_path):
+							# Add file to ZIP with relative path from report directory
+							arcname = os.path.relpath(report_path, report_dir)
+							report_zip.write(report_path, arcname)
+				
+				self.app.logger.info(f"Generated report ZIP file: {zip_path}")
+				return send_file(zip_path, mimetype='application/zip', 
+							   download_name=f"{report_id}_reports.zip", as_attachment=True)
+			
+			except Exception as e:
+				self.app.logger.error(f"Error creating report ZIP: {e}")
+				return jsonify({'error': 'Failed to create report package'}), 500
+
+		@self.app.route('/api/reports/<report_id>/view', methods=['GET'])
+		@conditional_login_required
+		@conditional_verified_required
+		def view_report(report_id):
+			"""View a specific report file."""
+			username = current_user.username
+			report_dir = os.path.join('/data/SWATGenXApp/Users', username,"Reports" ,report_id)
+			
+			if not os.path.exists(report_dir) or not os.path.isdir(report_dir):
+				self.app.logger.error(f"Report directory not found: {report_dir}")
+				return jsonify({'error': 'Report not found'}), 404
+			
+			# Check if the metadata file exists
+			metadata_path = os.path.join(report_dir, 'metadata.json')
+			if not os.path.exists(metadata_path):
+				self.app.logger.error(f"Report metadata not found: {metadata_path}")
+				return jsonify({'error': 'Report metadata not found'}), 404
+			
+			try:
+				# Read metadata to get report paths
+				with open(metadata_path, 'r') as f:
+					metadata = json.load(f)
+				
+				# Get the report file type requested
+				file_type = request.args.get('type', 'pdf').lower()
+				
+				# Find a report file of the requested type
+				for report_path in metadata.get('reports', []):
+					if report_path.lower().endswith(f'.{file_type}'):
+						if os.path.exists(report_path):
+							self.app.logger.info(f"Serving report file: {report_path}")
+							return send_file(report_path)
+				
+				# If no matching report was found
+				self.app.logger.error(f"No {file_type} report found in {report_dir}")
+				return jsonify({'error': f'No {file_type} report found'}), 404
+			
+			except Exception as e:
+				self.app.logger.error(f"Error serving report file: {e}")
+				return jsonify({'error': 'Failed to serve report file'}), 500
