@@ -1,5 +1,4 @@
-from AI_agent.config import AgentConfig
-
+from config import AgentConfig
 
 
 class ModelSelector:

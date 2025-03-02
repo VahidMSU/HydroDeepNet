@@ -20,8 +20,8 @@ try:
     from AI_agent.config import AgentConfig
     from AI_agent.loca2_dataset import DataImporter, list_of_cc_models
 except ImportError:
-    from config import AgentConfig
-    from loca2_dataset import DataImporter, list_of_cc_models
+    from .config import AgentConfig
+    from .loca2_dataset import DataImporter, list_of_cc_models
 
 # Configure logger
 logger = logging.getLogger(__name__)

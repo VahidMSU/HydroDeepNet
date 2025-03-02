@@ -17,6 +17,7 @@ from flask_socketio import SocketIO, emit
 from redis import Redis, ConnectionError
 # Ensure the system path includes SWATGenX
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
+sys.path.append('/data/SWATGenXApp/codes/AI_agent') 
 
 def create_app():
     """

@@ -3,7 +3,7 @@ import json
 import time
 import hashlib
 import pickle
-from AI_agent.debug_utils import logger
+from debug_utils import logger
 
 class DataCache:
     """

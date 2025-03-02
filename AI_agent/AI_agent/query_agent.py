@@ -1,5 +1,5 @@
 from conversation_handler import chat_with_deepseek
-from AI_agent.base_agent import BaseAgent
+from base_agent import BaseAgent
 import json
 import re
 
