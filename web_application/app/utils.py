@@ -1,5 +1,6 @@
 import sys
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
+sys.path.append('/data/SWATGenXApp/codes/AI_agent')
 from SWATGenX.SWATGenXCommand import SWATGenXCommand
 from SWATGenX.integrate_streamflow_data import integrate_streamflow_data
 from SWATGenX.find_station_region import find_station_region

@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 import sys
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
+sys.path.append('/data/SWATGenXApp/codes/AI_agent')
 
 from SWATGenX.SWATGenXLogging import LoggerSetup
 

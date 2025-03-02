@@ -2,8 +2,8 @@ import os
 import geopandas as gpd
 import pandas as pd
 import json
-from AI_agent.base_agent import BaseAgent
-from AI_agent.get_county_bbox import get_bounding_box
+from base_agent import BaseAgent
+from get_county_bbox import get_bounding_box
 from conversation_handler import chat_with_deepseek
 
 

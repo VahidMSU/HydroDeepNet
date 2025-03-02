@@ -1,11 +1,11 @@
 from conversation_handler import chat_with_deepseek
-from AI_agent.get_county_bbox import get_bounding_box
-from AI_agent.prism import PRISM_Dataset
-from AI_agent.AI_agent.cdl import cdl_trends
-from AI_agent.base_agent import BaseAgent
+from get_county_bbox import get_bounding_box
+from prism import PRISM_Dataset
+#from cdl import cdl_trends
+from base_agent import BaseAgent
 from query_parsing_agent import QueryParsingAgent
-from AI_agent.data_cache import get_cached_data, cache_data
-from AI_agent.debug_utils import timed_function, log_error
+from data_cache import get_cached_data, cache_data
+from debug_utils import timed_function, log_error
 import json
 import numpy as np
 
