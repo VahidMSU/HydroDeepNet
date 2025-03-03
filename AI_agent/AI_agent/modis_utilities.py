@@ -556,12 +556,15 @@ def create_modis_seasonal_plot(data: np.ndarray, product_name: str, start_year: 
         season_order = ['Winter', 'Spring', 'Summer', 'Fall']
         season_colors = ['#74add1', '#80cdc1', '#f46d43', '#dfc27d']
         
+        # FIX: Update boxplot to use hue instead of palette and add legend=False
         sns.boxplot(
             x='season',
             y='value',
+            hue='season',  # Use season as hue parameter instead of palette
             data=df,
             order=season_order,
             palette=season_colors,
+            legend=False,  # Suppress the legend since it's redundant with x-axis
             ax=ax2
         )
         
