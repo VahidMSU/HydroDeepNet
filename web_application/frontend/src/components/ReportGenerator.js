@@ -215,7 +215,7 @@ const ReportGenerator = ({ formData }) => {
             setError(`Error downloading report: ${err.message}`);
           });
       } else if (action === 'view') {
-        // Use 'html' instead of 'pdf' as the default view format
+        // View the main index.html page - no need to specify a subpath
         viewReport(reportId, 'html')
           .then((success) => {
             if (!success) {

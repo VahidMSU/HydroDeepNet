@@ -1,7 +1,6 @@
 ##/data/SWATGenXApp/codes/web_application/app/routes.py
-from flask import (url_for, request,
-				jsonify, current_app, session,send_file,
-				send_from_directory)
+from flask import (url_for, request, jsonify, current_app, session, send_file,
+                   send_from_directory, redirect)
 from app.sftp_manager import create_sftp_user  # Import the SFTP user creation function
 from flask_login import (login_user, logout_user,
 						current_user)
@@ -1040,111 +1039,96 @@ class AppManager:
 				}), 500
 
 		@self.app.route('/api/reports/<report_id>/view', methods=['GET'])
+		@self.app.route('/api/reports/<report_id>/view/<path:subpath>', methods=['GET'])
 		@conditional_login_required
 		@conditional_verified_required
-		def view_report(report_id):
-			"""View a specific report file."""
+		def view_report(report_id, subpath=None):
+			"""View a specific report file or the default report page."""
+			# Add extensive debugging
+			self.app.logger.info(f"VIEW REPORT CALLED - ID: {report_id}, Subpath: {subpath}")
+			self.app.logger.info(f"Request URL: {request.url}")
+			self.app.logger.info(f"Request Path: {request.path}")
+			
 			if not report_id:
 				self.app.logger.error("Missing report ID in view request")
 				return jsonify({'error': 'Report ID is required'}), 400
-				
+					
 			username = current_user.username
 			report_dir = os.path.join('/data/SWATGenXApp/Users', username, "Reports", report_id)
 			
-			self.app.logger.info(f"Attempting to view report: {report_dir}")
+			self.app.logger.info(f"Report directory: {report_dir}")
 			
 			if not os.path.exists(report_dir) or not os.path.isdir(report_dir):
 				self.app.logger.error(f"Report directory not found: {report_dir}")
 				return jsonify({'error': f'Report with ID {report_id} not found'}), 404
 			
-			 # First check for index.html in the root directory
+				# Debug listing of directory contents to help troubleshoot
+			try:
+				self.app.logger.info(f"Listing report directory contents:")
+				for root, dirs, files in os.walk(report_dir):
+					rel_root = os.path.relpath(root, report_dir)
+					self.app.logger.info(f"Directory: {rel_root}")
+					for file in files:
+						self.app.logger.info(f"  File: {os.path.join(rel_root, file)}")
+			except Exception as e:
+				self.app.logger.error(f"Error listing directory contents: {e}")
+			
+			# If a specific subpath is requested, serve that file directly
+			if subpath:
+				# Improve path normalization to handle all cases
+				# Remove any leading slashes and normalize path
+				clean_subpath = subpath.lstrip('/')
+				clean_subpath = os.path.normpath(clean_subpath)
+				file_path = os.path.join(report_dir, clean_subpath)
+				
+				self.app.logger.info(f"Requested subpath: {subpath}")
+				self.app.logger.info(f"Normalized subpath: {clean_subpath}")
+				self.app.logger.info(f"Full file path: {file_path}")
+				
+				# Verify the path is still within the report directory to prevent directory traversal
+				if not os.path.abspath(file_path).startswith(os.path.abspath(report_dir)):
+					self.app.logger.error(f"Attempted directory traversal: {file_path}")
+					return jsonify({'error': 'Access denied'}), 403
+				
+				# Special handling for HTML files - we need to check if they exist
+				# and properly set MIME type for browser rendering
+				if os.path.exists(file_path) and os.path.isfile(file_path):
+					self.app.logger.info(f"File exists, serving: {file_path}")
+					file_dir, file_name = os.path.split(file_path)
+					
+					# Determine content type based on file extension
+					_, ext = os.path.splitext(file_name)
+					content_type = None
+					if ext.lower() == '.html':
+						content_type = 'text/html'
+					elif ext.lower() == '.css':
+						content_type = 'text/css'
+					elif ext.lower() == '.js':
+						content_type = 'application/javascript'
+					elif ext.lower() == '.png':
+						content_type = 'image/png'
+					elif ext.lower() == '.jpg' or ext.lower() == '.jpeg':
+						content_type = 'image/jpeg'
+					
+					if content_type:
+						self.app.logger.info(f"Serving with content type: {content_type}")
+						return send_from_directory(file_dir, file_name, mimetype=content_type)
+					else:
+						self.app.logger.info(f"Serving with auto-detected content type")
+						return send_from_directory(file_dir, file_name)
+				else:
+					self.app.logger.error(f"Subpath file not found: {file_path}")
+					return jsonify({'error': 'File not found'}), 404
+			
+			# No subpath specified - find an appropriate default file to display
+			# First check for index.html in the root directory
 			index_path = os.path.join(report_dir, 'index.html')
 			if os.path.exists(index_path):
 				self.app.logger.info(f"Serving main index.html: {index_path}")
-				return send_file(index_path)
-				
-			# Get the report file type requested
-			file_type = request.args.get('type', 'html').lower()
-			self.app.logger.info(f"Looking for report file of type: {file_type}")
+				return send_file(index_path, mimetype='text/html')
 			
-			# Check if the metadata file exists
-			metadata_path = os.path.join(report_dir, 'metadata.json')
+			# ... existing fallback code ...
 			
-			# First priority: look for specific file type requested
-			if file_type == 'html':
-				# Look for HTML files in the report directory
-				html_files = []
-				for root, dirs, files in os.walk(report_dir):
-					for file in files:
-						if file.endswith('.html'):
-							html_path = os.path.join(root, file)
-							html_files.append(html_path)
-				
-				# If we found HTML files, serve the first one
-				if html_files:
-					self.app.logger.info(f"Found {len(html_files)} HTML files, serving: {html_files[0]}")
-					return send_file(html_files[0])
-			
-			# If we have metadata, look for specified format
-			if os.path.exists(metadata_path):
-				try:
-					# Read metadata to get report paths
-					with open(metadata_path, 'r') as f:
-						metadata = json.load(f)
-					
-					# Look for files matching the requested type
-					for report_path in metadata.get('reports', []):
-						if report_path.lower().endswith(f'.{file_type}'):
-							if os.path.exists(report_path):
-								self.app.logger.info(f"Serving report file: {report_path}")
-								return send_file(report_path)
-					
-					# If no matching reports, list what's available
-					available_formats = set()
-					for report_path in metadata.get('reports', []):
-						if os.path.exists(report_path):
-							_, ext = os.path.splitext(report_path)
-							if ext.startswith('.'):
-								ext = ext[1:]  # Remove the dot
-								available_formats.add(ext)
-					
-					self.app.logger.info(f"Available formats: {available_formats}")
-					
-					# If HTML was requested but not found in metadata, scan the directory
-					if file_type == 'html':
-						for root, dirs, files in os.walk(report_dir):
-							for file in files:
-								if file.endswith('.html'):
-									html_path = os.path.join(root, file)
-									self.app.logger.info(f"Found HTML file outside metadata: {html_path}")
-									return send_file(html_path)
-					
-					# No files of requested type found
-					return jsonify({
-						'error': f'No {file_type} report found',
-						'available_formats': list(available_formats)
-					}), 404
-					
-				except Exception as e:
-					self.app.logger.error(f"Error reading metadata: {e}")
-					# Fall back to directory scan
-					pass
-			
-			# Final fallback: look for any files matching the requested type
-			matching_files = []
-			for root, dirs, files in os.walk(report_dir):
-				for file in files:
-					if file.endswith(f'.{file_type}'):
-						matching_files.append(os.path.join(root, file))
-			
-			if matching_files:
-				self.app.logger.info(f"Found {len(matching_files)} matching files by scan, serving: {matching_files[0]}")
-				return send_file(matching_files[0])
-			
-			# If we got here, nothing was found
-			self.app.logger.error(f"No {file_type} report found in {report_dir}")
-			return jsonify({'error': f'No {file_type} report found in directory'}), 404
-
 		@self.app.route('/api/reports/<report_id>/status', methods=['GET'])
 		@conditional_login_required
 		@conditional_verified_required
@@ -1223,3 +1207,21 @@ class AppManager:
 					'report_id': report_id,
 					'message': 'Report is still being generated'
 				})
+		@self.app.route('/api/reports/<report_id>', defaults={'path': ''})
+		@self.app.route('/api/reports/<report_id>/<path:path>')
+		@conditional_login_required
+		@conditional_verified_required
+		def report_redirect(report_id, path=''):
+			"""
+			Redirect incorrect report URLs to the correct ones with the '/view/' segment.
+			This handles cases when a link in a report points to an incorrect URL.
+			"""
+			self.app.logger.info(f"Redirect handler called for: {report_id}/{path}")
+			
+			# If this is not already a view URL, redirect to the proper view URL
+			if not path.startswith('view/') and path != 'view':
+				redirect_url = f"/api/reports/{report_id}/view/{path}"
+				self.app.logger.info(f"Redirecting to: {redirect_url}")
+				return redirect(redirect_url)
+			
+			return jsonify({'error': 'Invalid report URL'}), 404

@@ -5,80 +5,70 @@ import { debugLog } from './debugUtils';
  */
 
 /**
- * Views a report in a new window or tab
- * @param {string} reportId - The unique identifier for the report
- * @param {string} fileType - File type to view (html, pdf, etc)
- * @returns {Promise<boolean>} - Promise resolving to success status
+ * Download a report as a ZIP file
+ * @param {string} reportId - The ID of the report to download
+ * @returns {Promise<boolean>} - True if download was initiated successfully
  */
-export const viewReport = async (reportId, fileType = 'html') => {
+export const downloadReport = async (reportId) => {
   if (!reportId) {
-    console.error('View failed: Report ID is required');
-    alert('Cannot view report: Report ID is missing');
+    console.error('Report ID is required for download');
     return false;
   }
 
   try {
-    debugLog('Viewing report', { reportId, fileType });
+    // Create a download URL for the report
+    const downloadUrl = `/api/reports/${reportId}/download`;
 
-    // Create the API URL to view the report - default to HTML
-    const viewUrl = `/api/reports/${reportId}/view?type=${fileType}`;
-
-    console.log('Opening URL in new window:', viewUrl);
-
-    // Open the view URL in a new window/tab
-    const newWindow = window.open(viewUrl, '_blank');
-
-    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-      // Popup was blocked
-      console.warn('Pop-up window may have been blocked');
-      alert(
-        'The report viewer window was blocked by your browser. Please allow pop-ups for this site to view reports.',
-      );
-      return false;
-    }
+    // Create a link element and simulate a click to start the download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `report-${reportId}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
     return true;
-  } catch (err) {
-    console.error('Error viewing report:', err);
-    alert(`Error viewing report: ${err.message}`);
+  } catch (error) {
+    console.error('Error downloading report:', error);
     return false;
   }
 };
 
 /**
- * Downloads a report by ID
- * @param {string} reportId - The unique identifier for the report
- * @returns {Promise<boolean>} - Promise resolving to success status
+ * View a report in a new browser tab
+ * @param {string} reportId - The ID of the report to view
+ * @param {string} format - The format of the report to view (pdf, html, etc.)
+ * @param {string} subpath - Optional subpath within the report directory
+ * @returns {Promise<boolean>} - True if viewing was initiated successfully
  */
-export const downloadReport = async (reportId) => {
+export const viewReport = async (reportId, format = 'html', subpath = null) => {
   if (!reportId) {
-    console.error('Download failed: Report ID is required');
-    alert('Cannot download report: Report ID is missing');
+    console.error('Report ID is required for viewing');
     return false;
   }
 
   try {
-    debugLog('Downloading report', reportId);
+    // Create a view URL for the report
+    let viewUrl = `/api/reports/${reportId}/view`;
 
-    // Create the download URL
-    const downloadUrl = `/api/reports/${reportId}/download`;
+    // If a subpath is provided, append it to the URL
+    if (subpath) {
+      // Make sure there's no leading slash to avoid path issues
+      const cleanSubpath = subpath.startsWith('/') ? subpath.substring(1) : subpath;
+      viewUrl = `${viewUrl}/${cleanSubpath}`;
+      console.log(`Opening report at subpath: ${cleanSubpath}`);
+    } else if (format) {
+      // Otherwise append the format as a query parameter
+      viewUrl = `${viewUrl}?type=${format}`;
+    }
 
-    // Open the download URL in a hidden iframe to trigger the download
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
+    console.log(`Opening report URL: ${viewUrl}`);
 
-    iframe.src = downloadUrl;
-
-    // Remove the iframe after the download has started
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 5000);
-
+    // Open the report in a new tab
+    window.open(viewUrl, '_blank');
     return true;
-  } catch (err) {
-    console.error('Error downloading report:', err);
-    alert(`Error downloading report: ${err.message}`);
+  } catch (error) {
+    console.error('Error viewing report:', error);
     return false;
   }
 };
@@ -116,42 +106,30 @@ export const getReportFormats = async (reportId) => {
 };
 
 /**
- * Checks the status of a report
- * @param {string} reportId - The unique identifier for the report
- * @returns {Promise<Object>} - Promise resolving to report status object
+ * Check the status of a report
+ * @param {string} reportId - The ID of the report to check
+ * @returns {Promise<Object>} - An object containing the status information
  */
 export const checkReportStatus = async (reportId) => {
   if (!reportId) {
-    console.error('Check status failed: Report ID is required');
     return { error: 'Report ID is required' };
   }
 
   try {
-    debugLog('Checking report status', reportId);
-
-    // Create the API URL to check report status
-    const statusUrl = `/api/reports/${reportId}/status`;
-
-    const response = await fetch(statusUrl);
-
-    if (!response.ok) {
-      console.error('Failed to check report status:', response.statusText);
+    const response = await fetch(`/api/reports/${reportId}/status`);
+    if (response.ok) {
+      return await response.json();
+    } else {
       return {
-        error: `Server returned ${response.status}: ${response.statusText}`,
-        status: 'unknown',
+        error: `Failed to check status: ${response.status} ${response.statusText}`,
+        status: 'error',
       };
     }
-
-    const data = await response.json();
+  } catch (error) {
+    console.error('Error checking report status:', error);
     return {
-      report: data,
-      status: data.status || 'unknown',
-    };
-  } catch (err) {
-    console.error('Error checking report status:', err);
-    return {
-      error: err.message || 'Error checking report status',
-      status: 'unknown',
+      error: `Network error checking status: ${error.message}`,
+      status: 'error',
     };
   }
 };
