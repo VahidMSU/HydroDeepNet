@@ -37,7 +37,8 @@ PRISM_VARIABLES = {
     'ppt': {
         'description': 'Precipitation',
         'units': 'mm',
-        'color_map': 'Blues',
+        'color_map': 'Blues',  # For spatial plots using colormaps
+        'line_color': '#1f77b4',  # Added specific line color for time series
         'aggregation': 'sum',
         'scale_factor': 1.0,
         'display_name': 'Precipitation'
@@ -46,6 +47,7 @@ PRISM_VARIABLES = {
         'description': 'Maximum Temperature',
         'units': '°C',
         'color_map': 'hot_r',
+        'line_color': '#d62728',  # Added specific line color for time series
         'aggregation': 'mean',
         'scale_factor': 1.0,
         'display_name': 'Max Temperature'
@@ -54,6 +56,7 @@ PRISM_VARIABLES = {
         'description': 'Minimum Temperature',
         'units': '°C',
         'color_map': 'cool',
+        'line_color': '#1f77b4',  # Added specific line color for time series
         'aggregation': 'mean',
         'scale_factor': 1.0,
         'display_name': 'Min Temperature'
@@ -62,6 +65,7 @@ PRISM_VARIABLES = {
         'description': 'Mean Temperature',
         'units': '°C',
         'color_map': 'RdYlBu_r',
+        'line_color': '#ff7f0e',  # Added specific line color for time series
         'aggregation': 'mean',
         'scale_factor': 1.0,
         'display_name': 'Mean Temperature'
@@ -479,15 +483,16 @@ def plot_climate_timeseries(data: Dict[str, np.ndarray],
             temp_vars = ['tmean', 'tmax', 'tmin']
             for var_name in temp_vars:
                 if var_name in data and len(data[var_name]) > 0:
+                    # Use the line_color property instead of color_map for plot lines
                     ax1.plot(x[:len(data[var_name])], data[var_name], 
                            label=PRISM_VARIABLES[var_name]['description'], 
-                           color=PRISM_VARIABLES[var_name]['color'],
+                           color=PRISM_VARIABLES[var_name]['line_color'],
                            linewidth=2)
             
             # Plot precipitation
             if 'ppt' in data and len(data['ppt']) > 0:
                 ax2.bar(x[:len(data['ppt'])], data['ppt'], 
-                       label='Precipitation', color='blue', alpha=0.7)
+                       label='Precipitation', color=PRISM_VARIABLES['ppt']['line_color'], alpha=0.7)
             
             # Set labels and title
             ax1.set_ylabel('Temperature (°C)')

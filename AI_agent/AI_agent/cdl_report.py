@@ -2,7 +2,7 @@
 CDL (Cropland Data Layer) analysis and report generation.
 
 This module provides functionality to generate comprehensive reports analyzing
-USDA Cropland Data Layer (CDL) data, including crop distribution, trends, and changes.
+USDA Cropland Data Layer (CDL) data, including agricultural crops and land cover types.
 """
 import os
 import sys
@@ -107,7 +107,7 @@ def generate_cdl_detailed_report(
         plot_cdl_trends(
             cdl_data=cdl_data,
             output_path=trends_path,
-            title=f"Crop Distribution ({start_year}-{end_year})"
+            title=f"Land Cover Distribution ({start_year}-{end_year})"
         )
         
         create_crop_change_plot(
@@ -149,8 +149,15 @@ def generate_cdl_detailed_report(
         # Calculate agricultural intensity
         intensity_data = calculate_agricultural_intensity(cdl_data)
         
-        # Get crop categories
+        # Get land cover categories
         categories = get_crop_categories(cdl_data)
+        
+        # Separate agricultural crops from other land cover types
+        def is_agricultural_class(class_name):
+            non_ag_classes = ["Developed", "Water", "Wetlands", "Forest", "Woody Wetlands", 
+                             "Herbaceous Wetlands", "Barren", "Shrubland", "Mixed Forest",
+                             "Deciduous Forest", "Evergreen Forest"]
+            return not any(non_ag in class_name for non_ag in non_ag_classes)
         
         # Generate markdown report
         with open(report_path, 'w') as f:
@@ -167,29 +174,44 @@ def generate_cdl_detailed_report(
             available_years = sorted(cdl_data.keys())
             f.write(f"**Available Data Years:** {', '.join(map(str, available_years))}\n\n")
             
-            # Summary of agricultural land
-            f.write("## Agricultural Land Summary\n\n")
-            f.write("| Year | Total Area (ha) | Agricultural Area (ha) | Agricultural Percentage | Number of Crop Types |\n")
-            f.write("|------|----------------|------------------------|-------------------------|---------------------|\n")
+            # Summary of land cover vs agricultural land
+            f.write("## Land Cover Summary\n\n")
+            f.write("| Year | Total Area (ha) | Agricultural Area (ha) | Agricultural Percentage | Non-Agricultural Land Cover (ha) |\n")
+            f.write("|------|----------------|------------------------|-------------------------|---------------------------------|\n")
             
             for year in available_years:
                 year_data = cdl_data[year]
                 total_area = year_data.get("Total Area", 0)
                 
                 # Calculate agricultural area (excluding non-agricultural classes)
-                ag_area = sum(year_data.get(crop, 0) for crop in year_data 
-                             if crop not in ["Total Area", "unit", "Developed", "Water", "Forest", "Wetlands", "Barren"])
+                non_ag_classes = ["Developed", "Water", "Wetlands", "Forest", "Woody Wetlands", 
+                                 "Herbaceous Wetlands", "Barren", "Shrubland", "Mixed Forest",
+                                 "Deciduous Forest", "Evergreen Forest"]
                 
+                non_ag_area = sum(year_data.get(land_class, 0) for land_class in year_data 
+                                if any(non_ag in land_class for non_ag in non_ag_classes) and 
+                                land_class not in ["Total Area", "unit"] and 
+                                not land_class.endswith("(%)"))
+                
+                ag_area = total_area - non_ag_area if total_area > non_ag_area else 0
                 ag_percentage = (ag_area / total_area * 100) if total_area > 0 else 0
                 
-                crop_count = len([k for k in year_data.keys() 
-                                if k not in ["Total Area", "unit"] and not k.endswith("(%)")])
+                # Count agricultural classes only
+                ag_class_count = len([k for k in year_data.keys() 
+                                    if k not in ["Total Area", "unit"] and not k.endswith("(%)") and
+                                    is_agricultural_class(k)])
                 
-                f.write(f"| {year} | {total_area:,.2f} | {ag_area:,.2f} | {ag_percentage:.2f}% | {crop_count} |\n")
+                f.write(f"| {year} | {total_area:,.2f} | {ag_area:,.2f} | {ag_percentage:.2f}% | {non_ag_area:,.2f} |\n")
             
             f.write("\n")
             
-            # Crop diversity and rotation
+            # Add explanation of terminology
+            f.write("### Land Cover Classification\n\n")
+            f.write("The CDL dataset includes both agricultural crops and non-agricultural land cover types. In this report:\n\n")
+            f.write("- **Agricultural crops** refer to cultivated plants such as corn, soybeans, wheat, etc.\n")
+            f.write("- **Non-agricultural land cover** includes forests, wetlands, developed areas, water bodies, etc.\n\n")
+            
+            # Agricultural intensity section
             if intensity_data:
                 f.write("## Agricultural Intensity\n\n")
                 f.write("### Intensity Metrics\n\n")
@@ -204,28 +226,49 @@ def generate_cdl_detailed_report(
                 
                 f.write("\n")
             
-            # Top crops for the latest year
-            f.write(f"## Crop Composition ({latest_year})\n\n")
+            # Crop composition section
+            f.write(f"## Agricultural Land Composition ({latest_year})\n\n")
             
             latest_data = cdl_data[latest_year]
+            
+            # Filter to agricultural crops only
             crop_items = [(k, v) for k, v in latest_data.items() 
-                         if k not in ["Total Area", "unit"] and not k.endswith("(%)")]
+                         if k not in ["Total Area", "unit"] and not k.endswith("(%)") and
+                         is_agricultural_class(k)]
+            
             top_crops = sorted(crop_items, key=lambda x: x[1], reverse=True)[:10]
             
-            f.write("| Rank | Crop | Area (ha) | Percentage |\n")
-            f.write("|------|------|-----------|------------|\n")
+            f.write("| Rank | Crop | Area (ha) | Percentage of Agricultural Land |\n")
+            f.write("|------|------|-----------|----------------------------------|\n")
             
-            total_area = latest_data.get("Total Area", 0)
+            total_ag_area = sum(area for crop, area in crop_items)
             for i, (crop, area) in enumerate(top_crops, 1):
-                pct = (area / total_area * 100) if total_area > 0 else 0
+                pct = (area / total_ag_area * 100) if total_ag_area > 0 else 0
                 f.write(f"| {i} | {crop} | {area:,.2f} | {pct:.2f}% |\n")
             
             f.write("\n")
             f.write(f"![Crop Composition {latest_year}]({os.path.basename(composition_path)})\n\n")
             
+            # Non-agricultural land cover section
+            non_ag_items = [(k, v) for k, v in latest_data.items() 
+                           if k not in ["Total Area", "unit"] and not k.endswith("(%)") and
+                           not is_agricultural_class(k)]
+            
+            if non_ag_items:
+                f.write(f"## Non-Agricultural Land Cover ({latest_year})\n\n")
+                f.write("| Land Cover Type | Area (ha) | Percentage of Total Area |\n")
+                f.write("|-----------------|-----------|---------------------------|\n")
+                
+                total_area = latest_data.get("Total Area", 0)
+                for land_class, area in sorted(non_ag_items, key=lambda x: x[1], reverse=True):
+                    pct = (area / total_area * 100) if total_area > 0 else 0
+                    f.write(f"| {land_class} | {area:,.2f} | {pct:.2f}% |\n")
+                
+                f.write("\n")
+            
             # Crop categories
             if categories:
-                f.write("## Crop Categories\n\n")
+                f.write("## Land Cover Categories\n\n")
                 f.write("| Category | Area (ha) | Percentage |\n")
                 f.write("|----------|-----------|------------|\n")
                 
@@ -236,49 +279,73 @@ def generate_cdl_detailed_report(
                 
                 f.write("\n")
             
-            # Crop trends over time
-            f.write("## Crop Trends\n\n")
-            f.write("The following chart shows the trends in major crop types over the analyzed period:\n\n")
-            f.write(f"![Crop Trends]({os.path.basename(trends_path)})\n\n")
+            # Land cover trends over time
+            f.write("## Land Cover Trends\n\n")
+            f.write("The following chart shows the trends in major land cover types over the analyzed period:\n\n")
+            f.write(f"![Land Cover Trends]({os.path.basename(trends_path)})\n\n")
             
-            # Significant changes
-            f.write("## Crop Changes\n\n")
-            f.write("### Major Changes Between First and Last Year\n\n")
-            f.write(f"![Crop Changes]({os.path.basename(changes_path)})\n\n")
+            # Only include agricultural changes section if we have agricultural crops
+            ag_changes = {crop: change for crop, change in changes.items() if is_agricultural_class(crop)}
             
-            # Filter top 5 increases and decreases
-            increases = change_df[change_df["Change (ha)"] > 0].head(5)
-            decreases = change_df[change_df["Change (ha)"] < 0].head(5)
-            
-            if not increases.empty:
-                f.write("### Largest Increases\n\n")
-                f.write("| Crop | Change (ha) | Change (%) |\n")
-                f.write("|------|------------|------------|\n")
+            if ag_changes:
+                # Significant agricultural changes
+                f.write("## Agricultural Crop Changes\n\n")
+                f.write("### Major Crop Changes Between First and Last Year\n\n")
+                f.write(f"![Agricultural Changes]({os.path.basename(changes_path)})\n\n")
                 
-                for _, row in increases.iterrows():
-                    f.write(f"| {row['Crop']} | +{row['Change (ha)']:,.2f} | {row['Status']} |\n")
-                f.write("\n")
-            
-            if not decreases.empty:
-                f.write("### Largest Decreases\n\n") 
-                f.write("| Crop | Change (ha) | Change (%) |\n")
-                f.write("|------|------------|------------|\n")
+                # Filter top 5 increases and decreases in agricultural crops
+                ag_change_df = change_df[change_df["Crop"].apply(is_agricultural_class)]
+                increases = ag_change_df[ag_change_df["Change (ha)"] > 0].head(5)
+                decreases = ag_change_df[ag_change_df["Change (ha)"] < 0].head(5)
                 
-                for _, row in decreases.iterrows():
-                    f.write(f"| {row['Crop']} | {row['Change (ha)']:,.2f} | {row['Status']} |\n")
-                f.write("\n")
+                if not increases.empty:
+                    f.write("### Largest Increases in Crops\n\n")
+                    f.write("| Crop | Change (ha) | Change (%) |\n")
+                    f.write("|------|------------|------------|\n")
+                    
+                    for _, row in increases.iterrows():
+                        f.write(f"| {row['Crop']} | +{row['Change (ha)']:,.2f} | {row['Status']} |\n")
+                    f.write("\n")
+                
+                if not decreases.empty:
+                    f.write("### Largest Decreases in Crops\n\n") 
+                    f.write("| Crop | Change (ha) | Change (%) |\n")
+                    f.write("|------|------------|------------|\n")
+                    
+                    for _, row in decreases.iterrows():
+                        f.write(f"| {row['Crop']} | {row['Change (ha)']:,.2f} | {row['Status']} |\n")
+                    f.write("\n")
+            
+            # Non-agricultural land cover changes
+            non_ag_changes = {land_class: change for land_class, change in changes.items() if not is_agricultural_class(land_class)}
+            
+            if non_ag_changes:
+                f.write("## Non-Agricultural Land Cover Changes\n\n")
+                
+                non_ag_change_df = change_df[~change_df["Crop"].apply(is_agricultural_class)]
+                significant_changes = non_ag_change_df.iloc[:5] if not non_ag_change_df.empty else pd.DataFrame()
+                
+                if not significant_changes.empty:
+                    f.write("| Land Cover Type | Change (ha) | Change (%) |\n")
+                    f.write("|-----------------|------------|------------|\n")
+                    
+                    for _, row in significant_changes.iterrows():
+                        change_value = row['Change (ha)']
+                        sign = '+' if change_value > 0 else ''
+                        f.write(f"| {row['Crop']} | {sign}{change_value:,.2f} | {row['Status']} |\n")
+                    f.write("\n")
             
             # Advanced analyses sections
             if advanced_analysis:
                 # Crop diversity
-                f.write("## Crop Diversity Analysis\n\n")
-                f.write("Crop diversity is an important indicator of agricultural resilience and ecosystem health. ")
+                f.write("## Agricultural Diversity Analysis\n\n")
+                f.write("Agricultural diversity is an important indicator of farming system resilience and ecosystem health. ")
                 f.write("Higher diversity can reduce pest and disease pressure and improve soil health.\n\n")
                 f.write(f"![Crop Diversity]({os.path.basename(diversity_path)})\n\n")
                 
                 # Crop rotation
                 f.write("## Crop Rotation Patterns\n\n")
-                f.write("The heatmap below shows common crop rotations observed in the data, ")
+                f.write("The heatmap below shows common crop rotations observed in the agricultural data, ")
                 f.write("indicating which crops tend to follow others in sequence:\n\n")
                 f.write(f"![Crop Rotation]({os.path.basename(rotation_path)})\n\n")
             
@@ -286,13 +353,13 @@ def generate_cdl_detailed_report(
             f.write("## Agricultural Implications\n\n")
             
             # Generate implications based on data
-            if changes:
-                has_corn_increase = changes.get("Corn", 0) > 0
-                has_soybean_increase = changes.get("Soybeans", 0) > 0
-                has_wheat_decrease = changes.get("Winter Wheat", 0) < 0 or changes.get("Spring Wheat", 0) < 0
-                has_pasture_decrease = changes.get("Pasture/Grass", 0) < 0 or changes.get("Grassland/Pasture", 0) < 0
+            if ag_changes:
+                has_corn_increase = ag_changes.get("Corn", 0) > 0
+                has_soybean_increase = ag_changes.get("Soybeans", 0) > 0
+                has_wheat_decrease = ag_changes.get("Winter Wheat", 0) < 0 or ag_changes.get("Spring Wheat", 0) < 0
+                has_pasture_decrease = ag_changes.get("Pasture/Grass", 0) < 0 or ag_changes.get("Grassland/Pasture", 0) < 0
                 
-                f.write("### Observed Trends and Their Implications\n\n")
+                f.write("### Observed Agricultural Trends and Their Implications\n\n")
                 
                 if has_corn_increase or has_soybean_increase:
                     f.write("- **Increasing row crop production**: ")
@@ -317,11 +384,14 @@ def generate_cdl_detailed_report(
                 first_year = min(cdl_data.keys())
                 last_year = max(cdl_data.keys())
                 
+                # Only count agricultural classes for diversity metrics
                 first_year_crop_count = len([k for k in cdl_data[first_year].keys() 
-                                          if k not in ["Total Area", "unit"] and not k.endswith("(%)")])
+                                          if k not in ["Total Area", "unit"] and not k.endswith("(%)") and
+                                          is_agricultural_class(k)])
                 
                 last_year_crop_count = len([k for k in cdl_data[last_year].keys() 
-                                         if k not in ["Total Area", "unit"] and not k.endswith("(%)")])
+                                         if k not in ["Total Area", "unit"] and not k.endswith("(%)") and
+                                         is_agricultural_class(k)])
                 
                 if last_year_crop_count > first_year_crop_count * 1.2:
                     f.write("- **Increasing crop diversity**: There has been an expansion in the variety of crops grown in the region, ")
@@ -330,32 +400,60 @@ def generate_cdl_detailed_report(
                     f.write("- **Decreasing crop diversity**: There has been a reduction in the variety of crops grown in the region, ")
                     f.write("which may increase vulnerability to pests and diseases, and could impact long-term soil health.\n\n")
             
+            # Land cover change implications
+            if non_ag_changes:
+                has_forest_decrease = sum(non_ag_changes.get(land_class, 0) for land_class in 
+                                       ["Forest", "Mixed Forest", "Deciduous Forest", "Evergreen Forest"]) < 0
+                has_wetland_change = non_ag_changes.get("Wetlands", 0) != 0 or non_ag_changes.get("Woody Wetlands", 0) != 0 or non_ag_changes.get("Herbaceous Wetlands", 0) != 0
+                has_developed_increase = non_ag_changes.get("Developed", 0) > 0 or sum(non_ag_changes.get(f"Developed/{intensity}", 0) for intensity in ["Open Space", "Low Intensity", "Med Intensity", "High Intensity"]) > 0
+                
+                if has_forest_decrease or has_wetland_change or has_developed_increase:
+                    f.write("### Non-Agricultural Land Cover Change Implications\n\n")
+                    
+                    if has_forest_decrease:
+                        f.write("- **Forest cover reduction**: Decreases in forest cover could impact ecosystem services like carbon storage, water filtration, and wildlife habitat.\n\n")
+                    
+                    if has_wetland_change:
+                        change_direction = "reduction" if sum(non_ag_changes.get(wetland, 0) for wetland in ["Wetlands", "Woody Wetlands", "Herbaceous Wetlands"]) < 0 else "expansion"
+                        f.write(f"- **Wetland {change_direction}**: Changes in wetland areas affect water quality, flood control, and biodiversity. ")
+                        f.write("Wetlands provide critical ecosystem services including water purification and wildlife habitat.\n\n")
+                    
+                    if has_developed_increase:
+                        f.write("- **Increasing developed area**: Growth in developed land indicates urbanization or infrastructure expansion, ")
+                        f.write("which can lead to permanent land use changes and may affect watershed hydrology and habitat connectivity.\n\n")
+            
             f.write("### Management Recommendations\n\n")
-            f.write("Based on the observed crop patterns and changes, the following management practices may be beneficial:\n\n")
+            f.write("Based on the observed land use patterns and changes, the following management practices may be beneficial:\n\n")
             f.write("1. **Diversified crop rotations**: Incorporate a wider variety of crops to improve soil health and reduce pest pressure\n")
             f.write("2. **Cover crops**: Implement cover crops during fallow periods to protect soil, fix nitrogen, and add organic matter\n")
             f.write("3. **Conservation practices**: Consider conservation tillage, buffer strips, and contour farming in areas with high erosion risk\n")
             f.write("4. **Precision agriculture**: Use precision technology to optimize inputs and reduce environmental impacts\n")
             f.write("5. **Integrated pest management**: Adopt IPM practices to reduce pesticide use while maintaining effective pest control\n\n")
             
+            if has_forest_decrease or has_wetland_change:
+                f.write("6. **Natural area conservation**: Protect remaining forests and wetlands to maintain ecosystem services\n")
+                f.write("7. **Habitat corridors**: Establish or maintain corridors between natural areas to support wildlife movement\n\n")
+            
             # Data source and methodology
             f.write("## Data Source and Methodology\n\n")
             f.write("This report is based on the USDA National Agricultural Statistics Service (NASS) Cropland Data Layer (CDL), ")
             f.write("which provides geo-referenced, crop-specific land cover data at 30-meter resolution. ")
-            f.write("The CDL is created annually using satellite imagery and extensive ground truth verification.\n\n")
+            f.write("The CDL includes both agricultural crops and non-agricultural land cover types like forests, ")
+            f.write("water bodies, and developed areas.\n\n")
             
             f.write("**Processing steps:**\n\n")
             f.write("1. Extraction of CDL data for the specified region and time period\n")
-            f.write("2. Aggregation and calculation of area statistics by crop type\n")
-            f.write("3. Analysis of temporal trends, crop changes, and diversity metrics\n")
-            f.write("4. Visualization of key patterns and relationships\n\n")
+            f.write("2. Separation of agricultural crops from non-agricultural land cover types\n")
+            f.write("3. Aggregation and calculation of area statistics by crop type and land cover class\n")
+            f.write("4. Analysis of temporal trends, changes, and diversity metrics\n")
+            f.write("5. Visualization of key patterns and relationships\n\n")
             
             # Limitations
             f.write("### Limitations\n\n")
-            f.write("- CDL accuracy varies by crop type and region (typically 85-95% for major crops)\n")
+            f.write("- CDL accuracy varies by crop type and region (typically 85-95% for major crops, lower for non-agricultural classes)\n")
             f.write("- Small fields or mixed plantings may not be accurately represented\n")
             f.write("- Analysis is limited to the temporal range of available data\n")
-            f.write("- Local factors affecting crop decisions (e.g., specific markets, infrastructure) are not captured\n\n")
+            f.write("- Local factors affecting land use decisions (e.g., specific markets, infrastructure) are not captured\n\n")
             
             # Data export information
             f.write("## Data Export\n\n")
