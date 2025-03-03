@@ -41,7 +41,7 @@ def run_swatplus_editor(SWATGenXPaths, vpuid: str, level: str, name: str, model_
 if __name__ == '__main__':
 
     from SWATGenXConfigPars import SWATGenXPaths
-    SWATGenXPaths = SWATGenXPaths(username = "menly42" )
+    SWATGenXPaths = SWATGenXPaths(username = "vahidr32" )
     SWATGenXPaths.exe_start_year = 2000
     SWATGenXPaths.exe_end_year = 2021
     print(f" self.swatgenx_outlet_path: {SWATGenXPaths.swatgenx_outlet_path}")

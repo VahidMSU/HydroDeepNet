@@ -13,7 +13,10 @@ import os
 import logging
 from pathlib import Path
 import seaborn as sns
-from AI_agent.plot_utils import safe_figure, save_figure, close_all_figures
+try:
+    from AI_agent.plot_utils import safe_figure, save_figure, close_all_figures
+except ImportError:
+    from plot_utils import safe_figure, save_figure, close_all_figures
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -940,7 +943,7 @@ def get_crop_categories(
     custom_categories: Optional[Dict[str, List[str]]] = None
 ) -> Dict[str, float]:
     """
-    Categorize crops into logical groups and calculate area for each category.
+    Categorize land cover types into logical groups and calculate area for each category.
     
     Args:
         cdl_data: Dictionary mapping years to land use data
@@ -961,7 +964,7 @@ def get_crop_categories(
             
         year_data = cdl_data[year]
         
-        # Define default crop categories
+        # Define default land cover categories
         default_categories = {
             "Row Crops": [
                 "Corn", "Soybeans", "Cotton", "Rice", "Sunflower", "Peanuts", 
@@ -976,8 +979,7 @@ def get_crop_categories(
             "Perennial & Forage": [
                 "Alfalfa", "Other Hay/Non Alfalfa", "Clover/Wildflowers", 
                 "Sod/Grass Seed", "Switchgrass", "Fallow/Idle Cropland", 
-                "Grassland/Pasture", "Herbaceous Wetlands", 
-                "Pasture/Hay", "Pasture/Grass"
+                "Grassland/Pasture", "Pasture/Hay", "Pasture/Grass"
             ],
             "Fruits & Nuts": [
                 "Cherries", "Peaches", "Apples", "Grapes", "Citrus", 
@@ -998,39 +1000,47 @@ def get_crop_categories(
                 "Pineapple", "Flowers", "Gourds", "Coffee", "Ginseng",
                 "Nursery", "Greenhouse"
             ],
-            "Fallow & Non-crop": [
-                "Fallow", "Developed", "Developed/Open Space", "Developed/Low Intensity",
+            "Forest & Woodland": [
+                "Forest", "Mixed Forest", "Deciduous Forest", "Evergreen Forest",
+                "Shrubland", "Woody Wetlands"
+            ],
+            "Wetlands & Water": [
+                "Wetlands", "Herbaceous Wetlands", "Aquaculture", "Open Water",
+                "Water"
+            ],
+            "Developed & Other": [
+                "Developed", "Developed/Open Space", "Developed/Low Intensity",
                 "Developed/Med Intensity", "Developed/High Intensity",
-                "Barren", "Water", "Wetlands", "Forest", "Shrubland"
+                "Barren", "Fallow"
             ]
         }
         
         # Use custom categories if provided, otherwise use default
         categories = custom_categories if custom_categories is not None else default_categories
         
-        # Get crop data (excluding metadata fields)
-        crop_data = {
+        # Get land cover data (excluding metadata fields)
+        land_cover_data = {
             k: v for k, v in year_data.items() 
             if k not in ["Total Area", "unit"] and not k.endswith("(%)")
         }
         
-        if not crop_data:
-            logger.warning(f"No crop data found for year {year}")
+        if not land_cover_data:
+            logger.warning(f"No land cover data found for year {year}")
             return {}
             
         # Calculate area for each category
         result = {}
-        for category, crop_list in categories.items():
+        for category, cover_list in categories.items():
             category_area = 0.0
-            for crop in crop_list:
+            for cover_type in cover_list:
                 # Look for exact matches as well as partial matches (for flexibility)
-                exact_match = crop_data.get(crop, 0)
+                exact_match = land_cover_data.get(cover_type, 0)
                 category_area += exact_match
                 
                 # Add partial matches if applicable
                 if exact_match == 0:
-                    for crop_name, area in crop_data.items():
-                        if crop in crop_name and crop_name != crop:
+                    for cover_name, area in land_cover_data.items():
+                        if cover_type in cover_name and cover_name != cover_type:
                             category_area += area
             
             if category_area > 0:
@@ -1041,7 +1051,7 @@ def get_crop_categories(
         for crop_list in categories.values():
             categorized_crops.update(crop_list)
             
-        other_area = sum(area for crop, area in crop_data.items() 
+        other_area = sum(area for crop, area in land_cover_data.items() 
                         if not any(cat_crop in crop for cat_crop in categorized_crops))
         
         if other_area > 0:
