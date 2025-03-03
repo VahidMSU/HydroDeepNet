@@ -97,8 +97,8 @@ The following chart shows the trends in major crop types over the analyzed perio
 | Turnips | -6.25 | Disappeared |
 | Squash | -12.50 | -50.0% |
 | Asparagus | -12.50 | Disappeared |
-| Radishes | -18.75 | Disappeared |
 | Celery | -18.75 | Disappeared |
+| Radishes | -18.75 | Disappeared |
 
 ## Crop Diversity Analysis
 
@@ -154,4 +154,4 @@ The complete dataset has been exported to CSV format. Access the data at: [cdl_d
 
 ---
 
-*Report generated on 2025-03-02 at 12:30*
+*Report generated on 2025-03-02 at 19:11*
