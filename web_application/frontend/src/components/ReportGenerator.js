@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFileAlt,
-  faCalendarAlt,
-  faChartArea,
   faLayerGroup,
   faSpinner,
   faCheck,
@@ -11,8 +9,8 @@ import {
   faDownload,
   faEye,
   faClipboard,
-  faCloudDownloadAlt,
   faChevronDown,
+  
 } from '@fortawesome/free-solid-svg-icons';
 import {
   ReportForm,
@@ -25,8 +23,16 @@ import {
   ReportList,
   ReportItem,
   ReportProgressBar,
-  CheckboxContainer,
+  CoordinatesDisplay,
 } from '../styles/HydroGeoDataset.tsx';
+
+
+import {
+ 
+  faMapMarkerAlt,
+
+
+} from '@fortawesome/free-solid-svg-icons';
 import InfoBox from './InfoBox';
 import { downloadReport, viewReport, checkReportStatus } from '../utils/reportDownloader';
 import { debugLog } from '../utils/debugUtils';
@@ -39,9 +45,7 @@ const ReportGenerator = ({ formData }) => {
     report_type: 'all',
     start_year: 2015,
     end_year: 2020,
-    resolution: 250,
-    aggregation: 'monthly',
-    include_climate_change: false,
+    include_climate_change: true,
   });
 
   // Add a coordinator ID reference to allow the map to communicate with the form
@@ -331,6 +335,7 @@ const ReportGenerator = ({ formData }) => {
                 <option value="cdl">Cropland Data Layer (CDL)</option>
                 <option value="groundwater">Groundwater Data</option>
                 <option value="gov_units">Governmental Units</option>
+                <option value="climate_change">Climate Change Projection</option> 
               </select>
               <FontAwesomeIcon icon={faChevronDown} className="select-arrow" />
             </InputField>
@@ -338,100 +343,29 @@ const ReportGenerator = ({ formData }) => {
         </ReportRow>
 
         <ReportRow>
-          <FormGroup style={{ flex: 1 }}>
-            <label>
-              <FontAwesomeIcon icon={faCalendarAlt} className="icon" />
-              Start Year
-            </label>
-            <InputField>
-              <input
-                type="number"
-                name="start_year"
-                min="2000"
-                max="2022"
-                value={reportSettings.start_year}
-                onChange={handleInputChange}
-                required
-              />
-            </InputField>
-          </FormGroup>
-
-          <FormGroup style={{ flex: 1 }}>
-            <label>
-              <FontAwesomeIcon icon={faCalendarAlt} className="icon" />
-              End Year
-            </label>
-            <InputField>
-              <input
-                type="number"
-                name="end_year"
-                min="2000"
-                max="2022"
-                value={reportSettings.end_year}
-                onChange={handleInputChange}
-                required
-              />
-            </InputField>
-          </FormGroup>
+          {/* If bounds are defined, show them */}
+          {hasSelectedArea && (
+            <FormGroup>
+              <label>
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
+                Bounds
+              </label>
+              <CoordinatesDisplay>
+                <div className="title">
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
+                  Coordinate Bounds
+                </div>
+                <div className="value">
+                  Lat: {formData.min_latitude} to {formData.max_latitude}
+                  <br />
+                  Lon: {formData.min_longitude} to {formData.max_longitude}
+                </div>
+              </CoordinatesDisplay>
+            </FormGroup>
+                 )}
         </ReportRow>
 
-        <ReportRow>
-          <FormGroup style={{ flex: 1 }}>
-            <label>
-              <FontAwesomeIcon icon={faChartArea} className="icon" />
-              Resolution (meters)
-            </label>
-            <InputField>
-              <select
-                name="resolution"
-                value={reportSettings.resolution}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="100">100m (High)</option>
-                <option value="250">250m (Standard)</option>
-                <option value="500">500m (Medium)</option>
-                <option value="1000">1000m (Low)</option>
-              </select>
-              <FontAwesomeIcon icon={faChevronDown} className="select-arrow" />
-            </InputField>
-          </FormGroup>
 
-          <FormGroup style={{ flex: 1 }}>
-            <label>
-              <FontAwesomeIcon icon={faLayerGroup} className="icon" />
-              Temporal Aggregation
-            </label>
-            <InputField>
-              <select
-                name="aggregation"
-                value={reportSettings.aggregation}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="daily">Daily</option>
-                <option value="monthly">Monthly</option>
-                <option value="seasonal">Seasonal</option>
-                <option value="annual">Annual</option>
-              </select>
-              <FontAwesomeIcon icon={faChevronDown} className="select-arrow" />
-            </InputField>
-          </FormGroup>
-        </ReportRow>
-
-        <CheckboxContainer>
-          <input
-            type="checkbox"
-            id="include_climate_change"
-            name="include_climate_change"
-            checked={reportSettings.include_climate_change}
-            onChange={handleInputChange}
-          />
-          <label htmlFor="include_climate_change">
-            <FontAwesomeIcon icon={faCloudDownloadAlt} className="icon" />
-            Include Climate Change Projections
-          </label>
-        </CheckboxContainer>
 
         <SubmitButton type="submit" disabled={loading || !hasSelectedArea}>
           {loading ? (
