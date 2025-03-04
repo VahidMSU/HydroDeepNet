@@ -1,10 +1,13 @@
-from loca2_dataset import DataImporter, list_of_cc_models
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tabulate import tabulate
 from matplotlib.colors import LinearSegmentedColormap
+try:
+    from loca2_dataset import DataImporter, list_of_cc_models
+except ImportError:
+    from AI_agent.loca2_dataset import DataImporter, list_of_cc_models
 
 def full_climate_change_data(bbox):
     df = list_of_cc_models()
@@ -330,7 +333,6 @@ def analyze_climate_changes(results, output_dir=None, prefix=""):
 
 if __name__ == "__main__":
     import os
-    
     # Create output directory for visualizations - use the main directory
     output_dir = "/data/SWATGenXApp/codes/climate_change_results"
     os.makedirs(output_dir, exist_ok=True)

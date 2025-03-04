@@ -341,6 +341,52 @@ def generate_climate_change_report(config: Dict[str, Any], output_dir: str) -> O
         logger.error(f"Error generating climate change report: {e}", exc_info=True)
         return None
 
+def generate_nsrdb_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate a NSRDB solar radiation data report.
+    
+    Args:
+        config: Configuration dictionary with processing parameters
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating NSRDB solar radiation report...")
+        
+        from AI_agent.NSRDB_report import batch_process_nsrdb
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Extract parameters from config
+        start_year = config.get('start_year', 2019)
+        end_year = config.get('end_year', 2019)
+        bbox = config.get('bounding_box', [-85.444332, 43.658148, -85.239256, 44.164683])
+        
+        # Create NSRDB-specific config
+        nsrdb_config = {
+            "bbox": bbox,
+            "start_year": start_year,
+            "end_year": end_year,
+            "extract_for_swat": config.get('extract_for_swat', False)
+        }
+        
+        # Process NSRDB data and generate report
+        report_path = batch_process_nsrdb(nsrdb_config, output_dir)
+        
+        if report_path:
+            logger.info(f"NSRDB report generated: {report_path}")
+            return report_path
+        else:
+            logger.error("Failed to generate NSRDB report")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating NSRDB report: {e}", exc_info=True)
+        return None
+
 # Add import for HTML conversion
 from AI_agent.html_report_converter import convert_markdown_to_html, create_report_index
 # Add import for plot utilities
@@ -370,6 +416,11 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
             'name': 'prism',
             'dir': os.path.join(output_dir, "prism"),
             'func': generate_prism_report,
+        },
+        {
+            'name': 'nsrdb',
+            'dir': os.path.join(output_dir, "nsrdb"),
+            'func': generate_nsrdb_report,
         },
         {
             'name': 'modis',
@@ -540,6 +591,7 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
             # Map report type to its generator function
             report_funcs = {
                 'prism': generate_prism_report,
+                'nsrdb': generate_nsrdb_report,
                 'modis': generate_modis_report,
                 'cdl': generate_cdl_report,
                 'groundwater': generate_groundwater_report,
@@ -586,7 +638,7 @@ def generate_reports():
     """Parse command line arguments and generate reports."""
     parser = argparse.ArgumentParser(description='Generate reports from various data sources')
     
-    parser.add_argument('--type', choices=['prism', 'modis', 'cdl', 'groundwater', 'gov_units', 'climate_change', 'all'],
+    parser.add_argument('--type', choices=['prism', 'nsrdb', 'modis', 'cdl', 'groundwater', 'gov_units', 'climate_change', 'all'],
                         default='all', help='Type of report to generate')
     parser.add_argument('--output', type=str, default='reports',
                        help='Output directory for reports')
