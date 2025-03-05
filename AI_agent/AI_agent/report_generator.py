@@ -387,6 +387,46 @@ def generate_nsrdb_report(config: Dict[str, Any], output_dir: str) -> Optional[s
         logger.error(f"Error generating NSRDB report: {e}", exc_info=True)
         return None
 
+def generate_gssurgo_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate a gSSURGO soil data report.
+    
+    Args:
+        config: Configuration dictionary with processing parameters
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating gSSURGO soil report...")
+        
+        # Import the necessary function
+        try:
+            from gssurgo_report import process_soil_data
+        except ImportError:
+            try:
+                from AI_agent.gssurgo_report import process_soil_data
+            except ImportError:
+                from .gssurgo_report import process_soil_data
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Generate gSSURGO report
+        report_path = process_soil_data(config=config, output_dir=output_dir)
+        
+        if report_path:
+            logger.info(f"gSSURGO soil report generated: {report_path}")
+            return report_path
+        else:
+            logger.error("Failed to generate gSSURGO soil report")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating gSSURGO soil report: {e}", exc_info=True)
+        return None
+
 # Add import for HTML conversion
 from AI_agent.html_report_converter import convert_markdown_to_html, create_report_index
 # Add import for plot utilities
@@ -441,6 +481,11 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
             'name': 'gov_units',
             'dir': os.path.join(output_dir, "gov_units"),
             'func': generate_governmental_units_report,
+        },
+        {
+            'name': 'gssurgo',
+            'dir': os.path.join(output_dir, "gssurgo"),
+            'func': generate_gssurgo_report,
         }
     ]
     
@@ -596,6 +641,7 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
                 'cdl': generate_cdl_report,
                 'groundwater': generate_groundwater_report,
                 'gov_units': generate_governmental_units_report,
+                'gssurgo': generate_gssurgo_report,
                 'climate_change': generate_climate_change_report
             }
             
@@ -638,7 +684,7 @@ def generate_reports():
     """Parse command line arguments and generate reports."""
     parser = argparse.ArgumentParser(description='Generate reports from various data sources')
     
-    parser.add_argument('--type', choices=['prism', 'nsrdb', 'modis', 'cdl', 'groundwater', 'gov_units', 'climate_change', 'all'],
+    parser.add_argument('--type', choices=['prism', 'nsrdb', 'modis', 'cdl', 'groundwater', 'gov_units', 'gssurgo', 'climate_change', 'all'],
                         default='all', help='Type of report to generate')
     parser.add_argument('--output', type=str, default='reports',
                        help='Output directory for reports')
