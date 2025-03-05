@@ -48,6 +48,7 @@ const ReportGeneratorForm = ({
     { value: 'groundwater', label: 'Groundwater Report' },
     { value: 'gov_units', label: 'Governmental Units Report' },
     { value: 'climate_change', label: 'Climate Change Projections Report' },
+    { value: 'nsrdb', label: 'NSRDB Solar Data Report' },
   ];
 
   return (

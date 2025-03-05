@@ -301,10 +301,11 @@ def aggregate_nsrdb_daily(data: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
             
             # Apply appropriate aggregation and scaling based on variable
             if var_name == 'ghi':
-                # For GHI, convert to daily energy by summing and converting units
+                # For GHI, calculate the daily average power (W/m²)
+                # instead of converting to energy units
                 scale = NSRDB_VARIABLES[var_name]['scale_factor']
-                daily = reshaped * scale * 1800 / 1_000_000  # Scale, convert to seconds, then to MJ
-                daily = daily.sum(axis=1)  # Sum over 48 half-hour periods
+                daily = reshaped * scale
+                daily = daily.mean(axis=1)  # Take mean over 48 half-hour periods
             else:
                 # For other variables, take the mean with appropriate scaling
                 scale = NSRDB_VARIABLES[var_name]['scale_factor']
