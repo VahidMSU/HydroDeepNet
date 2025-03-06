@@ -11,36 +11,29 @@ import pandas as pd
 import logging
 import argparse
 
-# Add parent directory to path to help with imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 try:
-    from AI_agent.AI_agent.config import AgentConfig
-    from AI_agent.AI_agent.modis import MODIS_dataset
-    from AI_agent.AI_agent.modis_analysis import (
+    from AI_agent.config import AgentConfig
+    from AI_agent.modis import MODIS_dataset
+    from AI_agent.modis_analysis import (
         generate_modis_report, 
         generate_comprehensive_modis_report,
         analyze_modis_environmental_indicators,
         create_integrated_landcover_report,
         create_modis_climate_comparison
     )
-    from AI_agent.AI_agent.cdl import CDL_dataset
+    from AI_agent.cdl import CDL_dataset
 except ImportError:
-    # Handle both package and direct imports
-    try:
-        from AI_agent.config import AgentConfig
-        from AI_agent.modis import MODIS_dataset
-        from AI_agent.modis_analysis import (
-            generate_modis_report, 
-            generate_comprehensive_modis_report,
-            analyze_modis_environmental_indicators,
-            create_integrated_landcover_report,
-            create_modis_climate_comparison
-        )
-        from AI_agent.cdl import CDL_dataset
-    except ImportError:
-        print("Error importing required modules. Make sure the path is correct.")
-        sys.exit(1)
+    from config import AgentConfig
+    from modis import MODIS_dataset
+    from modis_analysis import (
+        generate_modis_report,
+        generate_comprehensive_modis_report,
+        analyze_modis_environmental_indicators,
+        create_integrated_landcover_report,
+        create_modis_climate_comparison
+    )
+    from cdl import CDL_dataset
+
 
 # Configure logger
 logging.basicConfig(level=logging.INFO, 
