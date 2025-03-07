@@ -427,6 +427,7 @@ def generate_gssurgo_report(config: Dict[str, Any], output_dir: str) -> Optional
         logger.error(f"Error generating gSSURGO soil report: {e}", exc_info=True)
         return None
 
+
 # Add import for HTML conversion
 from AI_agent.html_report_converter import convert_markdown_to_html, create_report_index
 # Add import for plot utilities
@@ -486,6 +487,7 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
             'name': 'gssurgo',
             'dir': os.path.join(output_dir, "gssurgo"),
             'func': generate_gssurgo_report,
+
         }
     ]
     
@@ -685,6 +687,7 @@ def generate_reports():
     parser = argparse.ArgumentParser(description='Generate reports from various data sources')
     
     parser.add_argument('--type', choices=['prism', 'nsrdb', 'modis', 'cdl', 'groundwater', 'gov_units', 'gssurgo', 'climate_change', 'all'],
+
                         default='all', help='Type of report to generate')
     parser.add_argument('--output', type=str, default='reports',
                        help='Output directory for reports')

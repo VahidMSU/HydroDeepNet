@@ -36,4 +36,3 @@ class AgentConfig:
     CDL_CODES_path = "/data/SWATGenXApp/GenXAppData/CDL/CDL_CODES.csv"
     PRISM_PATH = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/PRISM_ML_250m.h5'
     loca2_path = '/data/SWATGenXApp/GenXAppData/HydroGeoDataset/LOCA2_MLP.h5'
- 
