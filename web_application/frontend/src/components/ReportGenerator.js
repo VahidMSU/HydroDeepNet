@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFileAlt,
+  faCalendarAlt,
+  faChartArea,
   faLayerGroup,
   faSpinner,
   faCheck,
@@ -9,8 +11,8 @@ import {
   faDownload,
   faEye,
   faClipboard,
+  faCloudDownloadAlt,
   faChevronDown,
-  
 } from '@fortawesome/free-solid-svg-icons';
 import {
   ReportForm,
@@ -31,8 +33,8 @@ import {
  
   faMapMarkerAlt,
 
-
 } from '@fortawesome/free-solid-svg-icons';
+
 import InfoBox from './InfoBox';
 import { downloadReport, viewReport, checkReportStatus } from '../utils/reportDownloader';
 import { debugLog } from '../utils/debugUtils';
@@ -335,7 +337,9 @@ const ReportGenerator = ({ formData }) => {
                 <option value="cdl">Cropland Data Layer (CDL)</option>
                 <option value="groundwater">Groundwater Data</option>
                 <option value="gov_units">Governmental Units</option>
+
                 <option value="climate_change">Climate Change Projection</option> 
+
               </select>
               <FontAwesomeIcon icon={faChevronDown} className="select-arrow" />
             </InputField>
@@ -364,7 +368,6 @@ const ReportGenerator = ({ formData }) => {
             </FormGroup>
                  )}
         </ReportRow>
-
 
 
         <SubmitButton type="submit" disabled={loading || !hasSelectedArea}>
