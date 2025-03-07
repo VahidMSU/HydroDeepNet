@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFileAlt,
-  faCalendarAlt,
-  faChartArea,
   faLayerGroup,
   faSpinner,
   faCheck,
@@ -11,7 +9,6 @@ import {
   faDownload,
   faEye,
   faClipboard,
-  faCloudDownloadAlt,
   faChevronDown,
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -28,11 +25,8 @@ import {
   CoordinatesDisplay,
 } from '../styles/HydroGeoDataset.tsx';
 
-
 import {
- 
   faMapMarkerAlt,
-
 } from '@fortawesome/free-solid-svg-icons';
 
 import InfoBox from './InfoBox';
@@ -49,7 +43,6 @@ const ReportGenerator = ({ formData }) => {
     end_year: 2020,
     include_climate_change: true,
   });
-
   // Add a coordinator ID reference to allow the map to communicate with the form
   const reportCoordinatorId = 'report-coordinator';
 
