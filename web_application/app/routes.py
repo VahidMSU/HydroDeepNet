@@ -27,8 +27,6 @@ from flask import send_from_directory
 import requests
 from flask import Flask, request, jsonify
 import sys	
-from AI_agent.interactive_agent import interactive_session
-from AI_agent.report_generator import generate_reports
 import os
 from app.tasks import create_model_task
 from datetime import datetime
