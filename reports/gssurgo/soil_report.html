@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environmental Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .report-navigation {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        .report-navigation a {
+            margin-right: 15px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .report-navigation a:hover {
+            text-decoration: underline;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-navigation">
+        <a href="../index.html">← Back to Reports Index</a>
+    </div>
+    <h1 id="gssurgo-soil-analysis-report">gSSURGO Soil Analysis Report</h1>
+<h2 id="overview">Overview</h2>
+<p><strong>Region:</strong> Lat [43.1581, 44.1647], Lon [-85.4443, -84.2393]</p>
+<p><strong>Available Soil Parameters:</strong></p>
+<ul>
+<li>Albedo (fraction)</li>
+<li>Available Water Capacity (cm/cm)</li>
+<li>Bulk Density (g/cm³)</li>
+<li>Calcium Carbonate (%)</li>
+<li>Organic Carbon (%)</li>
+<li>Clay Content (%)</li>
+<li>Depth (cm)</li>
+<li>Total Soil Depth (cm)</li>
+<li>Electrical Conductivity (dS/m)</li>
+<li>Soil pH (pH)</li>
+<li>Rock Fragment Content (%)</li>
+<li>Sand Content (%)</li>
+<li>Silt Content (%)</li>
+<li>Hydraulic Conductivity (mm/hr)</li>
+</ul>
+<h2 id="soil-characteristics-summary">Soil Characteristics Summary</h2>
+<p><strong>Dominant Soil Texture:</strong> Sandy Loam</p>
+<p><strong>Texture Composition:</strong></p>
+<p><img alt="Soil Texture Composition" src="soil_texture.png" /></p>
+<p><strong>Soil Fertility Level:</strong> Moderate</p>
+<p><strong>Description:</strong> Moderately fertile soils requiring standard amendments for good productivity.</p>
+<h3 id="soil-fertility-components">Soil Fertility Components</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Value</th>
+<th>Rating</th>
+<th>Implication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pH</td>
+<td>6.09</td>
+<td>Optimal</td>
+<td>Favorable for most crops; good nutrient availability</td>
+</tr>
+<tr>
+<td>Organic Carbon</td>
+<td>2.73%</td>
+<td>Moderate</td>
+<td>Moderate fertility; adequate soil structure</td>
+</tr>
+<tr>
+<td>Available Water Capacity</td>
+<td>0.119 cm/cm</td>
+<td>Moderate</td>
+<td>Moderate water retention; average irrigation needs</td>
+</tr>
+<tr>
+<td>Soil Texture</td>
+<td>Sandy Loam</td>
+<td>-</td>
+<td>Affects drainage and nutrient retention</td>
+</tr>
+<tr>
+<td>Drainage</td>
+<td>-</td>
+<td>Good</td>
+<td>Well-drained; low risk of waterlogging</td>
+</tr>
+<tr>
+<td>Nutrient Retention</td>
+<td>-</td>
+<td>Low</td>
+<td>Poor nutrient retention; potential leaching issues</td>
+</tr>
+</tbody>
+</table>
+<h2 id="soil-parameter-statistics">Soil Parameter Statistics</h2>
+<p>The following table presents key statistics for the analyzed soil parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Mean</th>
+<th>Median</th>
+<th>Min</th>
+<th>Max</th>
+<th>Std Dev</th>
+<th>CV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Albedo</td>
+<td>0.220</td>
+<td>0.230</td>
+<td>0.000</td>
+<td>0.370</td>
+<td>0.080</td>
+<td>0.364</td>
+</tr>
+<tr>
+<td>Available Water Capacity</td>
+<td>0.119</td>
+<td>0.112</td>
+<td>0.000</td>
+<td>0.550</td>
+<td>0.063</td>
+<td>0.530</td>
+</tr>
+<tr>
+<td>Bulk Density</td>
+<td>1.499</td>
+<td>1.537</td>
+<td>0.150</td>
+<td>1.756</td>
+<td>0.243</td>
+<td>0.162</td>
+</tr>
+<tr>
+<td>Calcium Carbonate</td>
+<td>3.560</td>
+<td>3.333</td>
+<td>0.000</td>
+<td>67.500</td>
+<td>3.413</td>
+<td>0.959</td>
+</tr>
+<tr>
+<td>Organic Carbon</td>
+<td>2.729</td>
+<td>0.561</td>
+<td>0.000</td>
+<td>53.052</td>
+<td>8.221</td>
+<td>3.012</td>
+</tr>
+<tr>
+<td>Clay Content</td>
+<td>13.566</td>
+<td>10.400</td>
+<td>0.000</td>
+<td>68.000</td>
+<td>10.174</td>
+<td>0.750</td>
+</tr>
+<tr>
+<td>Depth</td>
+<td>872.554</td>
+<td>842.500</td>
+<td>20.000</td>
+<td>2030.000</td>
+<td>154.719</td>
+<td>0.177</td>
+</tr>
+<tr>
+<td>Total Soil Depth</td>
+<td>1788.768</td>
+<td>2000.000</td>
+<td>20.000</td>
+<td>2030.000</td>
+<td>263.629</td>
+<td>0.147</td>
+</tr>
+<tr>
+<td>Electrical Conductivity</td>
+<td>0.056</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>1.100</td>
+<td>0.088</td>
+<td>1.562</td>
+</tr>
+<tr>
+<td>Soil pH</td>
+<td>6.089</td>
+<td>6.540</td>
+<td>0.000</td>
+<td>8.200</td>
+<td>1.724</td>
+<td>0.283</td>
+</tr>
+<tr>
+<td>Rock Fragment Content</td>
+<td>5.283</td>
+<td>4.000</td>
+<td>0.000</td>
+<td>31.000</td>
+<td>3.907</td>
+<td>0.740</td>
+</tr>
+<tr>
+<td>Sand Content</td>
+<td>65.374</td>
+<td>70.750</td>
+<td>0.000</td>
+<td>97.333</td>
+<td>24.349</td>
+<td>0.372</td>
+</tr>
+<tr>
+<td>Silt Content</td>
+<td>18.884</td>
+<td>18.233</td>
+<td>0.000</td>
+<td>68.900</td>
+<td>14.459</td>
+<td>0.766</td>
+</tr>
+<tr>
+<td>Hydraulic Conductivity</td>
+<td>162.241</td>
+<td>156.528</td>
+<td>0.000</td>
+<td>1015.200</td>
+<td>162.911</td>
+<td>1.004</td>
+</tr>
+</tbody>
+</table>
+<p><em>CV: Coefficient of Variation (Std Dev / Mean)</em></p>
+<h2 id="soil-parameter-distributions">Soil Parameter Distributions</h2>
+<p>The distributions of key soil parameters are shown below:</p>
+<p><img alt="Soil Parameter Distributions" src="soil_distributions_composite.png" /></p>
+<p><em>Individual parameter distributions can be found in the 'distributions' folder.</em></p>
+<h2 id="spatial-distribution-maps">Spatial Distribution Maps</h2>
+<p>The spatial distribution of key soil parameters across the study area is shown below:</p>
+<p><img alt="Soil Parameter Maps" src="soil_maps_composite.png" /></p>
+<p><em>Individual parameter maps can be found in the 'parameter_maps' folder.</em></p>
+<h2 id="soil-limitations">Soil Limitations</h2>
+<h3 id="soil-depth-limitations">Soil Depth Limitations</h3>
+<ul>
+<li><strong>Mean soil depth:</strong> 1788.8 cm</li>
+<li><strong>Areas with shallow soil (&lt;50cm):</strong> 0.0%</li>
+<li><strong>Limitation level:</strong> Slight</li>
+<li><strong>Recommendation:</strong> Choose shallow-rooted crops or implement raised beds in affected areas.</li>
+</ul>
+<h3 id="rock-content-limitations">Rock Content Limitations</h3>
+<ul>
+<li><strong>Mean rock content:</strong> 5.3%</li>
+<li><strong>Areas with high rock content (&gt;15%):</strong> 2.0%</li>
+<li><strong>Limitation level:</strong> Slight</li>
+<li><strong>Recommendation:</strong> Consider rock removal or selecting crops tolerant of rocky soils.</li>
+</ul>
+<h3 id="drainage-limitations">Drainage Limitations</h3>
+<ul>
+<li><strong>Areas with poor drainage:</strong> 0.8%</li>
+<li><strong>Limitation level:</strong> Slight</li>
+<li><strong>Recommendation:</strong> Install drainage systems or select water-tolerant crops in poorly drained areas.</li>
+</ul>
+<h3 id="ph-limitations">pH Limitations</h3>
+<ul>
+<li><strong>Areas with acidic soils (pH&lt;5.5):</strong> 16.5%</li>
+<li><strong>Areas with alkaline soils (pH&gt;7.5):</strong> 6.5%</li>
+<li><strong>Limitation level:</strong> Slight</li>
+<li><strong>Recommendation:</strong> Apply lime in acidic areas or sulfur in alkaline areas to adjust pH.</li>
+</ul>
+<h3 id="salinity-limitations">Salinity Limitations</h3>
+<ul>
+<li><strong>Mean electrical conductivity:</strong> 0.06 dS/m</li>
+<li><strong>Areas with high salinity (&gt;4 dS/m):</strong> 0.0%</li>
+<li><strong>Limitation level:</strong> Slight</li>
+<li><strong>Recommendation:</strong> Leach salts with irrigation, use salt-tolerant crops in affected areas.</li>
+</ul>
+<h2 id="soil-management-recommendations">Soil Management Recommendations</h2>
+<p>Based on the analysis of soil properties, the following management practices are recommended:</p>
+<ol>
+<li>Maintain organic matter through crop residue retention and minimal tillage.</li>
+<li>Apply fertilizers in smaller, more frequent doses to prevent nutrient leaching.</li>
+</ol>
+<h2 id="parameter-correlations">Parameter Correlations</h2>
+<p>The correlation matrix below shows relationships between soil parameters. Strong positive correlations appear in red, while strong negative correlations appear in blue.</p>
+<p><img alt="Soil Parameter Correlation Matrix" src="soil_correlation.png" /></p>
+<h3 id="key-parameter-relationships">Key Parameter Relationships</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter 1</th>
+<th>Parameter 2</th>
+<th>Correlation</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bulk Density</td>
+<td>Organic Carbon</td>
+<td>-0.92</td>
+<td>Strong negative relationship</td>
+</tr>
+<tr>
+<td>Clay Content</td>
+<td>Silt Content</td>
+<td>0.90</td>
+<td>Strong positive relationship</td>
+</tr>
+<tr>
+<td>Sand Content</td>
+<td>Silt Content</td>
+<td>-0.86</td>
+<td>Strong negative relationship</td>
+</tr>
+<tr>
+<td>Clay Content</td>
+<td>Sand Content</td>
+<td>-0.84</td>
+<td>Strong negative relationship</td>
+</tr>
+<tr>
+<td>Available Water Capacity</td>
+<td>Organic Carbon</td>
+<td>0.82</td>
+<td>Strong positive relationship</td>
+</tr>
+</tbody>
+</table>
+<h2 id="data-source-and-methodology">Data Source and Methodology</h2>
+<p>This report is based on the Gridded Soil Survey Geographic (gSSURGO) database, which provides soil information at a 250m resolution. The gSSURGO database combines data from soil surveys conducted by the USDA Natural Resources Conservation Service (NRCS).</p>
+<p><strong>Processing steps:</strong></p>
+<ol>
+<li>Extraction of soil data for the specified region</li>
+<li>Statistical analysis of soil parameters</li>
+<li>Soil texture classification based on sand, silt, and clay content</li>
+<li>Assessment of soil fertility and limitations</li>
+<li>Generation of visualizations and spatial maps</li>
+</ol>
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li>The analysis is based on the resolution of the gSSURGO data (250m), which may not capture fine-scale soil variations</li>
+<li>Some parameters may have missing data in certain areas</li>
+<li>Local soil conditions may vary and on-site testing is recommended for specific applications</li>
+</ul>
+<h2 id="data-export">Data Export</h2>
+<p>The complete dataset has been exported to CSV format for further analysis: <a href="soil_data.csv">soil_data.csv</a></p>
+<hr />
+<p><em>Report generated on 2025-03-13 at 08:34</em></p>
+</body>
+</html>
