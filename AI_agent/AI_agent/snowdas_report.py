@@ -19,14 +19,16 @@ try:
     from AI_agent.snowdas_utils import (
         get_snodas_spatial_means, create_period_labels,
         plot_snow_timeseries, create_snow_spatial_plot, create_snow_seasonal_plot,
-        export_snow_data_to_csv, calculate_snow_trends, SNODAS_VARIABLES
+        export_snow_data_to_csv, calculate_snow_trends, SNODAS_VARIABLES,
+        create_snow_monthly_analysis_plot
     )
 except ImportError:
     from config import AgentConfig
     from snowdas_utils import (
         get_snodas_spatial_means, create_period_labels,
         plot_snow_timeseries, create_snow_spatial_plot, create_snow_seasonal_plot,
-        export_snow_data_to_csv, calculate_snow_trends, SNODAS_VARIABLES
+        export_snow_data_to_csv, calculate_snow_trends, SNODAS_VARIABLES,
+        create_snow_monthly_analysis_plot
     )
 
 # Configure logger
@@ -67,6 +69,7 @@ def generate_snodas_report(data: Dict[str, np.ndarray], start_year: int, end_yea
         timeseries_path = os.path.join(output_dir, "snodas_timeseries.png")
         spatial_path = os.path.join(output_dir, "snodas_spatial.png")
         seasonal_path = os.path.join(output_dir, "snodas_seasonal.png")
+        monthly_analysis_path = os.path.join(output_dir, "snodas_monthly_analysis.png")
         report_path = os.path.join(output_dir, "snodas_report.md")
         stats_path = os.path.join(output_dir, "snodas_stats.csv")
         
@@ -96,6 +99,14 @@ def generate_snodas_report(data: Dict[str, np.ndarray], start_year: int, end_yea
             start_year=start_year,
             end_year=end_year,
             output_path=seasonal_path
+        )
+        
+        # Generate the new monthly analysis plot
+        create_snow_monthly_analysis_plot(
+            data=data,
+            start_year=start_year,
+            end_year=end_year,
+            output_path=monthly_analysis_path
         )
         
         # Calculate statistics for each variable
@@ -216,6 +227,16 @@ def generate_snodas_report(data: Dict[str, np.ndarray], start_year: int, end_yea
             f.write("## Seasonal Snow Patterns\n\n")
             f.write(f"The seasonal analysis shows how snow variables vary throughout the year.\n\n")
             f.write(f"![Seasonal Analysis]({os.path.basename(seasonal_path)})\n\n")
+            
+            # New monthly analysis section
+            f.write("## Monthly Snow Analysis\n\n")
+            f.write(f"The monthly analysis shows the average patterns and variability of snow variables by month over the {start_year}-{end_year} period.\n\n")
+            f.write(f"![Monthly Analysis]({os.path.basename(monthly_analysis_path)})\n\n")
+            f.write("The plots show the mean monthly values (line), the standard deviation range (darker shading), and the minimum-maximum range (lighter shading) over the analyzed period.\n\n")
+            f.write("This visualization helps identify:\n\n")
+            f.write("- The typical seasonal cycle of snow variables\n")
+            f.write("- The months with highest uncertainty/variability\n")
+            f.write("- The overall pattern of snow accumulation and melt\n\n")
             
             # Add some interpretation of seasonal patterns for SWE
             if 'snow_water_equivalent' in spatial_means and aggregation == 'monthly':

@@ -290,6 +290,203 @@ class SNODAS_Dataset:
         self.logger.info(f"Total spatial average processing took {time.time() - start_time:.2f} seconds")
         
         return spatial_averages
+        
+    def calculate_snow_cover_duration(self):
+        """
+        Calculate the snow cover duration for each pixel in the dataset.
+        
+        Returns:
+            Dictionary containing snow cover duration statistics
+        """
+        snow_data = self.get_data()
+        if not snow_data or 'snow_water_equivalent' not in snow_data:
+            self.logger.warning("No SWE data to calculate snow cover duration")
+            return {}
+            
+        swe_data = snow_data['snow_water_equivalent']
+        if swe_data.size == 0:
+            return {}
+            
+        # Define SWE threshold for considering a pixel as snow-covered (e.g., 5mm)
+        swe_threshold = 5.0
+        
+        # Calculate snow-covered days for each pixel
+        snow_covered = np.where(swe_data > swe_threshold, 1, 0)
+        
+        # Calculate duration statistics
+        snow_duration = np.sum(snow_covered, axis=0)  # Sum along time axis
+        
+        # Calculate statistics
+        mean_duration = np.nanmean(snow_duration)
+        max_duration = np.nanmax(snow_duration)
+        min_duration = np.nanmin(snow_duration)
+        std_duration = np.nanstd(snow_duration)
+        
+        # Store in dictionary
+        result = {
+            'duration_map': snow_duration,
+            'mean_duration': mean_duration,
+            'max_duration': max_duration,
+            'min_duration': min_duration,
+            'std_duration': std_duration
+        }
+        
+        self.logger.info(f"Snow cover duration stats - Mean: {mean_duration:.1f}, Max: {max_duration:.1f}, Min: {min_duration:.1f} days")
+        return result
+        
+    def detect_snow_timing(self):
+        """
+        Detect the timing of snow accumulation and melt across the domain.
+        
+        Returns:
+            Dictionary with statistics about snow timing
+        """
+        snow_data = self.get_data()
+        if not snow_data or 'snow_water_equivalent' not in snow_data:
+            self.logger.warning("No SWE data to detect snow timing")
+            return {}
+            
+        swe_data = snow_data['snow_water_equivalent']
+        if swe_data.size == 0 or self.config.get('aggregation') != 'monthly':
+            self.logger.warning("Snow timing detection requires monthly aggregation")
+            return {}
+            
+        # Get spatial mean SWE for each time step
+        spatial_mean_swe = np.nanmean(swe_data, axis=(1, 2))
+        
+        # Determine the month with maximum SWE in each year
+        start_year = self.config.get('start_year')
+        end_year = self.config.get('end_year')
+        years = range(start_year, end_year + 1)
+        peak_months = []
+        
+        for year_idx, year in enumerate(years):
+            year_indices = range(year_idx*12, (year_idx+1)*12)
+            if max(year_indices) < len(spatial_mean_swe):
+                year_data = spatial_mean_swe[year_indices]
+                peak_month = np.argmax(year_data) + 1  # +1 because months are 1-indexed
+                peak_months.append(peak_month)
+        
+        result = {
+            'peak_swe_months': peak_months,
+            'mean_peak_month': np.mean(peak_months) if peak_months else None,
+            'years': list(years)
+        }
+        
+        self.logger.info(f"Snow peak timing - mean peak month: {result['mean_peak_month']:.1f}")
+        return result
+    
+    def analyze_interannual_variability(self):
+        """
+        Analyze the inter-annual variability of snow variables.
+        
+        Returns:
+            Dictionary with inter-annual variability statistics
+        """
+        spatial_averages = self.get_spatial_average_over_time()
+        if not spatial_averages:
+            return {}
+            
+        # If not annual aggregation, recalculate annual values
+        if self.config.get('aggregation') != 'annual':
+            # Get daily data and create annual averages
+            original_agg = self.config.get('aggregation')
+            self.config['aggregation'] = 'annual'
+            annual_data = self.get_spatial_average_over_time()
+            self.config['aggregation'] = original_agg
+        else:
+            annual_data = spatial_averages
+            
+        # Calculate coefficient of variation (CV) for each variable
+        result = {}
+        for var_name, var_data in annual_data.items():
+            if len(var_data) > 1:  # Need at least 2 years for CV
+                mean_value = np.nanmean(var_data)
+                std_value = np.nanstd(var_data)
+                cv = (std_value / mean_value) * 100 if mean_value > 0 else float('nan')
+                
+                anomalies = var_data - mean_value
+                normalized_anomalies = anomalies / mean_value if mean_value > 0 else anomalies
+                
+                result[var_name] = {
+                    'values': var_data.tolist(),
+                    'mean': float(mean_value),
+                    'std': float(std_value),
+                    'cv_percent': float(cv),
+                    'anomalies': anomalies.tolist(),
+                    'normalized_anomalies': normalized_anomalies.tolist()
+                }
+                
+        self.logger.info(f"Calculated inter-annual variability for {len(result)} variables")
+        return result
+    
+    def calculate_extreme_statistics(self):
+        """
+        Calculate statistics about extreme snow events.
+        
+        Returns:
+            Dictionary with extreme snow statistics
+        """
+        snow_data = self.get_data()
+        if not snow_data:
+            return {}
+            
+        result = {}
+        
+        # Analyze SWE extremes if available
+        if 'snow_water_equivalent' in snow_data and snow_data['snow_water_equivalent'].size > 0:
+            swe = snow_data['snow_water_equivalent']
+            spatial_mean_swe = np.nanmean(swe, axis=(1, 2))
+            
+            # Find the highest SWE value and its time index
+            max_swe_idx = np.nanargmax(spatial_mean_swe)
+            max_swe_value = spatial_mean_swe[max_swe_idx]
+            
+            # Calculate percentiles for SWE distribution
+            p90 = np.nanpercentile(spatial_mean_swe, 90)
+            p95 = np.nanpercentile(spatial_mean_swe, 95)
+            p99 = np.nanpercentile(spatial_mean_swe, 99)
+            
+            # Count extreme events (days above 90th percentile)
+            extreme_days = np.sum(spatial_mean_swe > p90)
+            
+            result['swe_extremes'] = {
+                'max_value': float(max_swe_value),
+                'max_index': int(max_swe_idx),
+                'p90': float(p90),
+                'p95': float(p95),
+                'p99': float(p99),
+                'extreme_days': int(extreme_days)
+            }
+            
+        # Analyze melt rate extremes if available
+        if 'melt_rate' in snow_data and snow_data['melt_rate'].size > 0:
+            melt = snow_data['melt_rate']
+            spatial_mean_melt = np.nanmean(melt, axis=(1, 2))
+            
+            # Find the highest melt rate and its time index
+            max_melt_idx = np.nanargmax(spatial_mean_melt)
+            max_melt_value = spatial_mean_melt[max_melt_idx]
+            
+            # Calculate percentiles for melt rate distribution
+            p90 = np.nanpercentile(spatial_mean_melt, 90)
+            p95 = np.nanpercentile(spatial_mean_melt, 95)
+            p99 = np.nanpercentile(spatial_mean_melt, 99)
+            
+            # Count extreme events (days above 90th percentile)
+            extreme_days = np.sum(spatial_mean_melt > p90)
+            
+            result['melt_extremes'] = {
+                'max_value': float(max_melt_value),
+                'max_index': int(max_melt_idx),
+                'p90': float(p90),
+                'p95': float(p95),
+                'p99': float(p99),
+                'extreme_days': int(extreme_days)
+            }
+            
+        self.logger.info(f"Calculated extreme statistics for {len(result)} variables")
+        return result
 
 
 if __name__ == "__main__":
