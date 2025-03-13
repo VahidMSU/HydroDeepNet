@@ -59,13 +59,37 @@ def get_temp_dir():
 def safe_copy_or_link(src, dst):
     """Attempts to copy file, falls back to creating symlink if copy fails."""
     try:
+        # Check if source and destination are the same file
+        if os.path.exists(dst) and os.path.exists(src):
+            try:
+                if os.path.samefile(src, dst):
+                    print(f"Source and destination are the same file: {src}")
+                    return True, "skipped"
+            except OSError:
+                # Handle case where one of the files might be a broken symlink
+                pass
+        
         # Try to copy first
         shutil.copy2(src, dst)
         os.chmod(dst, 0o664)
         return True, "copy"
+    except shutil.SameFileError:
+        print(f"Source and destination are the same file: {src}")
+        return True, "skipped"
     except PermissionError:
         try:
             # If copy fails, try to create a symbolic link
+            if os.path.exists(dst):
+                os.remove(dst)
+            os.symlink(src, dst)
+            return True, "link"
+        except Exception as e:
+            print(f"Both copy and link failed for {src}: {e}")
+            return False, "failed"
+    except Exception as e:
+        print(f"Copy operation failed for {src}: {e}")
+        try:
+            # If copy fails for any other reason, try to create a symbolic link
             if os.path.exists(dst):
                 os.remove(dst)
             os.symlink(src, dst)
