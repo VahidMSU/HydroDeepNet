@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environmental Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .report-navigation {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+        .report-navigation a {
+            margin-right: 15px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .report-navigation a:hover {
+            text-decoration: underline;
+        }
+        code {
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-navigation">
+        <a href="../index.html">← Back to Reports Index</a>
+    </div>
+    <h1 id="comprehensive-modis-data-analysis-report">Comprehensive MODIS Data Analysis Report</h1>
+<p><strong>Region:</strong> Study Area</p>
+<p><strong>Coordinates:</strong> Lat [43.1581, 44.1647], Lon [-85.4443, -84.2393]</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#executive-summary">Executive Summary</a></li>
+<li><a href="#products-overview">Products Overview</a></li>
+<li><a href="#product-MOD13Q1_NDVI">Normalized Difference Vegetation Index</a></li>
+<li><a href="#product-MOD13Q1_EVI">Enhanced Vegetation Index</a></li>
+<li><a href="#product-MOD15A2H_Lai_500m">Leaf Area Index</a></li>
+<li><a href="#product-MOD16A2_ET">Evapotranspiration</a></li>
+<li><a href="#cross-product-analysis">Cross-Product Analysis</a></li>
+<li><a href="#methodology">Methodology</a></li>
+<li><a href="#data-sources">Data Sources</a></li>
+<li><a href="#limitations">Limitations</a></li>
+</ol>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This report presents a comprehensive analysis of MODIS remote sensing data for the Study Area region. The analysis includes temporal trends, spatial patterns, seasonal variations, and anomaly detection for multiple MODIS products.</p>
+<h3 id="key-findings">Key Findings</h3>
+<ul>
+<li><strong>Normalized Difference Vegetation Index</strong>: Shows a non-significant increasing trend. Peaks in November, lowest in February. </li>
+<li><strong>Enhanced Vegetation Index</strong>: Shows a non-significant increasing trend. Peaks in November, lowest in February. </li>
+<li><strong>Leaf Area Index</strong>: Shows a non-significant increasing trend. Peaks in December, lowest in January. </li>
+<li><strong>Evapotranspiration</strong>: Shows a non-significant increasing trend. Peaks in December, lowest in January. </li>
+</ul>
+<h2 id="products-overview">Products Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Product</th>
+<th>Description</th>
+<th>Period</th>
+<th>Resolution</th>
+<th>Units</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MOD13Q1_NDVI</td>
+<td>Normalized Difference Vegetation Index</td>
+<td>2010-2020</td>
+<td>16-day</td>
+<td>NDVI</td>
+</tr>
+<tr>
+<td>MOD13Q1_EVI</td>
+<td>Enhanced Vegetation Index</td>
+<td>2010-2020</td>
+<td>16-day</td>
+<td>EVI</td>
+</tr>
+<tr>
+<td>MOD15A2H_Lai_500m</td>
+<td>Leaf Area Index</td>
+<td>2010-2020</td>
+<td>8-day</td>
+<td>m²/m²</td>
+</tr>
+<tr>
+<td>MOD16A2_ET</td>
+<td>Evapotranspiration</td>
+<td>2010-2020</td>
+<td>8-day</td>
+<td>mm/8-day</td>
+</tr>
+</tbody>
+</table>
+<p><a id='product-MOD13Q1_NDVI'></a></p>
+<h2 id="normalized-difference-vegetation-index">Normalized Difference Vegetation Index</h2>
+<h3 id="summary-statistics">Summary Statistics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mean</td>
+<td>0.4900 NDVI</td>
+</tr>
+<tr>
+<td>Median</td>
+<td>0.4810 NDVI</td>
+</tr>
+<tr>
+<td>Standard Deviation</td>
+<td>0.2465 NDVI</td>
+</tr>
+<tr>
+<td>Min</td>
+<td>0.0417 NDVI</td>
+</tr>
+<tr>
+<td>Max</td>
+<td>0.8159 NDVI</td>
+</tr>
+<tr>
+<td>Trend</td>
+<td>Increasing (0.0003 units/year)</td>
+</tr>
+<tr>
+<td>Trend Significance</td>
+<td>Not significant (p=0.5754)</td>
+</tr>
+<tr>
+<td>R-squared</td>
+<td>0.0024</td>
+</tr>
+</tbody>
+</table>
+<h3 id="time-series-analysis">Time Series Analysis</h3>
+<p><img alt="Time Series" src="MOD13Q1_NDVI/MOD13Q1_NDVI_timeseries.png" /></p>
+<h3 id="anomaly-analysis">Anomaly Analysis</h3>
+<p><img alt="Anomalies" src="MOD13Q1_NDVI/MOD13Q1_NDVI_anomaly.png" /></p>
+<p>The data shows positive anomalies in 70 timepoints (53.0%) and negative anomalies in 62 timepoints (47.0%). The distribution of anomalies is relatively balanced.</p>
+<h3 id="seasonal-pattern">Seasonal Pattern</h3>
+<p><img alt="Seasonal Pattern" src="MOD13Q1_NDVI/MOD13Q1_NDVI_seasonal.png" /></p>
+<p>The Normalized Difference Vegetation Index shows strong seasonal variability with peak values in November and minimum values in February. The seasonal range is 0.3913 NDVI, representing 79.4% of the annual mean.</p>
+<h3 id="spatial-distribution">Spatial Distribution</h3>
+<p><img alt="Spatial Distribution" src="MOD13Q1_NDVI/MOD13Q1_NDVI_spatial.png" /></p>
+<p><strong>Spatial Statistics:</strong></p>
+<ul>
+<li>Spatial Mean: 0.0582 NDVI</li>
+<li>Spatial Standard Deviation: 0.0648 NDVI</li>
+<li>Data Coverage: 100.0% (182284 valid pixels)</li>
+</ul>
+<h3 id="data-export">Data Export</h3>
+<p>Complete time series data for Normalized Difference Vegetation Index is available <a href="MOD13Q1_NDVI/MOD13Q1_NDVI_stats.csv">here</a>.</p>
+<hr />
+<p><a id='product-MOD13Q1_EVI'></a></p>
+<h2 id="enhanced-vegetation-index">Enhanced Vegetation Index</h2>
+<h3 id="summary-statistics_1">Summary Statistics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mean</td>
+<td>0.3071 EVI</td>
+</tr>
+<tr>
+<td>Median</td>
+<td>0.2648 EVI</td>
+</tr>
+<tr>
+<td>Standard Deviation</td>
+<td>0.1824 EVI</td>
+</tr>
+<tr>
+<td>Min</td>
+<td>0.0330 EVI</td>
+</tr>
+<tr>
+<td>Max</td>
+<td>0.6096 EVI</td>
+</tr>
+<tr>
+<td>Trend</td>
+<td>Increasing (0.0001 units/year)</td>
+</tr>
+<tr>
+<td>Trend Significance</td>
+<td>Not significant (p=0.7758)</td>
+</tr>
+<tr>
+<td>R-squared</td>
+<td>0.0006</td>
+</tr>
+</tbody>
+</table>
+<h3 id="time-series-analysis_1">Time Series Analysis</h3>
+<p><img alt="Time Series" src="MOD13Q1_EVI/MOD13Q1_EVI_timeseries.png" /></p>
+<h3 id="anomaly-analysis_1">Anomaly Analysis</h3>
+<p><img alt="Anomalies" src="MOD13Q1_EVI/MOD13Q1_EVI_anomaly.png" /></p>
+<p>The data shows positive anomalies in 66 timepoints (50.0%) and negative anomalies in 66 timepoints (50.0%). The distribution of anomalies is relatively balanced.</p>
+<h3 id="seasonal-pattern_1">Seasonal Pattern</h3>
+<p><img alt="Seasonal Pattern" src="MOD13Q1_EVI/MOD13Q1_EVI_seasonal.png" /></p>
+<p>The Enhanced Vegetation Index shows strong seasonal variability with peak values in November and minimum values in February. The seasonal range is 0.3157 EVI, representing 102.0% of the annual mean.</p>
+<h3 id="spatial-distribution_1">Spatial Distribution</h3>
+<p><img alt="Spatial Distribution" src="MOD13Q1_EVI/MOD13Q1_EVI_spatial.png" /></p>
+<p><strong>Spatial Statistics:</strong></p>
+<ul>
+<li>Spatial Mean: 0.0451 EVI</li>
+<li>Spatial Standard Deviation: 0.0441 EVI</li>
+<li>Data Coverage: 100.0% (182284 valid pixels)</li>
+</ul>
+<h3 id="data-export_1">Data Export</h3>
+<p>Complete time series data for Enhanced Vegetation Index is available <a href="MOD13Q1_EVI/MOD13Q1_EVI_stats.csv">here</a>.</p>
+<hr />
+<p><a id='product-MOD15A2H_Lai_500m'></a></p>
+<h2 id="leaf-area-index">Leaf Area Index</h2>
+<h3 id="summary-statistics_2">Summary Statistics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mean</td>
+<td>1.3648 m²/m²</td>
+</tr>
+<tr>
+<td>Median</td>
+<td>0.7678 m²/m²</td>
+</tr>
+<tr>
+<td>Standard Deviation</td>
+<td>1.2562 m²/m²</td>
+</tr>
+<tr>
+<td>Min</td>
+<td>0.0560 m²/m²</td>
+</tr>
+<tr>
+<td>Max</td>
+<td>3.6383 m²/m²</td>
+</tr>
+<tr>
+<td>Trend</td>
+<td>Increasing (0.0000 units/year)</td>
+</tr>
+<tr>
+<td>Trend Significance</td>
+<td>Not significant (p=0.9992)</td>
+</tr>
+<tr>
+<td>R-squared</td>
+<td>0.0000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="time-series-analysis_2">Time Series Analysis</h3>
+<p><img alt="Time Series" src="MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_timeseries.png" /></p>
+<h3 id="anomaly-analysis_2">Anomaly Analysis</h3>
+<p><img alt="Anomalies" src="MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_anomaly.png" /></p>
+<p>The data shows positive anomalies in 50 timepoints (37.9%) and negative anomalies in 82 timepoints (62.1%). This indicates predominantly below-average conditions during the observed period.</p>
+<h3 id="seasonal-pattern_2">Seasonal Pattern</h3>
+<p><img alt="Seasonal Pattern" src="MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_seasonal.png" /></p>
+<p>The Leaf Area Index shows strong seasonal variability with peak values in December and minimum values in January. The seasonal range is 2.0567 m²/m², representing 148.1% of the annual mean.</p>
+<h3 id="spatial-distribution_2">Spatial Distribution</h3>
+<p><img alt="Spatial Distribution" src="MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_spatial.png" /></p>
+<p><strong>Spatial Statistics:</strong></p>
+<ul>
+<li>Spatial Mean: 0.0744 m²/m²</li>
+<li>Spatial Standard Deviation: 0.3287 m²/m²</li>
+<li>Data Coverage: 98.6% (179808 valid pixels)</li>
+</ul>
+<h3 id="data-export_2">Data Export</h3>
+<p>Complete time series data for Leaf Area Index is available <a href="MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_stats.csv">here</a>.</p>
+<hr />
+<p><a id='product-MOD16A2_ET'></a></p>
+<h2 id="evapotranspiration">Evapotranspiration</h2>
+<h3 id="summary-statistics_3">Summary Statistics</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mean</td>
+<td>15.7112 mm/8-day</td>
+</tr>
+<tr>
+<td>Median</td>
+<td>10.6524 mm/8-day</td>
+</tr>
+<tr>
+<td>Standard Deviation</td>
+<td>12.1027 mm/8-day</td>
+</tr>
+<tr>
+<td>Min</td>
+<td>0.1292 mm/8-day</td>
+</tr>
+<tr>
+<td>Max</td>
+<td>40.4807 mm/8-day</td>
+</tr>
+<tr>
+<td>Trend</td>
+<td>Increasing (0.0063 units/year)</td>
+</tr>
+<tr>
+<td>Trend Significance</td>
+<td>Not significant (p=0.8215)</td>
+</tr>
+<tr>
+<td>R-squared</td>
+<td>0.0004</td>
+</tr>
+</tbody>
+</table>
+<h3 id="time-series-analysis_3">Time Series Analysis</h3>
+<p><img alt="Time Series" src="MOD16A2_ET/MOD16A2_ET_timeseries.png" /></p>
+<h3 id="anomaly-analysis_3">Anomaly Analysis</h3>
+<p><img alt="Anomalies" src="MOD16A2_ET/MOD16A2_ET_anomaly.png" /></p>
+<p>The data shows positive anomalies in 50 timepoints (37.9%) and negative anomalies in 82 timepoints (62.1%). This indicates predominantly below-average conditions during the observed period.</p>
+<h3 id="seasonal-pattern_3">Seasonal Pattern</h3>
+<p><img alt="Seasonal Pattern" src="MOD16A2_ET/MOD16A2_ET_seasonal.png" /></p>
+<p>The Evapotranspiration shows strong seasonal variability with peak values in December and minimum values in January. The seasonal range is 20.7069 mm/8-day, representing 129.5% of the annual mean.</p>
+<h3 id="spatial-distribution_3">Spatial Distribution</h3>
+<p><img alt="Spatial Distribution" src="MOD16A2_ET/MOD16A2_ET_spatial.png" /></p>
+<p><strong>Spatial Statistics:</strong></p>
+<ul>
+<li>Spatial Mean: 3.2168 mm/8-day</li>
+<li>Spatial Standard Deviation: 0.6791 mm/8-day</li>
+<li>Data Coverage: 8.5% (15470 valid pixels)</li>
+</ul>
+<h3 id="data-export_3">Data Export</h3>
+<p>Complete time series data for Evapotranspiration is available <a href="MOD16A2_ET/MOD16A2_ET_stats.csv">here</a>.</p>
+<hr />
+<p><a id='cross-product-analysis'></a></p>
+<h2 id="cross-product-analysis">Cross-Product Analysis</h2>
+<h3 id="product-comparison">Product Comparison</h3>
+<p>The following chart shows normalized values (z-scores) of different MODIS products to facilitate comparison of their temporal patterns:</p>
+<p><img alt="Product Comparison" src="cross_product/products_comparison.png" /></p>
+<p>Normalization allows comparison of products with different units and magnitudes.</p>
+<h3 id="product-correlations">Product Correlations</h3>
+<p>The following heatmap shows the Pearson correlation coefficients between different MODIS products:</p>
+<p><img alt="Product Correlations" src="cross_product/product_correlations.png" /></p>
+<p>Strong positive correlations suggest that the products vary similarly over time, while negative correlations indicate inverse relationships. Products with correlation close to zero vary independently of each other.</p>
+<hr />
+<p><a id='methodology'></a></p>
+<h2 id="methodology">Methodology</h2>
+<p>This analysis follows these processing steps:</p>
+<ol>
+<li><strong>Data Extraction</strong>: Raw MODIS data is extracted from the HDF5 database</li>
+<li><strong>Quality Control</strong>: Invalid values are masked and scale factors applied</li>
+<li><strong>Statistical Analysis</strong>: Time series and spatial statistics are calculated</li>
+<li><strong>Anomaly Detection</strong>: Data is compared to baseline climatology</li>
+<li><strong>Visualization</strong>: Multiple visualization types are generated to highlight patterns</li>
+<li><strong>Cross-product Analysis</strong>: Products are compared and correlation analyzed</li>
+</ol>
+<h3 id="data-processing">Data Processing</h3>
+<p>For each MODIS product, the following processing is applied:</p>
+<ul>
+<li>Spatial subsetting to the region of interest</li>
+<li>Application of appropriate scaling factors</li>
+<li>Removal of invalid data points (marked as -999 or outside valid ranges)</li>
+<li>Calculation of spatial statistics over the region</li>
+<li>Temporal aggregation for annual and seasonal patterns</li>
+<li>Trend and anomaly analysis</li>
+</ul>
+<p><a id='data-sources'></a></p>
+<h2 id="data-sources">Data Sources</h2>
+<p>This analysis uses the following MODIS (Moderate Resolution Imaging Spectroradiometer) products:</p>
+<ul>
+<li><strong>MOD13Q1_NDVI</strong>: Normalized Difference Vegetation Index</li>
+<li><strong>MOD13Q1_EVI</strong>: Enhanced Vegetation Index</li>
+<li><strong>MOD15A2H_Lai_500m</strong>: Leaf Area Index</li>
+<li><strong>MOD16A2_ET</strong>: Evapotranspiration</li>
+</ul>
+<p>MODIS data is collected by sensors aboard NASA's Terra and Aqua satellites. The original data products are provided by NASA's Earth Observing System Data and Information System (EOSDIS).</p>
+<p><a id='limitations'></a></p>
+<h2 id="limitations">Limitations</h2>
+<p>This analysis has several limitations to consider:</p>
+<ul>
+<li><strong>Spatial Resolution</strong>: The MODIS data used has a resolution of 250-500m, which may not capture fine-scale patterns</li>
+<li><strong>Cloud Interference</strong>: Despite quality control, some cloud effects may remain in the data</li>
+<li><strong>Temporal Coverage</strong>: The analysis is limited to the available time period in the database</li>
+<li><strong>Algorithmic Uncertainties</strong>: Each MODIS product has inherent uncertainties in its retrieval algorithm</li>
+<li><strong>Regional Biases</strong>: The accuracy of satellite retrievals can vary by region and land cover type</li>
+</ul>
+<hr />
+<p><em>Report generated on 2025-03-13 at 08:33</em></p>
+</body>
+</html>
