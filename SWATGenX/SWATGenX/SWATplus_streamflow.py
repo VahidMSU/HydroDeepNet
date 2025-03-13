@@ -8,10 +8,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import stat
-try:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-except ImportError:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+
 
 def ensure_directory_ownership(path, user="www-data", group="www-data"):
     """Ensures the specified directory and its contents are owned by the given user and group."""
@@ -98,8 +95,8 @@ def safe_copy_or_link(src, dst):
             print(f"Both copy and link failed for {src}: {e}")
             return False, "failed"
 
-def fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MODEL_NAME):
-    paths = SWATGenXPaths()
+def fetch_streamflow_for_watershed(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
+    paths = SWATGenXPaths
 
     model_base = paths.construct_path(paths.swatgenx_outlet_path, VPUID, LEVEL, NAME)
     swatplus_stations_shp = Path(paths.construct_path(model_base, "streamflow_data", "stations.shp"))

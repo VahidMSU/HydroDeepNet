@@ -271,6 +271,6 @@ class SWATGenXCore:
 			return None
 		self.write_meta_file()
 
-		fetch_streamflow_for_watershed(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
+		fetch_streamflow_for_watershed(self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME, self.paths)
 
 		self.check_simulation_output()
