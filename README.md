@@ -54,9 +54,15 @@ graph LR
     %% 1. INPUT DATASETS
     subgraph Input_Datasets["Input Datasets"]
     direction TB
-        PRISM("PRISM"):::datasource --- NLCD("NLCD"):::datasource --- USGSDEM("USGS DEM"):::datasource
-        LOCA2("LOCA2"):::datasource --- NSRSDB("NSRSDB"):::datasource --- SNODAS("SNODAS"):::datasource
-        MODIS("MODIS"):::datasource --- gSSURGO("gSSURGO"):::datasource --- CDL("CDL"):::datasource
+        PRISM("PRISM"):::datasource
+        NLCD("NLCD"):::datasource
+        USGSDEM("USGS DEM"):::datasource
+        LOCA2("LOCA2"):::datasource
+        NSRSDB("NSRSDB"):::datasource
+        SNODAS("SNODAS"):::datasource
+        MODIS("MODIS"):::datasource
+        gSSURGO("gSSURGO"):::datasource
+        CDL("CDL"):::datasource
     end
 
     %% 2. DATA INTEGRATION
