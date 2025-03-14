@@ -51,19 +51,21 @@ HydroDeepNet incorporates elements from various open-source software and librari
 graph LR
     title["<b>HydroDeepNet System Architecture</b><br><i>Hydrological Modeling with AI and Multi-Agent Retrieval</i>"]:::title
 
+    ```mermaid
     %% 1. INPUT DATASETS
     subgraph Input_Datasets["Input Datasets"]
     direction TB
         PRISM("PRISM"):::datasource
-        NLCD("NLCD"):::datasource
-        USGSDEM("USGS DEM"):::datasource
         LOCA2("LOCA2"):::datasource
-        NSRSDB("NSRSDB"):::datasource
-        SNODAS("SNODAS"):::datasource
         MODIS("MODIS"):::datasource
+        NLCD("NLCD"):::datasource
+        NSRSDB("NSRSDB"):::datasource
         gSSURGO("gSSURGO"):::datasource
+        USGSDEM("USGS DEM"):::datasource
+        SNODAS("SNODAS"):::datasource
         CDL("CDL"):::datasource
     end
+    ```
 
     %% 2. DATA INTEGRATION
     HydroGeoProcessor{{"HydroGeoProcessor<br>(Data Integration)"}}:::developed
