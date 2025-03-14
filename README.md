@@ -23,7 +23,7 @@ graph LR
 
     %% 1. INPUT DATASETS
     subgraph Input_Datasets["Input Datasets"]
-    direction TB
+    direction LR
         PRISM("PRISM"):::datasource
         LOCA2("LOCA2"):::datasource
         MODIS("MODIS"):::datasource
@@ -66,7 +66,7 @@ graph LR
 
     %% 4. PARALLEL PROCESSING
     subgraph Parallel_Processing["Parallel Processing"]
-    direction TB
+    direction RL
         PPS["PPS Controller"]:::existing
         Validation("Validation<br>(Ensemble)"):::developed
         Calibration("Calibration<br>(PSO)"):::developed
@@ -76,7 +76,7 @@ graph LR
 
     %% 5. AI & REPORTING
     subgraph AI_Reporting["AI & Reporting"]
-    direction TB
+    direction LR
         VisionSystem("Vision System<br>(Deep Learning, PyTorch)"):::developed
         MultiAI["Multi-AI Agents<br>(RAG System)"]:::llm
         Reports["Reports & Visualization"]:::document
