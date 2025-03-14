@@ -124,15 +124,16 @@ graph LR
     MultiAI --> Reports
 
     %% STYLING
-    classDef title font-size:20px,fill:none,stroke:none,font-weight:bold,text-align:center
-    classDef developed fill:#e1d5e7,stroke:#000000,stroke-width:2px,rx:5,ry:5,font-weight:bold
-    classDef existing fill:#cce5ff,stroke:#36393d,stroke-width:1px,rx:5,ry:5
-    classDef models fill:#cdeb8b,stroke:#36393d,stroke-width:1px,rx:5,ry:5
-    classDef datasource fill:#f0a30a,stroke:#BD7000,stroke-width:1px,rx:4,ry:4,color:#000000,font-weight:bold
-    classDef process fill:#f5f5f5,stroke:#000000,stroke-width:1px,rx:6,ry:6
-    classDef storage fill:#e51400,stroke:#000000,stroke-width:1px,rx:10,ry:10,color:#000000,font-weight:bold
-    classDef llm fill:#1ba1e2,stroke:#006EAF,stroke-width:1px,rx:8,ry:8,color:white
-    classDef document fill:#ffff88,stroke:#36393d,stroke-width:1px
+    classDef title font-size:24px,fill:none,stroke:none,font-weight:bold,text-align:center
+    classDef developed font-size:18px,fill:#e1d5e7,stroke:#000000,stroke-width:2px,rx:5,ry:5,font-weight:bold
+    classDef existing font-size:18px,fill:#cce5ff,stroke:#36393d,stroke-width:1px,rx:5,ry:5,font-weight:bold
+    classDef models font-size:18px,fill:#cdeb8b,stroke:#36393d,stroke-width:1px,rx:5,ry:5,font-weight:bold
+    classDef datasource font-size:18px,fill:#f0a30a,stroke:#BD7000,stroke-width:1px,rx:4,ry:4,color:#000000,font-weight:bold
+    classDef process font-size:18px,fill:#f5f5f5,stroke:#000000,stroke-width:1px,rx:6,ry:6,font-weight:bold
+    classDef storage font-size:18px,fill:#e51400,stroke:#000000,stroke-width:1px,rx:10,ry:10,color:#000000,font-weight:bold
+    classDef llm font-size:18px,fill:#1ba1e2,stroke:#006EAF,stroke-width:1px,rx:8,ry:8,color:white,font-weight:bold
+    classDef document font-size:18px,fill:#ffff88,stroke:#36393d,stroke-width:1px,font-weight:bold
+    linkStyle default stroke:gray;
 ```
 
 ### 2. 4D Spatiotemporal Deep Learning Vision System
