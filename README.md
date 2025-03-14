@@ -1,58 +1,59 @@
 ```mermaid
-%%{init: {'theme': 'neutral', 'flowchart': {'curve': 'basis'}}}%%
+%%{init: {'theme': 'default', 'flowchart': {'curve': 'basis'}}}%%
 graph TB
     %% Title and overall styling
     title[<u>SWATGenX Hydrological Modeling System</u>]
     title:::title
 
-    subgraph National_Database["🌐 National Database"]
+    subgraph National_Database["National Database"]
         direction LR
-        PRISM["PRISM<br>(Climate)"] -->|Climate Data| HydroGeoDataset[(HydroGeoDataset)]
-        LOCA2["LOCA2<br>(Climate)"] -->|Climate Data| HydroGeoDataset
-        NLCD["NLCD<br>(Land Cover)"] -->|Land Cover| HydroGeoDataset
-        NSRSDB["NSRSDB<br>(Solar Radiation)"] -->|Solar Radiation| HydroGeoDataset
-        gSSURGO["gSSURGO<br>(Soil)"] -->|Soil Data| HydroGeoDataset
-        USGSDEM["USGS DEM"] -->|Elevation Data| HydroGeoDataset
-        SNODAS["SNODAS"] -->|Snow Data| HydroGeoDataset
-        CDL["CDL"] -->|Crop Data| HydroGeoDataset
+        MODIS["MODIS"]:::database --> HydroGeoDataset
+        PRISM["PRISM"]:::database --> HydroGeoDataset
+        LOCA2["LOCA2"]:::database --> HydroGeoDataset
+        CDL["CDL"]:::database --> HydroGeoDataset
+        NLCD["NLCD"]:::database --> HydroGeoDataset
+        USGSDEM["USGS DEM"]:::database --> HydroGeoDataset
+        SNODAS["SNODAS"]:::database --> HydroGeoDataset
+        NSRSDB["NSRSDB"]:::database --> HydroGeoDataset
+        gSSURGO["gSSURGO"]:::database --> HydroGeoDataset
     end
 
-    subgraph Data_Processing["⚙️ Data Processing"]
+    subgraph Data_Processing["Data Processing"]
         direction TB
-        NWIS["NWIS"] --> SWATGenX{{SWATGenX}}
-        NHDPlusHR["NHDPlus HR"] --> SWATGenX
-        SWATGenX --> QSWATPlus["QSWAT+"]
-        SWATGenX --> SWATPlusEditor["SWAT+ Editor"]
+        NWIS["NWIS"]:::existing --> SWATGenX{{SWATGenX}}:::developed
+        NHDPlusHR["NHDPlus HR"]:::existing --> SWATGenX
+        SWATGenX --> QSWATPlus["QSWAT+"]:::existing
+        SWATGenX --> SWATPlusEditor["SWAT+ Editor"]:::existing
 
         subgraph Groundwater_Processing["Groundwater Processing"]
             direction LR
-            WellInfo["Water well<br>information<br>(Wellogic)"] --> EBK["Empirical<br>Bayesian<br>Kriging"]
-            EBK --> HydraulicProps["Hydraulic<br>properties"]
-            HydraulicProps --> MODGenX{{MODGenX}}
-            MODGenX --> Flopy["Flopy"]
-            Flopy --> MODFLOWNWT["MODFLOW-NWT"]
+            WellInfo["Water well information (Wellogic)"]:::existing --> EBK["Empirical Bayesian Kriging"]:::existing
+            EBK --> HydraulicProps["Hydraulic properties"]:::existing
+            HydraulicProps --> MODGenX{{MODGenX}}:::developed
+            MODGenX --> Flopy["Flopy"]:::existing
+            Flopy --> MODFLOWNWT["MODFLOW-NWT"]:::models
         end
     end
 
-    subgraph SWAT_Processing["🌊 SWAT Processing"]
-        SWATPlus["SWAT+"] -->|Streams| SWATPlusGwflow["SWAT+gwflow"]
+    subgraph SWAT_Processing["SWAT Processing"]
+        SWATPlus["SWAT+"]:::models -->|Streams| SWATPlusGwflow["SWAT+gwflow"]:::models
         SWATPlusGwflow --> HydroGeoDataset
     end
 
-    subgraph Parallel_Processing["⚡ Parallel Processing"]
+    subgraph Parallel_Processing["Parallel Processing"]
         direction TB
-        HydroGeoDataset -- "Validation<br>(Ensemble)" --> HydroGeoDataset_HDF5[("HydroGeoDataset<br>HDF5")]
-        HydroGeoDataset -- "Calibration<br>(PSO)" --> HydroGeoDataset_HDF5
-        HydroGeoDataset -- "Sensitivity Analysis<br>(Morris)" --> HydroGeoDataset_HDF5
+        HydroGeoDataset -- "Validation (Ensemble)" --> HydroGeoDataset_HDF5["HydroGeoDataset (HDF5)"]:::storage
+        HydroGeoDataset -- "Calibration (PSO)" --> HydroGeoDataset_HDF5
+        HydroGeoDataset -- "Sensitivity Analysis (Morris)" --> HydroGeoDataset_HDF5
     end
 
-    subgraph AI_System["🧠 AI System"]
+    subgraph AI_System["AI System"]
         direction TB
-        HydroGeoDataset_HDF5 --> VisionSystem["Vision System<br>Deep Learning<br>(PyTorch)"]
+        HydroGeoDataset_HDF5 --> VisionSystem["Vision System Deep Learning Framework (PyTorch)"]:::llm
         HydroGeoDataset_HDF5 --> HydroGeoDataset
-        VisionSystem --> MultiAI{{Multi-AI<br>Agents<br>RAG System}}
+        VisionSystem --> MultiAI{{Multi-AI Agents RAG System}}:::llm
         HydroGeoDataset --> MultiAI
-        MultiAI --> Reports[("Reports &<br>Visualization")]
+        MultiAI --> Reports["Reports & Visualization"]:::database
     end
 
     %% Connections between subgraphs
