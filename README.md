@@ -88,11 +88,11 @@ graph TB
     HydroGeoProcessor --> MultiAI
     MultiAI --> Reports
     
-    %% Legend - smaller and positioned at bottom right
+    %% Legend
     subgraph Legend["Legend"]
-        direction TB
-        dev["Developed"]:::developed
-        ex["Existing"]:::existing
+        direction LR
+        dev["Developed Component"]:::developed
+        ex["Existing Tool"]:::existing
         mod["Model"]:::models
         ds["Data Source"]:::datasource
         proc["Process"]:::process
@@ -100,9 +100,6 @@ graph TB
         ai["AI/LLM"]:::llm
         doc["Document"]:::document
     end
-
-    %% Position the legend at bottom right
-    %% (Done by positioning other elements around it)
 
     %% Enhanced styling with colors from the original diagram
     classDef title font-size:20px,fill:none,stroke:none,font-weight:bold,text-align:center
@@ -115,9 +112,7 @@ graph TB
     classDef llm fill:#1ba1e2,stroke:#006EAF,stroke-width:1px,rx:8,ry:8,color:white
     classDef document fill:#ffff88,stroke:#36393d,stroke-width:1px
     
-    %% Subgraph styling - make legend more subtle
+    %% Subgraph styling
     classDef subgraphStyle fill:#f9f9f9,stroke:#999,stroke-width:1px,rx:10,ry:10,color:#333
-    classDef legendStyle fill:#f9f9f9,stroke:#999,stroke-width:1px,rx:5,ry:5,color:#333,font-size:12px
-    class DataSources,PPS subgraphStyle
-    class Legend legendStyle
+    class DataSources,Legend,PPS subgraphStyle
 ```
