@@ -6,7 +6,7 @@ class SWATGenXPaths:
     overwrite: bool = True  
     base_path: str = "/data/SWATGenXApp/GenXAppData/"
     codes_path: str = "/data/SWATGenXApp/codes/SWATGenX/"
-    SWATPlusEditor_path: str = '/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api'
+    SWATPlusEditor_path: str = '/usr/local/share/SWATPlusEditor/swatplus-editor/src/api'
     FPS_State_Territories: str = f'{base_path}USGS/FPS_States_and_Territories.csv'
     FPS_all_stations: str = f'{base_path}USGS/FPS_all_stations.csv'
     # Data Sources
@@ -40,7 +40,7 @@ class SWATGenXPaths:
     gSSURGO_CONUS_gdb_path: str = f"{base_path}Soil/gSSURGO_CONUS/gSSURGO_CONUS.gdb"
     
     # Software Paths
-    wgn_db: str = "/data/SWATGenXApp/codes/swatplus_installation/swatplus_wgn.sqlite"
+    wgn_db: str = "/usr/local/share/SWATPlus/Databases/swatplus_wgn.sqlite"
     QSWATPlus_env_path: str = '/usr/share/qgis/python/plugins/QSWATPlusLinux3_64'
     runQSWATPlus_path: str = "/data/SWATGenXApp/codes/scripts/runQSWATPlus.sh"
     swat_exe: str = "/data/SWATGenXApp/codes/bin/swatplus"

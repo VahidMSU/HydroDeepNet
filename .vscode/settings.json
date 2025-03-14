@@ -12,7 +12,7 @@
         "/data/SWATGenXApp/codes/SWATGenX",
         "/data/SWATGenXApp/codes/AI_agent",
         "/data/SWATGenXApp/codes/ModelProcessing",
-        "/data/SWATGenXApp/codes/SWATPlusEditor/swatplus.editor/src/api",
+        "/usr/local/share/SWATPlusEditor/swatplus-editor/src/api",
     ],
     "git.ignoreLimitWarning": true
 }
