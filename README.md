@@ -45,7 +45,7 @@ graph LR
 
     %% 3. HYDROLOGICAL MODELING
     subgraph Hydrological_Modeling["Hydrological Modeling"]
-    direction TB
+    direction LR
         SWATGenX{{SWATGenX}}:::developed
         QSWATPlus("QSWAT+"):::existing
         SWATPlusEditor("SWAT+ Editor"):::existing
@@ -66,7 +66,7 @@ graph LR
 
     %% 4. PARALLEL PROCESSING
     subgraph Parallel_Processing["Parallel Processing"]
-    direction RL
+    direction LR
         PPS["PPS Controller"]:::existing
         Validation("Validation<br>(Ensemble)"):::developed
         Calibration("Calibration<br>(PSO)"):::developed
