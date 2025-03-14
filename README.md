@@ -10,7 +10,7 @@ The platform currently consists of four significant developments:
 
 HydroDeepNet streamlines the generation, calibration, and validation of surface water (SWAT+) and groundwater (MODFLOW) models at high resolution with exceptional flexibility. It enables rapid model creation for any location across the conterminous United States (CONUS), significantly reducing the traditionally time-consuming process that requires extensive data collection and technical expertise.
 
-Unlike other platforms such as the National Agroecosystem Model (NAM), which relies on NHDPlus V2 (1:100k resolution), HydroDeepNet leverages NHDPlus HR (1:24k resolution), providing 20 times greater detail. This results in more precise watershed delineation and hydrological modeling, significantly improving water balance estimation and contaminant fate predictions.
+HydroDeepNet leverages NHDPlus HR (1:24k resolution) to provide precise watershed delineation and enhanced hydrological modeling, improving water balance estimation and contaminant fate predictions.
 
 The system has been tested with 700 models across the US using USGS Federally Prioritized Streamgage (FPS) data, successfully creating 660 models while 40 failed due to hydrographical complexities. Additionally, 60 calibrated and validated models were established for USGS watersheds across Michigan, demonstrating high predictive accuracy.
 
@@ -53,7 +53,7 @@ graph LR
 
     %% 1. INPUT DATASETS
     subgraph Input_Datasets["Input Datasets"]
-    direction LR
+    direction TB
         PRISM("PRISM"):::datasource
         LOCA2("LOCA2"):::datasource
         MODIS("MODIS"):::datasource
