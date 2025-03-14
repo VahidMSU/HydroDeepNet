@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
 
 # Add QGIS 3.40 repository and install dependencies
 RUN apt-get update && apt-get install -y \
-    gnupg software-properties-common wget curl lsb-release && \
+    gnupg software-properties-common wget curl lsb-release unzip sudo \
+    redis-server supervisor && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.qgis.org/downloads/qgis-archive-keyring.gpg | tee /etc/apt/keyrings/qgis-archive-keyring.gpg > /dev/null && \
     echo "deb [signed-by=/etc/apt/keyrings/qgis-archive-keyring.gpg] https://qgis.org/ubuntu jammy main" | tee /etc/apt/sources.list.d/qgis.list && \
@@ -48,19 +49,25 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Copy everything to the container
 COPY . .
 
-# SWAT+ installation
-RUN mkdir -p /opt/swatplus_installation
-COPY swatplus_installation/installforall.sh /opt/swatplus_installation/
-COPY swatplus_installation/swatplus.tgz /opt/swatplus_installation/
-COPY swatplus_installation/qswatplus.tgz /opt/swatplus_installation/
-
-WORKDIR /opt/swatplus_installation
-RUN chmod +x ./installforall.sh && ./installforall.sh
+# Run SWAT+ installation script with proper environment
+# Add sudo without password for root
+RUN echo "root ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    # Create necessary directories with proper ownership
+    mkdir -p /usr/local/share/SWATPlus/Databases && \
+    mkdir -p /root/.local/share/SWATPlus/Databases && \
+    chmod +x /data/SWATGenXApp/codes/scripts/swatplus_installation.sh && \
+    HOME=/root /data/SWATGenXApp/codes/scripts/swatplus_installation.sh && \
+    # Verify installation directories
+    ls -la /usr/local/share/SWATPlus/Databases/ && \
+    ls -la /usr/share/qgis/python/plugins/ && \
+    # Make sure permissions are set correctly
+    chmod -R a+rw /usr/local/share/SWATPlus/Databases && \
+    chmod -R a+rX /usr/share/qgis/python/plugins/QSWATPlusLinux3_64
 
 # Activate the virtual environment and install Python dependencies
 WORKDIR /data/SWATGenXApp/codes
 RUN . $VIRTUAL_ENV/bin/activate && pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir numpy scipy
+    pip install --no-cache-dir numpy scipy celery redis gunicorn
 
 # Ensure Python GDAL bindings are installed
 RUN pip install --no-cache-dir --global-option=build_ext --global-option="-I/usr/include/gdal" GDAL==3.8.4
@@ -72,6 +79,15 @@ RUN npm install && npm run build
 # NGINX setup for serving React build and static files
 WORKDIR /data/SWATGenXApp/codes/web_application
 COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
+
+# Configure Redis for Celery
+RUN sed -i 's/bind 127.0.0.1/bind 0.0.0.0/g' /etc/redis/redis.conf && \
+    sed -i 's/# requirepass foobared/requirepass redispassword/g' /etc/redis/redis.conf && \
+    mkdir -p /var/log/celery /var/run/celery && \
+    chown -R www-data:www-data /var/log/celery /var/run/celery
+
+# Create Supervisor configuration
+COPY ./docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Set up user
 RUN usermod -u 33 www-data && \
@@ -100,20 +116,10 @@ RUN mkdir -p /run/user/33 && \
 
 ENV XDG_RUNTIME_DIR=/tmp/runtime-www-data
 
-
-# Copy SWAT+ database files to the container with proper ownership
-COPY --chown=www-data:www-data ./swatplus_installation/swatplus_datasets.sqlite /usr/local/share/SWATPlus/Databases/
-COPY --chown=www-data:www-data ./swatplus_installation/swatplus_soils.sqlite /usr/local/share/SWATPlus/Databases/
-COPY --chown=www-data:www-data ./swatplus_installation/swatplus_wgn.sqlite /usr/local/share/SWATPlus/Databases/
-
-# (Optional) Reapply permission fix if needed
-RUN chmod -R a+rw /usr/local/share/SWATPlus/Databases
-
-# Fix SWATPlus database permissions (including QSWATPlusProj.sqlite if present)
-RUN chown -R www-data:www-data /usr/local/share/SWATPlus/Databases && chmod -R a+rw /usr/local/share/SWATPlus/Databases
-
-# Fix QSWATPlus plugin permissions so www-data can access them
-RUN chmod -R a+rX /usr/share/qgis/python/plugins/QSWATPlusLinux3_64
+# Prepare start script for services
+COPY ./docker/start-services.sh /start-services.sh
+RUN chmod +x /start-services.sh && \
+    chown root:root /start-services.sh
 
 # Now switch to www-data user for application runtime
 USER www-data
@@ -121,12 +127,17 @@ USER www-data
 # Set a writable HOME directory for www-data
 ENV HOME=/data/SWATGenXApp/Users
 
-# Expose Flask and NGINX ports
-EXPOSE 5000 80
+# Expose ports: Flask, NGINX, and Redis
+EXPOSE 5000 80 6379
 
 ENV FLASK_APP=run.py
 ENV FLASK_RUN_PORT=5000
 ENV PYTHONPATH="/data/SWATGenXApp/codes"
+ENV CELERY_BROKER_URL="redis://:redispassword@localhost:6379/0"
+ENV CELERY_RESULT_BACKEND="redis://:redispassword@localhost:6379/0"
 
-# Start Flask API & NGINX with modified pid location
-CMD ["sh", "-c", "gunicorn -b 0.0.0.0:5000 run:app & nginx -g 'daemon off; pid /tmp/nginx.pid;'"]
+# Switch back to root for supervisord start (it will manage services with proper users)
+USER root
+
+# Use supervisord to manage all services
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
