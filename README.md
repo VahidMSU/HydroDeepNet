@@ -13,12 +13,15 @@ graph TB
     SNODAS["SNODAS"] -->|Snow Data| HydroGeoDataset
     CDL["CDL (Crop Data)"] -->|Agricultural Data| HydroGeoDataset
 
-    %% Hydrological & Groundwater Models
-    SWATGenX{{SWATGenX}} --> QSWATPlus["QSWAT+"]
+    %% Hydrological Model Processing
+    NWIS["NWIS"] --> SWATGenX{{SWATGenX}}
+    NHDPlusHR["NHDPlus HR"] --> SWATGenX
+    SWATGenX --> QSWATPlus["QSWAT+"]
     SWATGenX --> SWATPlusEditor["SWAT+ Editor"]
     SWATPlus["SWAT+"] -->|Streams| SWATPlusGwflow["SWAT+gwflow"]
     SWATPlusGwflow --> HydroGeoDataset
 
+    %% Groundwater Model Processing
     WellInfo["Water Well Info (Wellogic)"] --> EBK["Empirical Bayesian Kriging"]
     EBK --> HydraulicProps["Hydraulic Properties"]
     HydraulicProps --> MODGenX{{MODGenX}}
@@ -26,36 +29,39 @@ graph TB
     Flopy --> MODFLOWNWT["MODFLOW-NWT"]
     MODFLOWNWT --> HydroGeoDataset
 
-    %% AI System
+    %% AI & Vision System Processing
     VisionSystem["Vision System (Deep Learning)"]
     HydroGeoDataset -->|Processed Data| VisionSystem
     VisionSystem -->|Predictions & Insights| AI_Output["AI Model Outputs"]
 
-    %% Parallel Processing
+    %% Parallel Processing and Report Generation
     HydroGeoDataset -- "Validation (Ensemble)" --> HydroGeoDataset_HDF5[("HydroGeoDataset HDF5")]
     HydroGeoDataset -- "Calibration (PSO)" --> HydroGeoDataset_HDF5
     HydroGeoDataset -- "Sensitivity Analysis (Morris)" --> HydroGeoDataset_HDF5
 
-    %% Multi-AI RAG System
-    UserQuery["User Query Manager"] -->|Selects Report Type| ReportAggregator["📝 Report Aggregator"]
-    MultiAI["Multi-AI Agents RAG System"] -->|Retrieves Data| ReportAggregator
-    ReportAggregator --> Reports["📄 Final Reports"]
-
+    %% Multi-AI RAG System (User Interaction and Data Retrieval)
+    UserQuery["User Query Manager (Search/Request)"] 
+    MultiAI["Multi-AI Agents RAG System"] -->|Retrieves Data| ReportAggregator["📝 Report Aggregator"]
+    ReportAggregator --> Reports["📄 Final Reports & Insights"]
+    
     MultiAI -->|Retrieves Structured Data| HydroGeoDataset
     MultiAI -->|Filters Data by User Request| ReportAggregator
+    UserQuery -->|Selects Report Type| ReportAggregator
 
     %% Potential Future Connections
     MultiAI -.-|Future Integration| AI_Output
     MultiAI -.-|Future Integration| SWATPlusGwflow
 
     %% Legend
-    Legend(["**Legend**"])
-    dev["Developed Component"]:::developed
-    ex["Existing Tool"]:::existing
-    mod["Model"]:::models
-    db["Database"]:::database
-    sto["Storage"]:::storage
-    llm["LLM (AI Model)"]:::llm
+    subgraph Legend["Legend"]
+        direction LR
+        dev["Developed Component"]:::developed
+        ex["Existing Tool"]:::existing
+        mod["Model"]:::models
+        db["Database"]:::database
+        sto["Storage"]:::storage
+        llm["LLM (AI Model)"]:::llm
+    end
 
     %% Styling
     classDef developed fill:#B0C4DE,stroke:#000,stroke-width:2px,rx:5,ry:5
