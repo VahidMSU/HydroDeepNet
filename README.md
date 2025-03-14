@@ -1,3 +1,4 @@
+```mermaid
 graph TD;
     subgraph National_Database[National Database]
         PRISM -->|Climate Data| HydroGeoDataset
@@ -57,3 +58,4 @@ graph TD;
         MODGenX:::developed;
         "Multi-AI Agents RAG System":::developed;
     end
+```
