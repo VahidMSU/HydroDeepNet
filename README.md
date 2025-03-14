@@ -46,4 +46,4 @@ HydroDeepNet incorporates elements from various open-source software and librari
 *   React for serving frontend
 *   Docker and Kubernetes for deploying the platform
 
-![HydroDeepNet Architecture](./HydroDeepNet.drawio.svg)
+![HydroDeepNet Architecture](./HydroDeepNet.png)
