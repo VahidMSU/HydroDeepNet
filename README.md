@@ -1,92 +1,87 @@
 ```mermaid
-%%{init: {'theme': 'neutral', 'flowchart': {'curve': 'basis'}}}%%
+%%{init: {
+  'theme': 'default',
+  'flowchart': {'curve': 'monotoneX'},
+  'themeVariables': {
+    'fontSize': '16px',
+    'fontFamily': 'arial',
+    'lineWidth': '2px'
+  }
+}}%%
 graph TB
-    %% Title and overall styling
-    title[<u>SWATGenX Hydrological Modeling System</u>]
+    %% Main Title
+    title[<b style='font-size:24px'>SWATGenX Hydrological Modeling System</b>]
     title:::title
     
-    subgraph National_Database["🌐 National Database"]
-        direction LR
-        PRISM("PRISM<br>(Climate)") -->|Climate Data| HydroGeoDataset[(HydroGeoDataset)]
-        LOCA2("LOCA2<br>(Climate)") -->|Climate Data| HydroGeoDataset
-        NLCD("NLCD<br>(Land Cover)") -->|Land Cover| HydroGeoDataset
-        NSRSDB("NSRSDB<br>(Solar Radiation)") -->|Solar Radiation| HydroGeoDataset
-        gSSURGO("gSSURGO<br>(Soil)") -->|Soil Data| HydroGeoDataset
-        ElevationProgram["3D Elevation<br>Program"] -->|Elevation Data| HydroGeoDataset
+    subgraph NatDB["National Database"]
+        PRISM("PRISM") -->|Climate| HGD[(HydroGeoDataset)]
+        LOCA2("LOCA2") -->|Climate| HGD
+        NLCD("NLCD") -->|Land Cover| HGD
+        NSRSDB("NSRSDB") -->|Solar| HGD
+        gSSURGO("gSSURGO") -->|Soil| HGD
+        Elev["3D Elevation"] -->|Terrain| HGD
     end
 
-    subgraph Data_Processing["⚙️ Data Processing"]
-        direction TB
-        NWIS("NWIS") --> SWATGenX{{SWATGenX}}
-        NHDPlusHR["NHDPlus HR"] --> SWATGenX
-        SWATGenX --> QSWATPlus["QSWAT+"]
-        SWATGenX --> SWATPlusEditor["SWAT+ Editor"]
+    subgraph DataProc["Data Processing"]
+        NWIS --> SWGX{{SWATGenX}}
+        NHD["NHDPlus HR"] --> SWGX
+        SWGX --> QSWAT["QSWAT+"]:::existing
+        SWGX --> SWATPlusEd["SWAT+ Editor"]:::existing
         
-        subgraph Groundwater_Processing["Groundwater Processing"]
-            direction LR
-            WellInfo["Water well<br>information<br>(Wellogic)"] --> EBK["Empirical<br>Bayesian<br>Kriging"]
-            EBK --> HydraulicProps["Hydraulic<br>properties"]
-            HydraulicProps --> MODGenX{{MODGenX}}
-            MODGenX --> Flopy["Flopy"]
-            Flopy --> MODFLOWNWT["MODFLOW-NWT"]
-        end
+        WellInfo["Wellogic"] --> EBK["EBK"]
+        EBK --> HProps["Hydraulic Props"]
+        HProps --> MODGX{{MODGenX}}
+        MODGX --> Flopy
+        Flopy --> MODNWT["MODFLOW-NWT"]:::models
     end
 
-    subgraph SWAT_Processing["🌊 SWAT Processing"]
-        SWATPlus["SWAT+"] -->|Streams| SWATPlusGwflow["SWAT+gwflow"]
-        SWATPlusGwflow --> HydroGeoDataset
+    subgraph SWATProc["SWAT Processing"]
+        SWATPlus["SWAT+"]:::models --> SWATGwflow["SWAT+gwflow"]:::models
+        SWATGwflow --> HGD
     end
 
-    subgraph Parallel_Processing["⚡ Parallel Processing"]
-        direction TB
-        HydroGeoDataset -- "Validation<br>(ensemble)" --> HydroGeoDataset_HDF5[("HydroGeoDataset<br>HDF5")]
-        HydroGeoDataset -- "Calibration<br>(PSO)" --> HydroGeoDataset_HDF5
-        HydroGeoDataset -- "Sensitivity Analysis<br>(Morris)" --> HydroGeoDataset_HDF5
+    subgraph ParProc["Parallel Processing"]
+        HGD -- "Validation" --> HGDHDF[("HydroGeo-HDF5")]:::storage
+        HGD -- "Calibration" --> HGDHDF
+        HGD -- "Sensitivity" --> HGDHDF
     end
 
-    subgraph AI_System["🧠 AI System"]
-        direction TB
-        HydroGeoDataset_HDF5 --> VisionSystem["Vision System<br>Deep Learning<br>(PyTorch)"]
-        HydroGeoDataset_HDF5 --> HydroGeoDataset
-        VisionSystem --> MultiAI{{Multi-AI<br>Agents<br>RAG System}}
-        HydroGeoDataset --> MultiAI
-        MultiAI --> Reports[("Reports &<br>Visualization")]
+    subgraph AISystem["AI System"]
+        HGDHDF --> Vision["Vision System"]
+        HGDHDF --> HGD
+        Vision --> MultiAI{{Multi-AI System}}:::developed
+        HGD --> MultiAI
+        MultiAI --> Reports[("Reports")]:::database
     end
 
-    %% Connections between subgraphs
-    National_Database -.-> Data_Processing
-    Data_Processing -.-> SWAT_Processing
-    SWAT_Processing -.-> Parallel_Processing
-    Parallel_Processing -.-> AI_System
+    %% Main flow connections with distinct styles
+    NatDB ==> DataProc
+    DataProc ==> SWATProc
+    SWATProc ==> ParProc
+    ParProc ==> AISystem
 
-    %% Legend
+    %% Legend in compact format
     subgraph Legend["Legend"]
         direction LR
-        dev["Developed Component"]:::developed
-        ex["Existing Tool"]:::existing
+        dev["Developed"]:::developed
+        ex["Existing"]:::existing
         mod["Model"]:::models
         db["Database"]:::database
         sto["Storage"]:::storage
     end
 
-    %% Class Definitions with enhanced styling
-    classDef developed fill:#B0C4DE,stroke:#000,stroke-width:2px,rx:5,ry:5
-    classDef existing fill:#87CEEB,stroke:#000,stroke-width:2px,rx:5,ry:5
-    classDef models fill:#ADFF2F,stroke:#000,stroke-width:2px,rx:5,ry:5
-    classDef database fill:#FFD700,stroke:#000,stroke-width:2px,rx:10,ry:10
-    classDef storage fill:#FF4500,stroke:#000,stroke-width:2px,rx:10,ry:10
-    classDef title font-size:18px,fill:none,stroke:none
+    %% Improved styling
+    classDef default font-size:16px,font-weight:bold
+    classDef developed fill:#B0C4DE,stroke:#333,stroke-width:2px,rx:5,ry:5
+    classDef existing fill:#87CEEB,stroke:#333,stroke-width:2px
+    classDef models fill:#ADFF2F,stroke:#333,stroke-width:2px
+    classDef database fill:#FFD700,stroke:#333,stroke-width:2px
+    classDef storage fill:#FF4500,stroke:#333,stroke-width:2px,color:white
+    classDef title fill:none,stroke:none
     
-    %% Apply classes to nodes
-    HydroGeoDataset_HDF5:::storage
-    HydroGeoDataset:::storage
-    SWATPlusGwflow:::models
-    SWATPlus:::models
-    MODFLOWNWT:::models
-    QSWATPlus:::existing
-    SWATPlusEditor:::existing
-    SWATGenX:::developed
-    MODGenX:::developed
-    MultiAI:::developed
-    Reports:::database
+    %% Node class assignments
+    SWGX:::developed
+    MODGX:::developed
+    HGDHDF:::storage
+    HGD:::storage
 ```
