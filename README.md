@@ -1,66 +1,74 @@
 ```mermaid
-%%{init: {'theme': 'default', 'flowchart': {'curve': 'basis'}}}%%
+%%{init: {'theme': 'neutral', 'flowchart': {'curve': 'basis'}}}%%
 graph TB
-    %% Title and overall styling
-    title[<u>SWATGenX Hydrological Modeling System</u>]
-    title:::title
+    title["HydroAI System: Hydrological Modeling, AI, and Multi-Agent Retrieval"]
 
-    subgraph National_Database["National Database"]
-        direction LR
-        MODIS["MODIS"]:::database --> HydroGeoDataset
-        PRISM["PRISM"]:::database --> HydroGeoDataset
-        LOCA2["LOCA2"]:::database --> HydroGeoDataset
-        CDL["CDL"]:::database --> HydroGeoDataset
-        NLCD["NLCD"]:::database --> HydroGeoDataset
-        USGSDEM["USGS DEM"]:::database --> HydroGeoDataset
-        SNODAS["SNODAS"]:::database --> HydroGeoDataset
-        NSRSDB["NSRSDB"]:::database --> HydroGeoDataset
-        gSSURGO["gSSURGO"]:::database --> HydroGeoDataset
+    %% Data Sources
+    subgraph National_Database["🌐 National & External Datasets"]
+        PRISM["PRISM (Climate)"] -->|Climate Data| HydroGeoDataset[(HydroGeoDataset)]
+        LOCA2["LOCA2 (Climate)"] -->|Climate Data| HydroGeoDataset
+        NLCD["NLCD (Land Cover)"] -->|Land Cover| HydroGeoDataset
+        NSRSDB["NSRSDB (Solar Radiation)"] -->|Solar Radiation| HydroGeoDataset
+        gSSURGO["gSSURGO (Soil)"] -->|Soil Data| HydroGeoDataset
+        USGSDEM["USGS DEM"] -->|Elevation Data| HydroGeoDataset
+        SNODAS["SNODAS"] -->|Snow Data| HydroGeoDataset
+        CDL["CDL (Crop Data)"] -->|Agricultural Data| HydroGeoDataset
     end
 
-    subgraph Data_Processing["Data Processing"]
-        direction TB
-        NWIS["NWIS"]:::existing --> SWATGenX{{SWATGenX}}:::developed
-        NHDPlusHR["NHDPlus HR"]:::existing --> SWATGenX
-        SWATGenX --> QSWATPlus["QSWAT+"]:::existing
-        SWATGenX --> SWATPlusEditor["SWAT+ Editor"]:::existing
-
-        subgraph Groundwater_Processing["Groundwater Processing"]
-            direction LR
-            WellInfo["Water well information (Wellogic)"]:::existing --> EBK["Empirical Bayesian Kriging"]:::existing
-            EBK --> HydraulicProps["Hydraulic properties"]:::existing
-            HydraulicProps --> MODGenX{{MODGenX}}:::developed
-            MODGenX --> Flopy["Flopy"]:::existing
-            Flopy --> MODFLOWNWT["MODFLOW-NWT"]:::models
-        end
-    end
-
-    subgraph SWAT_Processing["SWAT Processing"]
-        SWATPlus["SWAT+"]:::models -->|Streams| SWATPlusGwflow["SWAT+gwflow"]:::models
+    %% Hydrological Model Processing
+    subgraph Hydrological_Models["🌊 Hydrological Model Processing"]
+        SWATGenX{{SWATGenX}} --> QSWATPlus["QSWAT+"]
+        SWATGenX --> SWATPlusEditor["SWAT+ Editor"]
+        SWATPlus["SWAT+"] -->|Streams| SWATPlusGwflow["SWAT+gwflow"]
         SWATPlusGwflow --> HydroGeoDataset
     end
 
-    subgraph Parallel_Processing["Parallel Processing"]
-        direction TB
-        HydroGeoDataset -- "Validation (Ensemble)" --> HydroGeoDataset_HDF5["HydroGeoDataset (HDF5)"]:::storage
+    %% Groundwater Model Processing
+    subgraph Groundwater_Processing["💧 Groundwater Model Processing"]
+        WellInfo["Water Well Info (Wellogic)"] --> EBK["Empirical Bayesian Kriging"]
+        EBK --> HydraulicProps["Hydraulic Properties"]
+        HydraulicProps --> MODGenX{{MODGenX}}
+        MODGenX --> Flopy["Flopy"]
+        Flopy --> MODFLOWNWT["MODFLOW-NWT"]
+        MODFLOWNWT --> HydroGeoDataset
+    end
+
+    %% AI & Vision System Processing
+    subgraph AI_System["🧠 AI & Vision System Processing"]
+        VisionSystem["Vision System (Deep Learning)"]
+        HydroGeoDataset -->|Processed Data| VisionSystem
+        VisionSystem -->|Predictions & Insights| AI_Output["AI Model Outputs"]
+    end
+
+    %% Parallel Processing and Report Generation
+    subgraph Parallel_Processing["⚡ Parallel Processing"]
+        HydroGeoDataset -- "Validation (Ensemble)" --> HydroGeoDataset_HDF5[("HydroGeoDataset HDF5")]
         HydroGeoDataset -- "Calibration (PSO)" --> HydroGeoDataset_HDF5
         HydroGeoDataset -- "Sensitivity Analysis (Morris)" --> HydroGeoDataset_HDF5
     end
 
-    subgraph AI_System["AI System"]
-        direction TB
-        HydroGeoDataset_HDF5 --> VisionSystem["Vision System Deep Learning Framework (PyTorch)"]:::llm
-        HydroGeoDataset_HDF5 --> HydroGeoDataset
-        VisionSystem --> MultiAI{{Multi-AI Agents RAG System}}:::llm
-        HydroGeoDataset --> MultiAI
-        MultiAI --> Reports["Reports & Visualization"]:::database
+    %% Multi-AI RAG System (User Interaction and Data Retrieval)
+    subgraph MultiAI_RAG["🤖 Multi-AI Agents RAG System"]
+        UserQuery["User Query Manager (Search/Request)"] 
+        MultiAI["Multi-AI Agents RAG System"] -->|Retrieves Data| ReportAggregator["📝 Report Aggregator"]
+        ReportAggregator --> Reports["📄 Final Reports & Insights"]
+        
+        MultiAI -->|Retrieves Structured Data| HydroGeoDataset
+        MultiAI -->|Filters Data by User Request| ReportAggregator
+        UserQuery -->|Selects Report Type| ReportAggregator
+
+        %% Potential Future Connections
+        MultiAI -.-|Future Integration| AI_Output
+        MultiAI -.-|Future Integration| SWATPlusGwflow
     end
 
-    %% Connections between subgraphs
-    National_Database -.-> Data_Processing
-    Data_Processing -.-> SWAT_Processing
-    SWAT_Processing -.-> Parallel_Processing
-    Parallel_Processing -.-> AI_System
+    %% Connections Between Components
+    National_Database -.-> Hydrological_Models
+    National_Database -.-> Groundwater_Processing
+    Hydrological_Models -.-> AI_System
+    Groundwater_Processing -.-> AI_System
+    AI_System -.-> MultiAI_RAG
+    Parallel_Processing -.-> MultiAI_RAG
 
     %% Legend
     subgraph Legend["Legend"]
@@ -73,7 +81,7 @@ graph TB
         llm["LLM (AI Model)"]:::llm
     end
 
-    %% Class Definitions with enhanced styling
+    %% Styling
     classDef developed fill:#B0C4DE,stroke:#000,stroke-width:2px,rx:5,ry:5
     classDef existing fill:#87CEEB,stroke:#000,stroke-width:2px,rx:5,ry:5
     classDef models fill:#ADFF2F,stroke:#000,stroke-width:2px,rx:5,ry:5
@@ -82,7 +90,7 @@ graph TB
     classDef llm fill:#4682B4,stroke:#000,stroke-width:2px,rx:10,ry:10
     classDef title font-size:18px,fill:none,stroke:none
 
-    %% Apply classes to nodes
+    %% Assign Classes to Nodes
     HydroGeoDataset_HDF5:::storage
     HydroGeoDataset:::storage
     SWATPlusGwflow:::models
