@@ -1,144 +1,86 @@
-```mermaid
-%%{init: {'theme': 'default', 'flowchart': {'curve': 'natural', 'diagramPadding': 20}, 'themeVariables': {'fontSize': '16px', 'fontFamily': 'arial'}}}%%
-graph TB
-    title["<b>HydroAI System Architecture</b><br><i>Hydrological Modeling with AI and Multi-Agent Retrieval</i>"]:::title
+# HydroDeepNet
 
-    %% Main subgraphs for logical organization
-    subgraph DataSources["Data Sources"]
-        direction LR
-        PRISM("PRISM<br>(Climate)"):::datasource
-        LOCA2("LOCA2<br>(Climate)"):::datasource
-        NLCD("NLCD<br>(Land Cover)"):::datasource
-        NSRSDB("NSRSDB<br>(Solar Radiation)"):::datasource
-        gSSURGO("gSSURGO<br>(Soil)"):::datasource
-        USGSDEM("USGS DEM<br>(Elevation)"):::datasource
-        SNODAS("SNODAS<br>(Snow Data)"):::datasource
-        CDL("CDL<br>(Crop Data)"):::datasource
-    end
+An AI-powered online platform integrating hydrological modeling, deep learning, and multi-agent AI systems to provide comprehensive hydrological insights at local, state, and national scales.
 
-    subgraph HydroModels["Hydrological Modeling"]
-        direction TB
-        NWIS("NWIS<br>(Streamflow)"):::datasource
-        NHDPlusHR("NHDPlus HR<br>(Hydrography)"):::datasource
-        SWATGenX{{SWATGenX}}:::developed
-        QSWATPlus("QSWAT+"):::existing
-        SWATPlusEditor("SWAT+ Editor"):::existing
-        SWATPlus("SWAT+"):::models
-        SWATPlusGwflow("SWAT+gwflow"):::models
-    end
+![HydroDeepNet Architecture](./HydroDeepNet.drawio "HydroDeepNet System Architecture")
 
-    subgraph GWModels["Groundwater Modeling"]
-        direction TB
-        WellInfo("Water Well Info<br>(Wellogic)"):::datasource
-        EBK("Empirical Bayesian<br>Kriging"):::existing
-        HydraulicProps("Hydraulic Properties"):::models
-        MODGenX{{MODGenX}}:::developed
-        Flopy("Flopy"):::existing
-        MODFLOWNWT("MODFLOW-NWT"):::models
-    end
-    
-    subgraph AI["AI & Analytics"]
-        direction TB
-        VisionSystem("Vision System<br>(Deep Learning)"):::llm
-        AI_Output("AI Model<br>Outputs"):::database
-        
-        subgraph ModelProcessing["Model Processing"]
-            direction LR
-            Validation("Validation<br>(Ensemble)"):::process
-            Calibration("Calibration<br>(PSO)"):::process
-            Sensitivity("Sensitivity Analysis<br>(Morris)"):::process
-        end
-    end
-    
-    subgraph UserInterface["User Interface & Reporting"]
-        direction TB
-        UserQuery("User Query Manager"):::user
-        MultiAI("Multi-AI Agents<br>RAG System"):::llm
-        ReportAggregator("📝 Report<br>Aggregator"):::process
-        Reports("📄 Final Reports<br>& Insights"):::database
-    end
-    
-    %% Central data storage
-    HydroGeoDataset[("HydroGeoDataset")]:::storage
-    HydroGeoDataset_HDF5[("HydroGeoDataset<br>HDF5")]:::storage
-    
-    %% Connections between components
-    %% Data source connections
-    PRISM -->|Climate Data| HydroGeoDataset
-    LOCA2 -->|Climate Data| HydroGeoDataset
-    NLCD -->|Land Cover| HydroGeoDataset
-    NSRSDB -->|Solar Radiation| HydroGeoDataset
-    gSSURGO -->|Soil Data| HydroGeoDataset
-    USGSDEM -->|Elevation| HydroGeoDataset
-    SNODAS -->|Snow Data| HydroGeoDataset
-    CDL -->|Agricultural Data| HydroGeoDataset
+## Overview
 
-    %% Hydrological modeling connections
-    NWIS --> SWATGenX
-    NHDPlusHR --> SWATGenX
-    SWATGenX --> QSWATPlus
-    SWATGenX --> SWATPlusEditor
-    SWATPlus -->|Streams| SWATPlusGwflow
-    SWATPlusGwflow --> HydroGeoDataset
+HydroDeepNet represents a revolutionary approach to hydrological modeling and analysis, leveraging advanced AI techniques and existing hydrological models to deliver unprecedented insights. The platform consists of four major components:
 
-    %% Groundwater modeling connections
-    WellInfo --> EBK
-    EBK --> HydraulicProps
-    HydraulicProps --> MODGenX
-    MODGenX --> Flopy
-    Flopy --> MODFLOWNWT
-    MODFLOWNWT --> HydroGeoDataset
+### 1. Automated Hydrological Model Generation
 
-    %% AI & Analytics connections
-    HydroGeoDataset -->|Processed Data| VisionSystem
-    VisionSystem -->|Predictions & Insights| AI_Output
-    
-    %% Processing connections
-    HydroGeoDataset --> Validation
-    HydroGeoDataset --> Calibration
-    HydroGeoDataset --> Sensitivity
-    Validation --> HydroGeoDataset_HDF5
-    Calibration --> HydroGeoDataset_HDF5
-    Sensitivity --> HydroGeoDataset_HDF5
+HydroDeepNet streamlines the generation, calibration, and validation of:
+- Surface water models (SWAT+)
+- Groundwater models (MODFLOW)
 
-    %% User interface connections
-    MultiAI -->|Retrieves Data| ReportAggregator
-    ReportAggregator --> Reports
-    MultiAI -->|Retrieves| HydroGeoDataset
-    MultiAI -->|Filters Data| ReportAggregator
-    UserQuery -->|Selects Report| ReportAggregator
+**Key advantages:**
+- High-resolution modeling capability across the conterminous United States (CONUS)
+- Significantly reduced model creation time
+- Leverages NHDPlus HR (1:24k resolution), providing 20 times greater detail than other platforms like NAM
+- More precise watershed delineation and hydrological modeling
+- Improved water balance estimation and contaminant fate predictions
 
-    %% Future connections
-    MultiAI -.->|Future Integration| AI_Output
-    MultiAI -.->|Future Integration| SWATPlusGwflow
+**Validation:** Successfully created 660 models out of 700 attempted across the US using USGS Federally Prioritized Streamgage (FPS) data, with 40 failures attributed to hydrographical complexities. Additionally, 60 models were calibrated and validated for USGS watersheds across Michigan with high predictive accuracy.
 
-    %% Legend
-    subgraph Legend["Legend"]
-        direction LR
-        dev["Developed Component"]:::developed
-        ex["Existing Tool"]:::existing
-        mod["Model"]:::models
-        db["Database"]:::database
-        sto["Storage"]:::storage
-        llm["AI Model"]:::llm
-        ds["Data Source"]:::datasource
-        proc["Process"]:::process
-        usr["User Interface"]:::user
-    end
+### 2. 4D Spatiotemporal Deep Learning Vision System
 
-    %% Enhanced styling with better colors
-    classDef title font-size:20px,fill:none,stroke:none,font-weight:bold,text-align:center
-    classDef developed fill:#6495ED,stroke:#000,stroke-width:2px,rx:5,ry:5,color:white,font-weight:bold
-    classDef existing fill:#20B2AA,stroke:#000,stroke-width:1px,rx:5,ry:5,color:white
-    classDef models fill:#90EE90,stroke:#000,stroke-width:1px,rx:5,ry:5
-    classDef database fill:#FFD700,stroke:#000,stroke-width:1px,rx:10,ry:10
-    classDef storage fill:#FF8C00,stroke:#000,stroke-width:2px,rx:10,ry:10,color:white,font-weight:bold
-    classDef llm fill:#9370DB,stroke:#000,stroke-width:1px,rx:8,ry:8,color:white
-    classDef datasource fill:#4682B4,stroke:#000,stroke-width:1px,rx:4,ry:4,color:white
-    classDef process fill:#F08080,stroke:#000,stroke-width:1px,rx:6,ry:6
-    classDef user fill:#2E8B57,stroke:#000,stroke-width:1px,rx:15,ry:15,color:white
+A hybrid CNN-Transformer deep learning model with 130 million parameters for predicting:
+- Evapotranspiration
+- Groundwater recharge in 4D (time and 3D space)
 
-    %% Subgraph styling
-    classDef subgraphStyle fill:#f9f9f9,stroke:#999,stroke-width:1px,rx:10,ry:10,color:#333
-    class DataSources,HydroModels,GWModels,AI,UserInterface,ModelProcessing,Legend subgraphStyle
-```
+**Benefits:**
+- Faster hydrological predictions compared to traditional modeling
+- Comparable accuracy to physics-based models
+- Enhanced model predictions
+- Improved data accuracy in missing-value scenarios
+- Support for drought monitoring, flood forecasting, and groundwater management
+
+### 3. Automated Environmental and Agricultural Reporting System
+
+Compiles and structures large datasets to generate automated reports on:
+- Climate conditions
+- Crop composition
+- Solar energy balance
+- Climate change projections
+- Soil properties
+- Groundwater hydraulic conditions
+
+Reports are generated in a structured format with markdown-based evaluations, allowing rapid assessments of agricultural and environmental conditions. Currently operational for Michigan with plans for expansion to CONUS.
+
+### 4. Multi-AI Agent System for Hydrological Insights
+
+A sophisticated multi-agent AI system that:
+- Analyzes reports and model outputs
+- Provides evidence-based agricultural and environmental insights
+- Utilizes a Retrieval-Augmented Generation (RAG) approach
+
+The system is partially implemented and will be fully operational upon the official web application launch.
+
+## Technical Architecture
+
+The HydroDeepNet system architecture integrates multiple data sources, modeling frameworks, and AI components as illustrated in the flowchart. Key components include:
+
+- **Data Sources:** NLCD, PRISM, USGS DEM, NHDPlus HR, etc.
+- **Modeling Frameworks:** SWATGenX, QSWAT+, SWAT+, MODFLOW-NWT
+- **AI Components:** Vision System Deep Learning Framework (PyTorch), Multi-AI agents RAG system
+- **Data Storage:** HydroGeoDataset (HDF5)
+- **Processing Systems:** Parallel Processing System for model calibration and validation
+
+## Current Status
+
+- The automated hydrological model generation system is fully functional
+- The deep learning vision system has been developed with results submitted for publication
+- The automated reporting system is operational for Michigan
+- The multi-agent AI system is under development
+
+## Future Work
+
+- Expand coverage to the entire CONUS
+- Enhance the multi-agent AI system capabilities
+- Integrate additional environmental and agricultural data sources
+- Develop user-friendly interfaces for broader accessibility
+
+---
+
+© HydroDeepNet Team
