@@ -4,71 +4,53 @@ graph TB
     title["HydroAI System: Hydrological Modeling, AI, and Multi-Agent Retrieval"]
 
     %% Data Sources
-    subgraph National_Database["🌐 National & External Datasets"]
-        PRISM["PRISM (Climate)"] -->|Climate Data| HydroGeoDataset[(HydroGeoDataset)]
-        LOCA2["LOCA2 (Climate)"] -->|Climate Data| HydroGeoDataset
-        NLCD["NLCD (Land Cover)"] -->|Land Cover| HydroGeoDataset
-        NSRSDB["NSRSDB (Solar Radiation)"] -->|Solar Radiation| HydroGeoDataset
-        gSSURGO["gSSURGO (Soil)"] -->|Soil Data| HydroGeoDataset
-        USGSDEM["USGS DEM"] -->|Elevation Data| HydroGeoDataset
-        SNODAS["SNODAS"] -->|Snow Data| HydroGeoDataset
-        CDL["CDL (Crop Data)"] -->|Agricultural Data| HydroGeoDataset
-    end
+    PRISM["PRISM (Climate)"] -->|Climate Data| HydroGeoDataset[(HydroGeoDataset)]
+    LOCA2["LOCA2 (Climate)"] -->|Climate Data| HydroGeoDataset
+    NLCD["NLCD (Land Cover)"] -->|Land Cover| HydroGeoDataset
+    NSRSDB["NSRSDB (Solar Radiation)"] -->|Solar Radiation| HydroGeoDataset
+    gSSURGO["gSSURGO (Soil)"] -->|Soil Data| HydroGeoDataset
+    USGSDEM["USGS DEM"] -->|Elevation Data| HydroGeoDataset
+    SNODAS["SNODAS"] -->|Snow Data| HydroGeoDataset
+    CDL["CDL (Crop Data)"] -->|Agricultural Data| HydroGeoDataset
 
     %% Hydrological Model Processing
-    subgraph Hydrological_Models["🌊 Hydrological Model Processing"]
-        SWATGenX{{SWATGenX}} --> QSWATPlus["QSWAT+"]
-        SWATGenX --> SWATPlusEditor["SWAT+ Editor"]
-        SWATPlus["SWAT+"] -->|Streams| SWATPlusGwflow["SWAT+gwflow"]
-        SWATPlusGwflow --> HydroGeoDataset
-    end
+    NWIS["NWIS"] --> SWATGenX{{SWATGenX}}
+    NHDPlusHR["NHDPlus HR"] --> SWATGenX
+    SWATGenX --> QSWATPlus["QSWAT+"]
+    SWATGenX --> SWATPlusEditor["SWAT+ Editor"]
+    SWATPlus["SWAT+"] -->|Streams| SWATPlusGwflow["SWAT+gwflow"]
+    SWATPlusGwflow --> HydroGeoDataset
 
     %% Groundwater Model Processing
-    subgraph Groundwater_Processing["💧 Groundwater Model Processing"]
-        WellInfo["Water Well Info (Wellogic)"] --> EBK["Empirical Bayesian Kriging"]
-        EBK --> HydraulicProps["Hydraulic Properties"]
-        HydraulicProps --> MODGenX{{MODGenX}}
-        MODGenX --> Flopy["Flopy"]
-        Flopy --> MODFLOWNWT["MODFLOW-NWT"]
-        MODFLOWNWT --> HydroGeoDataset
-    end
+    WellInfo["Water Well Info (Wellogic)"] --> EBK["Empirical Bayesian Kriging"]
+    EBK --> HydraulicProps["Hydraulic Properties"]
+    HydraulicProps --> MODGenX{{MODGenX}}
+    MODGenX --> Flopy["Flopy"]
+    Flopy --> MODFLOWNWT["MODFLOW-NWT"]
+    MODFLOWNWT --> HydroGeoDataset
 
     %% AI & Vision System Processing
-    subgraph AI_System["🧠 AI & Vision System Processing"]
-        VisionSystem["Vision System (Deep Learning)"]
-        HydroGeoDataset -->|Processed Data| VisionSystem
-        VisionSystem -->|Predictions & Insights| AI_Output["AI Model Outputs"]
-    end
+    VisionSystem["Vision System (Deep Learning)"]
+    HydroGeoDataset -->|Processed Data| VisionSystem
+    VisionSystem -->|Predictions & Insights| AI_Output["AI Model Outputs"]
 
     %% Parallel Processing and Report Generation
-    subgraph Parallel_Processing["⚡ Parallel Processing"]
-        HydroGeoDataset -- "Validation (Ensemble)" --> HydroGeoDataset_HDF5[("HydroGeoDataset HDF5")]
-        HydroGeoDataset -- "Calibration (PSO)" --> HydroGeoDataset_HDF5
-        HydroGeoDataset -- "Sensitivity Analysis (Morris)" --> HydroGeoDataset_HDF5
-    end
+    HydroGeoDataset -- "Validation (Ensemble)" --> HydroGeoDataset_HDF5[("HydroGeoDataset HDF5")]
+    HydroGeoDataset -- "Calibration (PSO)" --> HydroGeoDataset_HDF5
+    HydroGeoDataset -- "Sensitivity Analysis (Morris)" --> HydroGeoDataset_HDF5
 
     %% Multi-AI RAG System (User Interaction and Data Retrieval)
-    subgraph MultiAI_RAG["🤖 Multi-AI Agents RAG System"]
-        UserQuery["User Query Manager (Search/Request)"] 
-        MultiAI["Multi-AI Agents RAG System"] -->|Retrieves Data| ReportAggregator["📝 Report Aggregator"]
-        ReportAggregator --> Reports["📄 Final Reports & Insights"]
-        
-        MultiAI -->|Retrieves Structured Data| HydroGeoDataset
-        MultiAI -->|Filters Data by User Request| ReportAggregator
-        UserQuery -->|Selects Report Type| ReportAggregator
+    UserQuery["User Query Manager (Search/Request)"] 
+    MultiAI["Multi-AI Agents RAG System"] -->|Retrieves Data| ReportAggregator["📝 Report Aggregator"]
+    ReportAggregator --> Reports["📄 Final Reports & Insights"]
+    
+    MultiAI -->|Retrieves Structured Data| HydroGeoDataset
+    MultiAI -->|Filters Data by User Request| ReportAggregator
+    UserQuery -->|Selects Report Type| ReportAggregator
 
-        %% Potential Future Connections
-        MultiAI -.-|Future Integration| AI_Output
-        MultiAI -.-|Future Integration| SWATPlusGwflow
-    end
-
-    %% Connections Between Components
-    National_Database -.-> Hydrological_Models
-    National_Database -.-> Groundwater_Processing
-    Hydrological_Models -.-> AI_System
-    Groundwater_Processing -.-> AI_System
-    AI_System -.-> MultiAI_RAG
-    Parallel_Processing -.-> MultiAI_RAG
+    %% Potential Future Connections
+    MultiAI -.-|Future Integration| AI_Output
+    MultiAI -.-|Future Integration| SWATPlusGwflow
 
     %% Legend
     subgraph Legend["Legend"]
