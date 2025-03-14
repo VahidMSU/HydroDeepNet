@@ -27,9 +27,9 @@ graph TD
     end
 
     subgraph Parallel_Processing["Parallel Processing"]
-        HydroGeoDataset -->|Validation (ensemble)| HydroGeoDataset_HDF5
-        HydroGeoDataset -->|Calibration (PSO)| HydroGeoDataset_HDF5
-        HydroGeoDataset -->|Sensitivity Analysis (Morris)| HydroGeoDataset_HDF5
+        HydroGeoDataset -- "Validation (ensemble)" --> HydroGeoDataset_HDF5
+        HydroGeoDataset -- "Calibration (PSO)" --> HydroGeoDataset_HDF5
+        HydroGeoDataset -- "Sensitivity Analysis (Morris)" --> HydroGeoDataset_HDF5
     end
 
     subgraph AI_System["AI System"]
