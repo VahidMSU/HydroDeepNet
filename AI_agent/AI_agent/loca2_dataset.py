@@ -67,7 +67,7 @@ class DataImporter:
         self.config['database_path'] = AgentConfig.HydroGeoDataset_ML_250_path
         self.config['aggregation'] = None if 'aggregation' not in config else config['aggregation']
         self.config['bounding_box'] = None if 'bounding_box' not in config else config['bounding_box']
-        self.logger = LoggerSetup(os.getcwd(), rewrite=True).setup_logger("HydroGeoDataset")
+        self.logger = LoggerSetup("/data/SWATGenXApp/codes/AI_agent/AI_agent/logs", rewrite=True).setup_logger("HydroGeoDataset")
 
     
 

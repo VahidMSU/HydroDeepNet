@@ -1,4 +1,3 @@
-///data/SWATGenXApp/codes/web_application/frontend/src/pages/Layout.js
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -22,7 +21,6 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import EmailIcon from '@mui/icons-material/Email';
 import InfoIcon from '@mui/icons-material/Info';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 const drawerWidth = 250;
 

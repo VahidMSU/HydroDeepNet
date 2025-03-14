@@ -224,4 +224,4 @@ This report is based on data from the LOCA2 (Localized Constructed Analog) downs
 
 Climate change is projected to bring significant changes to temperature and precipitation patterns in the study region. These changes will require thoughtful adaptation strategies in agriculture, water management, and related sectors. The multi-scenario analysis demonstrates that while there are uncertainties in the precise magnitude of changes, the direction and general patterns of change are consistent across different emissions pathways. Continued monitoring and periodic updates to this analysis are recommended as climate science and projections evolve.
 
-*Report generated on 2025-03-13*
+*Report generated on 2025-03-14*

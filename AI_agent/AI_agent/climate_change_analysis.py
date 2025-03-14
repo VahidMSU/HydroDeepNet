@@ -17,16 +17,22 @@ try:
     from AI_agent.loca2_multi_period_multi_scenario import (
         full_climate_change_data,
         analyze_climate_changes,
-        
     )
     from AI_agent.loca2_dataset import DataImporter
-
 except ImportError:
-    from loca2_multi_period_multi_scenario import (
-        full_climate_change_data,
-        analyze_climate_changes,
-    )
-    from loca2_dataset import DataImporter
+    try:
+        from loca2_multi_period_multi_scenario import (
+            full_climate_change_data,
+            analyze_climate_changes,
+        )
+        from loca2_dataset import DataImporter
+    except ImportError:
+        # Try relative imports as last resort
+        from .loca2_multi_period_multi_scenario import (
+            full_climate_change_data,
+            analyze_climate_changes,
+        )
+        from .loca2_dataset import DataImporter
 # Configure logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -1523,21 +1529,6 @@ class ClimateChangeAnalysis:
             output_dir = self.output_dir
         
         os.makedirs(output_dir, exist_ok=True)
-        
-        try:
-            from AI_agent.loca2_multi_period_multi_scenario import (
-                full_climate_change_data, 
-                analyze_climate_changes
-            )
-        except ImportError:
-            try:
-                from loca2_multi_period_multi_scenario import (
-                    full_climate_change_data,
-                    analyze_climate_changes
-                )
-            except ImportError:
-                logger.error("Could not import multi-scenario analysis modules")
-                return {}
         
         # Get multi-scenario climate data
         results = full_climate_change_data(bbox)

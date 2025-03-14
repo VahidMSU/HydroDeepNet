@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Button, List, ListItem, ListItemText, Link } from '@mui/material';
+import { Box, Typography, Paper, Button, List, ListItem, ListItemText } from '@mui/material';
 import { styled } from '@mui/system';
 
 // Styled Components for Consistency
@@ -30,21 +30,6 @@ const PolicyText = styled(Typography)({
   fontSize: '1.1rem',
   lineHeight: 1.6,
   marginBottom: '1.5rem',
-});
-
-const ContactSection = styled(Box)({
-  padding: '2rem',
-  textAlign: 'center',
-});
-
-const ContactLink = styled(Link)({
-  color: 'white',
-  fontSize: '1.1rem',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  '&:hover': {
-    textDecoration: 'underline',
-  },
 });
 
 // Privacy Template Component
@@ -90,7 +75,10 @@ const PrivacyTemplate = () => {
         </PolicyText>
         <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText primary="National Solar Radiation Database (NSRDB)" sx={{ color: 'white' }} />
+            <ListItemText
+              primary="National Solar Radiation Database (NSRDB)"
+              sx={{ color: 'white' }}
+            />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
             <ListItemText primary="NHDPlus and LANDFIRE data" sx={{ color: 'white' }} />
@@ -113,20 +101,30 @@ const PrivacyTemplate = () => {
         </PolicyText>
       </Paper>
 
-      <SectionHeader sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 5, mb: 3 }}>Contact & Resources</SectionHeader>
+      <SectionHeader sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 5, mb: 3 }}>
+        Contact & Resources
+      </SectionHeader>
 
       {/* Buttons Section */}
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 1, mb: 4 }}>
         <Button variant="contained" sx={{ bgcolor: '#ff8500' }} href="mailto:rafieiva@msu.edu">
           Contact Us
         </Button>
-        <Button variant="contained" sx={{ bgcolor: '#ff8500' }} onClick={() => alert('Learn More clicked!')}>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: '#ff8500' }}
+          onClick={() => alert('Learn More clicked!')}
+        >
           Learn More
         </Button>
         <Button variant="contained" sx={{ bgcolor: '#ff8500' }} href="https://msu.edu/privacy">
           MSU Privacy Policy
         </Button>
-        <Button variant="contained" sx={{ bgcolor: '#ff8500' }} onClick={() => alert('Download Policy clicked!')}>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: '#ff8500' }}
+          onClick={() => alert('Download Policy clicked!')}
+        >
           Download Policy
         </Button>
       </Box>

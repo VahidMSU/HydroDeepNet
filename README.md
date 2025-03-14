@@ -4,7 +4,7 @@ HydroDeepNet is an AI-powered online platform that integrates hydrological model
 
 ## Key Developments
 
-The platform currently consists of four significant developments:
+The platform currently consists of four components:
 
 ### 1. Automated Hydrological Model Generation
 

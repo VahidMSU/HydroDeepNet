@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Button, List, ListItem, ListItemText, Link } from '@mui/material';
+import { Box, Typography, Paper, Button, List, ListItem, ListItemText } from '@mui/material';
 import { styled } from '@mui/system';
 
 // Styled Components for Consistency
@@ -32,11 +32,6 @@ const TermsText = styled(Typography)({
   marginBottom: '1.5rem',
 });
 
-const ContactSection = styled(Box)({
-  padding: '2rem',
-  textAlign: 'center',
-});
-
 // Terms and Conditions Component
 const TermsAndConditionsTemplate = () => {
   return (
@@ -60,7 +55,10 @@ const TermsAndConditionsTemplate = () => {
         </TermsText>
         <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText primary="National Solar Radiation Database (NSRDB)" sx={{ color: 'white' }} />
+            <ListItemText
+              primary="National Solar Radiation Database (NSRDB)"
+              sx={{ color: 'white' }}
+            />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
             <ListItemText primary="NHDPlus High Resolution" sx={{ color: 'white' }} />
@@ -102,13 +100,21 @@ const TermsAndConditionsTemplate = () => {
         <Button variant="contained" sx={{ bgcolor: '#ff8500' }} href="mailto:rafieiva@msu.edu">
           Contact Us
         </Button>
-        <Button variant="contained" sx={{ bgcolor: '#ff8500' }} onClick={() => alert('Learn More clicked!')}>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: '#ff8500' }}
+          onClick={() => alert('Learn More clicked!')}
+        >
           Learn More
         </Button>
         <Button variant="contained" sx={{ bgcolor: '#ff8500' }} href="https://msu.edu/terms">
           MSU Terms of Use
         </Button>
-        <Button variant="contained" sx={{ bgcolor: '#ff8500' }} onClick={() => alert('Download Terms clicked!')}>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: '#ff8500' }}
+          onClick={() => alert('Download Terms clicked!')}
+        >
           Download Terms
         </Button>
       </Box>
