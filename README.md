@@ -17,7 +17,7 @@ The system has been tested with 700 models across the US using USGS Federally Pr
 The following flowchart shows the different parts of the hydrological model generation, integration, and calibration.
 
 ```mermaid
-%%{init: {'theme': 'default', 'flowchart': {'curve': 'natural', 'diagramPadding': 20}, 'themeVariables': {'fontSize': '16px', 'fontFamily': 'arial'}}}%%
+%%{init: {'theme': 'default', 'flowchart': {'curve': 'natural', 'diagramPadding': 5}, 'themeVariables': {'fontSize': '16px', 'fontFamily': 'arial'}}}%%
 graph LR
     title["<b>HydroDeepNet System Architecture</b><br><i>Hydrological Modeling with AI and Multi-Agent Retrieval</i>"]:::title
 
@@ -43,9 +43,14 @@ graph LR
     NWIS("NWIS"):::existing
     NHDPlusHR("NHDPlus HR"):::datasource
 
-    %% 3. HYDROLOGICAL MODELING - More compact arrangement
+    %% 3. HYDROLOGICAL MODELING
     subgraph Hydrological_Modeling["Hydrological Modeling"]
-        SWATGenX{{SWATGenX}}:::developed --> QSWATPlus("QSWAT+"):::existing --> SWATPlusEditor("SWAT+ Editor"):::existing --> SWATPlus("SWAT+"):::models --> SWATPlusGwflow("SWAT+gwflow"):::models
+    direction LR
+        SWATGenX{{SWATGenX}}:::developed
+        QSWATPlus("QSWAT+"):::existing
+        SWATPlusEditor("SWAT+ Editor"):::existing
+        SWATPlus("SWAT+"):::models
+        SWATPlusGwflow("SWAT+gwflow"):::models
     end
 
     %% GROUNDWATER MODELING
@@ -59,12 +64,14 @@ graph LR
         MODFLOWNWT("MODFLOW-NWT"):::models
     end
 
-    %% 4. PARALLEL PROCESSING - More compact arrangement
+    %% 4. PARALLEL PROCESSING
     subgraph Parallel_Processing["Parallel Processing"]
-        PPS["PPS Controller"]:::existing --> Validation("Validation<br>(Ensemble)"):::developed
-        PPS --> Calibration("Calibration<br>(PSO)"):::developed
-        PPS --> Sensitivity("Sensitivity<br>(Morris)"):::developed
-        Validation & Calibration & Sensitivity --> hydroGeoHDFCyl["HydroGeoDataset<br>(HDF5)"]:::storage
+    direction LR
+        PPS["PPS Controller"]:::existing
+        Validation("Validation<br>(Ensemble)"):::developed
+        Calibration("Calibration<br>(PSO)"):::developed
+        Sensitivity("Sensitivity<br>(Morris)"):::developed
+        hydroGeoHDFCyl["HydroGeoDataset (HDF5)"]:::storage
     end
 
     %% 5. AI & REPORTING
