@@ -1,15 +1,11 @@
 ```mermaid
 %%{init: {'theme': 'default', 'flowchart': {'curve': 'natural', 'diagramPadding': 20}, 'themeVariables': {'fontSize': '16px', 'fontFamily': 'arial'}}}%%
-graph TB
+graph LR
     title["<b>HydroDeepNet System Architecture</b><br><i>Hydrological Modeling with AI and Multi-Agent Retrieval</i>"]:::title
 
-    %% Main data storage components
-    hydroGeoDatasetCyl["HydroGeoDataset"]:::storage
-    hydroGeoHDFCyl["HydroGeoDataset (HDF5)"]:::storage
-    
-    %% Data Sources group
-    subgraph DataSources["HydroGeoDataset (HDF5)"]
-        direction LR
+    %% 1. INPUT DATASETS
+    subgraph Input_Datasets["Input Datasets"]
+    direction TB
         PRISM("PRISM"):::datasource
         LOCA2("LOCA2"):::datasource
         MODIS("MODIS"):::datasource
@@ -21,76 +17,97 @@ graph TB
         CDL("CDL"):::datasource
     end
 
-    %% Hydrological Modeling components
+    %% 2. DATA INTEGRATION
+    HydroGeoProcessor{{"HydroGeoProcessor<br>(Data Integration)"}}:::developed
+    hydroGeoDatasetCyl["HydroGeoDataset"]:::storage
+
+    %% Additional Data Inputs
     NWIS("NWIS"):::existing
     NHDPlusHR("NHDPlus HR"):::datasource
-    SWATGenX{{SWATGenX}}:::developed
-    QSWATPlus("QSWAT+"):::existing
-    SWATPlusEditor("SWAT+ Editor"):::existing
-    SWATPlus("SWAT+"):::models
-    SWATPlusGwflow("SWAT+gwflow"):::models
 
-    %% Groundwater Modeling components
-    WellInfo("Water Well Info<br>(Wellogic)"):::datasource
-    EBK("Empirical<br>Bayesian Kriging"):::existing
-    HydraulicProps("Hydraulic<br>Properties"):::process
-    MODGenX{{MODGenX}}:::developed
-    Flopy("Flopy"):::existing
-    MODFLOWNWT("MODFLOW-NWT"):::models
+    %% 3. HYDROLOGICAL MODELING
+    subgraph Hydrological_Modeling["Hydrological Modeling"]
+    direction TB
+        SWATGenX{{SWATGenX}}:::developed
+        QSWATPlus("QSWAT+"):::existing
+        SWATPlusEditor("SWAT+ Editor"):::existing
+        SWATPlus("SWAT+"):::models
+        SWATPlusGwflow("SWAT+gwflow"):::models
+    end
 
-    %% Parallel Processing System
-    PPS["Parallel Processing System"]:::title
-    Validation("Validation<br>(ensemble)"):::developed
-    Calibration("Calibration<br>(PSO)"):::developed
-    Sensitivity("Sensitivity Analysis<br>(Morris)"):::developed
+    %% GROUNDWATER MODELING
+    subgraph Groundwater_Modeling["Groundwater Modeling"]
+    direction TB
+        WellInfo("Water Well Info<br>(Wellogic)"):::datasource
+        EBK("Empirical Bayesian Kriging"):::existing
+        HydraulicProps("Hydraulic Properties"):::process
+        MODGenX{{MODGenX}}:::developed
+        Flopy("Flopy"):::existing
+        MODFLOWNWT("MODFLOW-NWT"):::models
+    end
 
-    %% AI and Reporting
-    VisionSystem("Vision System<br>Deep Learning Framework<br>(PyTorch)"):::developed
-    MultiAI["Multi-AI agents<br>RAG system"]:::llm
-    Reports["Reports &<br>Visualization"]:::document
-    HydroGeoProcessor{{HydroGeoDataset}}:::developed
+    %% 4. PARALLEL PROCESSING
+    subgraph Parallel_Processing["Parallel Processing"]
+    direction TB
+        PPS["PPS Controller"]:::existing
+        Validation("Validation<br>(Ensemble)"):::developed
+        Calibration("Calibration<br>(PSO)"):::developed
+        Sensitivity("Sensitivity<br>(Morris)"):::developed
+        hydroGeoHDFCyl["HydroGeoDataset (HDF5)"]:::storage
+    end
 
-    %% Connections between components
-    %% Data source to processor
-    DataSources --> HydroGeoProcessor
-    DataSources --> SWATGenX
+    %% 5. AI & REPORTING
+    subgraph AI_Reporting["AI & Reporting"]
+    direction TB
+        VisionSystem("Vision System<br>(Deep Learning, PyTorch)"):::developed
+        MultiAI["Multi-AI Agents<br>(RAG System)"]:::llm
+        Reports["Reports & Visualization"]:::document
+    end
 
-    %% Hydrological modeling connections
+    %% ---- EDGES / CONNECTIONS ----
+
+    %% (A) Input to Data Processor
+    Input_Datasets --> HydroGeoProcessor
+    HydroGeoProcessor --> hydroGeoDatasetCyl
+
+    %% (B) Data to SWATGenX
+    Input_Datasets --> SWATGenX
     NWIS --> SWATGenX
     NHDPlusHR --> SWATGenX
+
+    %% (C) Hydrological Modeling Flow
     SWATGenX --> QSWATPlus
     QSWATPlus --> SWATPlusEditor
     SWATPlusEditor --> SWATPlus
-    SWATPlus -->|Streams| MODGenX
     SWATPlus --> SWATPlusGwflow
 
-    %% Groundwater modeling connections
+    %% (D) Groundwater Modeling Flow
     WellInfo --> EBK
     EBK --> HydraulicProps
     HydraulicProps --> MODGenX
     MODGenX --> Flopy
     Flopy --> MODFLOWNWT
-    
-    %% Parallel Processing connections
-    SWATPlusGwflow --> PPS
-    MODFLOWNWT --> SWATPlusGwflow
-    PPS --> Sensitivity
-    PPS --> Calibration 
-    PPS --> Validation
-    Sensitivity --> hydroGeoHDFCyl
-    Calibration --> hydroGeoHDFCyl
-    Validation --> hydroGeoHDFCyl
 
-    %% AI and storage connections
-    HydroGeoProcessor --> VisionSystem
+    %% (E) Parallel Processing Flow
+    SWATPlusGwflow --> PPS
+    MODFLOWNWT --> PPS
+    PPS --> Validation
+    PPS --> Calibration
+    PPS --> Sensitivity
+    Validation --> hydroGeoHDFCyl
+    Calibration --> hydroGeoHDFCyl
+    Sensitivity --> hydroGeoHDFCyl
+
+    %% (F) AI & Reporting Flow
+    hydroGeoDatasetCyl --> VisionSystem
     VisionSystem --> MultiAI
     hydroGeoHDFCyl --> MultiAI
     HydroGeoProcessor --> MultiAI
     MultiAI --> Reports
-    
-    %% Legend
+
+    %% LEGEND
     subgraph Legend["Legend"]
-        direction LR
+    direction LR
         dev["Developed Component"]:::developed
         ex["Existing Tool"]:::existing
         mod["Model"]:::models
@@ -101,7 +118,7 @@ graph TB
         doc["Document"]:::document
     end
 
-    %% Enhanced styling with colors from the original diagram
+    %% STYLING
     classDef title font-size:20px,fill:none,stroke:none,font-weight:bold,text-align:center
     classDef developed fill:#e1d5e7,stroke:#000000,stroke-width:2px,rx:5,ry:5,font-weight:bold
     classDef existing fill:#cce5ff,stroke:#36393d,stroke-width:1px,rx:5,ry:5
@@ -111,8 +128,4 @@ graph TB
     classDef storage fill:#e51400,stroke:#000000,stroke-width:1px,rx:10,ry:10,color:#000000,font-weight:bold
     classDef llm fill:#1ba1e2,stroke:#006EAF,stroke-width:1px,rx:8,ry:8,color:white
     classDef document fill:#ffff88,stroke:#36393d,stroke-width:1px
-    
-    %% Subgraph styling
-    classDef subgraphStyle fill:#f9f9f9,stroke:#999,stroke-width:1px,rx:10,ry:10,color:#333
-    class DataSources,Legend,PPS subgraphStyle
 ```
