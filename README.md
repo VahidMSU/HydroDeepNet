@@ -6,8 +6,9 @@ graph TD;
         NLCD -->|Land Cover| HydroGeoDataset
         NSRSDB -->|Solar Radiation| HydroGeoDataset
         gSSURGO -->|Soil Data| HydroGeoDataset
-        "3D Elevation Program" -->|Elevation Data| HydroGeoDataset
+        3D_Elevation_Program -->|Elevation Data| HydroGeoDataset
     end
+
 
     subgraph Data_Processing
         NWIS --> SWATGenX;
