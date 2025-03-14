@@ -390,15 +390,7 @@ def single_model_creation(username, site_no, ls_resolution, dem_resolution):
     #    process_SCV_SWATGenXModel(config)
 
     # Output archive
-    output_path = os.path.join("/data/Generated_models", f"{site_no}")
-    os.makedirs("/data/Generated_models", exist_ok=True)
-    try:
-        shutil.make_archive(output_path, 'zip', model_path)
-    except Exception as e:
-        logger.error(f"WebApp: failed for site_no: {site_no}")
-    logger.info(f"WebApp: Model creation successful for site_no: {site_no}")
-    
-    return f"{output_path}.zip"
+    return model_path
 
 def get_huc12_geometries(list_of_huc12s):
 

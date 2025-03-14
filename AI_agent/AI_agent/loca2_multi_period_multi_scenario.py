@@ -1,14 +1,18 @@
-from loca2_dataset import DataImporter, list_of_cc_models
+try:
+    from AI_agent.loca2_dataset import DataImporter, list_of_cc_models
+except ImportError:
+    try:
+        from loca2_dataset import DataImporter, list_of_cc_models
+    except ImportError:
+        # Absolute fallback
+        from .loca2_dataset import DataImporter, list_of_cc_models
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from tabulate import tabulate
 from matplotlib.colors import LinearSegmentedColormap
-try:
-    from loca2_dataset import DataImporter, list_of_cc_models
-except ImportError:
-    from AI_agent.loca2_dataset import DataImporter, list_of_cc_models
 
 def full_climate_change_data(bbox):
     df = list_of_cc_models()

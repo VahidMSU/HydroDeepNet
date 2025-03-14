@@ -1,5 +1,14 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Checkbox, FormControlLabel, Button, Alert, IconButton, InputLabel } from '@mui/material';
+import {
+  Box,
+  Typography,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Button,
+  Alert,
+  IconButton,
+} from '@mui/material';
 import { styled } from '@mui/system';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -124,7 +133,7 @@ const ContactUsForm = ({ onSubmit }) => {
           slotProps={{
             inputLabel: {
               sx: {
-                color: "#2b2b2c",
+                color: '#2b2b2c',
                 bgcolor: 'white',
                 px: 1,
                 borderRadius: 1,
@@ -136,7 +145,12 @@ const ContactUsForm = ({ onSubmit }) => {
               },
             },
           }}
-          sx={{ mb: 2, backgroundColor: '#ffffff', borderRadius: '8px', input: { color: '#2b2b2c' } }}
+          sx={{
+            mb: 2,
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            input: { color: '#2b2b2c' },
+          }}
         />
 
         <TextField
@@ -152,7 +166,7 @@ const ContactUsForm = ({ onSubmit }) => {
           slotProps={{
             inputLabel: {
               sx: {
-                color: "#2b2b2c",
+                color: '#2b2b2c',
                 bgcolor: 'white',
                 px: 1,
                 borderRadius: 1,
@@ -164,7 +178,12 @@ const ContactUsForm = ({ onSubmit }) => {
               },
             },
           }}
-          sx={{ mb: 2, backgroundColor: '#ffffff', borderRadius: '8px', input: { color: '#2b2b2c' } }}
+          sx={{
+            mb: 2,
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            input: { color: '#2b2b2c' },
+          }}
         />
 
         <TextField
@@ -181,7 +200,7 @@ const ContactUsForm = ({ onSubmit }) => {
           slotProps={{
             inputLabel: {
               sx: {
-                color: "#2b2b2c",
+                color: '#2b2b2c',
                 bgcolor: 'white',
                 px: 1,
                 borderRadius: 1,
@@ -193,13 +212,26 @@ const ContactUsForm = ({ onSubmit }) => {
               },
             },
           }}
-          sx={{ mb: 2, backgroundColor: '#ffffff', borderRadius: '8px', input: { color: '#2b2b2c' } }}
+          sx={{
+            mb: 2,
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            input: { color: '#2b2b2c' },
+          }}
         />
 
         {/* Subscription Checkbox (Own Line, Left-Aligned) */}
         <Box sx={{ mb: 2 }}>
           <FormControlLabel
-            control={<Checkbox id="newsletter" name="newsletter" checked={formData.newsletter} onChange={handleChange} sx={{ color: '#ffa533' }} />}
+            control={
+              <Checkbox
+                id="newsletter"
+                name="newsletter"
+                checked={formData.newsletter}
+                onChange={handleChange}
+                sx={{ color: '#ffa533' }}
+              />
+            }
             label="Subscribe to our newsletter"
             sx={{ color: '#ffffff' }}
           />
@@ -207,7 +239,9 @@ const ContactUsForm = ({ onSubmit }) => {
 
         {/* Centered Submit Button */}
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <SubmitButton type="submit" variant="contained">Submit</SubmitButton>
+          <SubmitButton type="submit" variant="contained">
+            Submit
+          </SubmitButton>
         </Box>
       </ContentWrapper>
     </ContactContainer>
