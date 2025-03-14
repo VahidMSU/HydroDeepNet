@@ -71,7 +71,7 @@ graph LR
         Validation("Validation<br>(Ensemble)"):::developed
         Calibration("Calibration<br>(PSO)"):::developed
         Sensitivity("Sensitivity<br>(Morris)"):::developed
-        hydroGeoHDFCyl["HydroGeoDataset (HDF5)"]:::storage
+        hydroGeoHDFCyl["HydroGeoDataset (HDF5) "]:::storage
     end
 
     %% 5. AI & REPORTING
@@ -124,15 +124,15 @@ graph LR
     MultiAI --> Reports
 
     %% STYLING
-    classDef title font-size:24px,fill:none,stroke:none,font-weight:bold,text-align:center
-    classDef developed font-size:18px,fill:#e1d5e7,stroke:#000000,stroke-width:2px,rx:5,ry:5,font-weight:bold
-    classDef existing font-size:18px,fill:#cce5ff,stroke:#36393d,stroke-width:1px,rx:5,ry:5,font-weight:bold
-    classDef models font-size:18px,fill:#cdeb8b,stroke:#36393d,stroke-width:1px,rx:5,ry:5,font-weight:bold
-    classDef datasource font-size:18px,fill:#f0a30a,stroke:#BD7000,stroke-width:1px,rx:4,ry:4,color:#000000,font-weight:bold
-    classDef process font-size:18px,fill:#f5f5f5,stroke:#000000,stroke-width:1px,rx:6,ry:6,font-weight:bold
-    classDef storage font-size:18px,fill:#e51400,stroke:#000000,stroke-width:1px,rx:10,ry:10,color:#000000,font-weight:bold
-    classDef llm font-size:18px,fill:#1ba1e2,stroke:#006EAF,stroke-width:1px,rx:8,ry:8,color:white,font-weight:bold
-    classDef document font-size:18px,fill:#ffff88,stroke:#36393d,stroke-width:1px,font-weight:bold
+    classDef title font-size:28px,fill:none,stroke:none,font-weight:bold,text-align:center
+    classDef developed font-size:20px,fill:#d1c4e9,stroke:#000000,stroke-width:2px,rx:5,ry:5,font-weight:bold
+    classDef existing font-size:20px,fill:#b3e5fc,stroke:#36393d,stroke-width:1px,rx:5,ry:5,font-weight:bold
+    classDef models font-size:20px,fill:#c5e1a5,stroke:#36393d,stroke-width:1px,rx:5,ry:5,font-weight:bold
+    classDef datasource font-size:20px,fill:#ffb74d,stroke:#BD7000,stroke-width:1px,rx:4,ry:4,color:#000000,font-weight:bold
+    classDef process font-size:20px,fill:#eeeeee,stroke:#000000,stroke-width:1px,rx:6,ry:6,font-weight:bold
+    classDef storage font-size:20px,fill:#ef5350,stroke:#000000,stroke-width:1px,rx:10,ry:10,color:#000000,font-weight:bold
+    classDef llm font-size:20px,fill:#4fc3f7,stroke:#006EAF,stroke-width:1px,rx:8,ry:8,color:white,font-weight:bold
+    classDef document font-size:20px,fill:#fff9c4,stroke:#36393d,stroke-width:1px,font-weight:bold
     linkStyle default stroke:gray;
 ```
 
