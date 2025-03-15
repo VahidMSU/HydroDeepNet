@@ -212,7 +212,7 @@ class AppManager:
 			self.app.logger.info(f"User Dashboard accessed by `{current_user.username}`.")
 			return jsonify({"title": "Dashboard", "message": "Your user dashboard."})
 
-		@self.app.route('/get_options', methods=['GET'])
+		@self.app.route('/api/get_options', methods=['GET'])
 		@conditional_login_required
 		@conditional_verified_required
 		def get_options():
@@ -231,7 +231,7 @@ class AppManager:
 				self.app.logger.error(f"Error fetching options: {e}")
 				return jsonify({"error": "Failed to fetch options"}), 500
 
-		@self.app.route('/visualizations', methods=['GET'])
+		@self.app.route('/api/visualizations', methods=['GET'])
 		@conditional_login_required
 		@conditional_verified_required
 		def visualizations():
@@ -301,18 +301,42 @@ class AppManager:
 			user = User.query.filter_by(username=username).first()
 			if user and user.check_password(password):
 				if not user.is_verified:
-					return jsonify({"error": "Email not verified. Please check your email."}), 403
+					# User exists and password is correct, but email is not verified
+					self.app.logger.info(f"User {username} attempted login but is not verified. Redirecting to verify page.")
+					return jsonify({
+						"success": True, 
+						"verified": False, 
+						"email": user.email,
+						"message": "Your email has not been verified. Please verify your email.",
+						"redirect": "/verify"
+					}), 200
 
 				login_user(user)
 				session.permanent = True
-				return jsonify({"success": True, "token": "someJWT"}), 200
+				return jsonify({"success": True, "verified": True, "token": "someJWT"}), 200
 
 			return jsonify({"error": "Invalid username or password"}), 401
+
+		@self.app.route('/sign_up', methods=['GET', 'POST'])
+		def sign_up_redirect():
+			"""Redirect old sign_up route to the Single Page App"""
+			self.app.logger.info("Redirecting /sign_up to frontend")
+			if request.method == 'POST':
+				# If it's a POST request, it might be trying to submit data directly
+				self.app.logger.warning("POST to /sign_up received - redirecting to /api/signup")
+				return redirect('/api/signup')
+			return redirect('/#/signup')  # Redirect to the React router path
 
 		@self.app.route('/api/signup', methods=['POST'])
 		def signup():
 			self.app.logger.info("Sign Up route called via API")
 			data = request.get_json()
+			if not data:
+				self.app.logger.error("No JSON data received in signup request")
+				return jsonify({"status": "error", "message": "Invalid request format", "details": "No JSON data received"}), 400
+			
+			self.app.logger.debug(f"Signup data received: {json.dumps({k: '***' if k == 'password' or k == 'confirmPassword' else v for k, v in data.items()})}")
+			
 			username = data.get('username')
 			email = data.get('email')
 			password = data.get('password')

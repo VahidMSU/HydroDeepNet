@@ -15,6 +15,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_socketio import SocketIO, emit
 from redis import Redis, ConnectionError
+from app.routes_debug import register_debug_routes  # Add this import
+
 # Ensure the system path includes SWATGenX
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
 sys.path.append('/data/SWATGenXApp/codes/AI_agent') 
@@ -22,7 +24,7 @@ sys.path.append('/data/SWATGenXApp/codes/AI_agent')
 # Create socketio instance at module level to export it
 socketio = SocketIO(cors_allowed_origins="*")
 
-def create_app():
+def create_app(config_class=Config):  # Update function signature
     """
     Creates and configures the Flask application.
     """
@@ -75,7 +77,7 @@ def create_app():
         emit('message', {'data': 'Disconnected from WebSocket!'})
 
     # Load configurations
-    app.config.from_object(Config)
+    app.config.from_object(config_class)  # Update to use config_class
     app.config.update({
         'SESSION_COOKIE_SECURE': False,  # ✅ Disable HTTPS for local testing
         'REMEMBER_COOKIE_SECURE': False,  # ✅ Disable HTTPS for local testing  
@@ -184,5 +186,8 @@ def create_app():
         response.headers["Content-Security-Policy"] = "frame-ancestors 'self'"
         response.headers["Cache-Control"] = "no-store"
         return response
+
+    # Register debug routes if in development
+    register_debug_routes(app)
 
     return app

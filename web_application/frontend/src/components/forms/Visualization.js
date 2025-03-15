@@ -14,12 +14,12 @@ import {
 } from '../../styles/Visualizations.tsx';
 
 const VisualizationForm = ({
-  watersheds,
+  watersheds = [],
   selectedWatershed,
   setSelectedWatershed,
   ensemble,
   setEnsemble,
-  availableVariables,
+  availableVariables = [],
   selectedVariables,
   setSelectedVariables,
   handleSubmit,
@@ -50,11 +50,17 @@ const VisualizationForm = ({
               onChange={(e) => setSelectedWatershed(e.target.value)}
             >
               <option value="">Select a Watershed</option>
-              {watersheds.map((w, idx) => (
-                <option key={idx} value={w}>
-                  {w}
+              {watersheds && watersheds.length > 0 ? (
+                watersheds.map((w, idx) => (
+                  <option key={idx} value={w}>
+                    {w}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  Loading watersheds...
                 </option>
-              ))}
+              )}
             </FormSelect>
           </FormGroup>
 
@@ -80,11 +86,17 @@ const VisualizationForm = ({
               value={selectedVariables}
               onChange={handleVariableChange}
             >
-              {availableVariables.map((variable, idx) => (
-                <option key={idx} value={variable}>
-                  {variable}
+              {availableVariables && availableVariables.length > 0 ? (
+                availableVariables.map((variable, idx) => (
+                  <option key={idx} value={variable}>
+                    {variable}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  Loading variables...
                 </option>
-              ))}
+              )}
             </FormSelect>
             <HelpText id="variable-help">Hold Ctrl/Cmd to select multiple variables.</HelpText>
           </FormGroup>

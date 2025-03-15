@@ -1,7 +1,21 @@
-///data/SWATGenXApp/codes/web_application/frontend/src/pages/SignUp.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Box, Card, CardContent, Typography, Button, TextField } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  TextField,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Alert,
+} from '@mui/material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -13,12 +27,46 @@ const SignUp = () => {
   });
   const [errors, setErrors] = useState({});
   const [flashMessages, setFlashMessages] = useState([]);
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+
+  // Password requirements validation
+  const passwordRequirements = [
+    {
+      label: 'At least 8 characters long',
+      valid: formData.password.length >= 8,
+    },
+    {
+      label: 'Contains at least one uppercase letter',
+      valid: /[A-Z]/.test(formData.password),
+    },
+    {
+      label: 'Contains at least one lowercase letter',
+      valid: /[a-z]/.test(formData.password),
+    },
+    {
+      label: 'Contains at least one number',
+      valid: /\d/.test(formData.password),
+    },
+    {
+      label: 'Contains at least one special character',
+      valid: /[@#$^&*()_+={}\[\]|\\:;"'<>,.?/~`-]/.test(formData.password),
+    },
+    {
+      label: 'Passwords match',
+      valid: formData.password === formData.confirmPassword && formData.password !== '',
+    },
+  ];
 
   const handleChange = ({ target: { name, value } }) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
+    // Show password requirements when user starts typing in password field
+    if (name === 'password' && !showPasswordRequirements) {
+      setShowPasswordRequirements(true);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -32,14 +80,11 @@ const SignUp = () => {
     if (!formData.email) {
       newErrors.email = 'Email is required';
     }
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Confirm Password is required';
-    }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+
+    // Check all password requirements
+    const invalidRequirements = passwordRequirements.filter((req) => !req.valid);
+    if (invalidRequirements.length > 0) {
+      newErrors.password = 'Password does not meet requirements';
     }
 
     if (Object.keys(newErrors).length) {
@@ -59,7 +104,13 @@ const SignUp = () => {
       const result = await response.json();
       if (response.ok) {
         setFlashMessages([{ category: 'info', text: result.message }]);
-        navigate('/login'); // Redirect to login after successful signup
+        // Store email in localStorage for verification page
+        localStorage.setItem('verificationEmail', formData.email);
+        navigate('/verify'); // Redirect to verification page after successful signup
+      } else if (result.errors) {
+        // Handle field-specific errors from the server
+        setErrors(result.errors);
+        setFlashMessages([{ category: 'error', text: result.message }]);
       } else {
         setFlashMessages([{ category: 'error', text: result.message }]);
       }
@@ -80,13 +131,13 @@ const SignUp = () => {
         justifyContent: 'center',
         alignItems: 'center',
         px: 3,
-        overflow: 'hidden',
+        overflow: 'auto',
         position: 'fixed',
         top: 0,
         left: 0,
       }}
     >
-      <Card sx={{ bgcolor: '#2b2b2c', p: 3, borderRadius: 2, maxWidth: 400, width: '100%' }}>
+      <Card sx={{ bgcolor: '#2b2b2c', p: 3, borderRadius: 2, maxWidth: 500, width: '100%', my: 4 }}>
         <CardContent>
           <Typography
             variant="h4"
@@ -96,13 +147,13 @@ const SignUp = () => {
           </Typography>
 
           {flashMessages.length > 0 && (
-            <div>
+            <Box mb={2}>
               {flashMessages.map((msg, idx) => (
-                <div key={idx} className={`alert alert-${msg.category}`}>
+                <Alert key={idx} severity={msg.category === 'error' ? 'error' : 'info'}>
                   {msg.text}
-                </div>
+                </Alert>
               ))}
-            </div>
+            </Box>
           )}
 
           <form onSubmit={handleSubmit}>
@@ -168,6 +219,7 @@ const SignUp = () => {
               onChange={handleChange}
               error={Boolean(errors.password)}
               helperText={errors.password}
+              onFocus={() => setShowPasswordRequirements(true)}
               sx={{
                 bgcolor: 'white',
                 borderRadius: 1,
@@ -183,6 +235,49 @@ const SignUp = () => {
                 },
               }}
             />
+
+            {showPasswordRequirements && (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1,
+                  mt: 1,
+                  mb: 2,
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 1,
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ color: 'white', mb: 1 }}>
+                  Password must:
+                </Typography>
+                <List dense disablePadding>
+                  {passwordRequirements.map((requirement, index) => (
+                    <ListItem key={index} dense disablePadding sx={{ py: 0.5 }}>
+                      <ListItemIcon sx={{ minWidth: 30 }}>
+                        {requirement.valid ? (
+                          <CheckCircleOutlineIcon color="success" fontSize="small" />
+                        ) : (
+                          <CancelOutlinedIcon color="error" fontSize="small" />
+                        )}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: requirement.valid ? '#4caf50' : '#f44336',
+                            }}
+                          >
+                            {requirement.label}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            )}
+
             <TextField
               fullWidth
               label="Confirm Password"

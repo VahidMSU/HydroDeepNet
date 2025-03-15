@@ -73,17 +73,23 @@ const VisualizationsDashboardTemplate = () => {
   // Fetch dropdown options on component mount
   useEffect(() => {
     const fetchOptions = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get('/get_options');
-        console.log('GET /get_options response:', response.data);
-        setWatersheds(response.data.names);
-        setAvailableVariables(response.data.variables);
+        const response = await axios.get('/api/get_options');
+        console.log('GET /api/get_options response:', response.data);
+
+        // Safely set the data with defaults
+        setWatersheds(response.data.names || []);
+        setAvailableVariables(response.data.variables || []);
       } catch (error) {
+        console.error('Error fetching options:', error);
         if (error.response && error.response.status === 401) {
           navigate('/login');
         } else {
-          console.error('Error fetching options:', error);
+          setErrorMessage('Failed to load watershed and variable options. Please try again later.');
         }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -104,14 +110,14 @@ const VisualizationsDashboardTemplate = () => {
     setErrorMessage('');
     setLoading(true);
 
-    console.log('POST /visualizations params:', {
+    console.log('GET /api/visualizations params:', {
       NAME: selectedWatershed,
       ver: ensemble,
       variable: selectedVariables.join(','),
     });
 
     axios
-      .get('/visualizations', {
+      .get('/api/visualizations', {
         params: {
           NAME: selectedWatershed,
           ver: ensemble,
@@ -119,12 +125,21 @@ const VisualizationsDashboardTemplate = () => {
         },
       })
       .then((response) => {
-        setVisualizationResults(response.data.gif_files);
+        setVisualizationResults(response.data.gif_files || []);
         setShowResults(true);
+
+        // Handle warnings if present
+        if (response.data.warnings) {
+          setErrorMessage(response.data.warnings);
+        }
       })
       .catch((error) => {
         console.error('Error fetching visualizations:', error);
-        setErrorMessage('Failed to fetch visualizations.');
+        if (error.response && error.response.data && error.response.data.error) {
+          setErrorMessage(error.response.data.error);
+        } else {
+          setErrorMessage('Failed to fetch visualizations. Please try again later.');
+        }
         setShowResults(false);
       })
       .finally(() => {
@@ -137,7 +152,9 @@ const VisualizationsDashboardTemplate = () => {
       <VisualizationTitle variant="h1">Visualizations Dashboard</VisualizationTitle>
 
       {/* Collapsible Description */}
-      <Accordion sx={{ backgroundColor: '#333', color: 'white', borderRadius: '8px', marginBottom: '1rem' }}>
+      <Accordion
+        sx={{ backgroundColor: '#333', color: 'white', borderRadius: '8px', marginBottom: '1rem' }}
+      >
         <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'white' }} />}>
           <Typography variant="h6">Description</Typography>
         </AccordionSummary>
