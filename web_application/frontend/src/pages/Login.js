@@ -1,4 +1,3 @@
-///data/SWATGenXApp/codes/web_application/frontend/src/pages/Login.js
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -60,12 +59,21 @@ const Login = () => {
       });
       const data = await response.json();
       if (data.success) {
-        // store token or other credentials as needed
+        if (!data.verified) {
+          // User is not verified, redirect to verify page with email
+          localStorage.setItem('verificationEmail', data.email);
+          alert(
+            data.message || 'Your email has not been verified. Redirecting to verification page.',
+          );
+          navigate('/verify');
+          return;
+        }
+        // User is verified, proceed with login
         localStorage.setItem('authToken', data.token);
         navigate('/');
       } else {
-        setErrors({ login: data.message });
-        alert(data.message); // Flash message for incorrect username or password
+        setErrors({ login: data.error });
+        alert(data.error || 'Login failed. Please try again.');
       }
     } catch (error) {
       console.error('Login error:', error);

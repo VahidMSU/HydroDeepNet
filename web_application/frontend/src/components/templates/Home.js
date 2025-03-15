@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  Box, Typography, List, ListItem, ListItemText, Paper, Button, Dialog, DialogTitle, DialogContent, IconButton 
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -19,103 +29,123 @@ const HomeTemplate = () => {
 
   return (
     <Box sx={{ bgcolor: '#2b2b2c', minHeight: '100vh', px: 4, py: 3 }}>
-      <Typography variant="h3" align="center" gutterBottom sx={{ fontWeight: 'bold', color: 'white' }}>
+      <Typography
+        variant="h3"
+        align="center"
+        gutterBottom
+        sx={{ fontWeight: 'bold', color: 'white' }}
+      >
         Hydrological Modeling and Deep Learning Framework
       </Typography>
 
       {/* Overview Section */}
       <Paper sx={{ bgcolor: '#444e5e', p: 3, my: 3, borderRadius: 2 }}>
-        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>Overview</Typography>
-        <Typography sx={{color: 'white'}}>
-          This platform integrates advanced hydrological modeling, hierarchical data management, and deep learning techniques.
-          It leverages models such as SWAT+ and MODFLOW to predict hydrological variables at high spatial and temporal resolutions.
+        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>
+          Overview
+        </Typography>
+        <Typography sx={{ color: 'white' }}>
+          This platform integrates advanced hydrological modeling, hierarchical data management, and
+          deep learning techniques. It leverages models such as SWAT+ and MODFLOW to predict
+          hydrological variables at high spatial and temporal resolutions.
         </Typography>
       </Paper>
 
       {/* Key Components Section */}
       <Paper sx={{ bgcolor: '#444e5e', p: 3, my: 3, borderRadius: 2 }}>
-        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>Key Components</Typography>
+        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>
+          Key Components
+        </Typography>
 
         {/* Hydrological Modeling */}
-        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>1. Hydrological Modeling with SWAT+</Typography>
-        <Typography sx={{color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>
-          SWAT+ serves as the core model for simulating surface and subsurface hydrological cycles. Key highlights:
+        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>
+          1. Hydrological Modeling with SWAT+
+        </Typography>
+        <Typography sx={{ color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>
+          SWAT+ serves as the core model for simulating surface and subsurface hydrological cycles.
+          Key highlights:
         </Typography>
         <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Simulates evapotranspiration, runoff, and groundwater recharge." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Simulates evapotranspiration, runoff, and groundwater recharge."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Uses hierarchical land classification for HRU-based analysis." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Uses hierarchical land classification for HRU-based analysis."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Employs Particle Swarm Optimization (PSO) for calibrating parameters." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Employs Particle Swarm Optimization (PSO) for calibrating parameters."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
         </List>
 
         {/* Hierarchical Data Management */}
-        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>2. Hierarchical Data Management</Typography>
-        <Typography sx={{color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>The platform uses a robust HDF5 database to manage multi-resolution data.</Typography>
+        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>
+          2. Hierarchical Data Management
+        </Typography>
+        <Typography sx={{ color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>
+          The platform uses a robust HDF5 database to manage multi-resolution data.
+        </Typography>
         <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Land use and soil data (250m resolution)." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Land use and soil data (250m resolution)."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Groundwater hydraulic properties from 650k water wells." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Groundwater hydraulic properties from 650k water wells."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Meteorological inputs from PRISM (4km) and NSRDB (2km, upsampled to 4km)." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Meteorological inputs from PRISM (4km) and NSRDB (2km, upsampled to 4km)."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
         </List>
 
         {/* GeoNet Vision System */}
-        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>3. GeoNet Vision System</Typography>
-        <Typography sx={{color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>
-          GeoNet leverages hydrological data for spatiotemporal regression tasks, predicting groundwater recharge and climate impacts.
+        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>
+          3. GeoNet Vision System
+        </Typography>
+        <Typography sx={{ color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>
+          GeoNet leverages hydrological data for spatiotemporal regression tasks, predicting
+          groundwater recharge and climate impacts.
         </Typography>
         <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Support for 4D spatiotemporal analysis at 250m resolution." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Support for 4D spatiotemporal analysis at 250m resolution."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Efficient processing of hydrological data with specialized loss functions." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Efficient processing of hydrological data with specialized loss functions."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Modular design for hyperparameter tuning and model customization." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Modular design for hyperparameter tuning and model customization."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
@@ -125,7 +155,7 @@ const HomeTemplate = () => {
       {/* Image Section */}
       <Paper sx={{ bgcolor: '#444e5e', p: 3, my: 3, borderRadius: 2 }}>
         <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>
-          Hydrological Model Creation Framework
+          HydroDeepNet Workflow
         </Typography>
 
         {/* Centering the image and making it larger */}
@@ -146,26 +176,28 @@ const HomeTemplate = () => {
 
       {/* Applications Section */}
       <Paper sx={{ bgcolor: '#444e5e', p: 3, my: 3, borderRadius: 2 }}>
-        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>Applications</Typography>
+        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>
+          Applications
+        </Typography>
         <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Predicting groundwater recharge in data-scarce regions." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Predicting groundwater recharge in data-scarce regions."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Assessing climate change impacts on hydrological processes." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Assessing climate change impacts on hydrological processes."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText 
-              primary="Supporting scalable watershed-level hydrological modeling." 
-              sx={{ color: 'white' }} 
+            <ListItemText
+              primary="Supporting scalable watershed-level hydrological modeling."
+              sx={{ color: 'white' }}
               slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
             />
           </ListItem>
@@ -174,10 +206,20 @@ const HomeTemplate = () => {
 
       {/* Buttons Section */}
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 3 }}>
-        <Button variant="contained" color="primary" sx={{ bgcolor: '#ff8500' }} onClick={() => alert('Learn More clicked!')}>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ bgcolor: '#ff8500' }}
+          onClick={() => alert('Learn More clicked!')}
+        >
           Learn More
         </Button>
-        <Button variant="contained" color="primary" sx={{ bgcolor: '#ff8500' }} onClick={() => alert('Download Data clicked!')}>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ bgcolor: '#ff8500' }}
+          onClick={() => alert('Download Data clicked!')}
+        >
           Download Data
         </Button>
       </Box>

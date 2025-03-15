@@ -1,5 +1,4 @@
-///data/SWATGenXApp/codes/web_application/frontend/src/pages/Verify.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import VerificationForm from '../components/forms/Verification';
@@ -11,6 +10,16 @@ const Verify = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
+
+  // Add useEffect to check for stored email from login redirect
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('verificationEmail');
+    if (storedEmail) {
+      setEmail(storedEmail);
+      // Clear it from localStorage after using it
+      localStorage.removeItem('verificationEmail');
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

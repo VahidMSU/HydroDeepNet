@@ -32,7 +32,7 @@ import {
 } from '../../styles/SWATGenX.tsx';
 
 const SWATGenXTemplate = () => {
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(true);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [stationList] = useState([]);
   const [stationInput, setStationInput] = useState('');
   const [stationData, setStationData] = useState(null);
