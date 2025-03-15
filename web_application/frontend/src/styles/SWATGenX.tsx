@@ -1,4 +1,6 @@
-import styled, { keyframes, css } from 'styled-components';
+/** @jsxImportSource @emotion/react */
+import styled from '@emotion/styled';
+import { keyframes, css } from '@emotion/react';
 
 // Animations
 const fadeIn = keyframes`

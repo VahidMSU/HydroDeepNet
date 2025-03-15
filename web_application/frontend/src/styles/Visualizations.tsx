@@ -1,7 +1,8 @@
-import styled from 'styled-components';
+/** @jsxImportSource @emotion/react */
+import styled from '@emotion/styled';
 import { CircularProgress } from '@mui/material';
 import colors from './colors.tsx';
-// Simplified color palette
+import { Card, CardBody, ContentWrapper, ErrorMessage, LoadingContainer, SectionTitle } from './common.tsx';
 
 // Layout components
 export const Body = styled.div`
@@ -13,7 +14,7 @@ export const Body = styled.div`
 export const PageTitle = styled.h1<{ $variant?: string }>`
   font-size: 2rem;
   margin-bottom: 2rem;
-  color: ${colors.TitleText};
+  color: ${colors.text};
 `;
 
 // Form related components
@@ -52,13 +53,13 @@ export const FormSelect = styled.select`
   border-radius: 4px;
   font-size: 1rem;
   background-color: ${colors.inputBg};
-  color: ${colors.FieldText};
+  color: ${colors.text};
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: ${colors.borderAccent};
+    border-color: ${colors.accent};
     outline: none;
-    box-shadow: 0 0 0 2px ${colors.borderAccent}33;
+    box-shadow: 0 0 0 2px ${colors.accent}33;
   }
 
   &[multiple] {
@@ -72,13 +73,13 @@ export const FormInput = styled.input`
   border-radius: 4px;
   font-size: 1rem;
   background-color: ${colors.inputBg};
-  color: ${colors.FieldText};
+  color: ${colors.text};
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: ${colors.borderAccent};
+    border-color: ${colors.accent};
     outline: none;
-    box-shadow: 0 0 0 2px ${colors.borderAccent}33;
+    box-shadow: 0 0 0 2px ${colors.accent}33;
   }
 `;
 
@@ -104,20 +105,84 @@ export const SubmitButton = styled.button`
   }
 `;
 
-export const ErrorMessage = styled.div`
-  color: ${colors.accentAlt};
-  background-color: ${colors.surfaceLight};
-  padding: 1rem;
-  border-radius: 4px;
-  margin-top: 1rem;
+export const NoResults = styled.div`
   text-align: center;
+  padding: 2rem;
+  color: ${colors.textSecondary};
 `;
 
-// Additional required exports
-export const SectionTitle = styled.h2<{ $variant?: string }>`
-  font-size: 1.5rem;
-  margin: 2rem 0;
+// Collapsible components
+export const Collapsible = styled.div`
+  margin: 1rem 0;
+  border: 1px solid ${colors.border};
+  border-radius: 4px;
+`;
+
+export const HeaderTitle = styled.h1`
+  text-align: center;
+  margin-bottom: 30px;
   color: ${colors.text};
+  font-size: 2.5rem;
+  font-weight: bold;
+`;
+
+export const CollapsibleHeader = styled.div`
+  padding: 1rem;
+  cursor: pointer;
+  background-color: ${colors.surfaceLight};
+  color: ${colors.text};
+  
+  &:hover {
+    background-color: ${colors.surface};
+  }
+`;
+
+export const CollapsibleContent = styled.div`
+  padding: 1rem;
+  color: ${colors.text};
+`;
+
+export const CollapsibleText = styled.p`
+  color: ${colors.text};
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+export const HeaderIcon = styled.span`
+  margin-right: 8px;
+`;
+
+export const StyledCircularProgress = styled(CircularProgress)`
+  color: ${colors.accent};
+`;
+
+// Content components
+export const DescriptionContainer = styled.div`
+  background-color: #444e5e;
+  padding: 24px;
+  margin: 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: white;
+  margin-bottom: 20px;
+`;
+
+export const Description = styled.p`
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: ${colors.text};
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+export const VisualizationSection = styled.section`
+  // Additional styling if needed
 `;
 
 export const GifContainer = styled.div`
@@ -160,106 +225,6 @@ export const DownloadButton = styled.a`
   }
 `;
 
-export const NoResults = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: ${colors.textSecondary};
-`;
-
-// Collapsible components
-export const Collapsible = styled.div`
-  margin: 1rem 0;
-  border: 1px solid ${colors.border};
-  border-radius: 4px;
-`;
-export const HeaderTitle = styled.h1`
-  text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-  font-size: 2.5rem;
-  font-weight: bold;
-`;
-export const CollapsibleHeader = styled.div`
-  padding: 1rem;
-  cursor: pointer;
-  background-color: ${colors.surfaceLight};
-  color: ${colors.text};
-  
-  &:hover {
-    background-color: ${colors.surface};
-  }
-`;
-
-export const CollapsibleContent = styled.div`
-  padding: 1rem;
-  color: ${colors.text};
-`;
-
-export const CollapsibleText = styled.p`
-  color: ${colors.text};
-  line-height: 1.6;
-  margin-bottom: 1rem;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-export const HeaderIcon = styled.span`
-  margin-right: 8px;
-`;
-
-// Loading components
-export const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
-`;
-
-export const StyledCircularProgress = styled(CircularProgress)`
-  color: ${colors.accent};
-`;
-
-// Content components
-export const DescriptionContainer = styled.div`
-  background-color: #444e5e;
-  padding: 24px;
-  margin: 20px 0;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  color: white;
-  margin-bottom: 20px;
-`;
-
-export const Description = styled.p`
-  margin-bottom: 1rem;
-  line-height: 1.6;
-  color: ${colors.text};
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-export const VisualizationSection = styled.section`
-  // Additional styling if needed
-`;
-
-// New Card components for styling improvements
-export const Card = styled.div`
-  background-color: ${colors.surface};
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  padding: 1rem;
-  margin: 1rem 0;
-  border: 1px solid ${colors.border};
-  color: ${colors.text};
-`;
-
-export const CardBody = styled.div`
-  padding: 1rem;
-`;
-
 export const VisualizationContainer = styled.div`
   max-width: 1200px;
   margin: 2rem auto;
@@ -288,9 +253,5 @@ export const VisualizationTitle = styled.h2`
   }
 `;
 
-export const ContentWrapper = styled.div`
-  background-color: #444e5e;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-`;
+// Export existing components from common
+export { Card, CardBody, ContentWrapper, ErrorMessage, LoadingContainer, SectionTitle };

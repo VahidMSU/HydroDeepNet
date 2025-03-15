@@ -19,7 +19,8 @@ import {
   InfoValue,
 } from '../styles/SWATGenX.tsx';
 
-const StationDetails = ({ stationData }) => {
+// Using React.memo to prevent unnecessary re-renders
+const StationDetails = React.memo(({ stationData }) => {
   if (!stationData) return null;
 
   return (
@@ -80,6 +81,6 @@ const StationDetails = ({ stationData }) => {
       </StationInfoContainer>
     </StationDetailsContainer>
   );
-};
+});
 
 export default StationDetails;

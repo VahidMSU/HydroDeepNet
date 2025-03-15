@@ -19,6 +19,9 @@ from redis import Redis, ConnectionError
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
 sys.path.append('/data/SWATGenXApp/codes/AI_agent') 
 
+# Create socketio instance at module level to export it
+socketio = SocketIO(cors_allowed_origins="*")
+
 def create_app():
     """
     Creates and configures the Flask application.
@@ -35,8 +38,7 @@ def create_app():
         static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'build', 'static')
     )
 
-    CORS(app)  # Enable CORS for all routes
-
+    # Clean up CORS configuration - use just one comprehensive configuration
     CORS(
         app,
         supports_credentials=True,
@@ -52,12 +54,16 @@ def create_app():
             },
             r"/model-settings": {
                 "origins": ["http://localhost:3000", "https://ciwre-bae.campusad.msu.edu"],
+            },
+            r"/*": {
+                "origins": "*"  # Fallback for other routes
             }
         }
     )
 
-    socketio = SocketIO(app, cors_allowed_origins="*")
-
+    # Initialize SocketIO with the app
+    socketio.init_app(app)
+    
     @socketio.on('connect')
     def on_connect():
         logger.info('Client connected')
@@ -77,6 +83,10 @@ def create_app():
         'SESSION_COOKIE_SAMESITE': 'None',
         'PREFERRED_URL_SCHEME': 'https'
     })
+    
+    # Set Flask logger to use our custom logger
+    app.logger.handlers = logger.handlers
+    app.logger.setLevel(logger.level)
 
     # Apply Flask-Talisman for security headers & HTTPS enforcement
     Talisman(
