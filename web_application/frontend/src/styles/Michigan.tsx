@@ -1,5 +1,7 @@
-import styled from 'styled-components';
+/** @jsxImportSource @emotion/react */
+import styled from '@emotion/styled';
 import colors from './colors.tsx';
+import { TitleBase, SectionContainer, ContentWrapper } from './common.tsx';
 
 export const Container = styled.div`
   padding: 20px;
@@ -8,45 +10,17 @@ export const Container = styled.div`
 export const HeaderTitle = styled.h1`
   text-align: center;
   margin-bottom: 30px;
-  color: ${colors.TitleText};
+  color: ${colors.text};
   font-size: 2.5rem;
   font-weight: bold;
 `;
 
-export const MichiganContainer = styled.div`
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 2rem;
-  color: #ffffff;
-`;
+// Use common components
+export const MichiganContainer = SectionContainer;
+export const MichiganTitle = TitleBase;
 
-export const MichiganTitle = styled.h2`
-  color: #ff8500;
-  font-size: 2.8rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 3px solid #ff8500;
-  padding-bottom: 1.2rem;
-  position: relative;
-  text-align: center;
-  
-  &:after {
-    content: '';
-    position: absolute;
-    bottom: -3px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background-color: #ffa533;
-  }
-`;
-
-export const ContentWrapper = styled.div`
-  background-color: #444e5e;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-`;
+// Re-export common wrapper
+export { ContentWrapper };
 
 export const ImageGrid = styled.div`
   display: grid;

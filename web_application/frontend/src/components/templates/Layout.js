@@ -5,6 +5,7 @@ import {
   Sidebar,
   NavLink,
   ViewDiv,
+  Button, // Add missing import
 } from '../../styles/Layout.tsx';
 
 const LayoutTemplate = ({ children, handleLogout }) => {

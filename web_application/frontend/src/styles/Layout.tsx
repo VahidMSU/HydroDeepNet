@@ -1,17 +1,17 @@
-import styled, { createGlobalStyle, keyframes } from 'styled-components';
+/** @jsxImportSource @emotion/react */
+import styled from '@emotion/styled';
+import { keyframes } from '@emotion/react';
 import colors from './colors.tsx';
 
-export const GlobalStyle = createGlobalStyle`
-  body {
-    background-color: ${colors.background};
-    text-size-adjust: 100%;
-  }
+export const GlobalStyle = styled.div`
+  background-color: ${colors.background};
+  text-size-adjust: 100%;
 `;
 
 export const HeaderTitle = styled.h1`
   text-align: center;
   margin-bottom: 30px;
-  color: ${colors.TitleText};
+  color: ${colors.text};
   font-size: 2.5rem;
   font-weight: bold;
 `;

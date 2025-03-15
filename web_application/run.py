@@ -1,7 +1,6 @@
 import os
 import sys
-from flask_socketio import SocketIO
-from app import create_app
+from app import create_app, socketio  # Import the socketio instance from app module
 from celery_app import celery
 
 # Ensure system paths are properly set
@@ -27,9 +26,6 @@ app = create_app()
 # Configure static files path
 app.static_folder = os.path.join(os.path.dirname(__file__), 'frontend', 'build', 'static')
 app.static_url_path = '/static'
-
-# Set up SocketIO with CORS allowed
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Log that the Flask application has been created
 app.logger.info("Flask application initialized for local SocketIO server.")
