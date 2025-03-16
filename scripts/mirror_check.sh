@@ -34,11 +34,11 @@ echo "Container PROJ Library Path:"
 docker exec -it $container_id echo $PROJ_LIB
 docker exec -it $container_id ls -lah $PROJ_LIB
 
-echo "===== Checking Shared Library Links ====="
-echo "Host GDAL linked libraries:"
-ldd $(which gdalinfo)
-echo "Container GDAL linked libraries:"
-docker exec -it $container_id ldd $(which gdalinfo)
+#echo "===== Checking Shared Library Links ====="
+#echo "Host GDAL linked libraries:"
+#ldd $(which gdalinfo)
+#echo "Container GDAL linked libraries:"
+#docker exec -it $container_id ldd $(which gdalinfo)
 
 echo "===== Checking Environment Variables ====="
 echo "Host SWAT Environment Variables:"
@@ -64,7 +64,35 @@ qgis --version 2>/dev/null || echo "QGIS not found on host"
 echo "Container QGIS Version:"
 docker exec -it $container_id qgis --version 2>/dev/null || echo "QGIS not found in container"
 
+echo "===== Checking QSWATPlusLinux3_64 Plugin ====="
+echo "Host QSWATPlus Plugin Structure:"
+ls -la /usr/share/qgis/python/plugins/QSWATPlusLinux3_64/ 2>/dev/null || echo "QSWATPlus plugin not found on host"
+echo "Container QSWATPlus Plugin Structure:"
+docker exec -it $container_id ls -la /usr/share/qgis/python/plugins/QSWATPlusLinux3_64/ 2>/dev/null || echo "QSWATPlus plugin not found in container"
 
+echo "===== Checking QSWATPlus Database Files ====="
+echo "Host SWATPlus/Databases Files:"
+ls -la /usr/local/share/SWATPlus/Databases/ 2>/dev/null || echo "SWATPlus database directory not found on host"
+echo "Container SWATPlus/Databases Files:"
+docker exec -it $container_id ls -la /usr/local/share/SWATPlus/Databases/ 2>/dev/null || echo "SWATPlus database directory not found in container"
+
+echo "===== Checking SWATPlusEditor Installation ====="
+echo "Host SWATPlusEditor Structure:"
+ls -la /usr/local/share/SWATPlusEditor/ 2>/dev/null || echo "SWATPlusEditor not found on host"
+echo "Container SWATPlusEditor Structure:"
+docker exec -it $container_id ls -la /usr/local/share/SWATPlusEditor/ 2>/dev/null || echo "SWATPlusEditor not found in container"
+
+echo "===== Checking User Database Files ====="
+echo "Host User's SWATPlus Databases:"
+ls -la ${HOME}/.local/share/SWATPlus/Databases/ 2>/dev/null || echo "User SWATPlus database directory not found on host"
+echo "Container User's SWATPlus Databases:"
+docker exec -it $container_id bash -c "ls -la \${HOME}/.local/share/SWATPlus/Databases/" 2>/dev/null || echo "User SWATPlus database directory not found in container"
+
+echo "===== Checking Database File Sizes ====="
+echo "Host Database File Sizes:"
+du -h /usr/local/share/SWATPlus/Databases/* 2>/dev/null || echo "SWATPlus database files not found on host"
+echo "Container Database File Sizes:"
+docker exec -it $container_id du -h /usr/local/share/SWATPlus/Databases/* 2>/dev/null || echo "SWATPlus database files not found in container"
 
 ### inside the container, check for docker exec -it keen_panini /bin/bash
 #ls -lah /data/SWATGenXApp/Users/vahidr32/SWATplus_by_VPUID/0712/huc12/05536265/SWAT_MODEL/
