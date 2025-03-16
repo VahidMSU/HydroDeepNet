@@ -37,4 +37,6 @@ bash check_services.sh
 bash check_static_dirs.sh
 
 echo "Starting the application..."
-npm start
+# Run npm start in the background so the script can complete
+npm start &
+echo "Application started in the background"

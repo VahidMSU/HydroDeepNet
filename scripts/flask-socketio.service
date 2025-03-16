@@ -1,0 +1,29 @@
+[Unit]
+Description=Flask SocketIO Application
+After=network.target redis-server.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/data/SWATGenXApp/codes/web_application
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data/SWATGenXApp/codes/.venv/bin"
+Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
+Environment="FLASK_ENV=production"
+Environment="FLASK_APP=run.py"
+
+# Use gunicorn with config file that properly handles eventlet
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/gunicorn \
+  -c gunicorn_config.py \
+  "app:create_app()"
+
+# Restart policy
+Restart=always
+RestartSec=5
+
+# Output logs
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=flask-socketio
+
+[Install]
+WantedBy=multi-user.target
