@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     libgeos-dev python3-dev swig xvfb gdb \
     redis-server \
     apache2 apache2-dev \
+    unzip \
     --no-install-recommends && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
@@ -50,8 +51,46 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Copy everything to the container
 COPY . .
 
-RUN chmod +x ./scripts/swatplus_installation.sh && \
-    ./scripts/swatplus_installation.sh
+# SWAT+ Installation - directly in Dockerfile instead of script
+RUN mkdir -p /data/SWATGenXApp/codes/swatplus_installation && \
+    cd /data/SWATGenXApp/codes && \
+    wget https://plus.swat.tamu.edu/downloads/2.3/2.3.1/swatplus-linux-installer-2.3.1.tgz -P /data/SWATGenXApp/codes/swatplus_installation/ && \
+    tar -xvf /data/SWATGenXApp/codes/swatplus_installation/swatplus-linux-installer-2.3.1.tgz -C /data/SWATGenXApp/codes/swatplus_installation/ && \
+    cd /data/SWATGenXApp/codes/swatplus_installation && \
+    chmod +x installforall.sh && \
+    ./installforall.sh && \
+    chown -R www-data:www-data /usr/local/share/SWATPlus && \
+    chown -R www-data:www-data /usr/share/qgis/python/plugins/QSWATPlusLinux3_64 && \
+    # Download SWAT+ Editor
+    wget https://github.com/swat-model/swatplus-editor/archive/refs/tags/v3.0.8.tar.gz -P /data/SWATGenXApp/codes/swatplus_installation/ && \
+    tar -xvf /data/SWATGenXApp/codes/swatplus_installation/v3.0.8.tar.gz -C /data/SWATGenXApp/codes/swatplus_installation/ && \
+    # Create the target directory for SWATPlusEditor if it doesn't exist
+    mkdir -p /usr/local/share/SWATPlusEditor && \
+    # Move the SWATPlusEditor to the target directory
+    mv /data/SWATGenXApp/codes/swatplus_installation/swatplus-editor-3.0.8 /usr/local/share/SWATPlusEditor/swatplus-editor && \
+    # Download additional required files
+    wget https://plus.swat.tamu.edu/downloads/3.0/3.0.0/swatplus_datasets.sqlite -P /data/SWATGenXApp/codes/swatplus_installation/ && \
+    wget https://plus.swat.tamu.edu/downloads/swatplus_wgn.zip -P /data/SWATGenXApp/codes/swatplus_installation/ && \
+    wget https://plus.swat.tamu.edu/downloads/swatplus_soils.zip -P /data/SWATGenXApp/codes/swatplus_installation/ && \
+    # Extract the downloaded zip files
+    unzip /data/SWATGenXApp/codes/swatplus_installation/swatplus_wgn.zip -d /data/SWATGenXApp/codes/swatplus_installation/ && \
+    unzip /data/SWATGenXApp/codes/swatplus_installation/swatplus_soils.zip -d /data/SWATGenXApp/codes/swatplus_installation/ && \
+    # Create directories if they don't exist
+    mkdir -p /usr/local/share/SWATPlus/Databases && \
+    mkdir -p ${HOME}/.local/share/SWATPlus/Databases && \
+    # Copy database files to the target directory
+    cp /data/SWATGenXApp/codes/swatplus_installation/swatplus_datasets.sqlite /usr/local/share/SWATPlus/Databases/ && \
+    cp /data/SWATGenXApp/codes/swatplus_installation/swatplus_soils.sqlite /usr/local/share/SWATPlus/Databases/ && \
+    cp /data/SWATGenXApp/codes/swatplus_installation/swatplus_wgn.sqlite /usr/local/share/SWATPlus/Databases/ && \
+    # Copy for internal testing
+    mkdir -p ${HOME}/.local/share/SWATPlus/Databases && \
+    cp /data/SWATGenXApp/codes/swatplus_installation/swatplus_datasets.sqlite ${HOME}/.local/share/SWATPlus/Databases/ && \
+    cp /data/SWATGenXApp/codes/swatplus_installation/swatplus_soils.sqlite ${HOME}/.local/share/SWATPlus/Databases/ && \
+    cp /data/SWATGenXApp/codes/swatplus_installation/swatplus_wgn.sqlite ${HOME}/.local/share/SWATPlus/Databases/ && \
+    # Set permissions for QSWATPlus files
+    chmod -R 755 /usr/share/qgis/python/plugins/QSWATPlusLinux3_64 && \
+    # Clean up
+    rm -rf /data/SWATGenXApp/codes/swatplus_installation
 
 # Prepare a modified requirements file
 WORKDIR /data/SWATGenXApp/codes
