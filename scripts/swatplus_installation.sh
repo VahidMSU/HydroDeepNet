@@ -44,13 +44,39 @@ mv ${INSTALL_DIR}/swatplus-editor-3.0.8 ${SWATPLUS_EDITOR_DIR}
 
 # Download additional required files
 echo "Downloading additional required files..."
+wget --spider https://plus.swat.tamu.edu/downloads/3.0/3.0.0/swatplus_datasets.sqlite 2>/dev/null
+if [ $? -ne 0 ]; then
+  echo "Error: Could not access swatplus_datasets.sqlite URL"
+  exit 1
+fi
 wget https://plus.swat.tamu.edu/downloads/3.0/3.0.0/swatplus_datasets.sqlite --directory-prefix=${INSTALL_DIR}
+
+wget --spider https://plus.swat.tamu.edu/downloads/swatplus_wgn.zip 2>/dev/null
+if [ $? -ne 0 ]; then
+  echo "Error: Could not access swatplus_wgn.zip URL"
+  exit 1
+fi
 wget https://plus.swat.tamu.edu/downloads/swatplus_wgn.zip --directory-prefix=${INSTALL_DIR}
+
+wget --spider https://plus.swat.tamu.edu/downloads/swatplus_soils.zip 2>/dev/null
+if [ $? -ne 0 ]; then
+  echo "Error: Could not access swatplus_soils.zip URL"
+  exit 1
+fi
 wget https://plus.swat.tamu.edu/downloads/swatplus_soils.zip --directory-prefix=${INSTALL_DIR}
 
 # Extract the downloaded zip files
 echo "Extracting database files..."
+if [ ! -f ${INSTALL_DIR}/swatplus_wgn.zip ]; then
+  echo "Error: swatplus_wgn.zip was not downloaded successfully"
+  exit 1
+fi
 unzip ${INSTALL_DIR}/swatplus_wgn.zip -d ${INSTALL_DIR}/
+
+if [ ! -f ${INSTALL_DIR}/swatplus_soils.zip ]; then
+  echo "Error: swatplus_soils.zip was not downloaded successfully"
+  exit 1
+fi
 unzip ${INSTALL_DIR}/swatplus_soils.zip -d ${INSTALL_DIR}/
 
 # Create directories if they don't exist
