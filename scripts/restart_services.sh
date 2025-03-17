@@ -69,9 +69,9 @@ else
 fi
 
 # Handle ports 5050 and 3000
-log "Checking for processes on ports 5050 and 3000..."
+log "Checking for processes on ports 5050.."
 if [ -f "$SCRIPT_DIR/kill_port_process.sh" ]; then
-  bash "$SCRIPT_DIR/kill_port_process.sh" 5050 3000 || sudo fuser -k 5050/tcp 3000/tcp
+  bash "$SCRIPT_DIR/kill_port_process.sh" 5050 || sudo fuser -k 5050/tcp
   sleep 2
 fi
 
@@ -97,9 +97,3 @@ for PORT in 5050 3000; do
     log "❌ Nothing is running on port $PORT"
   fi
 done
-
-## Frontend setup
-cd /data/SWATGenXApp/codes/web_application/frontend
-echo "Starting the application..."
-# Run npm start in the background so the script can complete
-npm start &

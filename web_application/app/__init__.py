@@ -66,15 +66,15 @@ def create_app(config_class=Config):  # Update function signature
     # Initialize SocketIO with the app
     socketio.init_app(app)
     
-    @socketio.on('connect')
-    def on_connect():
-        logger.info('Client connected')
-        emit('message', {'data': 'Connected to WebSocket!'})
+#    @socketio.on('connect')
+#    def on_connect():
+#        logger.info('Client connected')
+#        emit('message', {'data': 'Connected to WebSocket!'})
 
-    @socketio.on('disconnect')
-    def on_disconnect():
-        logger.info('Client disconnected')
-        emit('message', {'data': 'Disconnected from WebSocket!'})
+#    @socketio.on('disconnect')
+#    def on_disconnect():
+#        logger.info('Client disconnected')
+#        emit('message', {'data': 'Disconnected from WebSocket!'})
 
     # Load configurations
     app.config.from_object(config_class)  # Update to use config_class

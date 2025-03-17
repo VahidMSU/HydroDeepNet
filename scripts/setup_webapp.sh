@@ -20,7 +20,13 @@ npm run build
 bash check_services.sh
 bash check_static_dirs.sh
 
-echo "Starting the application..."
-# Run npm start in the background so the script can complete
 npm start &
-echo "Application started in the background"
+echo "Frontend setup complete"
+echo "Web application setup complete"
+echo "SWATGenXApp is now running at http://localhost:3000"
+echo "Please visit the URL to access the application"
+echo "Please note that the application is running in the background"
+echo "To stop the application, run the following command:"
+echo "killall node"
+echo "To restart the application, run the following command:"
+echo "bash restart_services.sh"
