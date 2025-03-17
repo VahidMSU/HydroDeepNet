@@ -46,7 +46,6 @@ restart_service() {
 # Copy configuration files
 log "Setting up daemon services..."
 cd "$SCRIPT_DIR" || exit 1
-sudo cp ./flask_app.conf /etc/apache2/sites-available/
 sudo cp ./ciwre-bae.conf /etc/apache2/sites-available/
 sudo cp ./000-default.conf /etc/apache2/sites-available/
 sudo cp ./celery-worker.service /etc/systemd/system/
@@ -85,27 +84,6 @@ if [ -f "$SCRIPT_DIR/kill_port_process.sh" ]; then
   sleep 2
 fi
 
-# Setup Flask SocketIO service
-log "Setting up Flask SocketIO service..."
-if [ -f "$SCRIPT_DIR/flask-socketio.service" ]; then
-  sudo cp "$SCRIPT_DIR/flask-socketio.service" /etc/systemd/system/
-  sudo systemctl daemon-reload
-  sudo systemctl restart flask-socketio.service
-  log "✅ Flask SocketIO service installed and started"
-else
-  log "Starting Flask application directly..."
-  cd "$WEB_DIR" || exit 1
-  
-  if [ -f "$WEB_DIR/gunicorn_config.py" ]; then
-    nohup "$VENV_PATH/bin/gunicorn" -c gunicorn_config.py "app:create_app()" > "$WEB_DIR/logs/flask_app.log" 2>&1 &
-  else
-    nohup "$VENV_PATH/bin/gunicorn" --worker-class eventlet --workers 4 --bind 0.0.0.0:5050 \
-      --log-level info --access-logfile "$WEB_DIR/logs/gunicorn-access.log" \
-      --error-logfile "$WEB_DIR/logs/gunicorn-error.log" \
-      "app:create_app()" > "$WEB_DIR/logs/flask_app.log" 2>&1 &
-  fi
-  log "Flask application started with PID: $!"
-fi
 
 # Restart Apache
 restart_service "apache2" "Apache"

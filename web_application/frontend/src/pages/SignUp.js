@@ -49,7 +49,7 @@ const SignUp = () => {
     },
     {
       label: 'Contains at least one special character',
-      valid: /[@#$^&*()_+={}\[\]|\\:;"'<>,.?/~`-]/.test(formData.password),
+      valid: /[@#$^&*()_+={}[\]|\\:;"'<>,.?/~`-]/.test(formData.password),
     },
     {
       label: 'Passwords match',
