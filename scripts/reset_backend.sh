@@ -6,14 +6,12 @@
 echo "Setting up backend services..."
 
 # Copy configuration files
-sudo cp ./flask_app.conf /etc/apache2/sites-available/flask_app.conf && echo "✓ flask_app.conf copied"
 sudo cp ./ciwre-bae.conf /etc/apache2/sites-available/ciwre-bae.conf && echo "✓ ciwre-bae.conf copied"
 sudo cp ./000-default.conf /etc/apache2/sites-available/000-default.conf && echo "✓ 000-default.conf copied"
 sudo cp ./celery-worker.service /etc/systemd/system/celery-worker.service && echo "✓ celery-worker.service copied"
 
 ## Set root permissions
 echo "Setting file permissions..."
-sudo chown root:root /etc/apache2/sites-available/flask_app.conf
 sudo chown root:root /etc/apache2/sites-available/ciwre-bae.conf
 sudo chown root:root /etc/apache2/sites-available/000-default.conf
 sudo chown root:root /etc/systemd/system/celery-worker.service
