@@ -66,20 +66,18 @@ class AppManager:
 			"""
 			Serve visualization GIFs with proper error handling
 			"""
-			video_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/verifications_videos"
-			gif_file = f"{ver}_{variable}_animation.gif"
-			full_path = os.path.join(video_path, gif_file)
-
-			if not os.path.exists(full_path):
-				self.app.logger.error(f"Visualization not found: {full_path}")
+			# Construct the path to the visualization file using the static URL
+			# This will be handled by Apache's Alias directive
+			static_url = f"/static/visualizations/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{variable}_animation.gif"
+			
+			# Check if the file exists on the filesystem before redirecting
+			file_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{variable}_animation.gif"
+			if not os.path.exists(file_path):
+				self.app.logger.error(f"Visualization not found: {file_path}")
 				return jsonify({"error": "Visualization not found"}), 404
-
-			try:
-				return send_file(full_path, mimetype='image/gif')
-			except Exception as e:
-				self.app.logger.error(f"Error serving visualization: {e}")
-				return jsonify({"error": "Error serving visualization"}), 500
-
+				
+			# Redirect to the static URL that will be handled by Apache
+			return redirect(static_url)
 
 		@self.app.route('/', defaults={'path': ''})
 		@self.app.route('/<path:path>')
@@ -245,6 +243,7 @@ class AppManager:
 				self.app.logger.error(error_msg)
 				return jsonify({"error": error_msg}), 400
 
+			# Use filesystem path only to check if the directory exists
 			base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
 			if not os.path.exists(base_path):
 				error_msg = f"No visualization data found for watershed: {name}"
@@ -262,9 +261,11 @@ class AppManager:
 			missing_vars = []
 
 			for var in variables:
+				# Check if file exists in filesystem
 				gif_file = os.path.join(video_path, f"{ver}_{var}_animation.gif")
 				if os.path.exists(gif_file):
-					gif_urls.append(f"/static/visualizations/{name}/{ver}/{var}.gif")
+					# Return URL path, not filesystem path
+					gif_urls.append(f"/static/visualizations/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{var}_animation.gif")
 				else:
 					missing_vars.append(var)
 					self.app.logger.warning(f"Missing visualization for {var} in {gif_file}")
@@ -470,7 +471,7 @@ class AppManager:
 			# Ensure the directory exists
 			if os.path.isdir(target_dir):
 				for item in os.listdir(target_dir):
-					safe_item = secure_filename(item)  # Prevent path traversal
+					safe_item = secure_filename(item) # Prevent path traversal
 					item_path = os.path.join(target_dir, safe_item)
 
 					if os.path.isdir(item_path):

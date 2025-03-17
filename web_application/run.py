@@ -1,11 +1,6 @@
 import os
 import sys
 from app import create_app, socketio  # Import the socketio instance from app module
-from celery_app import celery
-
-# Ensure system paths are properly set
-sys.path.append('/data/SWATGenXApp/codes/SWATGenX')  # Add SWATGenX to sys.path
-sys.path.append('/data/SWATGenXApp/codes/AI_agent')  # Add AI_agent to sys.path
 
 
 # Configure Matplotlib cache directory
@@ -16,16 +11,8 @@ os.makedirs(os.environ['MPLCONFIGDIR'], exist_ok=True)
 os.environ['FLASK_ENV'] = 'production'
 os.environ['FLASK_APP'] = 'run.py'
 
-# Set up the logs directory
-LOG_DIR = "/data/SWATGenXApp/codes/web_application/logs"
-os.makedirs(LOG_DIR, exist_ok=True)
-
 # Initialize the Flask app
 app = create_app()
-
-# Configure static files path
-app.static_folder = os.path.join(os.path.dirname(__file__), 'frontend', 'build', 'static')
-app.static_url_path = '/static'
 
 # Log that the Flask application has been created
 app.logger.info("Flask application initialized for local SocketIO server.")
