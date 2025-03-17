@@ -1,19 +1,3 @@
-## Load daemon services
-echo "Setting up daemon services..."
-sudo cp ./ciwre-bae.conf /etc/apache2/sites-available/ciwre-bae.conf
-sudo cp ./000-default.conf /etc/apache2/sites-available/000-default.conf
-sudo cp ./celery-worker.service /etc/systemd/system/celery-worker.service
-sudo cp ./flask-app.service /etc/systemd/system/flask-app.service
-## Set proper root permissions
-echo "Setting up root permissions..."
-sudo chown root:root /etc/apache2/sites-available/ciwre-bae.conf
-sudo chown root:root /etc/apache2/sites-available/000-default.conf
-sudo chown root:root /etc/systemd/system/celery-worker.service
-sudo chown root:root /etc/systemd/system/flask-app.service
-## Reload systemd
-echo "Reloading systemd configuration..."
-echo "Restarting services..."
-sudo systemctl daemon-reload
 echo "Restarting redis-server, celery-worker, flask-app, and apache2..."
 sudo systemctl restart redis-server
 sudo systemctl restart celery-worker.service

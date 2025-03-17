@@ -6,6 +6,7 @@ APP_DIR="/data/SWATGenXApp/codes"
 SCRIPT_DIR="$APP_DIR/scripts"
 WEB_DIR="$APP_DIR/web_application"
 VENV_PATH="$APP_DIR/.venv"
+FRONTEND_DIR="$WEB_DIR/frontend"
 
 # Create log directory
 mkdir -p "$(dirname "$LOG_FILE")"
@@ -16,7 +17,7 @@ log() {
 }
 
 # Check for required commands
-for cmd in systemctl netstat curl apache2ctl; do
+for cmd in systemctl netstat curl apache2ctl npm; do
   if ! command -v $cmd &> /dev/null; then
     log "❌ Required command not found: $cmd"
     echo "Please install $cmd and try again"
@@ -58,9 +59,6 @@ sudo systemctl daemon-reload
 log "Enabling required Apache modules..."
 sudo a2enmod proxy proxy_http proxy_wstunnel headers rewrite ssl
 
-# Restart core services
-restart_service "redis-server" "Redis"
-restart_service "celery-worker" "Celery worker"
 
 # Verify Apache configuration
 log "Checking Apache configuration..."
@@ -68,44 +66,40 @@ if sudo apache2ctl configtest; then
   log "✅ Apache configuration is valid"
 else
   log "❌ Apache configuration test failed - attempting to fix permissions"
-  sudo chmod 644 /etc/apache2/sites-available/*.conf
-  if sudo apache2ctl configtest; then
-    log "✅ Apache configuration fixed and now valid"
-  else
-    log "❌ Apache configuration still invalid after permission fix"
-    exit 1
-  fi
 fi
 
-# Handle port 5050
-log "Checking for processes on port 5050..."
+# Handle ports 5050 and 3000
+log "Checking for processes on ports 5050 and 3000..."
 if [ -f "$SCRIPT_DIR/kill_port_process.sh" ]; then
-  bash "$SCRIPT_DIR/kill_port_process.sh" 5050 || sudo fuser -k 5050/tcp
+  bash "$SCRIPT_DIR/kill_port_process.sh" 5050 3000 || sudo fuser -k 5050/tcp 3000/tcp
   sleep 2
 fi
 
-
 # Restart Apache
 restart_service "apache2" "Apache"
-sleep 5
+restart_service "flask-app" "Flask app"
+restart_service "redis-server" "Redis"
+restart_service "celery-worker" "Celery worker"
+
 
 # Check services status
 log "Checking service status..."
 check_service "apache2" "Apache"
 check_service "redis-server" "Redis"
 check_service "celery-worker" "Celery worker"
-check_service "flask-socketio" "Flask SocketIO service"
+check_service "flask-app" "Flask app"
 
-# Check port 5050
-if netstat -tuln | grep ":5050 " >/dev/null; then
-  log "✅ Flask app is running on port 5050"
-else
-  log "❌ Nothing is running on port 5050"
-fi
+# Check ports 5050 and 3000
+for PORT in 5050 3000; do
+  if netstat -tuln | grep ":$PORT " >/dev/null; then
+    log "✅ Service is running on port $PORT"
+  else
+    log "❌ Nothing is running on port $PORT"
+  fi
+done
 
-log "Service restart completed."
-
-log "restart web application..."
+## Frontend setup
 cd /data/SWATGenXApp/codes/web_application/frontend
-npm start
-log "web application started with PID: $!"
+echo "Starting the application..."
+# Run npm start in the background so the script can complete
+npm start &
