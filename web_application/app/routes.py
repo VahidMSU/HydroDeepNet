@@ -3,7 +3,6 @@ from flask import current_app, request, redirect
 from app.extensions import csrf
 from app.utils import LoggerSetup
 import os
-
 # Import all blueprints
 from app.health import health_bp
 from app.auth import auth_bp
@@ -48,6 +47,10 @@ class AppManager:
             if request.path.startswith('/api/'):
                 return None
                 
+            # Skip for download routes
+            if request.path.startswith('/download/') or request.path.startswith('/download_directory/'):
+                return None
+                
             # Handle key paths that need special handling in production
             paths_needing_api_prefix = [
                 '/model-settings', 
@@ -77,4 +80,4 @@ class AppManager:
         self.app.register_blueprint(hydrogeo_bp)
         self.app.register_blueprint(report_bp)
         self.app.register_blueprint(chatbot_bp)
-        
+

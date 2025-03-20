@@ -20,6 +20,9 @@ const UserFilesForm = ({
               onClick={() => handleDirectoryClick(directory.path)}
             >
               <ListItemText primary={directory.name} />
+              <a href={directory.download_zip_url} target="_blank" rel="noopener noreferrer">
+                <Button>Download as ZIP</Button>
+              </a>
             </ListItem>
           ))
         ) : (

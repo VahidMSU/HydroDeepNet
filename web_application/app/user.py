@@ -106,19 +106,26 @@ def api_user_files():
     # Ensure the directory exists
     if os.path.isdir(target_dir):
         for item in os.listdir(target_dir):
-            safe_item = secure_filename(item) # Prevent path traversal
+            safe_item = secure_filename(item)  # Prevent path traversal
             item_path = os.path.join(target_dir, safe_item)
+            rel_path = os.path.join(subdir, safe_item).lstrip('/')
 
             if os.path.isdir(item_path):
+                # Generate both path-based and direct download URLs
+                download_url = url_for('user.download_directory', dirpath=rel_path)
+                current_app.logger.info(f"Generated directory download URL: {download_url}")
+                
                 contents['directories'].append({
                     'name': safe_item,
-                    'path': os.path.join(subdir, safe_item).lstrip('/'),
-                    'download_zip_url': url_for('user.download_directory', dirpath=f"{subdir}/{safe_item}".lstrip('/'))
+                    'path': rel_path,
+                    'download_zip_url': download_url
                 })
             elif os.path.isfile(item_path):
+                download_url = url_for('user.download_user_file', filename=rel_path)
+                current_app.logger.info(f"Generated file download URL: {download_url}")
                 contents['files'].append({
                     'name': safe_item,
-                    'download_url': url_for('user.download_user_file', filename=f"{subdir}/{safe_item}".lstrip('/'))
+                    'download_url': download_url
                 })
 
     return jsonify(contents)
@@ -126,47 +133,80 @@ def api_user_files():
 @user_bp.route('/download/<path:filename>', methods=['GET'])
 @conditional_login_required
 def download_user_file(filename):
+    current_app.logger.info(f"download_user_file called with filename: {filename}")  # Log the filename
+
     user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
+    filename = filename.lstrip("/")
     full_path = os.path.join(user_dir, filename)
 
-    if not full_path.startswith(user_dir) or not os.path.isfile(full_path):
-        current_app.logger.error(f"File not found or access denied: {full_path}")
+    current_app.logger.info(f"Constructed file path: {full_path}")  # Log the constructed path
+
+    if not os.path.exists(full_path):
+        current_app.logger.error(f"File not found: {full_path}")  # Log if the file does not exist
         return jsonify({'error': 'File not found or access denied'}), 404
 
     current_app.logger.info(f"Serving file for download: {full_path}")
     directory, file = os.path.split(full_path)
     return send_from_directory(directory, file, as_attachment=True)
 
-@user_bp.route('/download-directory/<path:dirpath>', methods=['GET'])
+@user_bp.route('/download_directory/<path:dirpath>', methods=['GET'])
 @conditional_login_required
 def download_directory(dirpath):
+    """
+    Download a directory as a ZIP file.
+    """
+    current_app.logger.info(f"download_directory called with dirpath: {dirpath}")
+    
     user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
+    dirpath = dirpath.lstrip("/")
     full_dir_path = os.path.join(user_dir, dirpath)
-
+    
+    current_app.logger.info(f"Constructed directory path: {full_dir_path}")
+    
     if not full_dir_path.startswith(user_dir) or not os.path.isdir(full_dir_path):
-        current_app.logger.error(f"Unauthorized directory access or not found: {full_dir_path}")
+        current_app.logger.error(f"Directory not found or access denied: {full_dir_path}")
         return jsonify({'error': 'Directory not found or access denied'}), 404
 
-    current_app.logger.info(f"Creating ZIP for directory: {full_dir_path}")
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
-        zip_path = tmp_zip.name
-
     try:
-        shutil.make_archive(zip_path[:-4], 'zip', full_dir_path)
+        # Create a temporary file for the zip
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_zip:
+            zip_path = tmp_zip.name
+            
+        # Create the zip archive (remove .zip extension for make_archive)
+        base_zip_path = zip_path[:-4]
+        current_app.logger.info(f"Creating ZIP archive at: {base_zip_path}")
+        
+        shutil.make_archive(base_zip_path, 'zip', full_dir_path)
+        
+        # Recreate the full path with .zip extension
+        final_zip_path = f"{base_zip_path}.zip"
+        
+        if not os.path.exists(final_zip_path):
+            current_app.logger.error(f"Failed to create ZIP file at: {final_zip_path}")
+            return jsonify({'error': 'Failed to create ZIP file'}), 500
+        
+        # Use the last directory name for the download filename
+        zip_file_name = f"{os.path.basename(dirpath)}.zip"
+        current_app.logger.info(f"Serving ZIP file for download: {final_zip_path} as {zip_file_name}")
+        
+        return send_file(
+            final_zip_path, 
+            as_attachment=True, 
+            download_name=zip_file_name, 
+            mimetype='application/zip'
+        )
+        
     except Exception as e:
-        current_app.logger.error(f"Failed to create ZIP: {e}")
-        return jsonify({'error': 'Failed to create ZIP file'}), 500
+        current_app.logger.error(f"Error creating ZIP file: {str(e)}")
+        return jsonify({'error': f'Failed to create ZIP file: {str(e)}'}), 500
 
-    zip_file_name = f"{os.path.basename(dirpath)}.zip"
-    final_zip_path = zip_path[:-4] + ".zip"
-
-    if not os.path.exists(final_zip_path):
-        current_app.logger.error(f"ZIP file missing: {final_zip_path}")
-        return jsonify({'error': 'ZIP file not found'}), 500
-
-    current_app.logger.info(f"Serving ZIP file for download: {final_zip_path}")
-    return send_file(final_zip_path, as_attachment=True, download_name=zip_file_name)
+# Also add the original route to maintain compatibility
+@user_bp.route('/download/<path:dirpath>', methods=['GET'])
+@conditional_login_required
+def download_dir_compat(dirpath):
+    """Compatibility route that redirects to the new download_directory endpoint"""
+    current_app.logger.info(f"Redirecting old directory download URL format: {dirpath}")
+    return download_directory(dirpath)
 
 @user_bp.route('/michigan')
 @conditional_login_required
