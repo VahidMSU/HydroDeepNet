@@ -186,6 +186,21 @@ export const FileButton = styled(BaseButton)`
   &:hover {
     background-color: #52b0ff; /* Lighter info color */
   }
+  
+  &.icon-only {
+    width: 45px;
+    height: 45px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .icon {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+  }
 `;
 
 export const BreadcrumbNav = styled.div`
@@ -343,4 +358,60 @@ export const BadgeCount = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+`;
+
+export const DirectoryGuide = styled.div`
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background-color: ${colors.surfaceDark};
+  border-radius: 10px;
+  border: 1px solid ${colors.border};
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  
+  h3 {
+    margin-top: 0;
+    color: ${colors.accent};
+    display: flex;
+    align-items: center;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    
+    .guide-icon {
+      margin-right: 0.8rem;
+      color: ${colors.accent};
+    }
+  }
+  
+  p {
+    margin-bottom: 1rem;
+    color: ${colors.text};
+  }
+  
+  ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    color: ${colors.text};
+    
+    li {
+      margin-bottom: 0.5rem;
+      
+      strong {
+        color: ${colors.accent};
+      }
+      
+      code {
+        background-color: ${colors.surface};
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: monospace;
+        color: ${colors.accent};
+      }
+    }
+  }
+  
+  .guide-footer {
+    margin: 0;
+    font-style: italic;
+    color: ${colors.textSecondary};
+  }
 `;
