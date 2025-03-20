@@ -36,6 +36,7 @@ import {
   ErrorMessage,
   FileTypeIcon,
   BadgeCount,
+  DirectoryGuide,
 } from '../../styles/UserDashboard.tsx';
 
 // Helper function to determine file type icon
@@ -113,7 +114,7 @@ const UserDashboardTemplate = ({
   currentPath = '',
   handleDirectoryClick,
   handleDownloadFile,
-  handleDownloadDirectory, // Add this line
+  handleDownloadDirectory,
   errorMessage = '',
 }) => {
   const pathParts = currentPath ? currentPath.split('/').filter(Boolean) : [];
@@ -130,6 +131,48 @@ const UserDashboardTemplate = ({
           <FontAwesomeIcon icon={faExclamationTriangle} className="error-icon" />
           <span>{errorMessage}</span>
         </ErrorMessage>
+      )}
+
+      {/* Directory Structure Description - Only shown at root level */}
+      {currentPath === '' && (
+        <DirectoryGuide>
+          <h3>
+            <FontAwesomeIcon icon={faInfoCircle} className="guide-icon" />
+            Directory Structure Guide
+          </h3>
+          <p>Models are organized in the following structure:</p>
+          <ul>
+            <li>
+              <strong>VPUID Folders (HUC4 level)</strong> - Top level directories (e.g., 0712, 1605)
+            </li>
+            <li>
+              <strong>huc12 Directory</strong> - Contains folders organized by HUC12 watershed
+              clusters
+            </li>
+            <li>
+              <strong>USGS Gauging Station</strong> - Named after the streamflow gauging station
+              (e.g., 05536265)
+            </li>
+            <li>
+              <strong>Data Folders</strong> - Inside you'll find:
+              <ul>
+                <li>
+                  <code>streamflow_data</code> - Historical streamflow measurements
+                </li>
+                <li>
+                  <code>PRISM</code> - Meteorological data used in the model
+                </li>
+                <li>
+                  <code>SWAT_MODEL_Web_Application</code> - Contains SWAT+ model files and QGIS
+                  project
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <p className="guide-footer">
+            Navigate through the folders to access and download your model files.
+          </p>
+        </DirectoryGuide>
       )}
 
       {/* Breadcrumb Navigation */}
@@ -191,55 +234,56 @@ const UserDashboardTemplate = ({
                 console.log('Download directory URL:', dir.download_zip_url);
                 handleDownloadDirectory(dir.download_zip_url);
               }}
+              className="icon-only"
             >
               <FontAwesomeIcon icon={faDownload} className="icon" />
-              Download as ZIP
             </FileButton>
           </FolderCard>
         ))}
 
-        {/* Files */}
-        {contents.files.map((file, index) => (
-          <FileCard key={`file-${index}`}>
-            <FileHeader>
-              <FontAwesomeIcon icon={getFileIcon(file.name)} className="icon" />
-              <h3 title={file.name}>{file.name}</h3>
-            </FileHeader>
+        {/* Files - Only show when not at root level */}
+        {currentPath !== '' &&
+          contents.files.map((file, index) => (
+            <FileCard key={`file-${index}`}>
+              <FileHeader>
+                <FontAwesomeIcon icon={getFileIcon(file.name)} className="icon" />
+                <h3 title={file.name}>{file.name}</h3>
+              </FileHeader>
 
-            <ItemInfo>
-              <p>
-                <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
-                Size: {formatFileSize(file.size)}
-              </p>
-              <p>
-                <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
-                Modified: {formatDate(file.modified)}
-              </p>
-              <span>
-                {' '}
-                {/* Replace <p> with <span> to avoid nesting issues */}
-                <FileTypeIcon className={getFileExtension(file.name) || 'default'}>
-                  {getFileExtension(file.name).substring(0, 3)}
-                </FileTypeIcon>
-              </span>
-            </ItemInfo>
+              <ItemInfo>
+                <p>
+                  <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                  Size: {formatFileSize(file.size)}
+                </p>
+                <p>
+                  <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
+                  Modified: {formatDate(file.modified)}
+                </p>
+                <span>
+                  {' '}
+                  {/* Replace <p> with <span> to avoid nesting issues */}
+                  <FileTypeIcon className={getFileExtension(file.name) || 'default'}>
+                    {getFileExtension(file.name).substring(0, 3)}
+                  </FileTypeIcon>
+                </span>
+              </ItemInfo>
 
-            <FileButton
-              as="button" // Change to a button to avoid default anchor behavior
-              onClick={(event) => {
-                event.preventDefault(); // Prevent default behavior
-                event.stopPropagation(); // Prevent event bubbling
-                console.log('FileButton clicked, download URL:', file.download_url); // Add logging
-                handleDownloadFile(file.download_url); // Trigger the download
-              }}
-            >
-              <FontAwesomeIcon icon={faDownload} className="icon" />
-              Download
-            </FileButton>
-          </FileCard>
-        ))}
+              <FileButton
+                as="button" // Change to a button to avoid default anchor behavior
+                onClick={(event) => {
+                  event.preventDefault(); // Prevent default behavior
+                  event.stopPropagation(); // Prevent event bubbling
+                  console.log('FileButton clicked, download URL:', file.download_url); // Add logging
+                  handleDownloadFile(file.download_url); // Trigger the download
+                }}
+                className="icon-only"
+              >
+                <FontAwesomeIcon icon={faDownload} className="icon" />
+              </FileButton>
+            </FileCard>
+          ))}
 
-        {/* Empty State */}
+        {/* Empty State - Adjust the condition to account for hidden files at root */}
         {contents.directories.length === 0 && contents.files.length === 0 && (
           <EmptyState>
             <FontAwesomeIcon icon={faFolder} className="icon" />
