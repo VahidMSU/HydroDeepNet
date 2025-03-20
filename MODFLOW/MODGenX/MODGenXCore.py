@@ -385,7 +385,7 @@ class MODGenXCore:
 		titles = ['water wells location', "SWL initial",'Head',  'Active Cells','K Horizontal 1',
 				'K Horizontal 2', 'K Vertical 1', 'K Vertical 2', 'Recharge','base flow','Thickness 1', 'thickness 2']
 
-		model_input_figure_path = f"{SWATGenXPaths.base_path}SWAT_input/{self.LEVEL}/{self.NAME}/{self.MODFLOW_MODEL_NAME}/input_figures.jpeg"
+		model_input_figure_path = f"{self.config.swatgenx_output}/{self.LEVEL}/{self.NAME}/{self.MODFLOW_MODEL_NAME}/input_figures.jpeg"
 
 		plot_data(datasets, titles, model_input_figure_path)
 

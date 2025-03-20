@@ -141,22 +141,42 @@ def create_app(config_class=Config):  # Update function signature
     AppManager(app)
     logger.info("Application routes initialized")
 
-    # Initialize Redis connection
+    # Initialize Redis connection with better error handling and retry
     try:
-        redis_client = Redis.from_url(app.config['REDIS_URL'])
+        redis_client = Redis.from_url(app.config['REDIS_URL'], socket_timeout=5)
         redis_client.ping()
-    except ConnectionError:
+        logger.info("Successfully connected to Redis")
+    except ConnectionError as e:
         redis_client = None
-        logger.error("Failed to connect to Redis")
+        logger.error(f"Failed to connect to Redis: {str(e)}")
+        # Try an alternative connection if primary fails
+        try:
+            # Try with a fallback host if needed
+            fallback_url = 'redis://127.0.0.1:6379/0'
+            if fallback_url != app.config['REDIS_URL']:
+                redis_client = Redis.from_url(fallback_url, socket_timeout=5)
+                redis_client.ping()
+                logger.info(f"Connected to Redis using fallback URL: {fallback_url}")
+                # Update config with working URL
+                app.config['REDIS_URL'] = fallback_url
+        except Exception as e:
+            logger.error(f"Failed to connect to Redis with fallback: {str(e)}")
+    except Exception as e:
+        redis_client = None
+        logger.error(f"Unexpected Redis error: {str(e)}")
 
     # Initialize rate limiting with Redis storage backend
     limiter = Limiter(
         get_remote_address,
         app=app,
-        storage_uri=app.config['REDIS_URL'] if redis_client else 'memory://'
+        storage_uri=app.config['REDIS_URL'] if redis_client else 'memory://',
+        storage_options={"socket_timeout": 10} if redis_client else {}
     )
 
-    logger.info("Rate limiting enabled with Redis storage backend")
+    if redis_client:
+        logger.info("Rate limiting enabled with Redis storage backend")
+    else:
+        logger.warning("Rate limiting using memory storage (Redis unavailable)")
 
     # Function to ensure path is within the base directory
     def secure_path(user_path, allowed_paths):

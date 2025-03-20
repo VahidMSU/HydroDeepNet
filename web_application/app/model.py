@@ -105,28 +105,106 @@ def model_settings():
         f"Model settings received for Station `{site_no}`: "
         f"LS Resolution: {ls_resolution}, DEM Resolution: {dem_resolution}"
     )
-    # Perform model creation
+    
+    # Perform model creation with improved error handling
     try:
         if current_user.is_anonymous:
             current_app.logger.warning("User is not logged in. Using 'None' as username.")
-            import time
-            time.sleep(5)
             return jsonify({"error": "User is not logged in"}), 403
             
-        # Submit task to Celery
-        task = create_model_task.delay(
-            current_user.username, 
-            site_no, 
-            ls_resolution, 
-            dem_resolution
-        )
+        # Try to import redis_utils, but handle the case if the module doesn't exist
+        try:
+            from app.redis_utils import check_redis_health
+            
+            # Check Redis health before submitting task
+            redis_status = check_redis_health()
+            if not redis_status['healthy']:
+                current_app.logger.error(f"Redis health check failed: {redis_status['message']}")
+                return jsonify({
+                    "status": "error", 
+                    "message": "The model creation service is currently unavailable. Please try again later or contact support.",
+                    "details": redis_status['message']
+                }), 503
+        except ImportError:
+            # If redis_utils is not available, proceed anyway and let Celery handle errors
+            current_app.logger.warning("Redis health check not available - proceeding anyway")
         
-        current_app.logger.info(f"Model creation task {task.id} scheduled successfully.")
+        # Direct Redis check using basic Redis client
+        try:
+            from redis import Redis
+            redis_client = Redis.from_url(current_app.config.get('REDIS_URL', 'redis://localhost:6379/0'), 
+                                          socket_timeout=2, 
+                                          socket_connect_timeout=2)
+            if not redis_client.ping():
+                raise ConnectionError("Redis ping failed")
+            current_app.logger.info("Redis connection successful with direct ping")
+        except Exception as e:
+            current_app.logger.error(f"Direct Redis connection check failed: {e}")
+            # Try fallback to 127.0.0.1 explicit address
+            try:
+                redis_client = Redis.from_url('redis://127.0.0.1:6379/0', 
+                                              socket_timeout=2, 
+                                              socket_connect_timeout=2)
+                if redis_client.ping():
+                    current_app.logger.info("Redis connection successful with fallback to 127.0.0.1")
+                    # Update the Redis URL
+                    current_app.config['REDIS_URL'] = 'redis://127.0.0.1:6379/0'
+                else:
+                    raise ConnectionError("Redis ping failed on fallback")
+            except Exception as e2:
+                current_app.logger.error(f"Fallback Redis connection check failed: {e2}")
+                return jsonify({
+                    "status": "error",
+                    "message": "Could not connect to the model creation service. Please try again later.",
+                    "details": "Redis connection failed"
+                }), 503
+        
+        # Submit task to Celery with explicit retry logic
+        max_retries = 3
+        retry_delay = 1
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                # Import the task directly to avoid circular imports
+                from app.tasks import create_model_task
+                
+                task = create_model_task.delay(
+                    current_user.username, 
+                    site_no, 
+                    ls_resolution, 
+                    dem_resolution
+                )
+                
+                current_app.logger.info(f"Model creation task {task.id} scheduled successfully.")
+                return jsonify({
+                    "status": "success", 
+                    "message": "Model creation started!",
+                    "task_id": task.id
+                })
+            except ConnectionError as ce:
+                last_error = ce
+                current_app.logger.error(f"Redis connection error on attempt {attempt+1}: {ce}")
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+            except Exception as e:
+                last_error = e
+                current_app.logger.error(f"Error scheduling task on attempt {attempt+1}: {e}")
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
+        
+        # If we got here, all retries failed
+        current_app.logger.error(f"All retry attempts failed: {last_error}")
         return jsonify({
-            "status": "success", 
-            "message": "Model creation started!",
-            "task_id": task.id
-        })
+            "status": "error",
+            "message": "Could not connect to the model creation service after multiple attempts. Please try again later.",
+            "details": str(last_error)
+        }), 503
+            
     except Exception as e:
         current_app.logger.error(f"Error scheduling model creation: {e}")
         return jsonify({"error": f"Failed to start model creation: {str(e)}"}), 500
