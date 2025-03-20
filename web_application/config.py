@@ -40,7 +40,7 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     
-    REDIS_URL = os.getenv('REDIS_URL', "redis://localhost:6379/0")
+    REDIS_URL = 'redis://localhost:6379/0'
     
     try:
         import redis

@@ -1,6 +1,6 @@
 [Unit]
 Description=Celery Worker for Flask Application
-After=network.target
+After=network.target redis.service
 
 [Service]
 User=www-data
@@ -8,12 +8,19 @@ Group=www-data
 WorkingDirectory=/data/SWATGenXApp/codes/web_application
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data/SWATGenXApp/codes/.venv/bin"
 Environment="FLASK_ENV=production"
-Environment="PYTHONPATH=/data/SWATGenXApp/codes"
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_worker worker --loglevel=info --concurrency=4
+Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
+Environment="C_FORCE_ROOT=true"
+Environment="CELERY_LOG_LEVEL=DEBUG"
+
+# Use absolute paths and explicit module for better reliability
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_worker worker --loglevel=debug --concurrency=4
 
 # Restart policy
 Restart=always
 RestartSec=5
+
+# Increase timeout for service startup
+TimeoutStartSec=30
 
 # Logging
 StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/celery-worker.log
