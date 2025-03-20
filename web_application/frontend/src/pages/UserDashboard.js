@@ -38,10 +38,12 @@ const UserDashboard = () => {
   };
 
   const handleDownloadFile = (url) => {
-    window.location.href = url;
+    console.log('Download URL triggered:', url); // Log the URL
+    window.location.href = url; // Trigger the backend route
   };
 
   const handleDownloadDirectory = (url) => {
+    console.log('Download Directory URL triggered:', url);
     window.location.href = url;
   };
 
@@ -52,7 +54,7 @@ const UserDashboard = () => {
       isLoading={isLoading}
       handleDirectoryClick={handleDirectoryClick}
       handleDownloadFile={handleDownloadFile}
-      handleDownloadDirectory={handleDownloadDirectory}
+      handleDownloadDirectory={handleDownloadDirectory} // Ensure this is passed
       errorMessage={errorMessage}
     />
   );

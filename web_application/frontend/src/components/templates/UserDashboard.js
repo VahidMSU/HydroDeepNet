@@ -113,6 +113,7 @@ const UserDashboardTemplate = ({
   currentPath = '',
   handleDirectoryClick,
   handleDownloadFile,
+  handleDownloadDirectory, // Add this line
   errorMessage = '',
 }) => {
   const pathParts = currentPath ? currentPath.split('/').filter(Boolean) : [];
@@ -180,6 +181,20 @@ const UserDashboardTemplate = ({
               <FontAwesomeIcon icon={faFolderOpen} className="icon" />
               Open Folder
             </FolderButton>
+            <FileButton
+              as="a"
+              href={dir.download_zip_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => {
+                event.preventDefault();
+                console.log('Download directory URL:', dir.download_zip_url);
+                handleDownloadDirectory(dir.download_zip_url);
+              }}
+            >
+              <FontAwesomeIcon icon={faDownload} className="icon" />
+              Download as ZIP
+            </FileButton>
           </FolderCard>
         ))}
 
@@ -200,14 +215,24 @@ const UserDashboardTemplate = ({
                 <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
                 Modified: {formatDate(file.modified)}
               </p>
-              <p>
+              <span>
+                {' '}
+                {/* Replace <p> with <span> to avoid nesting issues */}
                 <FileTypeIcon className={getFileExtension(file.name) || 'default'}>
                   {getFileExtension(file.name).substring(0, 3)}
                 </FileTypeIcon>
-              </p>
+              </span>
             </ItemInfo>
 
-            <FileButton onClick={() => handleDownloadFile(file.download_url)}>
+            <FileButton
+              as="button" // Change to a button to avoid default anchor behavior
+              onClick={(event) => {
+                event.preventDefault(); // Prevent default behavior
+                event.stopPropagation(); // Prevent event bubbling
+                console.log('FileButton clicked, download URL:', file.download_url); // Add logging
+                handleDownloadFile(file.download_url); // Trigger the download
+              }}
+            >
               <FontAwesomeIcon icon={faDownload} className="icon" />
               Download
             </FileButton>
@@ -236,6 +261,7 @@ UserDashboardTemplate.propTypes = {
   currentPath: PropTypes.string,
   handleDirectoryClick: PropTypes.func.isRequired,
   handleDownloadFile: PropTypes.func.isRequired,
+  handleDownloadDirectory: PropTypes.func.isRequired, // Add this line
   errorMessage: PropTypes.string,
 };
 
