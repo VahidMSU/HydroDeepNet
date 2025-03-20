@@ -9,7 +9,7 @@ Group=www-data
 WorkingDirectory=/data/SWATGenXApp/codes/web_application
 Environment="PATH=/data/SWATGenXApp/codes/.venv/bin"
 Environment="FLASK_ENV=production"
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/gunicorn --workers 3 --bind 127.0.0.1:5050 run:app
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/gunicorn --workers 3 --worker-class eventlet --bind 127.0.0.1:5050 run:app
 
 # Restart policy to prevent downtime
 Restart=always

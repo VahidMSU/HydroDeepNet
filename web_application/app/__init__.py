@@ -37,7 +37,7 @@ def create_app(config_class=Config):  # Update function signature
     app = Flask(
         __name__,
         static_url_path='/static',
-        static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'build', 'static')
+        static_folder='/data/SWATGenXApp/GenXAppData',
     )
 
     # Clean up CORS configuration - use just one comprehensive configuration
@@ -187,7 +187,5 @@ def create_app(config_class=Config):  # Update function signature
         response.headers["Cache-Control"] = "no-store"
         return response
 
-    # Register debug routes if in development
-    register_debug_routes(app)
 
     return app

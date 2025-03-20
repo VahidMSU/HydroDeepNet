@@ -23,7 +23,7 @@ function SearchForm({ setStationData, setLoading }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`/search_site?search_term=${searchInput}`);
+      const response = await fetch(`/api/search_site?search_term=${searchInput}`);
       const data = await response.json();
       setSearchResults(data.error ? [] : data);
     } catch (error) {
@@ -36,7 +36,7 @@ function SearchForm({ setStationData, setLoading }) {
   const handleStationSelect = async (stationNumber) => {
     setLoading(true);
     try {
-      const response = await fetch(`/get_station_characteristics?station=${stationNumber}`);
+      const response = await fetch(`/api/get_station_characteristics?station=${stationNumber}`);
       const data = await response.json();
       setStationData(data);
     } catch (error) {
