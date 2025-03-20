@@ -10,6 +10,8 @@ class SWATGenXPaths:
     FPS_State_Territories: str = f'{base_path}USGS/FPS_States_and_Territories.csv'
     FPS_all_stations: str = f'{base_path}USGS/FPS_all_stations.csv'
     # Data Sources
+    MODFLOW_MODEL_NAME: str = None
+    SWAT_MODEL_NAME: str = None
     USGS_path: str = f"{base_path}USGS/"
     NLCD_path: str = f"{base_path}LandUse/NLCD_CONUS/"
     gSSURGO_path: str = f"{base_path}Soil/gSSURGO_CONUS/"
@@ -86,7 +88,7 @@ class SWATGenXPaths:
     verification_samples: int = 25
     VPUID: str = None   
     LEVEL: str = None
-   # NAME: str = None
+    NAME: str = None  
     MODEL_NAME: str = None
     BASE_PATH: str = None
     MAX_AREA: int = None
@@ -100,16 +102,24 @@ class SWATGenXPaths:
     username: str = None    
     START_YEAR: int = None
     END_YEAR: int = None
+    RESOLUTION: int = None
 
     path: str = None
 
     def construct_path(self, *args) -> str:
-        return os.path.join(self.base_path, *args)
+        # If username is set, use the user-specific output path for SWAT_input paths
+        if self.username is not None and args and args[0] == "SWAT_input":
+            user_base = f"/data/SWATGenXApp/Users/{self.username}"
+            # Replace SWAT_input with SWATplus_by_VPUID/VPUID
+            if self.VPUID:
+                return os.path.join(user_base, "SWATplus_by_VPUID", self.VPUID, *args[1:])
+            else:
+                return os.path.join(user_base, "SWATplus_by_VPUID", *args[1:])
+        else:
+            return os.path.join(self.base_path, *args)
     
-
     ### define post initi and if username is not None, then override the swatgex_outlet_path
     def __post_init__(self):
-        
         if self.username is not None:
             self.swatgenx_outlet_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
             self.report_path: str = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
