@@ -76,7 +76,8 @@ const SWATGenXTemplate = () => {
     setFeedbackType('');
 
     try {
-      const response = await fetch('/model-settings', {
+      // Change the endpoint from /model-settings to /api/model-settings
+      const response = await fetch('/api/model-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Connection Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .test-card {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+      .test-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .output {
+        background-color: #f5f5f5;
+        padding: 10px;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        max-height: 200px;
+        overflow: auto;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      button {
+        padding: 8px 16px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .controls {
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>API Connection Tester</h1>
+    <p>This tool helps diagnose frontend-to-backend communication issues.</p>
+
+    <div class="controls">
+      <button id="run-all-tests">Run All Tests</button>
+      <button id="clear-results">Clear Results</button>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 1: Status Check (GET)</div>
+      <button class="test-button" data-test="status">Run Test</button>
+      <div class="output" id="status-output"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 2: Echo Service (POST)</div>
+      <button class="test-button" data-test="echo">Run Test</button>
+      <div class="output" id="echo-output"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 3: Model Settings Simulation (POST)</div>
+      <button class="test-button" data-test="model-settings">Run Test</button>
+      <div class="output" id="model-settings-output"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 4: Actual Model Settings Endpoint (POST)</div>
+      <button class="test-button" data-test="real-model-settings">Run Test</button>
+      <div class="output" id="real-model-settings-output"></div>
+    </div>
+
+    <script>
+      // Test endpoints
+      const endpoints = {
+        status: '/api/diagnostic/status',
+        echo: '/api/diagnostic/echo',
+        'model-settings': '/api/diagnostic/test-model-settings',
+        'real-model-settings': '/model-settings',
+      };
+
+      // Test payloads
+      const payloads = {
+        echo: { test: 'data', timestamp: new Date().toISOString() },
+        'model-settings': { site_no: '12345678', ls_resolution: 250, dem_resolution: 30 },
+        'real-model-settings': { site_no: '04106000', ls_resolution: 250, dem_resolution: 30 },
+      };
+
+      // Run a test and output results
+      async function runTest(testName) {
+        const outputElement = document.getElementById(`${testName}-output`);
+        outputElement.innerHTML = 'Running test...';
+
+        try {
+          const method = testName === 'status' ? 'GET' : 'POST';
+          const payload = payloads[testName];
+
+          // Configure the request
+          const requestOptions = {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            credentials: 'include', // Include cookies
+          };
+
+          // Add payload for POST requests
+          if (method === 'POST') {
+            requestOptions.body = JSON.stringify(payload);
+          }
+
+          // Make the request
+          const startTime = performance.now();
+          const response = await fetch(endpoints[testName], requestOptions);
+          const endTime = performance.now();
+          const duration = (endTime - startTime).toFixed(2);
+
+          // Try to parse the response as JSON
+          let data;
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+          } else {
+            data = await response.text();
+          }
+
+          // Display results
+          let output = `Status: ${response.status} ${response.statusText}\n`;
+          output += `Duration: ${duration}ms\n`;
+          output += `Content-Type: ${contentType}\n\n`;
+          output +=
+            typeof data === 'string' ? data.substring(0, 500) : JSON.stringify(data, null, 2);
+
+          outputElement.innerHTML = output;
+          outputElement.classList.add(response.ok ? 'success' : 'error');
+        } catch (error) {
+          outputElement.innerHTML = `Error: ${error.message}`;
+          outputElement.classList.add('error');
+        }
+      }
+
+      // Event listeners
+      document.querySelectorAll('.test-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          const testName = button.dataset.test;
+          runTest(testName);
+        });
+      });
+
+      document.getElementById('run-all-tests').addEventListener('click', async () => {
+        document.querySelectorAll('.output').forEach((el) => {
+          el.innerHTML = 'Waiting...';
+          el.classList.remove('success', 'error');
+        });
+
+        for (const testName of Object.keys(endpoints)) {
+          await runTest(testName);
+        }
+      });
+
+      document.getElementById('clear-results').addEventListener('click', () => {
+        document.querySelectorAll('.output').forEach((el) => {
+          el.innerHTML = '';
+          el.classList.remove('success', 'error');
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -18,8 +18,8 @@ from scipy.spatial import cKDTree
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 
 
-def check_existing_models(station_name):
-	swatgenx_output = SWATGenXPaths.swatgenx_outlet_path
+def check_existing_models(station_name,config):
+	swatgenx_output = config.swatgenx_outlet_path
 	VPUIDs = os.listdir(swatgenx_output)
 	existing_models = []
 	for VPUID in VPUIDs:

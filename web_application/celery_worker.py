@@ -15,6 +15,7 @@ logger = logging.getLogger('celery_worker')
 logger.info("Starting Celery worker...")
 logger.info(f"Current working directory: {os.getcwd()}")
 logger.info(f"Python path: {sys.path}")
+logger.info(f"FLASK_ENV: {os.environ.get('FLASK_ENV', 'Not set')}")
 
 # Add the project directory to Python path (one level up from this file)
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,31 +32,41 @@ if web_app_dir not in sys.path:
 from redis import Redis, exceptions
 
 # Function to check if Redis is ready
-def wait_for_redis_ready(url, max_retries=5, initial_delay=1):
+def wait_for_redis_ready(max_retries=10, initial_delay=1):
     """Wait for Redis to be ready, handling loading state."""
     delay = initial_delay
-    for attempt in range(max_retries):
-        try:
-            logger.info(f"Testing Redis readiness at {url} (attempt {attempt+1}/{max_retries})")
-            client = Redis.from_url(url, socket_timeout=3, socket_connect_timeout=3)
-            client.ping()
-            logger.info(f"✅ Redis is ready at {url}")
-            return True
-        except exceptions.BusyLoadingError:
-            logger.warning(f"Redis is loading dataset. Waiting {delay}s before retry...")
-            time.sleep(delay)
-            delay = min(delay * 1.5, 10)  # Increase delay but cap it
-        except Exception as e:
-            logger.error(f"Error connecting to Redis: {e}")
-            time.sleep(delay)
-            delay = min(delay * 2, 10)
+    redis_urls = [
+        'redis://localhost:6379/0',
+        'redis://127.0.0.1:6379/0',
+        'redis://redis:6379/0'
+    ]
     
-    logger.error(f"Redis not ready after {max_retries} attempts")
-    return False
+    logger.info(f"Testing Redis readiness with URLs: {redis_urls}")
+    
+    for attempt in range(max_retries):
+        for url in redis_urls:
+            try:
+                logger.info(f"Testing Redis readiness at {url} (attempt {attempt+1}/{max_retries})")
+                client = Redis.from_url(url, socket_timeout=3, socket_connect_timeout=3)
+                client.ping()
+                logger.info(f"✅ Redis is ready at {url}")
+                return True, url
+            except exceptions.BusyLoadingError:
+                logger.warning(f"Redis at {url} is loading dataset. Waiting {delay}s before retry...")
+                time.sleep(delay)
+                delay = min(delay * 1.5, 10)  # Increase delay but cap it
+            except Exception as e:
+                logger.error(f"Error connecting to Redis at {url}: {e}")
+    
+    logger.error(f"Redis not ready after {max_retries} attempts on any URL")
+    return False, None
 
 # Check Redis readiness before importing Celery
-redis_url = 'redis://localhost:6379/0'
-wait_for_redis_ready(redis_url, max_retries=5)
+is_ready, working_url = wait_for_redis_ready(max_retries=10)
+if is_ready and working_url:
+    # Set environment variable for celery_app to use
+    os.environ['REDIS_URL'] = working_url
+    logger.info(f"Set REDIS_URL environment variable to {working_url}")
 
 # Import and configure Celery instance
 try:

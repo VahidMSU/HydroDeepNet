@@ -17,7 +17,9 @@ def get_working_redis_url():
     default_url = 'redis://localhost:6379/0'
     alternative_urls = [
         'redis://127.0.0.1:6379/0',  # Try explicit IP
-        'redis://redis:6379/0'        # Try service name if using Docker
+        'redis://redis:6379/0',       # Try service name if using Docker
+        # Add potential production-specific Redis URL if different
+        'redis://localhost:6379/0?socket_timeout=5'
     ]
     
     # Add retry logic to handle temporary Redis unavailability
@@ -29,6 +31,7 @@ def get_working_redis_url():
     logger.info(f"Current working directory: {os.getcwd()}")
     logger.info(f"PYTHONPATH: {os.environ.get('PYTHONPATH', 'Not set')}")
     logger.info(f"PATH: {os.environ.get('PATH', 'Not set')}")
+    logger.info(f"FLASK_ENV: {os.environ.get('FLASK_ENV', 'Not set')}")
     
     for attempt in range(max_retries):
         # First try the default
@@ -88,6 +91,7 @@ def make_celery(app=None):
         redis_url = 'redis://localhost:6379/0'
         logger.info(f"Falling back to default Redis URL: {redis_url}")
     
+    # Create a more robust Celery configuration
     celery = Celery(
         'web_application',
         broker=redis_url,
@@ -116,6 +120,7 @@ def make_celery(app=None):
             f.write(f"Result Backend: {redis_url}\n")
             f.write(f"Include: {celery.conf.include}\n")
             f.write(f"Broker retry on startup: {celery.conf.broker_connection_retry_on_startup}\n")
+            f.write(f"Environment: {os.environ.get('FLASK_ENV', 'Not set')}\n")
         logger.info(f"Saved Celery configuration to {config_log}")
     except Exception as e:
         logger.error(f"Error saving Celery configuration: {e}")
@@ -136,6 +141,7 @@ def make_celery(app=None):
 # Create the celery instance - but do this more safely
 try:
     celery = make_celery()
+    logger.info("Successfully created Celery instance")
 except Exception as e:
     # Log but don't crash, let the actual user of this module handle it
     logger.error(f"Error creating Celery instance: {e}")
