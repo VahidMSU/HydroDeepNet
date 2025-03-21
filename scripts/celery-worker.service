@@ -12,8 +12,8 @@ Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_appl
 Environment="C_FORCE_ROOT=true"
 Environment="CELERY_LOG_LEVEL=DEBUG"
 
-# Use absolute paths and explicit module for better reliability
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_worker worker --loglevel=debug --concurrency=4
+# Use celery_app instead of celery_worker for the Celery instance
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_app worker --loglevel=debug --concurrency=4
 
 # Restart policy
 Restart=always

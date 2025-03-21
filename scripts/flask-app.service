@@ -2,23 +2,33 @@
 Description=Gunicorn instance to serve Flask application
 After=network.target
 
-
 [Service]
 User=www-data
 Group=www-data
 WorkingDirectory=/data/SWATGenXApp/codes/web_application
 Environment="PATH=/data/SWATGenXApp/codes/.venv/bin"
 Environment="FLASK_ENV=production"
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/gunicorn --workers 3 --worker-class eventlet --bind 127.0.0.1:5050 run:app
+Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
+
+# Increase timeouts and better error handling
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/gunicorn \
+    --workers 3 \
+    --worker-class eventlet \
+    --bind 127.0.0.1:5050 \
+    --timeout 120 \
+    --keep-alive 65 \
+    --log-level info \
+    --access-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn_access.log \
+    --error-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn_error.log \
+    run:app
 
 # Restart policy to prevent downtime
 Restart=always
 RestartSec=5
 
-
-# Logging (optional, but useful)
-StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/flask-app.log
-StandardError=append:/data/SWATGenXApp/codes/web_application/logs/flask-app-error.log
+# Logging
+StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/flask-app-stdout.log
+StandardError=append:/data/SWATGenXApp/codes/web_application/logs/flask-app-stderr.log
 
 [Install]
 WantedBy=multi-user.target
