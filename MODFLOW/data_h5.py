@@ -22,7 +22,7 @@ arcpy.env.overwriteOutput = True
 
 for resolution in resolutions:
     for space in spaces:
-        output_path = os.path.join("{SWATGenXPaths.base_path}all_rasters", f"predictions_ML_{space}_{resolution}.tif")
+        output_path = os.path.join("/data2/MyDataBase/SWATGenXAppData/all_rasters", f"predictions_ML_{space}_{resolution}.tif")
         input_data_path = os.path.join(ml_h5_path, f"FFR_Predicted obs_{space}_{resolution}m.h5")
         input_xy_path = os.path.join(DIC, f"HydroGeoDataset_ML_{resolution}.h5")
         
@@ -35,7 +35,7 @@ for resolution in resolutions:
         # replace nan qith -999
         data = np.nan_to_num(data, nan=-999)
         # Create the raster
-        reference_raster = f"{SWATGenXPaths.base_path}all_rasters/DEM_{resolution}m.tif"
+        reference_raster = f"/data2/MyDataBase/SWATGenXAppData/all_rasters/DEM_{resolution}m.tif"
         
         # Set ArcPy environment variables based on reference raster
         arcpy.env.outputCoordinateSystem = arcpy.Describe(reference_raster).spatialReference

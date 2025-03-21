@@ -1,18 +1,18 @@
-import os
-import numpy as np
+from MODGenX.gdal_operations import gdal_sa as arcpy
 import geopandas as gpd
 import rasterio
 import pyproj
+import numpy as np
+import os
 import itertools
 import flopy
 from scipy.ndimage import median_filter
 import matplotlib.pyplot as plt
 from shapely.geometry import Point, Polygon
-from osgeo import gdal, ogr, osr
 
 debug = False
 
-def get_row_col_from_coords(df, ref_raster_path):
+def get_row_col_from_coords (df, ref_raster_path):
     with rasterio.open(ref_raster_path) as src:
         x = df['geometry'].apply(lambda p: p.x).values
         y = df['geometry'].apply(lambda p: p.y).values
@@ -105,30 +105,58 @@ def smooth_invalid_thickness(array, size=25):
 
 def remove_isolated_cells(active, load_raster_args):
     """
-    Remove isolated cells in the active 3D grid.
+    Remove isolated cells in the active 3D grid and ensure valid ibound values.
 
     Parameters:
     - active: 3D array representing active cells
 
     Returns:
-    - new_ibound: 3D array with isolated cells removed
+    - new_ibound: 3D array with isolated cells removed and guaranteed active cells
     """
-
     LEVEL = load_raster_args['LEVEL']
     RESOLUTION = load_raster_args['RESOLUTION']
     NAME = load_raster_args['NAME']
 
     nlay, nrow, ncol = active.shape
     new_ibound = active.copy()
-
-    # Check each cell in the grid
-    for i, j in itertools.product(range(1, nrow-1), range(1, ncol-1)):
-        if active[0, i, j] > 0:
-            surrounding = active[0, i-1:i+2, j-1:j+2]
-            if np.all(surrounding < 1):
-                for k in range(nlay):
-                    new_ibound[k, i, j] = 0
-
+    
+    # Check for unexpected values in the ibound array
+    unique_values = np.unique(new_ibound)
+    print(f"Unique values in ibound before processing: {unique_values}")
+    
+    # Correct any invalid values (>1 or <-1) except for 0
+    invalid_mask = (np.abs(new_ibound) > 1) & (new_ibound != 9999)
+    invalid_count = np.sum(invalid_mask)
+    if invalid_count > 0:
+        print(f"Warning: Found {invalid_count} invalid values in ibound array. Fixing them.")
+        new_ibound[invalid_mask] = 1  # Convert to active cells
+    
+    # Ensure -1 values are only at boundaries
+    boundary_count = np.sum(new_ibound == -1)
+    print(f"Boundary cells (-1) count: {boundary_count}")
+    
+    # Count active cells before processing
+    active_count_before = np.sum(new_ibound == 1)
+    print(f"Active cells (1) before processing: {active_count_before}")
+    
+    # Check for 9999 values (potentially NoData values from raster import)
+    nodata_count = np.sum(new_ibound == 9999)
+    if nodata_count > 0:
+        print(f"Warning: Found {nodata_count} NoData values (9999) in ibound. Converting to 0.")
+        new_ibound[new_ibound == 9999] = 0
+    
+    # Verify the values are now valid
+    unique_values_after = np.unique(new_ibound)
+    print(f"Unique values in ibound after correction: {unique_values_after}")
+    
+    # Remove isolated cells - only if we have enough active cells
+    if active_count_before > 100:  # Arbitrary threshold
+        for i, j in itertools.product(range(1, nrow-1), range(1, ncol-1)):
+            if new_ibound[0, i, j] > 0:
+                surrounding = new_ibound[0, i-1:i+2, j-1:j+2]
+                if np.sum(surrounding > 0) < 2:  # Cell and at least one neighbor
+                    for k in range(nlay):
+                        new_ibound[k, i, j] = 0
 
     # Fix -1 values in layers below the first layer
     for i, j in itertools.product(range(nrow), range(ncol)):
@@ -137,7 +165,33 @@ def remove_isolated_cells(active, load_raster_args):
             for k in range(1, nlay):
                 if new_ibound[k, i, j] == -1:
                     new_ibound[k, i, j] = first_layer_value
-
+    
+    # Count active cells after processing
+    active_count_after = np.sum(new_ibound == 1)
+    print(f"Active cells (1) after processing: {active_count_after}")
+    
+    # If we have no active cells after processing, create a default pattern
+    if active_count_after == 0:
+        print("ERROR: No active cells in the ibound array! Creating a default pattern.")
+        # Create a simple rectangular active domain in the center
+        center_row, center_col = nrow // 2, ncol // 2
+        size = min(nrow, ncol) // 3  # Use 1/3 of the smallest dimension
+        
+        for i in range(center_row - size, center_row + size):
+            for j in range(center_col - size, center_col + size):
+                if 0 <= i < nrow and 0 <= j < ncol:
+                    # Don't override boundary cells
+                    if new_ibound[0, i, j] != -1:
+                        new_ibound[0, i, j] = 1
+        
+        # Propagate to lower layers (except the last one)
+        for k in range(1, nlay-1):
+            new_ibound[k] = new_ibound[0].copy()
+            
+        print(f"Created {np.sum(new_ibound == 1)} active cells in the center region.")
+    
+    final_unique_values = np.unique(new_ibound)
+    print(f"Final unique values in ibound: {final_unique_values}")
     return new_ibound
 
 def GW_layers(thickness_1, thickness_2, n_sublay_1, n_sublay_2, bedrock_thickness, top):
@@ -209,8 +263,23 @@ def padding_raster(base_shape, target_shape, target_raster):
     diff_cols = base_shape[1] - target_shape[1]
 
     if diff_rows < 0 or diff_cols < 0:
-        print("Base raster has smaller dimensions. Please make sure the base raster should have equal or larger dimensions.")
-        return None
+        print("Base raster has smaller dimensions. Will pad the base raster instead.")
+        # If base is smaller, we'll return the target raster cropped to match the base raster shape
+        # This ensures we get the most important central part of the target raster
+        if diff_rows < 0 and diff_cols < 0:
+            # Crop the target raster to match base dimensions
+            # Take the center portion of the target raster
+            start_row = (target_shape[0] - base_shape[0]) // 2
+            start_col = (target_shape[1] - base_shape[1]) // 2
+            return target_raster[start_row:start_row + base_shape[0], start_col:start_col + base_shape[1]]
+        elif diff_rows < 0:
+            # Crop rows only
+            start_row = (target_shape[0] - base_shape[0]) // 2
+            return target_raster[start_row:start_row + base_shape[0], :]
+        else:  # diff_cols < 0
+            # Crop columns only
+            start_col = (target_shape[1] - base_shape[1]) // 2
+            return target_raster[:, start_col:start_col + base_shape[1]]
 
     # Create padded target raster with the same shape as base raster
     padded_target_raster = np.pad(target_raster, ((0, diff_rows), (0, diff_cols)), 'constant', constant_values=(1))
@@ -220,18 +289,20 @@ def padding_raster(base_shape, target_shape, target_raster):
 
 
 def defining_bound_and_active(BASE_PATH, subbasin_path, raster_folder, RESOLUTION, SWAT_dem_path):
-    # Read the shapefile
+
     Subbasin = gpd.read_file(subbasin_path)
+
+
     basin = Subbasin.dissolve().reset_index(drop=True)
     buffered = Subbasin.buffer(100)
 
     # Dissolve the buffered polygons to get a single outer boundary
     basin['geometry'] = buffered.unary_union
     basin = basin.set_geometry('geometry').copy()
-    basin['Active'] = 1
+    basin ['Active'] = 1
     basin_path = os.path.join(raster_folder, 'basin_shape.shp')
 
-    basin[['Active', 'geometry']].to_file(basin_path)
+    basin[['Active','geometry']].to_file(basin_path)
 
     bound = basin.boundary.copy()
     bound = bound.explode(index_parts=False)
@@ -241,72 +312,32 @@ def defining_bound_and_active(BASE_PATH, subbasin_path, raster_folder, RESOLUTIO
     bound.crs = basin.crs
     bound['Bound'] = 2
     bound_path = os.path.join(raster_folder, 'bound_shape.shp')
-    bound[['Bound', 'geometry']].to_file(bound_path)
+    bound[['Bound','geometry']].to_file(bound_path)
 
-    print('Generated bound shape saved to:', os.path.basename(bound_path))
-    print('Generated basin shape saved to:', os.path.basename(basin_path))
+    print('Generated bound shape saved to:',os.path.basename(bound_path))
+    print('Generated basin shape saved to:',os.path.basename(basin_path))
 
-    # Get reference raster information
+    env = arcpy.env  # Use gdal_sa's env class
+    env.workspace = raster_folder
+    env.overwriteOutput = True  # Enable overwrite
     reference_raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{RESOLUTION}m.tif")
-    ref_ds = gdal.Open(reference_raster_path)
-    ref_geotransform = ref_ds.GetGeoTransform()
-    ref_proj = ref_ds.GetProjection()
-    ref_ds = None  # Close dataset
-    
-    # Get SWAT DEM extent
-    swat_ds = gdal.Open(SWAT_dem_path)
-    swat_geotransform = swat_ds.GetGeoTransform()
-    swat_xsize = swat_ds.RasterXSize
-    swat_ysize = swat_ds.RasterYSize
-    swat_ds = None  # Close dataset
+    env.snapRaster = reference_raster_path
 
-    # Convert shapefile to raster
-    domain_raster_path = os.path.join(raster_folder, 'domain.tif')
-    bound_raster_path = os.path.join(raster_folder, 'bound.tif')
-    
-    # Rasterize basin shapefile
-    rasterize_shapefile(basin_path, domain_raster_path, SWAT_dem_path, RESOLUTION, attribute="Active")
+    env.outputCoordinateSystem = arcpy.Describe(reference_raster_path).spatialReference
+    env.extent = SWAT_dem_path
+    env.nodata = np.nan
+
+    bound_raster_path  = os.path.join  (raster_folder, 'bound.tif')
+    domain_raster_path = os.path.join  (raster_folder, 'domain.tif')
+    arcpy.PolygonToRaster_conversion(basin_path, "Active", domain_raster_path, cellsize=RESOLUTION)
     print('basin raster is created')
-    
-    # Rasterize bound shapefile
-    rasterize_shapefile(bound_path, bound_raster_path, SWAT_dem_path, RESOLUTION, attribute="Bound")
+    arcpy.PolygonToRaster_conversion(bound_path, "Bound", bound_raster_path, cellsize=RESOLUTION)
     print('bound raster is created')
 
     return domain_raster_path, bound_raster_path
 
-def rasterize_shapefile(shapefile_path, output_raster_path, reference_raster_path, resolution, attribute):
-    """
-    Convert a shapefile to a raster using GDAL
-    """
-    # Open reference raster to get extent and projection
-    ref_ds = gdal.Open(reference_raster_path)
-    ref_geotransform = ref_ds.GetGeoTransform()
-    ref_proj = ref_ds.GetProjection()
-    ref_xsize = ref_ds.RasterXSize
-    ref_ysize = ref_ds.RasterYSize
-    
-    # Create output raster with same properties as reference
-    driver = gdal.GetDriverByName('GTiff')
-    out_ds = driver.Create(output_raster_path, ref_xsize, ref_ysize, 1, gdal.GDT_Float32)
-    out_ds.SetGeoTransform(ref_geotransform)
-    out_ds.SetProjection(ref_proj)
-    
-    # Fill output with nodata value
-    band = out_ds.GetRasterBand(1)
-    band.SetNoDataValue(np.nan)
-    band.Fill(np.nan)
-    
-    # Rasterize vector
-    vector_ds = ogr.Open(shapefile_path)
-    layer = vector_ds.GetLayer()
-    gdal.RasterizeLayer(out_ds, [1], layer, options=[f"ATTRIBUTE={attribute}"])
-    
-    # Close datasets
-    out_ds = None
-    vector_ds = None
-    ref_ds = None
-    
-    return output_raster_path
+
+
 
 def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, load_raster_args, lake_flag, fitToMeter = 0.3048):
 
@@ -358,40 +389,33 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
 
 
 
-def load_raster(path, load_raster_args, BASE_PATH=None, config=None):
-    if BASE_PATH is None and config is None:
-        from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-        BASE_PATH = SWATGenXPaths.base_path
-    elif config is not None:
-        BASE_PATH = None  # We'll use config's construct_path instead
-        
+def load_raster(path, load_raster_args, BASE_PATH='/data2/MyDataBase/SWATGenXAppData/'):
+
     LEVEL = load_raster_args['LEVEL']
     RESOLUTION = load_raster_args['RESOLUTION']
     NAME = load_raster_args['NAME']
     MODEL_NAME = load_raster_args['MODEL_NAME']
     SWAT_MODEL_NAME = load_raster_args['SWAT_MODEL_NAME']
 
-    shapefile_paths = generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION, config)
+    shapefile_paths  = generate_shapefile_paths(LEVEL,NAME, SWAT_MODEL_NAME, RESOLUTION)
+    database_file = database_file_paths()
     ref_raster_path = load_raster_args['ref_raster']
     print('*****************************')
 
     file_name = os.path.basename(path)
+    # Strip the extension if it exists to avoid double extensions
+    file_name_without_ext = os.path.splitext(file_name)[0]
 
-    if config is not None:
-        output_clip = config.construct_path("SWAT_input", LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input", f"{NAME}_{file_name}.tif")
-        output_dir = config.construct_path("SWAT_input", LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input")
-    else:
-        output_clip = os.path.join(BASE_PATH, 'SWAT_input', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input", f"{NAME}_{file_name}.tif")
-        output_dir = os.path.join(BASE_PATH, 'SWAT_input', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input")
-    
-    os.makedirs(output_dir, exist_ok=True)
+    output_clip = os.path.join(BASE_PATH,'SWAT_input/', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input" ,f"{NAME}_{file_name_without_ext}.tif")
+    os.makedirs(os.path.join(BASE_PATH,'SWAT_input/', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input") , exist_ok=True )
 
-    if path != load_raster_args['ref_raster'] or path != load_raster_args['bound_raster']:
+    if path!=load_raster_args['ref_raster'] or path!=load_raster_args['bound_raster']:
         clip_raster_by_another(BASE_PATH, path, ref_raster_path, output_clip)
 
         with rasterio.open(output_clip) as src:
             return read_raster(src, output_clip)
     else:
+
         with rasterio.open(path) as src:
             return read_raster(src, path)
 
@@ -406,65 +430,107 @@ def read_raster(src, arg1):
 
 def clip_raster_by_another(BASE_PATH, raster_path, in_masking, output_path):
     """
-    This function creates a new raster by masking an existing one using GDAL
+    This function creates a new raster by masking an existing one.
+    It extracts by extent and ensures the same number of rows and columns as in_masking.
     """
-    # Create temp directory
-    os.makedirs(os.path.join(BASE_PATH, "_temp"), exist_ok=True)
+    env = arcpy.env  # Use gdal_sa's env class
+    env.overwriteOutput = True
+    os.makedirs(os.path.join("_temp/"), exist_ok=True)
+    current_directory = BASE_PATH
+    env.workspace = current_directory
+    from osgeo import gdal
+    # Get the extent and cell size of the mask raster using GDAL
+    ds = gdal.Open(in_masking)
+    gt = ds.GetGeoTransform()
+    x_min = gt[0]
+    y_max = gt[3]
+    x_max = x_min + gt[1] * ds.RasterXSize
+    y_min = y_max + gt[5] * ds.RasterYSize
+    cell_size = abs(gt[1])  # Assuming square cells
     
-    # Open reference raster
-    mask_ds = gdal.Open(in_masking)
-    mask_geotransform = mask_ds.GetGeoTransform()
-    mask_proj = mask_ds.GetProjection()
-    mask_xsize = mask_ds.RasterXSize
-    mask_ysize = mask_ds.RasterYSize
+    # Create extent object similar to arcpy's extent
+    class Extent:
+        def __init__(self, xmin, ymin, xmax, ymax):
+            self.XMin = xmin
+            self.YMin = ymin
+            self.XMax = xmax
+            self.YMax = ymax
     
-    # Get extent
-    xmin = mask_geotransform[0]
-    ymax = mask_geotransform[3]
-    xmax = xmin + mask_geotransform[1] * mask_xsize
-    ymin = ymax + mask_geotransform[5] * mask_ysize  # Note: geotransform[5] is typically negative
+    extent = Extent(x_min, y_min, x_max, y_max)
     
-    # Create a temporary resampled raster with the same cell size as the reference
+    # Get number of rows and columns for in_masking raster
+    mask_n_rows = ds.RasterYSize
+    mask_n_cols = ds.RasterXSize
+    
+    # Clean up
+    ds = None
+
+    # Create a temporary resampled raster with the same cell size, rows, and columns as in_masking
     import uuid
-    temp_resampled_raster = os.path.join(BASE_PATH, "_temp", f"{str(uuid.uuid4())}.tif")
-    
-    # Use GDAL Warp to resample
-    cell_size = mask_geotransform[1]  # Assuming square cells
-    gdal.Warp(temp_resampled_raster, raster_path, xRes=cell_size, yRes=cell_size, 
-              resampleAlg=gdal.GRA_NearestNeighbour)
-    
-    # Use GDAL Warp to clip
-    gdal.Warp(output_path, temp_resampled_raster, outputBounds=[xmin, ymin, xmax, ymax],
-              srcSRS=mask_proj, dstSRS=mask_proj)
-    
-    # Clean up temporary file
-    os.remove(temp_resampled_raster)
-    
-    return output_path
+    temp_resampled_raster = os.path.join("_temp", f"{str(uuid.uuid4())}.tif")
+    arcpy.Resample_management(raster_path, temp_resampled_raster, cell_size, "NEAREST")
+
+    # Extract the coordinates for the extent
+    extent_str = f"{extent.XMin} {extent.YMin} {extent.XMax} {extent.YMax}"
+
+    # Clip the resampled raster using extent
+    arcpy.Clip_management(temp_resampled_raster, extent_str, output_path)
+
+    # Optionally, you can delete the temporary resampled raster to save space
+    arcpy.Delete_management(temp_resampled_raster)
 
 
 def create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, out_shp, raster_path):
-    # Read the raster to get its extent
-    raster_ds = gdal.Open(raster_path)
-    raster_geotransform = raster_ds.GetGeoTransform()
-    x_min_raster = raster_geotransform[0]
-    y_max_raster = raster_geotransform[3]
-    raster_ds = None  # Close dataset
+    # Step 1: Read the raster to get its extent
+    env = arcpy.env  # Use gdal_sa's env class
+    env.workspace = BASE_PATH
+    from osgeo import gdal
+    RESOLUTION = 250  # Update this if your model has a different resolution
+    # Check if the raster file exists
+    if not os.path.exists(raster_path):
+        print(f"Warning: Raster file {raster_path} not found. Trying to use reference raster instead.")
+        # Try to find a reference raster in the all_rasters directory
+        try:
+            raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{RESOLUTION}m.tif")
+            if not os.path.exists(raster_path):
+                raise FileNotFoundError(f"Reference raster {raster_path} not found.")
+        except NameError:
+            # In case RESOLUTION is not defined in this scope
+            reference_options = [250, 100, 30]
+            for res in reference_options:
+                raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{res}m.tif")
+                if os.path.exists(raster_path):
+                    print(f"Using DEM_{res}m.tif as reference raster.")
+                    break
+            else:
+                raise FileNotFoundError("No suitable reference raster found.")
+    
+    # Use GDAL to get raster extent
+    ds = gdal.Open(raster_path)
+    if ds is None:
+        raise ValueError(f"Could not open raster file: {raster_path}")
+        
+    gt = ds.GetGeoTransform()
+    x_min_raster = gt[0]
+    y_max_raster = gt[3]
+    
+    # Clean up
+    ds = None
 
     # Load the model
     mf = flopy.modflow.Modflow.load(f"{MODEL_NAME}.nam", model_ws=model_path)
 
-    # Use the raster extent to set xoff and yoff
+    # Step 2: Use the raster extent to set xoff and yoff
     xoff, yoff = x_min_raster, y_max_raster
 
     sr = mf.modelgrid
     angrot = sr.angrot
-    epsg_code = 26990  # Update if your model has a different EPSG code
+    epsg_code = 26990  # Update this if your model has a different EPSG code
 
     # Compute grid edges
     delr, delc = sr.delr, sr.delc
     xedges = np.hstack(([xoff], xoff + np.cumsum(delr)))
-    yedges = np.hstack(([yoff], yoff - np.cumsum(delc)))  # Subtract for y-axis convention
+    yedges = np.hstack(([yoff], yoff - np.cumsum(delc)))  # Use subtraction for yedges due to y-axis convention
 
     # Generate arrays of vertices for all cells in the grid
     xedges, yedges = np.meshgrid(xedges, yedges)
@@ -491,7 +557,7 @@ def create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, 
     gdf.to_file(out_shp)
 
     print(f"Shapefile saved to {out_shp}")
-    gdf.to_pickle(f'{out_shp}.pk1')
+    gdf.to_file(f'{out_shp}.geojson')
 
 def model_src(DEM_path):
     src = rasterio.open(DEM_path)
@@ -499,9 +565,10 @@ def model_src(DEM_path):
     return(src,delr, delc)
 
 
-def generate_raster_paths(RESOLUTION, ML, config=None):
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    BASE_PATH = SWATGenXPaths.base_path if config is None else config.base_path
+def generate_raster_paths(RESOLUTION,ML):
+
+    BASE_PATH = '/data2/MyDataBase/SWATGenXAppData/'
+
     SDIR = 'all_rasters'
 
     if ML:
@@ -545,36 +612,27 @@ def generate_raster_paths(RESOLUTION, ML, config=None):
             }
 
 
-def generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION, config=None):
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    # Use the provided config object or default to the class attribute
-    if config is None:
-        BASE_PATH = SWATGenXPaths.base_path 
-        SDIR = 'SWAT_input'
-        return {
-            "lakes": os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp'),
-            "rivers": os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp'),
-            "grids": os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.pk1')
-        }
-    else:
-        # Use the config object's construct_path method
-        return {
-            "lakes": config.construct_path("SWAT_input", LEVEL, NAME, SWAT_MODEL_NAME, "Watershed/Shapes/SWAT_plus_lakes.shp"),
-            "rivers": config.construct_path("SWAT_input", LEVEL, NAME, SWAT_MODEL_NAME, "Watershed/Shapes/rivs1.shp"),
-            "grids": config.construct_path("SWAT_input", LEVEL, NAME, f"MODFLOW_{RESOLUTION}m/Grids_MODFLOW.pk1")
-        }
+def generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION):
+    BASE_PATH = '/data2/MyDataBase/SWATGenXAppData/'
+    SDIR = 'SWAT_input'
+    return {
+
+        "lakes"  : os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp'),
+        "rivers" : os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp'),
+        "grids"  : os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.geojson')
+
+    }
 
 def database_file_paths():
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    BASE_PATH = SWATGenXPaths.base_path
+    BASE_PATH = '/data2/MyDataBase/SWATGenXAppData/'
 
     return {
-        "COUNTY":       os.path.join(BASE_PATH,"Well_data_krigging/Counties_dis_gr.pk1"),
-        'huc12':        os.path.join(BASE_PATH,"NHDPlusData/WBDHU12/WBDHU12_26990.pk1"),
-        'huc8':         os.path.join(BASE_PATH,"NHDPlusData/WBDHU8/WBDHU8_26990.pk1"),
-        'huc4':         os.path.join(BASE_PATH,"NHDPlusData/WBDHU4/WBDHU4_26990.pk1"),
+        "COUNTY":       os.path.join(BASE_PATH,"Well_data_krigging/Counties_dis_gr.geojson"),
+        'huc12':        os.path.join(BASE_PATH,"NHDPlusData/WBDHU12/WBDHU12_26990.geojson"),
+        'huc8':         os.path.join(BASE_PATH,"NHDPlusData/WBDHU8/WBDHU8_26990.geojson"),
+        'huc4':         os.path.join(BASE_PATH,"NHDPlusData/WBDHU4/WBDHU4_26990.geojson"),
         'streams':      os.path.join(BASE_PATH,"NHDPlusData/streams.pkl"),
-        'observations': os.path.join(BASE_PATH,"observations/observations_original.pk1"),
+        'observations': os.path.join(BASE_PATH,"observations/observations_original.geojson"),
 
     }
 

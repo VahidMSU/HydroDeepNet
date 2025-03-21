@@ -55,7 +55,7 @@ def plot_heads(LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap = 'viridis', dpi = 300)
     Returns:
     None.
     """
-    BASE_PATH = "{SWATGenXPaths.base_path}"
+    BASE_PATH = "/data2/MyDataBase/SWATGenXAppData/"
     # create the headfile object
     path = os.path.join(BASE_PATH,f'SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/',MODEL_NAME+'.hds')
     headobj = flopy.utils.binaryfile.HeadFile(path)
@@ -138,7 +138,7 @@ def create_plots_and_return_metrics (df_sim_obs, LEVEL, NAME,MODEL_NAME, dpi=300
         plt.annotate(f'MAE = {mae:.2f}', xy=(0.7, 0.2), xycoords='axes fraction', bbox=bbox_props)
         plt.annotate(f'PBIAS = {pbias:.2f}', xy=(0.7, 0.25), xycoords='axes fraction', bbox=bbox_props)
         plt.annotate(f'KGE = {kge:.2f}', xy=(0.7, 0.3), xycoords='axes fraction', bbox=bbox_props)
-        model_output_figure_path = f"{SWATGenXPaths.base_path}SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/{TYPE}_simulated_figure.jpeg"
+        model_output_figure_path = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/{TYPE}_simulated_figure.jpeg"
 
         plt.savefig(model_output_figure_path, dpi= dpi)
         plt.close()

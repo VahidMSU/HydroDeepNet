@@ -15,7 +15,7 @@ def cleanup_models(MODEL_NAMES, NAMES, BASE_PATH):
 if __name__ == "__main__":
 	RESOLUTION = 250
 	MODEL_NAMES = [f'MODFLOW_EBK_{RESOLUTION}m', f'MODFLOW_ML_{RESOLUTION}m', f'Michigan_EBK_{RESOLUTION}m']
-	NAMES = os.listdir('{SWATGenXPaths.base_path}SWAT_input/huc12/')
+	NAMES = os.listdir('/data2/MyDataBase/SWATGenXAppData/SWAT_input/huc12/')
 	NAMES.remove('log.txt')
-	BASE_PATH = "{SWATGenXPaths.base_path}"
+	BASE_PATH = "/data2/MyDataBase/SWATGenXAppData/"
 	cleanup_models(MODEL_NAMES, NAMES, BASE_PATH)

@@ -51,9 +51,9 @@ def well_data_import(mf,top, load_raster_args, z_botm, active, grids_path, MODEL
 
 	database_paths = database_file_paths()
 
-	obs = pd.read_pickle("{SWATGenXPaths.base_path}observations/observations_original.pk1")
+	obs = gpd.read_file("/data2/MyDataBase/SWATGenXAppData/observations/observations_original.geojson")
 	obs = obs.drop(columns=['row','col'])
-	grids = pd.read_pickle(fr"{SWATGenXPaths.base_path}SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/Grids_MODFLOW.pk1")
+	grids = gpd.read_file(fr"/data2/MyDataBase/SWATGenXAppData/SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/Grids_MODFLOW.geojson")
 	grids ['row']= grids['Row']
 	grids ['col'] = grids['Col']
 	grids = grids.drop(columns=['Row','Col'])
