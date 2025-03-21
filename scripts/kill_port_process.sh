@@ -3,7 +3,7 @@
 # This script finds and kills processes using specific ports
 # Usage: ./kill_port_process.sh [port_numbers]
 
-PORTS=("${@:-5050}")  # Default to ports 5050 and 3000 if not specified
+PORTS=("${@:-3000}")  # Default to ports 5050 and 3000 if not specified
 LOG_FILE="/data/SWATGenXApp/codes/web_application/logs/port_killer.log"
 
 # Ensure log directory exists
