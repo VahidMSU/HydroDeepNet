@@ -1,7 +1,7 @@
 ## /data/SWATGenXApp/codes/web_application/app/__init__.py
 import sys
 import os
-from flask import Flask, abort
+from flask import Flask, abort, jsonify, request
 from flask_talisman import Talisman
 from config import Config
 from app.extensions import csrf, db, login_manager
@@ -207,5 +207,47 @@ def create_app(config_class=Config):  # Update function signature
         response.headers["Cache-Control"] = "no-store"
         return response
 
+    # Add error handler for API routes to always return JSON
+    @app.errorhandler(Exception)
+    def handle_error(e):
+        code = 500
+        if hasattr(e, 'code'):
+            code = e.code
+        
+        # Check if this is an API request
+        if request.path.startswith('/api/'):
+            logger.error(f"API error: {str(e)}")
+            return jsonify({
+                "status": "error",
+                "message": str(e),
+                "error_type": e.__class__.__name__
+            }), code
+        
+        # For non-API routes, let Flask handle the error normally
+        return e
+    
+    # Add error handler for 404 errors to return JSON for API routes
+    @app.errorhandler(404)
+    def not_found(e):
+        if request.path.startswith('/api/'):
+            logger.error(f"API 404 error: {request.path}")
+            return jsonify({
+                "status": "error",
+                "message": "API endpoint not found",
+                "path": request.path
+            }), 404
+        return e
+    
+    # Add error handler for 500 errors to return JSON for API routes
+    @app.errorhandler(500)
+    def server_error(e):
+        if request.path.startswith('/api/'):
+            logger.error(f"API 500 error: {str(e)}")
+            return jsonify({
+                "status": "error",
+                "message": "Internal server error",
+                "details": str(e) if app.debug else "See server logs for details"
+            }), 500
+        return e
 
     return app

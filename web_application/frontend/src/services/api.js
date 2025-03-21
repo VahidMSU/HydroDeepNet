@@ -58,7 +58,7 @@ export const getStationCharacteristics = (stationNo) =>
   });
 
 // Model creation
-export const createModel = (modelSettings) => api.post('/model-settings', modelSettings);
+export const createModel = (modelSettings) => api.post('/api/model-settings', modelSettings);
 
 // Report generation
 export const generateReport = (reportParams) => api.post('/generate_report', reportParams);

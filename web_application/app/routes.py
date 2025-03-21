@@ -13,6 +13,7 @@ from app.visualization import visualization_bp
 from app.hydrogeo import hydrogeo_bp
 from app.report import report_bp
 from app.chatbot import chatbot_bp
+from app.diagnostic import diagnostic_bp  # Import the diagnostic blueprint
 
 class AppManager:
     def __init__(self, app):
@@ -23,6 +24,10 @@ class AppManager:
 
         # Add route normalization before registering blueprints
         self.setup_route_normalization()
+        
+        # Set up CSRF exclusions for API routes
+        self.setup_csrf_exclusion()
+        
         # Register routes
         self.init_routes()
         
@@ -68,6 +73,33 @@ class AppManager:
                 
             return None
 
+    def setup_csrf_exclusion(self):
+        """Exclude API routes from CSRF protection to prevent issues with frontend calls."""
+        try:
+            from app.extensions import csrf
+            
+            # Fix the function signature to accept the path parameter
+            @csrf.exempt
+            def csrf_exempt_api(path):
+                # This function just returns None, it's only for the decorator
+                return None
+                
+            # Register the CSRF exempt endpoint for API routes
+            self.app.add_url_rule('/api/<path:path>', 'csrf_exempt_api', csrf_exempt_api, methods=['GET', 'POST', 'PUT', 'DELETE'])
+            self.app.logger.info("Set up CSRF exclusion for API routes")
+            
+            # Alternative approach: use direct blueprint exemption
+            # For each blueprint with 'api' in its name, exempt all its endpoints
+            for blueprint_name, blueprint in self.app.blueprints.items():
+                if 'api' in blueprint_name.lower() or 'diagnostic' in blueprint_name.lower():
+                    csrf.exempt(blueprint)
+                    self.app.logger.info(f"Exempted blueprint {blueprint_name} from CSRF protection")
+            
+        except ImportError as e:
+            self.app.logger.warning(f"Could not set up CSRF exclusion: {e}")
+        except Exception as e:
+            self.app.logger.error(f"Error setting up CSRF exclusion: {e}")
+
     def init_routes(self):
         """Register all blueprints."""
         # Register main blueprints
@@ -80,4 +112,7 @@ class AppManager:
         self.app.register_blueprint(hydrogeo_bp)
         self.app.register_blueprint(report_bp)
         self.app.register_blueprint(chatbot_bp)
+        self.app.register_blueprint(diagnostic_bp)  # Register the diagnostic blueprint
+        
+        self.app.logger.info("All blueprints registered, including diagnostic tools")
 
