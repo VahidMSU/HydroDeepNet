@@ -1,3 +1,5 @@
+#import arcpy
+from MODGenX.gdal_operations import gdal_sa as arcpy
 import geopandas as gpd
 import pandas as pd
 import warnings
@@ -6,113 +8,78 @@ import pyproj
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-from osgeo import gdal, ogr, osr
-import os
-from MODGenX.utils import generate_raster_paths, load_raster, match_raster_dimensions, active_domain, remove_isolated_cells, input_Data, GW_starting_head, model_src, create_shapefile_from_modflow_grid_arcpy, smooth_invalid_thickness, sim_obs, rasterize_shapefile
+from MODGenX.utils import generate_raster_paths, load_raster, match_raster_dimensions, active_domain, remove_isolated_cells, input_Data, GW_starting_head, model_src, create_shapefile_from_modflow_grid_arcpy, smooth_invalid_thickness, sim_obs
 from MODGenX.rivers import river_gen, river_correction
 from MODGenX.lakes import lakes_to_drain
 from MODGenX.visualization import plot_data, create_plots_and_return_metrics
 from MODGenX.zonation import create_error_zones_and_save
 from MODGenX.well_info import well_location, well_data_import
 from MODGenX.rasterize_swat import rasterize_SWAT_features
+import os
 
 class MODGenXCore:
-	def __init__(self, SWATGenXPaths):
-		
-		self.config = SWATGenXPaths
-		self.NAME = self.config.NAME
-		self.BASE_PATH = self.config.base_path
-		self.LEVEL = self.config.LEVEL
-		self.RESOLUTION = self.config.RESOLUTION
-		self.MODFLOW_MODEL_NAME = self.config.MODFLOW_MODEL_NAME
-		self.SWAT_MODEL_NAME = self.config.SWAT_MODEL_NAME
-		self.ML = False
-		
-		# Define paths using config
-		self.raster_folder = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, self.MODFLOW_MODEL_NAME, "rasters_input")
-		self.model_path = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, self.MODFLOW_MODEL_NAME)
-		self.moflow_exe_path = os.path.join(self.model_path, "MODFLOW-NWT_64.exe")
-		self.swat_lake_shapefile_path = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, self.SWAT_MODEL_NAME, "Watershed/Shapes/SWAT_plus_lakes.shp")
-		self.ref_raster_path = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, f"DEM_{self.RESOLUTION}m.tif")
-		self.subbasin_path = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, self.SWAT_MODEL_NAME, "Watershed/Shapes/subs1.shp")
-		self.SWAT_dem_path = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, f"DEM_{self.RESOLUTION}m.tif")
-		self.base_dem = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, self.SWAT_MODEL_NAME, "Watershed/Rasters/DEM/dem.tif")
-		self.shape_geometry = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, self.SWAT_MODEL_NAME, "Watershed/Shapes/SWAT_plus_subbasins.shp")
-		self.swat_river_raster_path = os.path.join(self.model_path, 'swat_river.tif')
-		self.swat_lake_raster_path = os.path.join(self.model_path, 'lake_raster.tif')
-		self.head_of_last_time_step = self.config.construct_path("SWAT_input", self.LEVEL, self.NAME, self.MODFLOW_MODEL_NAME, "head_of_last_time_step.jpeg")
-		self.output_heads = os.path.join(self.model_path, f"{self.MODFLOW_MODEL_NAME}.hds")
-		self.out_shp = os.path.join(self.model_path, "Grids_MODFLOW")
-		self.raster_path = os.path.join(self.raster_folder, f'{self.NAME}_DEM_{self.RESOLUTION}m.tif.tif')
-		self.basin_path = os.path.join(self.raster_folder, 'basin_shape.shp')
-		self.bound_path = os.path.join(self.raster_folder, 'bound_shape.shp')
-		self.temp_image = self.config.construct_path("codes/MODFLOW/MODGenX/_temp", f"{self.NAME}_{self.MODFLOW_MODEL_NAME}.jpeg")
-		
+	def __init__(self, NAME, BASE_PATH, LEVEL, RESOLUTION, MODEL_NAME, ML, SWAT_MODEL_NAME):
+		self.NAME         = NAME
+		self.BASE_PATH    = BASE_PATH
+		self.LEVEL        = LEVEL
+		self.RESOLUTION   = RESOLUTION
+		self.MODEL_NAME   = MODEL_NAME
+		self.SWAT_MODEL_NAME = SWAT_MODEL_NAME
+		self.ML           = ML
+		self.raster_folder             = os.path.join(BASE_PATH, f"SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/rasters_input")
+		self.model_path                = os.path.join(BASE_PATH, f'SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}')
+		self.moflow_exe_path           = os.path.join(self.model_path,"MODFLOW-NWT_64.exe")
+		self.swat_lake_shapefile_path  = os.path.join(BASE_PATH, f'SWAT_input/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp')
+		self.ref_raster_path           = os.path.join(BASE_PATH, f'SWAT_input/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif')
+		self.subbasin_path             = os.path.join(BASE_PATH, f"SWAT_input/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/subs1.shp")
+		self.SWAT_dem_path             = os.path.join(BASE_PATH, f"SWAT_input/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif")
+		self.base_dem = os.path.join(BASE_PATH, f"SWAT_input/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Rasters/DEM/dem.tif")
+		self.shape_geometry = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_subbasins.shp"
+		### check if the resolution of self.SWAT_dem_path is actually the resolution
+		resolution = arcpy.GetRasterProperties_management(self.SWAT_dem_path, "CELLSIZEX").getOutput(0)
+		DEM_flag = bool(resolution != str(RESOLUTION))#, f"Resolution of the SWAT DEM raster is {resolution}m, not {RESOLUTION}m as expected."
+		if not os.path.exists(self.SWAT_dem_path) or DEM_flag:
+			# Define the base DEM path
+			arcpy.env.overwriteOutput = True
+
+			temp_path = os.path.join(os.path.dirname(self.SWAT_dem_path), "dem.tif")
+			# Copy the raster to the new location
+			arcpy.Clip_management(self.base_dem, "#", temp_path, self.shape_geometry, "0", "ClippingGeometry", "NO_MAINTAIN_EXTENT") ## NO_MAINTAIN_EXTENT means that the output raster will have the same extent as the clipped raster
+
+			# Define the target spatial reference
+			target_spatial_reference = arcpy.SpatialReference(26990)  # NAD83 / Illinois East
+
+			# Project the raster to the target spatial reference
+			projected_dem_path = os.path.join(os.path.dirname(self.SWAT_dem_path), "projected_dem.tif")
+			arcpy.ProjectRaster_management(temp_path, projected_dem_path, target_spatial_reference)
+
+			# If the resampled file already exists, delete it
+			if os.path.exists(temp_path):
+				arcpy.Delete_management(temp_path)
+
+			# Resample the raster to resolution
+			arcpy.Resample_management(projected_dem_path, self.SWAT_dem_path, f"{self.RESOLUTION} {self.RESOLUTION}", "CUBIC")
+
+			# Optionally, delete the intermediate projected raster to clean up
+			arcpy.Delete_management(projected_dem_path)
+
+		self.swat_river_raster_path    = os.path.join(self.model_path, 'swat_river.tif')
+		self.swat_lake_raster_path     = os.path.join(self.model_path,'lake_raster.tif')
+		self.head_of_last_time_step    = os.path.join(self.BASE_PATH, fr"SWAT_input/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/head_of_last_time_step.jpeg")
+		self.output_heads              = os.path.join(self.BASE_PATH,f'SWAT_input/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/',self.MODEL_NAME+'.hds')
+		self.out_shp                   = os.path.join(self.model_path, "Grids_MODFLOW")
+		self.raster_path               = os.path.join(self.raster_folder, f'{NAME}_DEM_{RESOLUTION}m.tif')
+		self.basin_path                = os.path.join(self.raster_folder, 'basin_shape.shp')
+		self.bound_path                = os.path.join(self.raster_folder, 'bound_shape.shp')
+		self.temp_image                = f'/data2/MyDataBase/SWATGenXAppData/codes/MODFLOW/MODGenX/_temp/{self.NAME}_{self.MODEL_NAME}.jpeg'
 		self.EPSG = "EPSG:26990"
-		self.dpi = 300
-		self.top = None
+		self.dpi  = 300
+		self.top  = None
 		self.bound_raster_path = None
 		self.domain_raster_path = None
-		
-		# Check if SWAT_dem_path exists and has the correct resolution
-		if os.path.exists(self.SWAT_dem_path):
-			ds = gdal.Open(self.SWAT_dem_path)
-			if ds:
-				gt = ds.GetGeoTransform()
-				resolution = int(gt[1])  # Assuming square pixels
-				ds = None  # Close the dataset
-				
-				if resolution != self.RESOLUTION:
-					self.create_dem_raster()
-			else:
-				self.create_dem_raster()
-		else:
-			self.create_dem_raster()
-
-	def create_dem_raster(self):
-		"""Create DEM raster with the correct resolution using GDAL"""
-		print(f"Creating DEM raster with resolution {self.RESOLUTION}m")
-		
-		os.makedirs(os.path.dirname(self.SWAT_dem_path), exist_ok=True)
-		
-		# Create a temporary clipped raster
-		temp_path = os.path.join(os.path.dirname(self.SWAT_dem_path), "dem_temp.tif")
-		
-		# Clip the raster using the shapefile boundary
-		ds = gdal.Open(self.base_dem)
-		if not ds:
-			raise ValueError(f"Cannot open base DEM: {self.base_dem}")
-			
-		# Create a memory vector from the shapefile
-		shape_ds = ogr.Open(self.shape_geometry)
-		if not shape_ds:
-			raise ValueError(f"Cannot open shapefile: {self.shape_geometry}")
-			
-		shape_layer = shape_ds.GetLayer()
-		
-		# Get the extent of the shapefile
-		x_min, x_max, y_min, y_max = shape_layer.GetExtent()
-		
-		# Clip and resample in one step using gdal.Warp
-		gdal.Warp(
-			self.SWAT_dem_path, 
-			ds, 
-			cutlineDSName=self.shape_geometry, 
-			cropToCutline=True,
-			xRes=self.RESOLUTION, 
-			yRes=self.RESOLUTION,
-			dstSRS='EPSG:26990',  # NAD83 / Illinois East
-			resampleAlg=gdal.GRA_Cubic
-		)
-		
-		# Close datasets
-		ds = None
-		shape_ds = None
-		
-		print(f"Created DEM raster at {self.SWAT_dem_path}")
+		self.RESOLUTION = RESOLUTION
 
 	def defining_bound_and_active(self):
-		"""Define boundary and active domain using geopandas and GDAL"""
 		Subbasin = gpd.read_file(self.subbasin_path)
 		basin = Subbasin.dissolve().reset_index(drop=True)
 		buffered = Subbasin.buffer(100)
@@ -120,7 +87,7 @@ class MODGenXCore:
 		basin = basin.set_geometry('geometry').copy()
 		basin['Active'] = 1
 
-		basin[['Active', 'geometry']].to_file(self.basin_path)
+		basin[['Active','geometry']].to_file(self.basin_path)
 		bound = basin.boundary.copy()
 		bound = bound.explode(index_parts=False)
 		bound = bound[bound.length == bound.length.max()]
@@ -128,30 +95,37 @@ class MODGenXCore:
 		bound = gpd.GeoDataFrame(geometry=bound).to_crs(self.EPSG)
 		bound['Bound'] = 2
 
-		bound[['Bound', 'geometry']].to_file(self.bound_path)
+		bound[['Bound','geometry']].to_file(self.bound_path)
 
 		self.Polygon2Raster()
 
 	def Polygon2Raster(self):
-		"""Convert polygon to raster using GDAL"""
-		os.makedirs(self.raster_folder, exist_ok=True)
-		
+
+		arcpy.env.workspace = self.raster_folder
+		arcpy.env.overwriteOutput = True
+		reference_raster_path = os.path.join(self.BASE_PATH, f"all_rasters/DEM_{self.RESOLUTION}m.tif")
+		arcpy.env.snapRaster = reference_raster_path
+		arcpy.env.outputCoordinateSystem = arcpy.Describe(reference_raster_path).spatialReference
+		arcpy.env.extent = self.SWAT_dem_path
+		arcpy.env.nodata = np.nan
 		self.bound_raster_path = os.path.join(self.raster_folder, 'bound.tif')
 		self.domain_raster_path = os.path.join(self.raster_folder, 'domain.tif')
-		
-		# Rasterize basin shapefile
-		rasterize_shapefile(self.basin_path, self.domain_raster_path, self.SWAT_dem_path, self.RESOLUTION, attribute="Active")
-		print('Basin raster is created')
-		
-		# Rasterize bound shapefile
-		rasterize_shapefile(self.bound_path, self.bound_raster_path, self.SWAT_dem_path, self.RESOLUTION, attribute="Bound")
-		print('Bound raster is created')
+		arcpy.PolygonToRaster_conversion(self.basin_path, "Active", self.domain_raster_path, cellsize=self.RESOLUTION)
+		print('basin raster is created')
+		arcpy.PolygonToRaster_conversion(self.bound_path, "Bound", self.bound_raster_path, cellsize=self.RESOLUTION)
+		print('bound raster is created')
 
 	def plot_heads(self):
 		"""
 		This function reads a MODFLOW head binary file and creates a plot for the head data for the last time step.
+
+		Parameters:
+		cmap (str): The colormap to use for the plot. Default is 'viridis'.
+
+		Returns:
+		None.
 		"""
-		
+		BASE_PATH = "/data2/MyDataBase/SWATGenXAppData/"
 		# create the headfile object
 		headobj = flopy.utils.binaryfile.HeadFile(self.output_heads)
 
@@ -169,11 +143,11 @@ class MODGenXCore:
 		plt.colorbar(label='Head (meters)')
 		plt.title('Heads for last time step')
 		plt.savefig(self.head_of_last_time_step, dpi=self.dpi)
+		#shutil.copy2(self.head_of_last_time_step, self.temp_image)
 
 		plt.close()
 
 		return head[:, :]
-
 	def discritization_configuration(self):
 		nrow, ncol = self.top.shape[0], self.top.shape[1]
 		n_sublay_1 = 2                                             # Number of sub-layers in the first layer
@@ -204,21 +178,24 @@ class MODGenXCore:
 			'ref_raster': self.ref_raster_path,
 			'bound_raster': self.bound_raster_path,
 			'active': self.domain_raster_path,
-			'MODEL_NAME': self.MODFLOW_MODEL_NAME,
+			'MODEL_NAME': self.MODEL_NAME,
 			'SWAT_MODEL_NAME': self.SWAT_MODEL_NAME
 		}
 
-		raster_paths = generate_raster_paths(self.RESOLUTION, self.ML, self.config)
+		raster_paths = generate_raster_paths(self.RESOLUTION, self.ML)
 
-		self.top = load_raster(raster_paths['DEM'], load_raster_args, config=self.config)
+		self.top = load_raster(raster_paths['DEM'], load_raster_args)
 		print(f' ############## shape of top {self.top.shape} ############## ')
-		basin = load_raster(self.domain_raster_path, load_raster_args)
-		self.top = match_raster_dimensions(basin, self.top)
+		basin  = load_raster(self.domain_raster_path, load_raster_args)
+		print(f' ############## shape of basin {basin.shape} ############## ')
+		self.top  = match_raster_dimensions(basin,self.top)
+		assert self.top.shape == basin.shape, f"Shape of top raster {self.top.shape} does not match the shape of basin raster {basin.shape}"
+
 		print(f' ############## shape of top {self.top.shape} ############## ')
 
 		if os.path.exists(self.swat_lake_shapefile_path):
 			lake_flag = True
-			rasterize_SWAT_features(self.BASE_PATH, "lakes", self.swat_lake_raster_path, load_raster_args)
+			rasterize_SWAT_features(self.BASE_PATH, "lakes", self.swat_lake_raster_path,  load_raster_args)
 		else:
 			print(' ################## NO LAKE ################### ')
 			lake_flag = False
@@ -261,7 +238,7 @@ class MODGenXCore:
 		shutil.copy2(os.path.join(self.BASE_PATH,"bin/MODFLOW-NWT_64.exe"), self.model_path)
 
 		mf = flopy.modflow.Modflow(                                                       		                      ## model object
-			self.MODFLOW_MODEL_NAME,
+			self.MODEL_NAME,
 			exe_name=self.moflow_exe_path,
 			model_ws=self.model_path,
 			version='mfnwt'
@@ -322,15 +299,15 @@ class MODGenXCore:
 
 
 
-		create_shapefile_from_modflow_grid_arcpy(self.BASE_PATH, self.model_path, self.MODFLOW_MODEL_NAME, self.out_shp, self.raster_path)
+		create_shapefile_from_modflow_grid_arcpy(self.BASE_PATH, self.model_path, self.MODEL_NAME, self.out_shp, self.raster_path)
 
-		grids_path = f'{self.out_shp}.pk1'
+		grids_path = f'{self.out_shp}.geojson'
 
 		wel_data,obs_data, df_obs =  well_data_import(
 			mf, self.top,
 			load_raster_args,
 			z_botm, active, grids_path,
-			self.MODFLOW_MODEL_NAME
+			self.MODEL_NAME
 		)
 
 		if obs_data:
@@ -344,10 +321,14 @@ class MODGenXCore:
 		)
 
 		print('nrows', nrow,'ncol', ncol)
-		print(swat_river)
+		print(f"SWAT river data shape: {swat_river.shape}")
+		print(f"Top data shape: {self.top.shape}")
+		print(f"ibound data shape: {ibound.shape}")
+
+#		print(f)
 
 		river_data=river_gen(nrow, ncol, swat_river, self.top, ibound)
-
+		print(f"length of river data {len(river_data[0])}")
 		riv = flopy.modflow.ModflowRiv(mf, stress_period_data=river_data)
 
 		if lake_flag:
@@ -366,11 +347,11 @@ class MODGenXCore:
 
 		first_layer_simulated_head = self.plot_heads()
 
-		df_sim_obs = sim_obs (self.BASE_PATH, self.MODFLOW_MODEL_NAME, mf, self.LEVEL, self.top, self.NAME, self.RESOLUTION, load_raster_args, df_obs)
-		nse, mse, mae, pbias, kge = create_plots_and_return_metrics (df_sim_obs, self.LEVEL, self.NAME, self.MODFLOW_MODEL_NAME)
+		df_sim_obs = sim_obs (self.BASE_PATH, self.MODEL_NAME, mf, self.LEVEL, self.top, self.NAME, self.RESOLUTION, load_raster_args, df_obs)
+		nse, mse, mae, pbias, kge = create_plots_and_return_metrics (df_sim_obs, self.LEVEL, self.NAME, self.MODEL_NAME)
 
-		metrics = [self.MODFLOW_MODEL_NAME, self.NAME, self.RESOLUTION, nse, mse, mae, pbias, kge]
-		metrics_path = os.path.join(self.BASE_PATH, f'SWAT_input/{self.LEVEL}/{self.NAME}/{self.MODFLOW_MODEL_NAME}/metrics.csv')
+		metrics = [self.MODEL_NAME, self.NAME, self.RESOLUTION, nse, mse, mae, pbias, kge]
+		metrics_path = os.path.join(self.BASE_PATH, f'SWAT_input/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/metrics.csv')
 		with open(metrics_path, 'w') as f:
 			f.write('MODEL_NAME,NAME,RESOLUTION,NSE,MSE,MAE,PBIAS,KGE\n')
 			f.write(','.join(str(metric) for metric in metrics))
@@ -385,7 +366,7 @@ class MODGenXCore:
 		titles = ['water wells location', "SWL initial",'Head',  'Active Cells','K Horizontal 1',
 				'K Horizontal 2', 'K Vertical 1', 'K Vertical 2', 'Recharge','base flow','Thickness 1', 'thickness 2']
 
-		model_input_figure_path = f"{self.config.swatgenx_output}/{self.LEVEL}/{self.NAME}/{self.MODFLOW_MODEL_NAME}/input_figures.jpeg"
+		model_input_figure_path = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/input_figures.jpeg"
 
 		plot_data(datasets, titles, model_input_figure_path)
 

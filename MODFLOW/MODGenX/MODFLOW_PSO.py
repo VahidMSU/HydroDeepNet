@@ -238,7 +238,7 @@ def simulate_and_evaluate_modflow_model(params, problem, MODEL_NAME, NAME, LEVEL
 	modflow_model_name = "Michigan"
 
 	base_directory = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/')
-	original_exe_name = "{SWATGenXPaths.base_path}bin/MODFLOW-NWT_64.exe"
+	original_exe_name = "/data2/MyDataBase/SWATGenXAppData/bin/MODFLOW-NWT_64.exe"
 	original_model_ws = os.path.join(base_directory , MODEL_NAME)
 	figure_directory = os.path.join(base_directory, f'calibration_figures_{MODEL_NAME}')
 	loaded_zones_dict = load_selective_zones(filenames, original_model_ws)
@@ -303,14 +303,14 @@ def zip_copy_unzip(source_dir, dest_dir):
 if __name__ == "__main__":
 
 	## run a single evaluation
-	NAMES = os.listdir('{SWATGenXPaths.base_path}SWAT_input/huc12/')
+	NAMES = os.listdir('/data2/MyDataBase/SWATGenXAppData/SWAT_input/huc12/')
 	#NAME = "40500012304"
 	#VPUID = "0405"
 	LEVEL = "huc12"
 	RESOLUTION = 250
 	MODEL_NAME = "MODFLOW_{RESOLUTION}m"
 	BASE_PATH = "D:/MyDataBase"
-	OUTPUT_path = "{SWATGenXPaths.base_path}"
+	OUTPUT_path = "/data2/MyDataBase/SWATGenXAppData/"
 	for NAME in NAMES:
 		VPUID = f"0{NAME[:3]}"
 		NAMES.remove('log.txt')
@@ -339,7 +339,7 @@ if __name__ == "__main__":
 		# plot filenames
 		plot_zones(filenames, model_directory)
 
-		cal_parms = pd.read_csv("{SWATGenXPaths.base_path}bin/cal_parms_MODFLOW.cal", sep="\s+", skiprows =1)
+		cal_parms = pd.read_csv("/data2/MyDataBase/SWATGenXAppData/bin/cal_parms_MODFLOW.cal", sep="\s+", skiprows =1)
 
 		#now define params
 		param_files, operation_types, problem = read_control_file(cal_parms)

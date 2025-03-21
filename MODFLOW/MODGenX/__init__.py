@@ -1,6 +1,3 @@
-
-
-import sys
-
-# Ensure the system path includes SWATGenX
-sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
+# Import necessary modules to make them accessible from the package
+from .MODGenXCore import MODGenXCore
+from .gdal_operations import gdal_sa

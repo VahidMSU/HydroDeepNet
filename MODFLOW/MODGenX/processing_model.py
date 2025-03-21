@@ -54,7 +54,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
         'active': domain_raster_path,
         'MODEL_NAME': MODEL_NAME,
         }
-#if os.path.exists(f'{SWATGenXPaths.base_path}SWAT_input/{LEVEL}/{NAME}/best_solution.txt'):
+#if os.path.exists(f'/data2/MyDataBase/SWATGenXAppData/SWAT_input/{LEVEL}/{NAME}/best_solution.txt'):
 
     raster_paths = generate_raster_paths(RESOLUTION, ML)
 
@@ -192,7 +192,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
 
     create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, out_shp, raster_path)
 
-    grids_path = f'{out_shp}.pk1'
+    grids_path = f'{out_shp}.geojson'
 
     wel_data,obs_data, df_obs =  well_data_import(
                                         mf, top,
@@ -249,7 +249,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
     titles = ['water wells location', "SWL initial",'Head',  'Active Cells','K Horizontal 1',
             'K Horizontal 2', 'K Vertical 1', 'K Vertical 2', 'Recharge','base flow','Thickness 1', 'thickness 2']
 
-    model_input_figure_path = f"{SWATGenXPaths.base_path}SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/input_figures.jpeg"
+    model_input_figure_path = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/input_figures.jpeg"
 
     plot_data(datasets, titles, model_input_figure_path)
 

@@ -247,7 +247,7 @@ class PSOOptimizer:
         self.LEVEL = LEVEL
         self.NAME = NAME
         self.VPUID = VPUID
-        self.MODFLOW_MODEL_NAME = MODEL_NAME
+        self.MODEL_NAME = MODEL_NAME
         self.model_log_path = model_log_path
         self.general_log_path = general_log_path
         self.wrapped_model_evaluation = wrapped_model_evaluation
@@ -277,12 +277,12 @@ class PSOOptimizer:
         for i in range(self.NV):
             X_initial[:, i] = X_initial[:, i] * (self.MaxB[i] - self.MinB[i]) + self.MinB[i]
 
-        message = f"{self.MODFLOW_MODEL_NAME}:{self.NAME} number of initial points: {n_initial}"
+        message = f"{self.MODEL_NAME}:{self.NAME} number of initial points: {n_initial}"
         log_errors(self.general_log_path, message)
         log_errors(self.model_log_path, message)
 
         X_initial_sorted, LocalBestScore, GlobalBest, GlobalBestScore, GlobalBestScore_collection = run_initial_evaluation(n_initial, X_initial, self.GlobalBestScore_collection,self.BASE_PATH,
-                                                                                                                        self.LEVEL, self.VPUID, self.NAME, self.MODFLOW_MODEL_NAME, self.model_log_path,
+                                                                                                                        self.LEVEL, self.VPUID, self.NAME, self.MODEL_NAME, self.model_log_path,
                                                                                                                         self.general_log_path, self.wrapped_model_evaluation, self.cal_parms,
                                                                                                                         self.best_simulation_filename
                                                                                                                         )
@@ -328,8 +328,8 @@ class PSOOptimizer:
                         self.GlobalBest = self.X[i]
                         self.GlobalBestScore = score
                         # save the best parameters to the file
-                        save_current_best(self.GlobalBest, self.GlobalBestScore, self.cal_parms, self.best_simulation_filename, self.model_log_path, self.general_log_path, self.VPUID, self.NAME, self.MODFLOW_MODEL_NAME)
-                        save_local_best_parameters(self.BASE_PATH, self.LEVEL,self.VPUID, self.NAME, self.MODFLOW_MODEL_NAME, self.cal_parms, self.LocalBestScore, self.LocalBest,type_write='a')
+                        save_current_best(self.GlobalBest, self.GlobalBestScore, self.cal_parms, self.best_simulation_filename, self.model_log_path, self.general_log_path, self.VPUID, self.NAME, self.MODEL_NAME)
+                        save_local_best_parameters(self.BASE_PATH, self.LEVEL,self.VPUID, self.NAME, self.MODEL_NAME, self.cal_parms, self.LocalBestScore, self.LocalBest,type_write='a')
                     self.LocalBestScore_collection.append([i, It, self.LocalBestScore[i]])
 
                 self.GlobalBestScore_collection.append(self.GlobalBestScore)
@@ -341,14 +341,14 @@ class PSOOptimizer:
                 # this is a simple criterion and can be changed
 
                 if It > 10 and np.std(self.GlobalBestScore_collection[-self.termination_tolerance:]) < self.epsilon:
-                    message = f"{self.MODFLOW_MODEL_NAME}:{self.NAME} Early stopping at iteration {It} with std: {np.std(self.GlobalBestScore_collection[-self.termination_tolerance:])}"
+                    message = f"{self.MODEL_NAME}:{self.NAME} Early stopping at iteration {It} with std: {np.std(self.GlobalBestScore_collection[-self.termination_tolerance:])}"
                     log_errors(self.general_log_path, message)
                     log_errors(self.model_log_path, message)
 
                     break
 
                 print("Iteration", It, "Global Best Score:", self.GlobalBestScore)
-                message = f"{self.MODFLOW_MODEL_NAME}:{self.NAME} Iteration {It} Global Best Score: {self.GlobalBestScore}"
+                message = f"{self.MODEL_NAME}:{self.NAME} Iteration {It} Global Best Score: {self.GlobalBestScore}"
                 self.cleanup_scenario_directory(message)
                 plt.figure(figsize=(10, 6))
                 plt.plot(self.GlobalBestScore_collection, color='b', marker='o', linestyle='-', linewidth=2, markersize=6)
@@ -357,8 +357,8 @@ class PSOOptimizer:
                 plt.title('Global Best Improvement')
                 plt.grid(True, which="both", ls="--", c='gray', alpha=0.5)
                 # make sure the directory exists
-                os.makedirs(fr"{SWATGenXPaths.base_path}SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/calibration_figures_{self.MODFLOW_MODEL_NAME}", exist_ok=True)
-                plt.savefig(fr"{SWATGenXPaths.base_path}SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/calibration_figures_{self.MODFLOW_MODEL_NAME}/GlobalBestImprovement.png", dpi=300)
+                os.makedirs(fr"/data2/MyDataBase/SWATGenXAppData/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/calibration_figures_{self.MODEL_NAME}", exist_ok=True)
+                plt.savefig(fr"/data2/MyDataBase/SWATGenXAppData/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/calibration_figures_{self.MODEL_NAME}/GlobalBestImprovement.png", dpi=300)
 
 
             save_final_results(self.GlobalBestScore, self.GlobalBest, self.cal_parms, self.best_simulation_filename, self.model_log_path)
@@ -369,7 +369,7 @@ class PSOOptimizer:
         log_errors(self.general_log_path, message)
         log_errors(self.model_log_path, message)
         delete_previous_runs(
-            f"{SWATGenXPaths.base_path}SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODFLOW_MODEL_NAME}/Scenarios"
+            f"/data2/MyDataBase/SWATGenXAppData/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios"
         )
 
 
