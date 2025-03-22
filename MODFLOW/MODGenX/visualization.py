@@ -55,9 +55,9 @@ def plot_heads(LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap = 'viridis', dpi = 300)
     Returns:
     None.
     """
-    BASE_PATH = "/data2/MyDataBase/SWATGenXAppData/"
+    BASE_PATH = "/data/SWATGenXApp/GenXAppData/"
     # create the headfile object
-    path = os.path.join(BASE_PATH,f'SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/',MODEL_NAME+'.hds')
+    path = os.path.join(BASE_PATH,f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/',MODEL_NAME+'.hds')
     headobj = flopy.utils.binaryfile.HeadFile(path)
 
     # get all of the time steps
@@ -75,7 +75,7 @@ def plot_heads(LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap = 'viridis', dpi = 300)
     plt.colorbar(label='Head (meters)')
     plt.title('Heads for last time step')
 
-    path = os.path.join(BASE_PATH, fr"SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/head_of_last_time_step.jpeg")
+    path = os.path.join(BASE_PATH, fr"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/head_of_last_time_step.jpeg")
 
     plt.savefig(path, dpi=dpi)
 
@@ -138,7 +138,7 @@ def create_plots_and_return_metrics (df_sim_obs, LEVEL, NAME,MODEL_NAME, dpi=300
         plt.annotate(f'MAE = {mae:.2f}', xy=(0.7, 0.2), xycoords='axes fraction', bbox=bbox_props)
         plt.annotate(f'PBIAS = {pbias:.2f}', xy=(0.7, 0.25), xycoords='axes fraction', bbox=bbox_props)
         plt.annotate(f'KGE = {kge:.2f}', xy=(0.7, 0.3), xycoords='axes fraction', bbox=bbox_props)
-        model_output_figure_path = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/{TYPE}_simulated_figure.jpeg"
+        model_output_figure_path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{TYPE}_simulated_figure.jpeg"
 
         plt.savefig(model_output_figure_path, dpi= dpi)
         plt.close()

@@ -357,8 +357,8 @@ class PSOOptimizer:
                 plt.title('Global Best Improvement')
                 plt.grid(True, which="both", ls="--", c='gray', alpha=0.5)
                 # make sure the directory exists
-                os.makedirs(fr"/data2/MyDataBase/SWATGenXAppData/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/calibration_figures_{self.MODEL_NAME}", exist_ok=True)
-                plt.savefig(fr"/data2/MyDataBase/SWATGenXAppData/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/calibration_figures_{self.MODEL_NAME}/GlobalBestImprovement.png", dpi=300)
+                os.makedirs(fr"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/calibration_figures_{self.MODEL_NAME}", exist_ok=True)
+                plt.savefig(fr"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/calibration_figures_{self.MODEL_NAME}/GlobalBestImprovement.png", dpi=300)
 
 
             save_final_results(self.GlobalBestScore, self.GlobalBest, self.cal_parms, self.best_simulation_filename, self.model_log_path)
@@ -369,7 +369,7 @@ class PSOOptimizer:
         log_errors(self.general_log_path, message)
         log_errors(self.model_log_path, message)
         delete_previous_runs(
-            f"/data2/MyDataBase/SWATGenXAppData/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios"
+            f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios"
         )
 
 

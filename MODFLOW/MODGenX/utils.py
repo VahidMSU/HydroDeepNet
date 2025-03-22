@@ -9,73 +9,117 @@ import flopy
 from scipy.ndimage import median_filter
 import matplotlib.pyplot as plt
 from shapely.geometry import Point, Polygon
+from MODGenX.Logger import Logger 
+import time
+
+logger = Logger(verbose=True)
 
 debug = False
 
 def get_row_col_from_coords (df, ref_raster_path):
-    with rasterio.open(ref_raster_path) as src:
-        x = df['geometry'].apply(lambda p: p.x).values
-        y = df['geometry'].apply(lambda p: p.y).values
-        row, col = src.index(x, y)
-        df['row'], df['col'] = row, col
-    return df
+    logger.info(f"Converting coordinates to row/col using reference raster: {ref_raster_path}")
+    start_time = time.time()
+    try:
+        with rasterio.open(ref_raster_path) as src:
+            x = df['geometry'].apply(lambda p: p.x).values
+            y = df['geometry'].apply(lambda p: p.y).values
+            row, col = src.index(x, y)
+            df['row'], df['col'] = row, col
+            logger.info(f"Coordinate conversion completed successfully. Processed {len(df)} points in {time.time() - start_time:.2f} seconds")
+        return df
+    except Exception as e:
+        logger.error(f"Error in get_row_col_from_coords: {str(e)}")
+        raise
 
 def GW_starting_head(active, n_sublay_1, n_sublay_2, z_botm, top, head, nrow, ncol):
 
     """correcting GW heads according to the lake locations"""
-
-    strt = [np.where((active[0,:,:]==-1) , top-1, head) for _ in range(n_sublay_1)]
-    strt.extend(
-        np.where((active[0, :, :] == -1), top - 1, z_botm[n_sublay_1 + i - 1])
-        for i in range(n_sublay_2)
-    )
-    strt.append(np.full((nrow, ncol), z_botm[-2]))
-
-    return(strt)
+    logger.info(f"Generating starting heads for groundwater model with {n_sublay_1 + n_sublay_2 + 1} layers")
+    
+    try:
+        strt = [np.where((active[0,:,:]==-1) , top-1, head) for _ in range(n_sublay_1)]
+        strt.extend(
+            np.where((active[0, :, :] == -1), top - 1, z_botm[n_sublay_1 + i - 1])
+            for i in range(n_sublay_2)
+        )
+        strt.append(np.full((nrow, ncol), z_botm[-2]))
+        
+        logger.info(f"Starting heads generated successfully: {len(strt)} layers")
+        return strt
+    except Exception as e:
+        logger.error(f"Error in GW_starting_head: {str(e)}")
+        raise
 
 def cleaning(df,active):
-    mask=active[0,:,:]==0
-    if mask.shape != df.shape:
-        ## use padding to match the dimensions
-        print('padding the raster to match the dimensions')
-        df = match_raster_dimensions(active[0],df)
-        print('padding is done', "df shape:",df.shape)
-    df[mask]=0
-    return(df)
+    logger.info(f"Cleaning raster data with shape {df.shape}")
+    try:
+        mask = active[0,:,:] == 0
+        if mask.shape != df.shape:
+            ## use padding to match the dimensions
+            logger.info(f'Padding the raster to match dimensions. Current: {df.shape}, Target: {mask.shape}')
+            df = match_raster_dimensions(active[0], df)
+            logger.info(f'Padding completed. New shape: {df.shape}')
+        
+        zeros_before = np.sum(df == 0)
+        df[mask] = 0
+        zeros_after = np.sum(df == 0)
+        logger.info(f'Cleaning set {zeros_after - zeros_before} additional cells to zero')
+        
+        return df
+    except Exception as e:
+        logger.error(f"Error in cleaning function: {str(e)}")
+        raise
 
 def sim_obs(BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLUTION, load_raster_args,df_obs, fitToMeter = 0.3048):
     """
     Compare observed and simulated water levels.
     """
-    SDIR = 'SWAT_input'
-    # Load simulated heads
-    headobj = flopy.utils.binaryfile.HeadFile(
-        os.path.join(BASE_PATH,
-            f'{SDIR}/{LEVEL}/{NAME}/{MODEL_NAME}/',
-            f'{MODEL_NAME}.hds',
-        )
-    )
-    sim_head = headobj.get_data(totim=headobj.get_times()[-1])
-    model_top = mf.Dis.top.array
-    hcon_1 = mf.upw.hk.array[0]
-    # Initialize column for simulated SWL
-    df_obs['sim_head_m'] = np.nan
-
-    # Extract rows and columns
-    rows = df_obs['row'].values.astype(int)
-    cols = df_obs['col'].values.astype(int)
-    df_obs.loc[:, 'top'] = model_top[rows, cols]
-
-    df_obs.loc[:, 'sim_head_m'] = sim_head[0, rows, cols]
-    df_obs.loc[:, 'sim_SWL_m'] =  model_top[rows, cols] - sim_head[0, rows, cols]
-
-    df_obs['obs_head_m']  =  fitToMeter*(df_obs['ELEV_DEM'] - df_obs['SWL'])
-    df_obs['obs_SWL_m']   =  fitToMeter*df_obs['SWL']
-
-
-    df_obs.dropna(subset=['obs_head_m','obs_SWL_m' ,'sim_head_m', 'obs_SWL_m'], inplace=True)
-
-    return df_obs
+    logger.info(f"Starting sim_obs comparison for {MODEL_NAME} with {len(df_obs)} observation points")
+    start_time = time.time()
+    
+    try:
+        SDIR = 'SWATplus_by_VPUID'
+        hds_path = os.path.join(BASE_PATH, f'{SDIR}/{LEVEL}/{NAME}/{MODEL_NAME}/', f'{MODEL_NAME}.hds')
+        
+        # Check if head file exists
+        if not os.path.exists(hds_path):
+            logger.error(f"Head file not found: {hds_path}")
+            raise FileNotFoundError(f"Head file not found: {hds_path}")
+            
+        # Load simulated heads
+        logger.info(f"Loading head file: {hds_path}")
+        headobj = flopy.utils.binaryfile.HeadFile(hds_path)
+        sim_head = headobj.get_data(totim=headobj.get_times()[-1])
+        logger.info(f"Loaded simulated heads with shape: {sim_head.shape}")
+        
+        model_top = mf.Dis.top.array
+        hcon_1 = mf.upw.hk.array[0]
+        
+        # Initialize column for simulated SWL
+        df_obs['sim_head_m'] = np.nan
+    
+        # Extract rows and columns
+        rows = df_obs['row'].values.astype(int)
+        cols = df_obs['col'].values.astype(int)
+        df_obs.loc[:, 'top'] = model_top[rows, cols]
+    
+        df_obs.loc[:, 'sim_head_m'] = sim_head[0, rows, cols]
+        df_obs.loc[:, 'sim_SWL_m'] = model_top[rows, cols] - sim_head[0, rows, cols]
+    
+        df_obs['obs_head_m'] = fitToMeter*(df_obs['ELEV_DEM'] - df_obs['SWL'])
+        df_obs['obs_SWL_m'] = fitToMeter*df_obs['SWL']
+    
+        count_before = len(df_obs)
+        df_obs.dropna(subset=['obs_head_m','obs_SWL_m', 'sim_head_m', 'obs_SWL_m'], inplace=True)
+        count_after = len(df_obs)
+        
+        logger.info(f"Sim-obs comparison completed in {time.time() - start_time:.2f} seconds")
+        logger.info(f"Observation points: {count_before} before filtering, {count_after} after filtering")
+        
+        return df_obs
+    except Exception as e:
+        logger.error(f"Error in sim_obs function: {str(e)}")
+        raise
 
 def smooth_invalid_thickness(array, size=25):
     """
@@ -85,23 +129,42 @@ def smooth_invalid_thickness(array, size=25):
     Returns:
     numpy.ndarray: The smoothed array.
     """
-    mask = array>500
-    median= np.median(array[~mask])
-    array[mask] = median
-    mask=array>1
-    min_value=np.nanpercentile(array[mask], 0.5)
-    max_value=np.nanpercentile(array[mask], 99.5)
-
-    # Identify cells where array is less than min_value or greater than max_value
-    invalid_cells = np.logical_or(array < min_value, array > max_value)
-    #invalid_cells =  array > max_value
-    # Calculate the median filter of the thickness array with the given size - this performs the moving median
-    smoothed = median_filter(array, size)
-
-    # Replace the invalid cells in array with their smoothed values
-    array[invalid_cells] = smoothed[invalid_cells]
-
-    return array
+    logger.info(f"Smoothing invalid thickness values with filter size {size}")
+    array_shape = array.shape
+    
+    try:
+        # Count original values outside normal range
+        mask = array > 500
+        extreme_values_count = np.sum(mask)
+        logger.info(f"Found {extreme_values_count} extreme values (>500)")
+        
+        median = np.median(array[~mask])
+        logger.info(f"Using median value: {median:.2f} for initial replacement")
+        array[mask] = median
+        
+        mask = array > 1
+        min_value = np.nanpercentile(array[mask], 0.5)
+        max_value = np.nanpercentile(array[mask], 99.5)
+        logger.info(f"Valid range determined: {min_value:.2f} to {max_value:.2f}")
+    
+        # Identify cells where array is less than min_value or greater than max_value
+        invalid_cells = np.logical_or(array < min_value, array > max_value)
+        invalid_count = np.sum(invalid_cells)
+        logger.info(f"Found {invalid_count} values outside valid range ({invalid_count/array.size*100:.2f}%)")
+        
+        # Calculate the median filter of the thickness array with the given size - this performs the moving median
+        logger.info("Applying median filter...")
+        smoothed = median_filter(array, size)
+    
+        # Replace the invalid cells in array with their smoothed values
+        array[invalid_cells] = smoothed[invalid_cells]
+        logger.info(f"Smoothing complete. Output array shape: {array.shape}")
+        
+        return array
+    except Exception as e:
+        logger.error(f"Error in smooth_invalid_thickness: {str(e)}")
+        logger.warning(f"Returning original array with shape {array_shape}")
+        return array
 
 def remove_isolated_cells(active, load_raster_args):
     """
@@ -119,35 +182,35 @@ def remove_isolated_cells(active, load_raster_args):
 
     nlay, nrow, ncol = active.shape
     new_ibound = active.copy()
-    
+    logger.info(f"Processing active cells with shape: {new_ibound.shape}")
     # Check for unexpected values in the ibound array
     unique_values = np.unique(new_ibound)
-    print(f"Unique values in ibound before processing: {unique_values}")
+    logger.info(f"Unique values in ibound before processing: {unique_values}")
+    import time 
     
     # Correct any invalid values (>1 or <-1) except for 0
-    invalid_mask = (np.abs(new_ibound) > 1) & (new_ibound != 9999)
+    invalid_mask = (np.abs(new_ibound) > 1) & (new_ibound != -999)
     invalid_count = np.sum(invalid_mask)
     if invalid_count > 0:
-        print(f"Warning: Found {invalid_count} invalid values in ibound array. Fixing them.")
+        logger.info(f"Warning: Found {invalid_count} invalid values in ibound array. Fixing them.")
         new_ibound[invalid_mask] = 1  # Convert to active cells
-    
     # Ensure -1 values are only at boundaries
     boundary_count = np.sum(new_ibound == -1)
-    print(f"Boundary cells (-1) count: {boundary_count}")
+    logger.info(f"Boundary cells (-1) count: {boundary_count}")
     
     # Count active cells before processing
     active_count_before = np.sum(new_ibound == 1)
-    print(f"Active cells (1) before processing: {active_count_before}")
+    logger.info(f"Active cells (1) before processing: {active_count_before}")
     
-    # Check for 9999 values (potentially NoData values from raster import)
-    nodata_count = np.sum(new_ibound == 9999)
+    # Check for -999 values (potentially NoData values from raster import)
+    nodata_count = np.sum(new_ibound == -999)
     if nodata_count > 0:
-        print(f"Warning: Found {nodata_count} NoData values (9999) in ibound. Converting to 0.")
-        new_ibound[new_ibound == 9999] = 0
+        logger.info(f"Warning: Found {nodata_count} NoData values (-999) in ibound. Converting to 0.")
+        new_ibound[new_ibound == -999] = 0
     
     # Verify the values are now valid
     unique_values_after = np.unique(new_ibound)
-    print(f"Unique values in ibound after correction: {unique_values_after}")
+    logger.info(f"Unique values in ibound after correction: {unique_values_after}")
     
     # Remove isolated cells - only if we have enough active cells
     if active_count_before > 100:  # Arbitrary threshold
@@ -168,11 +231,11 @@ def remove_isolated_cells(active, load_raster_args):
     
     # Count active cells after processing
     active_count_after = np.sum(new_ibound == 1)
-    print(f"Active cells (1) after processing: {active_count_after}")
+    logger.info(f"Active cells (1) after processing: {active_count_after}")
     
     # If we have no active cells after processing, create a default pattern
     if active_count_after == 0:
-        print("ERROR: No active cells in the ibound array! Creating a default pattern.")
+        logger.info("ERROR: No active cells in the ibound array! Creating a default pattern.")
         # Create a simple rectangular active domain in the center
         center_row, center_col = nrow // 2, ncol // 2
         size = min(nrow, ncol) // 3  # Use 1/3 of the smallest dimension
@@ -188,10 +251,10 @@ def remove_isolated_cells(active, load_raster_args):
         for k in range(1, nlay-1):
             new_ibound[k] = new_ibound[0].copy()
             
-        print(f"Created {np.sum(new_ibound == 1)} active cells in the center region.")
+        logger.info(f"Created {np.sum(new_ibound == 1)} active cells in the center region.")
     
     final_unique_values = np.unique(new_ibound)
-    print(f"Final unique values in ibound: {final_unique_values}")
+    logger.info(f"Final unique values in ibound: {final_unique_values}")
     return new_ibound
 
 def GW_layers(thickness_1, thickness_2, n_sublay_1, n_sublay_2, bedrock_thickness, top):
@@ -252,18 +315,18 @@ def match_raster_dimensions(base_raster, target_raster):
         return padding_raster(
             base_shape, target_shape, target_raster
         )
-    print("Both rasters have the same dimensions.")
+    logger.info("Both rasters have the same dimensions.")
     return target_raster
 
 
 def padding_raster(base_shape, target_shape, target_raster):
-    print(f"Base raster shape: {base_shape}, Target raster shape: {target_shape}")
+    logger.info(f"Base raster shape: {base_shape}, Target raster shape: {target_shape}")
 
     diff_rows = base_shape[0] - target_shape[0]
     diff_cols = base_shape[1] - target_shape[1]
 
     if diff_rows < 0 or diff_cols < 0:
-        print("Base raster has smaller dimensions. Will pad the base raster instead.")
+        logger.info("Base raster has smaller dimensions. Will pad the base raster instead.")
         # If base is smaller, we'll return the target raster cropped to match the base raster shape
         # This ensures we get the most important central part of the target raster
         if diff_rows < 0 and diff_cols < 0:
@@ -284,7 +347,7 @@ def padding_raster(base_shape, target_shape, target_raster):
     # Create padded target raster with the same shape as base raster
     padded_target_raster = np.pad(target_raster, ((0, diff_rows), (0, diff_cols)), 'constant', constant_values=(1))
 
-    print(f"Padded target raster shape: {padded_target_raster.shape}")
+    logger.info(f"Padded target raster shape: {padded_target_raster.shape}")
     return padded_target_raster
 
 
@@ -314,8 +377,8 @@ def defining_bound_and_active(BASE_PATH, subbasin_path, raster_folder, RESOLUTIO
     bound_path = os.path.join(raster_folder, 'bound_shape.shp')
     bound[['Bound','geometry']].to_file(bound_path)
 
-    print('Generated bound shape saved to:',os.path.basename(bound_path))
-    print('Generated basin shape saved to:',os.path.basename(basin_path))
+    logger.info('Generated bound shape saved to:',os.path.basename(bound_path))
+    logger.info('Generated basin shape saved to:',os.path.basename(basin_path))
 
     env = arcpy.env  # Use gdal_sa's env class
     env.workspace = raster_folder
@@ -325,14 +388,14 @@ def defining_bound_and_active(BASE_PATH, subbasin_path, raster_folder, RESOLUTIO
 
     env.outputCoordinateSystem = arcpy.Describe(reference_raster_path).spatialReference
     env.extent = SWAT_dem_path
-    env.nodata = np.nan
+    env.nodata = -999
 
     bound_raster_path  = os.path.join  (raster_folder, 'bound.tif')
     domain_raster_path = os.path.join  (raster_folder, 'domain.tif')
     arcpy.PolygonToRaster_conversion(basin_path, "Active", domain_raster_path, cellsize=RESOLUTION)
-    print('basin raster is created')
+    logger.info('basin raster is created')
     arcpy.PolygonToRaster_conversion(bound_path, "Bound", bound_raster_path, cellsize=RESOLUTION)
-    print('bound raster is created')
+    logger.info('bound raster is created')
 
     return domain_raster_path, bound_raster_path
 
@@ -341,21 +404,15 @@ def defining_bound_and_active(BASE_PATH, subbasin_path, raster_folder, RESOLUTIO
 
 def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, load_raster_args, lake_flag, fitToMeter = 0.3048):
 
-    LEVEL = load_raster_args['LEVEL']
-    RESOLUTION = load_raster_args['RESOLUTION']
+    logger.info('***********Active Domain***********')
     active = load_raster_args['active']
     bound_raster_path = load_raster_args['bound_raster']
-    NAME = load_raster_args['NAME']
-
-
-
-    print('%%%%%%%%% DEBUG $$$$$$$$$$$$$$$$$$$$$$$$$$$')
     active  = load_raster(active, load_raster_args)
     active_shape = active.shape
     active  = match_raster_dimensions(top,active)
     active_shape_after = active.shape
     if active_shape != active_shape_after:
-        print('active raster is corrected to match the dimensions of the top raster')
+        logger.info('active raster is corrected to match the dimensions of the top raster')
         ### make sure the last rows and columns that are added are all zeros
         active[active_shape[0]:, :] = 0
         active[:, active_shape[1]:] = 0
@@ -365,7 +422,7 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
         lake_raster = match_raster_dimensions(active,lake_raster)
         lake_raster[lake_raster < np.inf] = 1
     else:
-        print('no lake is considered for active domain')
+        logger.info('no lake is considered for active domain')
 
 
     bound  = load_raster(bound_raster_path, load_raster_args)
@@ -377,61 +434,164 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
     else:
         lake_raster = active.copy()
 
-    if debug: print(f"raster mask:{np.sum(active==-1)}")
+    if debug: logger.info(f"raster mask:{np.sum(active==-1)}")
     active = np.repeat(active[np.newaxis, :, :], nlay, axis=0 )
     active[nlay-1] =0
 # Loop through each layer and plot active domain:
-    #plt.imshow(active[0], cmap='viridis')
-    #plt.colorbar()
-    #plt.title("Active Layer 1")
-    #plt.savefig(f"active_layer_1_{NAME}.png")
+    plt.imshow(active[0], cmap='viridis')
+    plt.colorbar()
+    plt.title("Active Layer 1")
+    plt.savefig(f"active_layer_1_.png")
     return active, lake_raster
 
 
 
-def load_raster(path, load_raster_args, BASE_PATH='/data2/MyDataBase/SWATGenXAppData/'):
-
+def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData/'):
+    assert os.path.exists(path), f"Raster file not found: {path}"
     LEVEL = load_raster_args['LEVEL']
     RESOLUTION = load_raster_args['RESOLUTION']
     NAME = load_raster_args['NAME']
     MODEL_NAME = load_raster_args['MODEL_NAME']
     SWAT_MODEL_NAME = load_raster_args['SWAT_MODEL_NAME']
+    VPUID = load_raster_args['VPUID']
+    username = load_raster_args['username'] 
 
-    shapefile_paths  = generate_shapefile_paths(LEVEL,NAME, SWAT_MODEL_NAME, RESOLUTION)
-    database_file = database_file_paths()
     ref_raster_path = load_raster_args['ref_raster']
-    print('*****************************')
-
+    logger.info('*****************load_raster*****************')
+    logger.info(f"Loading raster: {path}")
+    if "DEM" in path:
+        logger.warning(f"WARNING: Loading elevation raster {path}")
+   
+    # For DEM files, try to load directly without clipping first
+    if "DEM" in path:
+        try:
+            logger.info(f"Attempting direct load of DEM file: {path}")
+            with rasterio.open(path) as src:
+                # Always read the first band
+                data = src.read(1)
+                no_data = src.nodata if src.nodata is not None else -999
+                
+                # Log info about the data range
+                data_min, data_max = data.min(), data.max()
+                logger.info(f"Direct load - data range: {data_min} to {data_max}")
+                
+                if data_min > 0 and data_max < 10000:  # Reasonable elevation values
+                    logger.info(f"Using direct DEM data with valid range")
+                    data = np.where(data == no_data, -999, data)
+                    # Create a simple validity check
+                    assert not np.all(data == -999), f"DEM data has all NoData values"
+                    return data
+                logger.info(f"Direct load didn't produce valid elevation range, trying clip method")
+        except Exception as e:
+            logger.error(f"Error in direct DEM loading: {str(e)}")
+            logger.info(f"Falling back to standard clip procedure")
+   
     file_name = os.path.basename(path)
     # Strip the extension if it exists to avoid double extensions
     file_name_without_ext = os.path.splitext(file_name)[0]
 
-    output_clip = os.path.join(BASE_PATH,'SWAT_input/', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input" ,f"{NAME}_{file_name_without_ext}.tif")
-    os.makedirs(os.path.join(BASE_PATH,'SWAT_input/', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input") , exist_ok=True )
+    output_clip = os.path.join(f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input" ,f"{NAME}_{file_name_without_ext}.tif")
+    os.makedirs(os.path.join(f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input") , exist_ok=True )
 
-    if path!=load_raster_args['ref_raster'] or path!=load_raster_args['bound_raster']:
+    # Skip clipping for reference and bound rasters
+    if path != load_raster_args['ref_raster'] and path != load_raster_args['bound_raster']:
         clip_raster_by_another(BASE_PATH, path, ref_raster_path, output_clip)
 
-        with rasterio.open(output_clip) as src:
-            return read_raster(src, output_clip)
+        try:
+            with rasterio.open(output_clip) as src:
+                # Check for multi-band data issue
+                count = src.count
+                if count > 1:
+                    logger.warning(f"WARNING: Clipped raster has {count} bands - extracting first band")
+                    # Extract just the first band
+                    from osgeo import gdal
+                    temp_output = output_clip + "_temp.tif"
+                    gdal.Translate(temp_output, output_clip, bandList=[1])
+                    os.remove(output_clip)
+                    os.rename(temp_output, output_clip)
+                    # Reopen the fixed file
+                    src = rasterio.open(output_clip)
+                
+                # Always read the first band
+                data = src.read(1)
+                no_data = src.nodata if src.nodata is not None else -999
+                
+                # Log info about the data range
+                data_min, data_max = data.min(), data.max()
+                logger.info(f"Clipped raster data range: {data_min} to {data_max}")
+                
+                # Replace nodata values with -999
+                data = np.where(data == no_data, -999, data)
+                
+                # Special handling for DEM data
+                if "DEM" in path and (data_min < -900000 or data_max > 900000):
+                    logger.error(f"ERROR: Extreme values in clipped DEM. Attempting recovery.")
+                    # Try to salvage data from original source
+                    with rasterio.open(path) as orig_src:
+                        orig_data = orig_src.read(1)
+                        orig_min, orig_max = orig_data.min(), orig_data.max()
+                        logger.info(f"Original DEM range: {orig_min} to {orig_max}")
+                        if orig_min > -900000 and orig_max < 900000:
+                            logger.info(f"Using original DEM data with valid range")
+                            data = np.where(orig_data == orig_src.nodata, -999, orig_data)
+                
+                # Final validation check
+                if np.all(data == -999) or np.all(data < -900000) or np.all(data > 900000):
+                    logger.error(f"ERROR: All values in raster are invalid!")
+                    raise ValueError(f"Invalid raster data in {output_clip}")
+                
+                return data
+        except Exception as e:
+            logger.error(f"Error reading clipped raster {output_clip}: {str(e)}")
+            # If we failed to read the clipped raster, try to read the original directly
+            logger.info(f"Attempting to read original raster directly: {path}")
+            try:
+                with rasterio.open(path) as src:
+                    data = src.read(1)
+                    logger.info(f"Successfully read original raster with shape {data.shape}")
+                    return data
+            except Exception as nested_e:
+                logger.error(f"Failed to read original raster: {str(nested_e)}")
+                raise
     else:
-
-        with rasterio.open(path) as src:
-            return read_raster(src, path)
-
+        # For reference and bound rasters, read directly
+        try:
+            with rasterio.open(path) as src:
+                # Check for multi-band data issue
+                count = src.count
+                if count > 1:
+                    logger.warning(f"WARNING: Source raster {path} has {count} bands - this is unexpected")
+                    for i in range(1, count+1):
+                        band_min = src.read(i).min()
+                        band_max = src.read(i).max()
+                        logger.warning(f"Band {i} range: {band_min} to {band_max}")
+                
+                # Always read the first band
+                data = src.read(1)
+                no_data = src.nodata if src.nodata is not None else -999
+                
+                # Log info about the data range
+                data_min, data_max = data.min(), data.max()
+                logger.info(f"Reference/bound raster data range: {data_min} to {data_max}")
+                
+                data = np.where(data == no_data, -999, data)
+                return data
+        except Exception as e:
+            logger.error(f"Error reading reference/bound raster {path}: {str(e)}")
+            raise
 
 def read_raster(src, arg1):
     raster = src.read(1)
     if debug:
-        print(f"{os.path.basename(arg1)} LOADED")
-    print("raster size loaded:",raster.shape)
+        logger.info(f"{os.path.basename(arg1)} LOADED")
+    logger.info(f"raster size loaded:{raster.shape}")
     return abs(raster)
-
 
 def clip_raster_by_another(BASE_PATH, raster_path, in_masking, output_path):
     """
     This function creates a new raster by masking an existing one.
     It extracts by extent and ensures the same number of rows and columns as in_masking.
+    Also ensures the output is a single-band raster by extracting only the first band.
     """
     env = arcpy.env  # Use gdal_sa's env class
     env.overwriteOutput = True
@@ -439,6 +599,22 @@ def clip_raster_by_another(BASE_PATH, raster_path, in_masking, output_path):
     current_directory = BASE_PATH
     env.workspace = current_directory
     from osgeo import gdal
+    
+    # First check if the input raster has multiple bands
+    input_ds = gdal.Open(raster_path)
+    if input_ds is None:
+        logger.error(f"Cannot open input raster {raster_path}")
+        raise ValueError(f"Cannot open input raster {raster_path}")
+    
+    input_band_count = input_ds.RasterCount
+    if input_band_count > 1:
+        logger.warning(f"Input raster {raster_path} has {input_band_count} bands. Creating temporary single-band version.")
+        # Extract only the first band to a temporary file
+        temp_single_band = os.path.join("_temp", f"single_band_{os.path.basename(raster_path)}")
+        gdal.Translate(temp_single_band, raster_path, bandList=[1])
+        # Use this single-band version for further processing
+        raster_path = temp_single_band
+    
     # Get the extent and cell size of the mask raster using GDAL
     ds = gdal.Open(in_masking)
     gt = ds.GetGeoTransform()
@@ -458,27 +634,41 @@ def clip_raster_by_another(BASE_PATH, raster_path, in_masking, output_path):
     
     extent = Extent(x_min, y_min, x_max, y_max)
     
-    # Get number of rows and columns for in_masking raster
-    mask_n_rows = ds.RasterYSize
-    mask_n_cols = ds.RasterXSize
-    
     # Clean up
     ds = None
-
+    
     # Create a temporary resampled raster with the same cell size, rows, and columns as in_masking
     import uuid
     temp_resampled_raster = os.path.join("_temp", f"{str(uuid.uuid4())}.tif")
     arcpy.Resample_management(raster_path, temp_resampled_raster, cell_size, "NEAREST")
-
+    
     # Extract the coordinates for the extent
     extent_str = f"{extent.XMin} {extent.YMin} {extent.XMax} {extent.YMax}"
-
+    
     # Clip the resampled raster using extent
     arcpy.Clip_management(temp_resampled_raster, extent_str, output_path)
-
-    # Optionally, you can delete the temporary resampled raster to save space
+    
+    # Verify the output is single-band
+    out_ds = gdal.Open(output_path)
+    if out_ds is not None:
+        out_band_count = out_ds.RasterCount
+        if out_band_count > 1:
+            logger.warning(f"Output raster still has {out_band_count} bands. Extracting first band only.")
+            temp_output = output_path + "_temp.tif"
+            gdal.Translate(temp_output, output_path, bandList=[1])
+            # Remove original and rename
+            os.remove(output_path)
+            os.rename(temp_output, output_path)
+            logger.info(f"Fixed output raster to have only 1 band")
+        out_ds = None
+    
+    # Clean up temporary files
     arcpy.Delete_management(temp_resampled_raster)
-
+    if input_band_count > 1:
+        try:
+            arcpy.Delete_management(temp_single_band)
+        except:
+            logger.info(f"Could not delete temporary file {temp_single_band}")
 
 def create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, out_shp, raster_path):
     # Step 1: Read the raster to get its extent
@@ -488,7 +678,7 @@ def create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, 
     RESOLUTION = 250  # Update this if your model has a different resolution
     # Check if the raster file exists
     if not os.path.exists(raster_path):
-        print(f"Warning: Raster file {raster_path} not found. Trying to use reference raster instead.")
+        logger.info(f"Warning: Raster file {raster_path} not found. Trying to use reference raster instead.")
         # Try to find a reference raster in the all_rasters directory
         try:
             raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{RESOLUTION}m.tif")
@@ -500,7 +690,7 @@ def create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, 
             for res in reference_options:
                 raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{res}m.tif")
                 if os.path.exists(raster_path):
-                    print(f"Using DEM_{res}m.tif as reference raster.")
+                    logger.info(f"Using DEM_{res}m.tif as reference raster.")
                     break
             else:
                 raise FileNotFoundError("No suitable reference raster found.")
@@ -556,7 +746,7 @@ def create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, 
     # Save to shapefile
     gdf.to_file(out_shp)
 
-    print(f"Shapefile saved to {out_shp}")
+    logger.info(f"Shapefile saved to {out_shp}")
     gdf.to_file(f'{out_shp}.geojson')
 
 def model_src(DEM_path):
@@ -567,7 +757,7 @@ def model_src(DEM_path):
 
 def generate_raster_paths(RESOLUTION,ML):
 
-    BASE_PATH = '/data2/MyDataBase/SWATGenXAppData/'
+    BASE_PATH = '/data/SWATGenXApp/GenXAppData/'
 
     SDIR = 'all_rasters'
 
@@ -612,9 +802,9 @@ def generate_raster_paths(RESOLUTION,ML):
             }
 
 
-def generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION):
-    BASE_PATH = '/data2/MyDataBase/SWATGenXAppData/'
-    SDIR = 'SWAT_input'
+def generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION,username, VPUID):
+    BASE_PATH = f'/data/SWATGenXApp/Users/{username}/'
+    SDIR = f'SWATplus_by_VPUID/{VPUID}'
     return {
 
         "lakes"  : os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp'),
@@ -624,7 +814,7 @@ def generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION):
     }
 
 def database_file_paths():
-    BASE_PATH = '/data2/MyDataBase/SWATGenXAppData/'
+    BASE_PATH = '/data/SWATGenXApp/GenXAppData/'
 
     return {
         "COUNTY":       os.path.join(BASE_PATH,"Well_data_krigging/Counties_dis_gr.geojson"),
@@ -642,9 +832,9 @@ def input_Data(active, top, load_raster_args, n_sublay_1,n_sublay_2,k_bedrock, b
     RESOLUTION = load_raster_args['RESOLUTION']
 
     raster_paths = generate_raster_paths(RESOLUTION, ML)
-    print('0-########################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$$$$$')
+    logger.info('0-########################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$$$$$')
     SWL= smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["SWL"], load_raster_args),active))  #### SWL
-    print('1-########################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$$$$$')
+    logger.info('1-########################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$$$$$')
     recharge_data = cleaning((0.0254/365.25)*load_raster(raster_paths["recharge_data"], load_raster_args),active)  ### converting the unit from inch/year to m/day
 
     k_horiz_1   = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_horiz_1"],load_raster_args), active))+2

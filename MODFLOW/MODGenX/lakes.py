@@ -3,6 +3,11 @@ try:
 except ImportError:
 	from utils import *
 import numpy as np
+
+from MODGenX.Logger import Logger
+
+logger = Logger(verbose=True)
+
 def lakes_to_drain(swat_lake_raster_path, top, k_horiz, load_raster_args):
     """
     Identify lake drainage locations and calculate drainage conductances.
