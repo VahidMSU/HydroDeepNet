@@ -1,5 +1,5 @@
-import arcpy
-from arcpy.sa import *
+import GDAL
+from GDAL.sa import *
 import h5py
 import os
 import numpy as np
@@ -18,7 +18,7 @@ resolutions = [250]
 spaces = ['AQ_THK_1', 'AQ_THK_2', 'H_COND_1', 'H_COND_2', 'SWL', 'TRANSMSV_1', 'TRANSMSV_2', 'V_COND_1', 'V_COND_2']
 
 # Set environment variables for ArcPy
-arcpy.env.overwriteOutput = True
+GDAL.env.overwriteOutput = True
 
 for resolution in resolutions:
     for space in spaces:
@@ -38,16 +38,16 @@ for resolution in resolutions:
         reference_raster = f"/data/SWATGenXApp/GenXAppData/all_rasters/DEM_{resolution}m.tif"
         
         # Set ArcPy environment variables based on reference raster
-        arcpy.env.outputCoordinateSystem = arcpy.Describe(reference_raster).spatialReference
-        arcpy.env.snapRaster = reference_raster
-        arcpy.env.extent = arcpy.Describe(reference_raster).extent
+        GDAL.env.outputCoordinateSystem = GDAL.Describe(reference_raster).spatialReference
+        GDAL.env.snapRaster = reference_raster
+        GDAL.env.extent = GDAL.Describe(reference_raster).extent
 
         # Extract cell size from reference raster
-        cell_size = arcpy.Describe(reference_raster).meanCellWidth
+        cell_size = GDAL.Describe(reference_raster).meanCellWidth
         
         # Convert numpy array to raster
-        lower_left_corner = arcpy.Point(arcpy.Describe(reference_raster).extent.XMin, arcpy.Describe(reference_raster).extent.YMin)
-        raster = arcpy.NumPyArrayToRaster(data, lower_left_corner, cell_size, cell_size, -999)
+        lower_left_corner = GDAL.Point(GDAL.Describe(reference_raster).extent.XMin, GDAL.Describe(reference_raster).extent.YMin)
+        raster = GDAL.NumPyArrayToRaster(data, lower_left_corner, cell_size, cell_size, -999)
         
         # Save the raster
         

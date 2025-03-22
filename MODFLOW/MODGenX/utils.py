@@ -1,4 +1,4 @@
-from MODGenX.gdal_operations import gdal_sa as arcpy
+from MODGenX.gdal_operations import gdal_sa as GDAL
 import geopandas as gpd
 import rasterio
 import pyproj
@@ -339,21 +339,21 @@ def defining_bound_and_active(BASE_PATH, subbasin_path, raster_folder, RESOLUTIO
     logger.info('Generated bound shape saved to:',os.path.basename(bound_path))
     logger.info('Generated basin shape saved to:',os.path.basename(basin_path))
 
-    env = arcpy.env  # Use gdal_sa's env class
+    env = GDAL.env  # Use gdal_sa's env class
     env.workspace = raster_folder
     env.overwriteOutput = True  # Enable overwrite
     reference_raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{RESOLUTION}m.tif")
     env.snapRaster = reference_raster_path
 
-    env.outputCoordinateSystem = arcpy.Describe(reference_raster_path).spatialReference
+    env.outputCoordinateSystem = GDAL.Describe(reference_raster_path).spatialReference
     env.extent = SWAT_dem_path
     env.nodata = -999
 
     bound_raster_path = os.path.join  (raster_folder, 'bound.tif')
     domain_raster_path = os.path.join  (raster_folder, 'domain.tif')
-    arcpy.PolygonToRaster_conversion(basin_path, "Active", domain_raster_path, cellsize=RESOLUTION)
+    GDAL.PolygonToRaster_conversion(basin_path, "Active", domain_raster_path, cellsize=RESOLUTION)
     logger.info('basin raster is created')
-    arcpy.PolygonToRaster_conversion(bound_path, "Bound", bound_raster_path, cellsize=RESOLUTION)
+    GDAL.PolygonToRaster_conversion(bound_path, "Bound", bound_raster_path, cellsize=RESOLUTION)
     logger.info('bound raster is created')
 
     return domain_raster_path, bound_raster_path
@@ -502,6 +502,7 @@ def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData
                         data = np.where(orig_data == orig_src.nodata, -999, orig_data)
             if np.all(data == -999) or np.all(data < -900000) or np.all(data > 900000):
                 logger.error(f"ERROR: All values in raster are invalid!")
+                
                 raise ValueError(f"Invalid raster data in {output_clip}")
             return data
     else:
@@ -530,7 +531,7 @@ def read_raster(src, arg1):
 
 def create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, out_shp, raster_path):
     # Step 1: Read the raster to get its extent
-    env = arcpy.env  # Use gdal_sa's env class
+    env = GDAL.env  # Use gdal_sa's env class
     env.workspace = BASE_PATH
     from osgeo import gdal
     RESOLUTION = 250  # Update this if your model has a different resolution

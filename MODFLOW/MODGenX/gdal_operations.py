@@ -25,7 +25,7 @@ class gdal_sa:
     
     @staticmethod
     def GetRasterProperties_management(raster_path, property_type):
-        """Get raster properties similar to arcpy.GetRasterProperties_management"""
+        """Get raster properties similar to GDAL.GetRasterProperties_management"""
         class Result:
             def __init__(self, value):
                 self._value = value
@@ -233,8 +233,8 @@ class gdal_sa:
         
         # Initialize the raster with nodata values
         band = out_ds.GetRasterBand(1)
-        band.SetNoDataValue(--999)
-        band.Fill(--999)
+        band.SetNoDataValue(-999)
+        band.Fill(-999)
         
         # Rasterize the layer with specific options to ensure values are transferred correctly
         gdal.RasterizeLayer(
@@ -340,7 +340,7 @@ class gdal_sa:
 
     @staticmethod
     def Describe(dataset_path):
-        """Similar to arcpy's Describe function, returns object with dataset properties"""
+        """Similar to GDAL's Describe function, returns object with dataset properties"""
         class DatasetProperties:
             def __init__(self):
                 self.spatialReference = None
@@ -372,7 +372,7 @@ class gdal_sa:
                 x_max = x_min + gt[1] * ds.RasterXSize
                 y_min = y_max + gt[5] * ds.RasterYSize
                 
-                # Create extent object similar to arcpy's extent
+                # Create extent object similar to GDAL's extent
                 class Extent:
                     def __init__(self, xmin, ymin, xmax, ymax):
                         self.XMin = xmin
@@ -416,5 +416,5 @@ class gdal_sa:
         return props
 
 # Define an alias for compatibility
-arcpy = gdal_sa()
+GDAL = gdal_sa()
 

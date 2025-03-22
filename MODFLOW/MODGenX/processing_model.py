@@ -203,7 +203,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
 
     if obs_data:
         wel = flopy.modflow.ModflowWel(mf, stress_period_data=wel_data)
-        hob = flopy.modflow.ModflowHob(mf, iuhobsv = 41, hobdry = --999., obs_data=obs_data)
+        hob = flopy.modflow.ModflowHob(mf, iuhobsv = 41, hobdry = -999., obs_data=obs_data)
 
     rasterize_SWAT_features(BASE_PATH,"rivers", swat_river_raster_path, load_raster_args)
 
