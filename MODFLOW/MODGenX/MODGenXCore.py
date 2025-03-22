@@ -1,5 +1,5 @@
-#import arcpy
-from MODGenX.gdal_operations import gdal_sa as arcpy
+#import GDAL
+from MODGenX.gdal_operations import gdal_sa as GDAL
 from MODGenX.Logger import Logger
 import geopandas as gpd
 import pandas as pd
@@ -43,7 +43,7 @@ class MODGenXCore:
 		### check if the resolution of self.SWAT_dem_path is actually the resolution
 		DEM_flag = False
 		if os.path.exists(self.SWAT_dem_path):
-			resolution = arcpy.GetRasterProperties_management(self.SWAT_dem_path, "CELLSIZEX").getOutput(0)
+			resolution = GDAL.GetRasterProperties_management(self.SWAT_dem_path, "CELLSIZEX").getOutput(0)
 			if resolution != str(RESOLUTION):
 				DEM_flag = True
 		else:
@@ -53,28 +53,28 @@ class MODGenXCore:
 		if not os.path.exists(self.SWAT_dem_path) or DEM_flag:
 			# We need to create the DEM raster based on the SWAT DEM shapefile and the base DEM 
 			# Define the base DEM path
-			arcpy.env.overwriteOutput = True
+			GDAL.env.overwriteOutput = True
 
 			temp_path = os.path.join(os.path.dirname(self.SWAT_dem_path), "dem.tif")
 			# Copy the raster to the new location
-			arcpy.Clip_management(self.base_dem, "#", temp_path, self.shape_geometry, "0", "ClippingGeometry", "NO_MAINTAIN_EXTENT") ## NO_MAINTAIN_EXTENT means that the output raster will have the same extent as the clipped raster
+			GDAL.Clip_management(self.base_dem, "#", temp_path, self.shape_geometry, "0", "ClippingGeometry", "NO_MAINTAIN_EXTENT") ## NO_MAINTAIN_EXTENT means that the output raster will have the same extent as the clipped raster
 
 			# Define the target spatial reference
-			target_spatial_reference = arcpy.SpatialReference(26990)  # NAD83 / Illinois East
+			target_spatial_reference = GDAL.SpatialReference(26990)  # NAD83 / Illinois East
 
 			# Project the raster to the target spatial reference
 			projected_dem_path = os.path.join(os.path.dirname(self.SWAT_dem_path), "projected_dem.tif")
-			arcpy.ProjectRaster_management(temp_path, projected_dem_path, target_spatial_reference)
+			GDAL.ProjectRaster_management(temp_path, projected_dem_path, target_spatial_reference)
 
 			# If the resampled file already exists, delete it
 			if os.path.exists(temp_path):
-				arcpy.Delete_management(temp_path)
+				GDAL.Delete_management(temp_path)
 
 			# Resample the raster to resolution
-			arcpy.Resample_management(projected_dem_path, self.SWAT_dem_path, f"{self.RESOLUTION} {self.RESOLUTION}", "CUBIC")
+			GDAL.Resample_management(projected_dem_path, self.SWAT_dem_path, f"{self.RESOLUTION} {self.RESOLUTION}", "CUBIC")
 
 			# Optionally, delete the intermediate projected raster to clean up
-			arcpy.Delete_management(projected_dem_path)
+			GDAL.Delete_management(projected_dem_path)
 
 		self.swat_river_raster_path   = os.path.join(self.model_path, 'swat_river.tif')
 		self.swat_lake_raster_path    = os.path.join(self.model_path,'lake_raster.tif')
@@ -124,19 +124,19 @@ class MODGenXCore:
 			ref_res = ref_src.res
 			self.logger.info(f"Reference raster shape: {ref_shape}, resolution: {ref_res}")
 
-		arcpy.env.workspace = self.raster_folder
-		arcpy.env.overwriteOutput = True
-		arcpy.env.snapRaster = self.SWAT_dem_path
-		arcpy.env.outputCoordinateSystem = arcpy.Describe(self.SWAT_dem_path).spatialReference
-		arcpy.env.extent = self.SWAT_dem_path
-		arcpy.env.nodata = -999
+		GDAL.env.workspace = self.raster_folder
+		GDAL.env.overwriteOutput = True
+		GDAL.env.snapRaster = self.SWAT_dem_path
+		GDAL.env.outputCoordinateSystem = GDAL.Describe(self.SWAT_dem_path).spatialReference
+		GDAL.env.extent = self.SWAT_dem_path
+		GDAL.env.nodata = -999
 		
 		self.bound_raster_path = os.path.join(self.raster_folder, 'bound.tif')
 		self.domain_raster_path = os.path.join(self.raster_folder, 'domain.tif')
 
-		 # Instead of using GDAL directly, we'll use our arcpy-like wrapper
+		 # Instead of using GDAL directly, we'll use our GDAL-like wrapper
 		# which has PolygonToRaster_conversion already implemented
-		arcpy.PolygonToRaster_conversion(
+		GDAL.PolygonToRaster_conversion(
 			self.basin_path, 
 			"Active", 
 			self.domain_raster_path, 
@@ -144,7 +144,7 @@ class MODGenXCore:
 		)
 		self.logger.info('Basin raster is created')
 		
-		arcpy.PolygonToRaster_conversion(
+		GDAL.PolygonToRaster_conversion(
 			self.bound_path, 
 			"Bound", 
 			self.bound_raster_path, 
@@ -500,7 +500,7 @@ class MODGenXCore:
 
 		if obs_data:
 			wel = flopy.modflow.ModflowWel(mf, stress_period_data=wel_data)
-			hob = flopy.modflow.ModflowHob(mf, iuhobsv=41, hobdry=--999., obs_data=obs_data)
+			hob = flopy.modflow.ModflowHob(mf, iuhobsv=41, hobdry=-999., obs_data=obs_data)
 			self.logger.info(f"Added {len(obs_data)} observation wells to the model")
 
 		rasterize_SWAT_features(self.BASE_PATH,"rivers", self.swat_river_raster_path, load_raster_args)

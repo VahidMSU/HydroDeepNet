@@ -1,19 +1,33 @@
-from MODGenX.gdal_operations import gdal_sa as arcpy
+from MODGenX.gdal_operations import gdal_sa as GDAL
 import os
 import geopandas as gpd
-import pandas as pd
 import numpy as np
+from osgeo import gdal, osr, ogr
+import shutil
 try:
-    from MODGenX.utils import *
+    from MODGenX.utils import generate_shapefile_paths
 except ImportError:
-    from utils import *
-
+    from utils import generate_shapefile_paths
 from MODGenX.Logger import Logger
 
 logger = Logger(verbose=True)
 
 def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_raster_args):
-
+    """
+    Rasterize SWAT features (lakes or rivers) to match reference raster dimensions exactly.
+    
+    Parameters:
+    -----------
+    BASE_PATH : str
+        Base path for data
+    feature_type : str
+        Type of feature to rasterize ('lakes' or 'rivers')
+    output_raster_path : str
+        Path where output raster will be saved
+    load_raster_args : dict
+        Dictionary containing various arguments needed for processing
+    """
+    # Extract parameters from load_raster_args
     LEVEL = load_raster_args['LEVEL']
     RESOLUTION = load_raster_args['RESOLUTION']
     ref_raster_path = load_raster_args['ref_raster']
@@ -21,193 +35,226 @@ def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_ra
     NAME = load_raster_args['NAME']
     username = load_raster_args['username']
     VPUID = load_raster_args['VPUID']
-
+    
+    # Ensure output directory exists
+    os.makedirs(os.path.dirname(output_raster_path), exist_ok=True)
+    
+    # Generate paths for shapefiles based on feature type
     shapefile_paths = generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION, username, VPUID)
-
-    # Define paths based on the type of feature
+    
+    # Validate reference raster exists
+    if not os.path.exists(ref_raster_path):
+        logger.info(f"Reference raster not found: {ref_raster_path}")
+        return
+    
+    # Get the appropriate feature path based on feature_type
     if feature_type == "lakes":
         feature_path = shapefile_paths["lakes"]
+        temp_feature_path = os.path.join(f'/data/SWATGenXApp/Users/{username}', 
+                                         f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/lakes1_modflow.shp')
         logger.info(f'lake: {feature_path}')
-        temp_feature_path = os.path.join(f'/data/SWATGenXApp/Users/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/lakes1_modflow.shp')
-        logger.info(f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/lakes1_modflow.shp')
     elif feature_type == "rivers":
         feature_path = shapefile_paths["rivers"]
+        temp_feature_path = os.path.join(f'/data/SWATGenXApp/Users/{username}', 
+                                         f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1_modflow.shp')
         logger.info(f'river: {feature_path}')
-
-        temp_feature_path = os.path.join(f'/data/SWATGenXApp/Users/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1_modflow.shp')
     else:
         logger.info(f"Unknown feature type: {feature_type}. Supported types are 'lakes' and 'rivers'.")
         return
-
-    modflow_grid_path = shapefile_paths['grids']
-
-    # Get reference CRS from arguments if available
-    reference_crs = load_raster_args.get('reference_crs', None)
     
-    # If reference CRS not provided, get it from the reference raster
-    if reference_crs is None:
-        from osgeo import gdal, osr
-        ref_ds = gdal.Open(ref_raster_path)
-        if ref_ds is not None:
-            reference_crs = ref_ds.GetProjection()
-            ref_ds = None
-            logger.info(f"Using reference raster CRS for projection")
-        else:
-            # Default to EPSG:26990 if we can't get the reference CRS
-            logger.warning(f"Cannot open reference raster, using default EPSG:26990")
-            reference_crs = osr.SpatialReference()
-            reference_crs.ImportFromEPSG(26990)
-            reference_crs = reference_crs.ExportToWkt()
-    
-    # Convert reference CRS to a format usable by geopandas
-    from osgeo import osr
-    srs = osr.SpatialReference()
-    srs.ImportFromWkt(reference_crs)
-    if srs.IsProjected():
-        target_crs = f"EPSG:{srs.GetAuthorityCode('PROJCS')}" if srs.GetAuthorityCode('PROJCS') else "EPSG:26990"
-    else:
-        target_crs = f"EPSG:{srs.GetAuthorityCode('GEOGCS')}" if srs.GetAuthorityCode('GEOGCS') else "EPSG:4326"
-    
-    logger.info(f"Target CRS for rasterization: {target_crs}")
-    
-    # Read the shapefile using geopandas and reproject to target CRS
-    try:
-        original_feature = gpd.read_file(feature_path)
-        logger.info(f"Original feature CRS: {original_feature.crs}")
-        
-        if original_feature.crs is None or original_feature.crs == "":
-            logger.info("Warning: Feature CRS is None or empty. Assuming EPSG:4326 (WGS 84).")
-            original_feature.crs = "EPSG:4326"
-        
-        # Explicitly reproject to the target CRS
-        logger.info(f"Reprojecting features from {original_feature.crs} to {target_crs}")
-        original_feature = original_feature.to_crs(target_crs)
-        logger.info(f"Reprojected feature CRS: {original_feature.crs}")
-    except Exception as e:
-        logger.info(f"Error reading or reprojecting feature: {e}")
-        return
-
-    # Check if original_feature has data
-    if len(original_feature) == 0:
-        logger.info(f"Warning: No features found in {feature_path}")
-        # Create an empty output raster matching the reference raster
-        from_reference_raster(ref_raster_path, output_raster_path)
-        return
-
-    # Prepare the data for rasterization
-    if os.path.exists(modflow_grid_path):
-        # Get modflow grid
-        modflow_grid = gpd.GeoDataFrame(gpd.read_file(modflow_grid_path))
-        # Ensure same CRS
-        modflow_grid = modflow_grid.to_crs(target_crs)
-        
-        try:
-            # Perform intersection with modflow grid
-            modflow_feature_grid = original_feature.overlay(modflow_grid, how='intersection')
-            
-            if feature_type == "lakes":
-                modflow_feature_grid['lake_area'] = modflow_feature_grid.geometry.area
-                modflow_feature_grid['COND'] = modflow_feature_grid['lake_area']
-            elif feature_type == "rivers":
-                modflow_feature_grid['Len3'] = modflow_feature_grid.geometry.length
-                # Ensure the required columns exist
-                if 'Wid2' not in modflow_feature_grid.columns or 'Dep2' not in modflow_feature_grid.columns:
-                    logger.info(f"Warning: Required columns missing. Using default values.")
-                    modflow_feature_grid['COND'] = modflow_feature_grid.geometry.length * 10
-                else:
-                    modflow_feature_grid['COND'] = (modflow_feature_grid['Wid2'] * modflow_feature_grid['Len3']) / modflow_feature_grid['Dep2']
-        except Exception as e:
-            logger.info(f"Error performing overlay: {e}")
-            modflow_feature_grid = original_feature.copy()
-            if feature_type == "lakes":
-                modflow_feature_grid['COND'] = modflow_feature_grid.geometry.area
-            elif feature_type == "rivers":
-                modflow_feature_grid['COND'] = modflow_feature_grid.geometry.length * 10
-    else:
-        logger.info(f'MODFLOW grid was not created yet. Using SWAT model {feature_type} shapefile for initialization of package.')
-        modflow_feature_grid = original_feature.copy()
-        
-        if feature_type == "lakes":
-            modflow_feature_grid['COND'] = modflow_feature_grid.geometry.area
-        elif feature_type == "rivers":
-            # Check for required columns
-            if 'Wid2' in modflow_feature_grid.columns and 'Len2' in modflow_feature_grid.columns and 'Dep2' in modflow_feature_grid.columns:
-                modflow_feature_grid['COND'] = (modflow_feature_grid['Wid2'] * modflow_feature_grid['Len2']) / modflow_feature_grid['Dep2']
-            else:
-                logger.info(f"Warning: Required columns missing. Using geometry length")
-                modflow_feature_grid['COND'] = modflow_feature_grid.geometry.length * 10
-
-    # Ensure COND values are positive and reasonable
-    modflow_feature_grid['COND'] = modflow_feature_grid['COND'].fillna(10.0)
-    modflow_feature_grid['COND'] = modflow_feature_grid['COND'].clip(lower=1.0)
-    
-    logger.info(f"Feature count for rasterization: {len(modflow_feature_grid)}")
-    logger.info(f"COND value range: {modflow_feature_grid['COND'].min()} to {modflow_feature_grid['COND'].max()}")
-    
-    # Save as a temporary shapefile
-    modflow_feature_grid.to_file(temp_feature_path)
-
-    # Configure environment settings using gdal_sa.env
-    env = arcpy.env
-    env.workspace = BASE_PATH
-    env.overwriteOutput = True
-    reference_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif")
-    env.snapRaster = reference_path
-    env.cellSize = RESOLUTION
-    logger.info(f'#### REFERENCE RESOLUTION FOR RASTERIZATION: {RESOLUTION}')
-    env.outputCoordinateSystem = arcpy.Describe(reference_path).spatialReference
-    env.nodata = "NONE"
-    env.extent = arcpy.Describe(reference_path).extent
-
-    # Convert the temporary shapefile to raster
-    try:
-        arcpy.PolygonToRaster_conversion(temp_feature_path, "COND", output_raster_path, 
-                                         "MAXIMUM_COMBINED_AREA", "NONE", cellsize=RESOLUTION)
-        logger.info(f"Successfully rasterized {feature_type} to {output_raster_path}")
-    except Exception as e:
-        logger.info(f"Error in rasterization: {e}")
-        # Create a fallback raster if rasterization fails
-        from_reference_raster(reference_path, output_raster_path)
-
-    # Clean up
-    try:
-        arcpy.Delete_management(temp_feature_path)
-    except:
-        logger.info(f"Warning: Could not delete temporary file {temp_feature_path}")
-
-def from_reference_raster(ref_raster_path, output_raster_path):
-    """Create a zero-filled raster based on a reference raster"""
-    from osgeo import gdal
-    
-    # Open the reference raster
+    # STEP 1: Analyze reference raster to get exact dimensions and spatial properties
+    logger.info(f"Analyzing reference raster: {ref_raster_path}")
     ref_ds = gdal.Open(ref_raster_path)
     if ref_ds is None:
         logger.info(f"Cannot open reference raster: {ref_raster_path}")
         return
-        
-    # Get reference raster properties
-    driver = gdal.GetDriverByName('GTiff')
-    cols = ref_ds.RasterXSize
-    rows = ref_ds.RasterYSize
     
-    # Create output raster
-    out_ds = driver.Create(output_raster_path, cols, rows, 1, gdal.GDT_Float32)
-    if out_ds is None:
-        logger.info(f"Cannot create output raster: {output_raster_path}")
+    ref_rows = ref_ds.RasterYSize
+    ref_cols = ref_ds.RasterXSize
+    ref_geotransform = ref_ds.GetGeoTransform()
+    ref_projection = ref_ds.GetProjection()
+    ref_srs = osr.SpatialReference()
+    ref_srs.ImportFromWkt(ref_projection)
+    
+    # Get spatial properties for coordinate transformations
+    x_min = ref_geotransform[0]
+    y_max = ref_geotransform[3]
+    x_res = ref_geotransform[1]
+    y_res = ref_geotransform[5]
+    x_max = x_min + (ref_cols * x_res)
+    y_min = y_max + (ref_rows * y_res)
+    
+    logger.info(f"Reference raster properties - Size: {ref_rows}x{ref_cols}, Resolution: {x_res}x{y_res}")
+    logger.info(f"Reference raster bounds: ({x_min}, {y_min}) to ({x_max}, {y_max})")
+    
+    # STEP 2: Check if feature file exists and has data
+    if not os.path.exists(feature_path):
+        logger.info(f"Feature shapefile not found: {feature_path}")
+        create_empty_raster(ref_ds, output_raster_path)
+        ref_ds = None
         return
-        
-    # Set geotransform and projection
-    out_ds.SetGeoTransform(ref_ds.GetGeoTransform())
-    out_ds.SetProjection(ref_ds.GetProjection())
     
-    # Fill raster with zeros
-    out_band = out_ds.GetRasterBand(1)
-    out_band.SetNoDataValue(0)
-    out_band.Fill(0)
+    try:
+        # Read shapefile with geopandas
+        gdf = gpd.read_file(feature_path)
+        
+        if len(gdf) == 0:
+            logger.info(f"No features found in {feature_path}")
+            create_empty_raster(ref_ds, output_raster_path)
+            ref_ds = None
+            return
+        
+        # Ensure CRS is set
+        if gdf.crs is None:
+            logger.info(f"CRS not defined in shapefile. Assuming EPSG:4326")
+            gdf.crs = "EPSG:4326"
+        
+        # Get target CRS from reference raster
+        if ref_srs.IsProjected():
+            target_crs = f"EPSG:{ref_srs.GetAuthorityCode('PROJCS')}" if ref_srs.GetAuthorityCode('PROJCS') else "EPSG:26990"
+        else:
+            target_crs = f"EPSG:{ref_srs.GetAuthorityCode('GEOGCS')}" if ref_srs.GetAuthorityCode('GEOGCS') else "EPSG:4326"
+        
+        # Reproject to match reference raster projection
+        logger.info(f"Reprojecting features from {gdf.crs} to {target_crs}")
+        gdf = gdf.to_crs(target_crs)
+        
+        # Add COND field for rasterization
+        if feature_type == "lakes":
+            gdf['COND'] = gdf.geometry.area
+        else:  # rivers
+            if 'Wid2' in gdf.columns and 'Len2' in gdf.columns and 'Dep2' in gdf.columns:
+                gdf['COND'] = (gdf['Wid2'] * gdf['Len2']) / gdf['Dep2']
+            else:
+                logger.info("Required columns missing. Using geometry length.")
+                gdf['COND'] = gdf.geometry.length * 10
+        
+        # Ensure COND values are valid
+        gdf['COND'] = gdf['COND'].fillna(10.0)
+        gdf['COND'] = gdf['COND'].clip(lower=1.0)
+        
+        # Save temporary shapefile
+        logger.info(f"Saving temporary shapefile with {len(gdf)} features")
+        gdf.to_file(temp_feature_path)
+        
+    except Exception as e:
+        logger.info(f"Error processing feature shapefile: {str(e)}")
+        create_empty_raster(ref_ds, output_raster_path)
+        ref_ds = None
+        return
+    
+    # STEP 3: Create a blank raster with exact reference dimensions
+    logger.info("Creating base raster with reference dimensions")
+    driver = gdal.GetDriverByName('GTiff')
+    temp_raster = output_raster_path + ".temp.tif"
+    
+    out_ds = driver.Create(temp_raster, ref_cols, ref_rows, 1, gdal.GDT_Float32)
+    out_ds.SetGeoTransform(ref_geotransform)
+    out_ds.SetProjection(ref_projection)
+    band = out_ds.GetRasterBand(1)
+    band.SetNoDataValue(0)
+    band.Fill(0)
+    band = None
+    out_ds = None
+    
+    # STEP 4: Burn the vector features into the raster
+    logger.info(f"Rasterizing features to match reference dimensions")
+    try:
+        # Open vector dataset
+        vector_ds = ogr.Open(temp_feature_path)
+        layer = vector_ds.GetLayer()
+        
+        # Open output raster for burning
+        raster_ds = gdal.Open(temp_raster, gdal.GA_Update)
+        
+        # Burn vector features into raster
+        err = gdal.RasterizeLayer(
+            raster_ds,                  # Output raster dataset
+            [1],                        # List of bands to burn values into
+            layer,                      # Input layer
+            options=["ATTRIBUTE=COND"]  # Use COND attribute for pixel values
+        )
+        
+        if err != 0:
+            logger.info(f"Error rasterizing layer: {err}")
+        
+        # Close datasets
+        raster_ds = None
+        vector_ds = None
+        
+        # Validate output raster has correct dimensions
+        check_ds = gdal.Open(temp_raster)
+        if check_ds:
+            out_rows = check_ds.RasterYSize
+            out_cols = check_ds.RasterXSize
+            logger.info(f"Output raster dimensions: {out_rows}x{out_cols}")
+            
+            if out_rows != ref_rows or out_cols != ref_cols:
+                logger.info(f"WARNING: Output dimensions {out_rows}x{out_cols} don't match reference {ref_rows}x{ref_cols}")
+            check_ds = None
+        
+        # Move temp raster to final location
+        shutil.move(temp_raster, output_raster_path)
+        logger.info(f"Successfully created raster at {output_raster_path}")
+        
+    except Exception as e:
+        logger.info(f"Error during rasterization: {str(e)}")
+        # Fall back to empty raster if rasterization fails
+        create_empty_raster(ref_ds, output_raster_path)
     
     # Clean up
-    out_band = None
-    out_ds = None
-    ref_ds = None
+    try:
+        if os.path.exists(temp_feature_path):
+            GDAL.Delete_management(temp_feature_path)
+        if os.path.exists(temp_raster):
+            GDAL.Delete_management(temp_raster)
+    except Exception as e:
+        logger.info(f"Warning: Could not delete temporary files: {str(e)}")
     
-    logger.info(f"Created empty raster at {output_raster_path}")
+    ref_ds = None
+
+def create_empty_raster(ref_ds, output_path):
+    """
+    Create an empty raster with the same dimensions and spatial reference as the reference raster.
+    
+    Parameters:
+    -----------
+    ref_ds : gdal.Dataset
+        Reference dataset to copy properties from
+    output_path : str
+        Path where the empty raster will be saved
+    """
+    logger.info(f"Creating empty raster at {output_path}")
+    
+    if ref_ds is None:
+        logger.info("Reference dataset is None, cannot create empty raster")
+        return
+    
+    # Get reference properties
+    cols = ref_ds.RasterXSize
+    rows = ref_ds.RasterYSize
+    geotransform = ref_ds.GetGeoTransform()
+    projection = ref_ds.GetProjection()
+    
+    # Create new raster
+    driver = gdal.GetDriverByName('GTiff')
+    out_ds = driver.Create(output_path, cols, rows, 1, gdal.GDT_Float32)
+    
+    if out_ds is None:
+        logger.info(f"Could not create output raster at {output_path}")
+        return
+    
+    # Set spatial properties
+    out_ds.SetGeoTransform(geotransform)
+    out_ds.SetProjection(projection)
+    
+    # Fill with zeros
+    band = out_ds.GetRasterBand(1)
+    band.SetNoDataValue(0)
+    band.Fill(0)
+    
+    # Clean up
+    band = None
+    out_ds = None
+    
+    logger.info(f"Created empty raster with dimensions {rows}x{cols}")
