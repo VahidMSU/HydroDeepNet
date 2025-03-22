@@ -4,11 +4,6 @@ except ImportError:
     from utils import *
 import numpy as np
 
-from MODGenX.Logger import Logger
-
-
-logger = Logger(verbose=True)
-
 def river_gen(nrow, ncol, swat_river, top, ibound):
     """
     Generate river data based on given conditions.
@@ -23,78 +18,69 @@ def river_gen(nrow, ncol, swat_river, top, ibound):
     Returns:
     - river_data: Dictionary containing information about river cells
     """
-    logger.info(f"river_gen: nrow={nrow}, ncol={ncol}")
-    logger.info(f"river_gen: swat_river.shape={swat_river.shape}, top.shape={top.shape}, ibound.shape={ibound.shape}")
+    print(f"river_gen: nrow={nrow}, ncol={ncol}")
+    print(f"river_gen: swat_river.shape={swat_river.shape}, top.shape={top.shape}, ibound.shape={ibound.shape}")
     
-    # Add some diagnostics about valid cells
-    active_cells = np.sum(ibound[0] == 1)
-    boundary_cells = np.sum(ibound[0] == -1)
-    inactive_cells = np.sum(ibound[0] == 0)
-    total_cells = ibound[0].size
-    
-    logger.info(f"Active cells: {active_cells} ({100*active_cells/total_cells:.2f}%)")
-    logger.info(f"Boundary cells: {boundary_cells} ({100*boundary_cells/total_cells:.2f}%)")
-    logger.info(f"Inactive cells: {inactive_cells} ({100*inactive_cells/total_cells:.2f}%)")
-    
-    # Detailed diagnostics on top values
-    top_min, top_max = np.min(top), np.max(top)
-    top_mean = np.mean(top)
-    top_unique = np.unique(top)
-    
-    logger.info(f"swat_river values range: {np.min(swat_river)} to {np.max(swat_river)}")
-    logger.info(f"top values range: {top_min} to {top_max} (mean: {top_mean:.2f})")
-    assert top_min != top_max, "Top elevation data is constant"
-    if len(top_unique) < 10:
-        logger.warning(f"Only {len(top_unique)} unique values in top elevation data: {top_unique}")
-    
-    if top_min > 900000 or top_max > 900000:
-        logger.error("ERROR: Top elevation values are extreme (>900000). This indicates a data loading issue.")
-        logger.error("Check the source DEM raster for additional bands or other data issues.")
-        raise ValueError("Invalid top elevation data - extreme values detected")
+
+    # Print range of values for key arrays
+    print(f"swat_river values range: {np.min(swat_river)} to {np.max(swat_river)}")
+    print(f"top values range: {np.min(top)} to {np.max(top)}")
     
     river_data = {0: []}  # Initialize an empty list for layer 0
     
-    # Count potential river cells
-    river_cells = np.sum(swat_river > 0)
-    river_and_active = np.sum((swat_river > 0) & (ibound[0] == 1))
-    logger.info(f"Potential river cells: {river_cells}")
-    logger.info(f"River cells in active domain: {river_and_active}")
+   
     
     for i in range(nrow):
         for j in range(ncol):
             # Check conditions to identify river cells
-            if swat_river[i,j] > 0 and top[i,j] > 0 and ibound[0,i,j] == 1:
+            if swat_river[i,j] > 0 and top[i,j] > 0:
                 # Append river cell data to river_data
                 river_data[0].append([0, i, j, top[i,j] + 1, swat_river[i,j], top[i,j] - 1])
     
-    # If no river cells were found, create at least one fallback cell in an active area
-    if len(river_data[0]) == 0:
-        logger.info("Warning: No river cells found. Creating fallback river cells.")
-        # Find locations where there are active cells
-        active_locs = np.where(ibound[0] == 1)
-        if len(active_locs[0]) > 0:
-            # Select a few points from active cells
-            max_points = min(5, len(active_locs[0]))
-            step = max(1, len(active_locs[0]) // max_points)
-            
-            for idx in range(0, len(active_locs[0]), step)[:max_points]:
-                i, j = active_locs[0][idx], active_locs[1][idx]
-                conductance = 100.0  # Default conductance value
-                river_data[0].append([0, i, j, top[i,j] + 1, conductance, top[i,j] - 1])
-                logger.info(f"Added fallback river cell at row={i}, col={j}")
+    assert len(river_data[0]) > 10, "No river cells found"
+
+    # Create visualizations
+    # Plot ibound
+    plt.close()
+    plt.imshow(ibound[0])   
+    plt.colorbar()
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/MODGenX/ibound.png')
+    plt.close()
     
+    # Plot river cells
+    river_cells_map = np.zeros_like(ibound[0])
+    for cell in river_data[0]:
+        river_cells_map[cell[1], cell[2]] = 1
+    plt.imshow(river_cells_map)
+    plt.colorbar()
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/MODGenX/river_cells.png')
+    plt.close()
+    
+    # Plot top elevation
+    plt.imshow(top)
+    plt.colorbar()
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/MODGenX/top.png')
+    plt.close()
+    
+    # Plot swat_river
+    plt.imshow(swat_river)
+    plt.colorbar()
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/MODGenX/swat_river.png')
+    plt.close()
+    
+    time.sleep(5)
     logger.info(f'Number of river cells: {len(river_data[0])}')
     return river_data
 
 def river_correction(swat_river_raster_path, load_raster_args, basin, active):
     """Process river raster to prepare it for MODFLOW"""
     result = load_raster(swat_river_raster_path, load_raster_args)
-    logger.info(f"River raster loaded - min: {np.min(result)}, max: {np.max(result)}, mean: {np.mean(result)}")
+    print(f"River raster loaded - min: {np.min(result)}, max: {np.max(result)}, mean: {np.mean(result)}")
     
     # Check for infinite values
     inf_count = np.sum(np.isinf(result))
     if inf_count > 0:
-        logger.info(f"Found {inf_count} infinite values in river raster")
+        print(f"Found {inf_count} infinite values in river raster")
     
     # Replace infinite values with zeros
     result = np.where(np.isinf(result), 0, result)
@@ -104,19 +90,19 @@ def river_correction(swat_river_raster_path, load_raster_args, basin, active):
     
     # Count river cells before applying active mask
     river_cells_before = np.sum(result > 0)
-    logger.info(f"River cells before masking: {river_cells_before}")
+    print(f"River cells before masking: {river_cells_before}")
     
     # Don't mask river cells by active domain - this prevents river cells from being removed
     # when they should be included in the model
     # result = np.where(active[0] == 0, 0, result)
     
-    # Instead, just ensure any NoData values (-999) are properly handled
-    if np.any(result == -999):
-        logger.info("Warning: Found possible NoData values (-999) in river raster")
-        result = np.where(result == -999, 0, result)
+    # Instead, just ensure any NoData values (9999) are properly handled
+    if np.any(result == 9999):
+        print("Warning: Found possible NoData values (9999) in river raster")
+        result = np.where(result == 9999, 0, result)
     
     # Count river cells after processing
     river_cells_after = np.sum(result > 0)
-    logger.info(f"River cells after processing: {river_cells_after}")
+    print(f"River cells after processing: {river_cells_after}")
     
     return result

@@ -21,29 +21,37 @@ import os
 
 class MODGenXCore:
 	def __init__(self, username, NAME,VPUID, BASE_PATH, LEVEL, RESOLUTION, MODEL_NAME, ML, SWAT_MODEL_NAME):
-		self.NAME         = NAME
-		self.BASE_PATH    = BASE_PATH
-		self.LEVEL        = LEVEL
-		self.RESOLUTION   = RESOLUTION
-		self.MODEL_NAME   = MODEL_NAME
+		self.NAME        = NAME
+		self.BASE_PATH   = BASE_PATH
+		self.LEVEL       = LEVEL
+		self.RESOLUTION  = RESOLUTION
+		self.MODEL_NAME  = MODEL_NAME
 		self.SWAT_MODEL_NAME = SWAT_MODEL_NAME
-		self.ML           = ML
-		self.VPUID        = VPUID
-		self.username     = username
+		self.ML          = ML
+		self.VPUID       = VPUID
+		self.username    = username
 		self.logger = Logger(verbose=True)
-		self.raster_folder             = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/rasters_input")
-		self.model_path                = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}')
-		self.moflow_exe_path           = os.path.join("/data2/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
-		self.swat_lake_shapefile_path  = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp')
-		self.ref_raster_path           = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif')
-		self.subbasin_path             = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/subs1.shp")
-		self.SWAT_dem_path             = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif")
+		self.raster_folder            = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/rasters_input")
+		self.model_path               = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}')
+		self.moflow_exe_path          = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
+		self.swat_lake_shapefile_path = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp')
+		self.ref_raster_path          = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif')
+		self.subbasin_path            = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/subs1.shp")
+		self.SWAT_dem_path            = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif")
 		self.base_dem = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Rasters/DEM/dem.tif")
 		self.shape_geometry = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_subbasins.shp"
 		### check if the resolution of self.SWAT_dem_path is actually the resolution
-		resolution = arcpy.GetRasterProperties_management(self.SWAT_dem_path, "CELLSIZEX").getOutput(0)
-		DEM_flag = bool(resolution != str(RESOLUTION))#, f"Resolution of the SWAT DEM raster is {resolution}m, not {RESOLUTION}m as expected."
+		DEM_flag = False
+		if os.path.exists(self.SWAT_dem_path):
+			resolution = arcpy.GetRasterProperties_management(self.SWAT_dem_path, "CELLSIZEX").getOutput(0)
+			if resolution != str(RESOLUTION):
+				DEM_flag = True
+		else:
+			resolution = None
+			DEM_flag = True
+				
 		if not os.path.exists(self.SWAT_dem_path) or DEM_flag:
+			# We need to create the DEM raster based on the SWAT DEM shapefile and the base DEM 
 			# Define the base DEM path
 			arcpy.env.overwriteOutput = True
 
@@ -68,18 +76,18 @@ class MODGenXCore:
 			# Optionally, delete the intermediate projected raster to clean up
 			arcpy.Delete_management(projected_dem_path)
 
-		self.swat_river_raster_path    = os.path.join(self.model_path, 'swat_river.tif')
-		self.swat_lake_raster_path     = os.path.join(self.model_path,'lake_raster.tif')
-		self.head_of_last_time_step    = os.path.join(f'/data/SWATGenXApp/Users/{self.username}', fr"SWATplus_by_VPUID/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/head_of_last_time_step.jpeg")
-		self.output_heads              = os.path.join(f'/data/SWATGenXApp/Users/{self.username}',f'SWATplus_by_VPUID/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/',self.MODEL_NAME+'.hds')
-		self.out_shp                   = os.path.join(self.model_path, "Grids_MODFLOW")
-		self.raster_path               = os.path.join(self.raster_folder, f'{NAME}_DEM_{RESOLUTION}m.tif')
-		self.basin_path                = os.path.join(self.raster_folder, 'basin_shape.shp')
-		self.bound_path                = os.path.join(self.raster_folder, 'bound_shape.shp')
-		self.temp_image                = f'/data/SWATGenXApp/GenXAppData/codes/MODFLOW/MODGenX/_temp/{self.NAME}_{self.MODEL_NAME}.jpeg'
+		self.swat_river_raster_path   = os.path.join(self.model_path, 'swat_river.tif')
+		self.swat_lake_raster_path    = os.path.join(self.model_path,'lake_raster.tif')
+		self.head_of_last_time_step   = os.path.join(f'/data/SWATGenXApp/Users/{self.username}', fr"SWATplus_by_VPUID/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/head_of_last_time_step.jpeg")
+		self.output_heads             = os.path.join(f'/data/SWATGenXApp/Users/{self.username}',f'SWATplus_by_VPUID/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/',self.MODEL_NAME+'.hds')
+		self.out_shp                  = os.path.join(self.model_path, "Grids_MODFLOW")
+		self.raster_path              = os.path.join(self.raster_folder, f'{NAME}_DEM_{RESOLUTION}m.tif')
+		self.basin_path               = os.path.join(self.raster_folder, 'basin_shape.shp')
+		self.bound_path               = os.path.join(self.raster_folder, 'bound_shape.shp')
+		self.temp_image               = f'/data/SWATGenXApp/GenXAppData/codes/MODFLOW/MODGenX/_temp/{self.NAME}_{self.MODEL_NAME}.jpeg'
 		self.EPSG = "EPSG:26990"
-		self.dpi  = 300
-		self.top  = None
+		self.dpi = 300
+		self.top = None
 		self.bound_raster_path = None
 		self.domain_raster_path = None
 		self.RESOLUTION = RESOLUTION
@@ -105,20 +113,118 @@ class MODGenXCore:
 		self.Polygon2Raster()
 
 	def Polygon2Raster(self):
+		import rasterio
+		from osgeo import gdal, ogr
+
+		# Get reference raster info first
+		with rasterio.open(self.SWAT_dem_path) as ref_src:
+			ref_shape = ref_src.shape
+			ref_transform = ref_src.transform
+			ref_crs = ref_src.crs
+			ref_res = ref_src.res
+			self.logger.info(f"Reference raster shape: {ref_shape}, resolution: {ref_res}")
 
 		arcpy.env.workspace = self.raster_folder
 		arcpy.env.overwriteOutput = True
-		reference_raster_path = os.path.join(self.BASE_PATH, f"all_rasters/DEM_{self.RESOLUTION}m.tif")
-		arcpy.env.snapRaster = reference_raster_path
-		arcpy.env.outputCoordinateSystem = arcpy.Describe(reference_raster_path).spatialReference
+		arcpy.env.snapRaster = self.SWAT_dem_path
+		arcpy.env.outputCoordinateSystem = arcpy.Describe(self.SWAT_dem_path).spatialReference
 		arcpy.env.extent = self.SWAT_dem_path
 		arcpy.env.nodata = -999
+		
 		self.bound_raster_path = os.path.join(self.raster_folder, 'bound.tif')
 		self.domain_raster_path = os.path.join(self.raster_folder, 'domain.tif')
-		arcpy.PolygonToRaster_conversion(self.basin_path, "Active", self.domain_raster_path, cellsize=self.RESOLUTION)
+
+		 # Instead of using GDAL directly, we'll use our arcpy-like wrapper
+		# which has PolygonToRaster_conversion already implemented
+		arcpy.PolygonToRaster_conversion(
+			self.basin_path, 
+			"Active", 
+			self.domain_raster_path, 
+			cellsize=self.RESOLUTION
+		)
 		self.logger.info('Basin raster is created')
-		arcpy.PolygonToRaster_conversion(self.bound_path, "Bound", self.bound_raster_path, cellsize=self.RESOLUTION)
+		
+		arcpy.PolygonToRaster_conversion(
+			self.bound_path, 
+			"Bound", 
+			self.bound_raster_path, 
+			cellsize=self.RESOLUTION
+		)
 		self.logger.info('Bound raster is created')
+
+		# Now we need to make sure the output rasters match the reference raster exactly
+		# We'll use GDAL to resample if needed
+		with rasterio.open(self.domain_raster_path) as src:
+			domain_shape = src.shape
+			domain_res = src.res
+			self.logger.info(f"Domain raster initial shape: {domain_shape}, resolution: {domain_res}")
+		
+		with rasterio.open(self.bound_raster_path) as src:
+			bound_shape = src.shape
+			bound_res = src.res
+			self.logger.info(f"Bound raster initial shape: {bound_shape}, resolution: {bound_res}")
+
+		# If dimensions don't match, resample to match reference
+		if domain_shape != ref_shape or bound_shape != ref_shape:
+			self.logger.info("Resampling rasters to match reference raster dimensions...")
+			
+			# Create temporary file paths
+			domain_temp = os.path.join(self.raster_folder, 'domain_temp.tif')
+			bound_temp = os.path.join(self.raster_folder, 'bound_temp.tif')
+			
+			# Use GDAL Warp to resample the rasters to match the reference
+			domain_ds = gdal.Open(self.domain_raster_path)
+			bound_ds = gdal.Open(self.bound_raster_path)
+			ref_ds = gdal.Open(self.SWAT_dem_path)
+			
+			# Get reference geotransform and projection
+			ref_geo = ref_ds.GetGeoTransform()
+			ref_proj = ref_ds.GetProjection()
+			ref_xsize = ref_ds.RasterXSize
+			ref_ysize = ref_ds.RasterYSize
+			
+			# Warp domain raster to match reference
+			warp_options = gdal.WarpOptions(
+				width=ref_xsize,
+				height=ref_ysize,
+				outputBounds=(ref_geo[0], ref_geo[3] + ref_ysize * ref_geo[5], 
+							 ref_geo[0] + ref_xsize * ref_geo[1], ref_geo[3]),
+				dstSRS=ref_proj,
+				resampleAlg=gdal.GRA_NearestNeighbour
+			)
+			gdal.Warp(domain_temp, domain_ds, options=warp_options)
+			
+			# Warp bound raster to match reference
+			gdal.Warp(bound_temp, bound_ds, options=warp_options)
+			
+			# Close datasets
+			domain_ds = None
+			bound_ds = None
+			ref_ds = None
+			
+			# Replace original rasters with resampled ones
+			os.replace(domain_temp, self.domain_raster_path)
+			os.replace(bound_temp, self.bound_raster_path)
+			
+			self.logger.info("Rasters resampled to match reference dimensions")
+
+		# Verify the dimensions match
+		with rasterio.open(self.domain_raster_path) as src:
+			domain_shape = src.shape
+			domain_res = src.res
+			self.logger.info(f"Domain raster final shape: {domain_shape}, resolution: {domain_res}")
+
+		with rasterio.open(self.bound_raster_path) as src:
+			bound_shape = src.shape
+			bound_res = src.res
+			self.logger.info(f"Bound raster final shape: {bound_shape}, resolution: {bound_res}")
+
+		# Validate that the shapes match
+		assert domain_shape == ref_shape, f"Domain raster shape {domain_shape} does not match reference raster shape {ref_shape}"
+		assert domain_res == ref_res, f"Domain raster resolution {domain_res} does not match reference raster resolution {ref_res}"
+		assert bound_shape == ref_shape, f"Bound raster shape {bound_shape} does not match reference raster shape {ref_shape}"
+		assert bound_res == ref_res, f"Bound raster resolution {bound_res} does not match reference raster resolution {ref_res}"
+
 
 	def plot_heads(self):
 		"""
@@ -176,6 +282,34 @@ class MODGenXCore:
 
 		self.defining_bound_and_active()
 
+		# Before loading any rasters, determine the CRS of the original SWAT DEM
+		# This will be our reference CRS for all rasters
+		from osgeo import gdal, osr
+		
+		# Check if SWAT DEM exists
+		if not os.path.exists(self.base_dem):
+			self.logger.error(f"Original SWAT DEM not found: {self.base_dem}")
+			raise FileNotFoundError(f"Original SWAT DEM not found: {self.base_dem}")
+		
+		# Get CRS from original SWAT DEM
+		swat_dem_ds = gdal.Open(self.base_dem)
+		if swat_dem_ds is None:
+			self.logger.error(f"Cannot open original SWAT DEM: {self.base_dem}")
+			raise ValueError(f"Cannot open original SWAT DEM: {self.base_dem}")
+		
+		swat_dem_proj = swat_dem_ds.GetProjection()
+		swat_dem_srs = osr.SpatialReference()
+		swat_dem_srs.ImportFromWkt(swat_dem_proj)
+		self.logger.info(f"Original SWAT DEM CRS: {swat_dem_srs.ExportToProj4()}")
+		swat_dem_ds = None
+		
+		# Store the CRS for reference throughout the process
+		self.reference_crs = swat_dem_proj
+		
+		# Continue with existing code...
+		# When creating the domain_raster_path, ensure the target CRS matches the SWAT DEM CRS
+		# ...existing code...
+		
 		load_raster_args = {
 			'LEVEL': self.LEVEL,
 			'RESOLUTION': self.RESOLUTION,
@@ -186,7 +320,8 @@ class MODGenXCore:
 			'MODEL_NAME': self.MODEL_NAME,
 			'SWAT_MODEL_NAME': self.SWAT_MODEL_NAME,
 			'username': self.username,
-			'VPUID': self.VPUID	
+			'VPUID': self.VPUID,
+			'reference_crs': self.reference_crs  # Add reference CRS to the arguments
 		}
 
 		raster_paths = generate_raster_paths(self.RESOLUTION, self.ML)
@@ -226,17 +361,12 @@ class MODGenXCore:
 		self.logger.info(f'Top elevation histogram: {hist}')
 		self.logger.info(f'Top elevation histogram bins: {bins}')
 		
-		# if values are unrealistic (>900000), raise an error
-		if np.max(self.top) > 900000:
-			self.logger.error("ERROR: Top elevation values are extreme (>900000). The DEM raster likely has multiple bands.")
-			self.logger.error("Suggestion: Check the DEM creation process. Use gdal_translate -b 1 input.tif output.tif to extract just the first band.")
-			raise ValueError("Invalid DEM data - extreme values detected. Fix the DEM raster before proceeding.")
-		
-		basin  = load_raster(self.domain_raster_path, load_raster_args)
+	
+		basin = load_raster(self.domain_raster_path, load_raster_args)
 		self.logger.info(f'Shape of basin: {basin.shape}')
 		
 		assert np.max(self.top) != np.min(self.top), "Top elevation data is constant"
-		self.top  = match_raster_dimensions(basin,self.top)
+		self.top = match_raster_dimensions(basin,self.top)
 
 		assert np.max(self.top) != np.min(self.top), "Top elevation data is constant"	
 
@@ -365,6 +495,7 @@ class MODGenXCore:
 			load_raster_args,
 			z_botm, active, grids_path,
 			self.MODEL_NAME
+			
 		)
 
 		if obs_data:

@@ -34,7 +34,7 @@ if __name__ == '__main__':
 	print('start')
 	BASE_PATH = "/data/SWATGenXApp/GenXAppData/"
 	LEVEL = 'huc12'
-	NAME = '05536265'
+	NAME = '04112500'
 	VPUID = find_VPUID(NAME)
 	username = "vahidr32"
 	RESOLUTION = 250

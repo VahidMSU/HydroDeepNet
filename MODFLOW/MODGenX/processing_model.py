@@ -60,8 +60,8 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
 
     top = load_raster(raster_paths['DEM'], load_raster_args)
     print(f' ############## shape of top {top.shape} ############## ')
-    basin  = load_raster(domain_raster_path, load_raster_args)
-    top  = match_raster_dimensions(basin,top)
+    basin = load_raster(domain_raster_path, load_raster_args)
+    top = match_raster_dimensions(basin,top)
     print(f' ############## shape of top {top.shape} ############## ')
     #  plt.imshow(top)
     #  plt.close()
@@ -153,16 +153,16 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
 
     nwt = flopy.modflow.ModflowNwt(
         mf,
-        headtol     = 0.01,  # Lower tolerance for head change
-        fluxtol     = 0.001,  # Lower tolerance for flux imbalance
-        maxiterout  = 100,  # Increase the maximum number of outer iterations
-        thickfact   = 1e-04,
-        linmeth     = 1,
-        iprnwt      = 1,
-        ibotav      = 0,
-        options     = 'MODERATE',
-        Continue    = False,
-        backflag    =1,
+        headtol    = 0.01,  # Lower tolerance for head change
+        fluxtol    = 0.001,  # Lower tolerance for flux imbalance
+        maxiterout = 100,  # Increase the maximum number of outer iterations
+        thickfact  = 1e-04,
+        linmeth    = 1,
+        iprnwt     = 1,
+        ibotav     = 0,
+        options    = 'MODERATE',
+        Continue   = False,
+        backflag   =1,
         maxbackiter =5
     )
 
