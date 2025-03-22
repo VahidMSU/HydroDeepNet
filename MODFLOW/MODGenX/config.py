@@ -13,7 +13,7 @@ class MODFLOWGenXPaths:
     VPUID: str = None
     NAME: str = None
     RESOLUTION: int = None
-    moflow_exe_path = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
+    moflow_exe_path = os.path.join("/data/SWATGenXApp/codes/bin/", "modflow-nwt")
     EPSG = "EPSG:26990"
     dpi = 300
     top = None
