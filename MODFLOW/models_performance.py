@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 
-BASE_PATH = "/data2/MyDataBase/SWATGenXAppData/"
+BASE_PATH = "/data/SWATGenXApp/GenXAppData/"
 RESOLUTION = 250
-NAMES = os.listdir(fr'/data2/MyDataBase/SWATGenXAppData/SWAT_input/huc12/')
+NAMES = os.listdir(f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/0000/huc12/')
 
 
 modelnames = [f'MODFLOW_{RESOLUTION}m', f'MODFLOW_ML_{RESOLUTION}m']
@@ -16,7 +16,7 @@ all_metrics = []
 
 for NAME in NAMES:
 	for MODEL_NAME in modelnames:
-		path_to_metrics = os.path.join(BASE_PATH, f"SWAT_input/huc12/{NAME}/{MODEL_NAME}/metrics.csv")
+		path_to_metrics = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/0000/huc12/{NAME}/{MODEL_NAME}/metrics.csv")
 
 		if os.path.exists(path_to_metrics):
 			metrics = pd.read_csv(path_to_metrics)
@@ -55,7 +55,7 @@ fig, ax = plt.subplots(1, 3, figsize=(12, 4))
 ## calculate RMSE
 EBK_MODELS_Performance['RMSE'] = np.sqrt(EBK_MODELS_Performance['MSE'])
 EBK_MODELS_Performance = EBK_MODELS_Performance[EBK_MODELS_Performance['MODEL_NAME'] == f'MODFLOW_250m']
-NEW_NAMES = os.listdir(fr'/data2/MyDataBase/SWATplus_by_VPUID/0000/huc12/')
+NEW_NAMES = os.listdir(fr'/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/')
 NEW_NAMES.remove('log.txt')	
 NEW_NAMES = [int(name) for name in NEW_NAMES]
 EBK_MODELS_Performance = EBK_MODELS_Performance[EBK_MODELS_Performance.NAME.isin(NEW_NAMES)]

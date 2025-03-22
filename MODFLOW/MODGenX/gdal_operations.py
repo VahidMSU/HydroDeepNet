@@ -19,7 +19,7 @@ class gdal_sa:
             self.snapRaster = None
             self.outputCoordinateSystem = None
             self.extent = None
-            self.nodata = np.nan
+            self.nodata = -999
     
     env = Env()
     
@@ -233,8 +233,8 @@ class gdal_sa:
         
         # Initialize the raster with nodata values
         band = out_ds.GetRasterBand(1)
-        band.SetNoDataValue(-9999)
-        band.Fill(-9999)
+        band.SetNoDataValue(--999)
+        band.Fill(--999)
         
         # Rasterize the layer with specific options to ensure values are transferred correctly
         gdal.RasterizeLayer(

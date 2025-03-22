@@ -126,10 +126,12 @@ def read_plot_evaluate(mf, new_model_ws, modflow_model_name, VPUID, NAME, LEVEL,
 			headobj = flopy.utils.binaryfile.HeadFile(head_path)
 
 			sim_head = headobj.get_data(totim=headobj.get_times()[-1])
+			### get no value of the data
+			
 			first_head = sim_head[0,:,:]
 			#print(f"debug:\n unique values in first layer {np.unique(first_head)}")
-			# replace -999.99 with nan
-			first_head[first_head == -999.99] = np.nan
+			# replace -999 with nan
+			first_head[first_head == -999] = np.nan
 
 			# Create a figure with two subplots
 			fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -171,7 +173,7 @@ def read_plot_evaluate(mf, new_model_ws, modflow_model_name, VPUID, NAME, LEVEL,
 				ax2.annotate(f"RMSE: {rmse:.2f}\nNSE: {nse:.2f}\nMAE: {mae:.2f}\nR2: {r2:.2f}\nCMB: {CMB['IN-OUT'][-1]: .2f}", xy=(0.7, 0.1), xycoords='axes fraction')
 
 				# Save the combined figure
-				figure_directory = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/calibration_figures_{MODEL_NAME}/')
+				figure_directory = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/calibration_figures_{MODEL_NAME}/')
 				os.makedirs(figure_directory, exist_ok=True)
 				plt.savefig(os.path.join(figure_directory, f'combined_figure_{scenario_name}.jpeg'), dpi=300)
 
@@ -204,7 +206,7 @@ def load_selective_zones(selected_filenames, directory):
 
 def generate_new_model_ws_and_load(params, base_directory, MODEL_NAME, scenario_name, original_model_ws, modflow_model_name, original_exe_name, problem):
 	new_model_ws = os.path.join(base_directory, MODEL_NAME,  "Scenarios",  scenario_name)
-	new_exe_name = os.path.join(new_model_ws , 'MODFLOW-NWT_64.exe')
+	new_exe_name = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
 	# make the directory if it does not exist
 	os.makedirs(new_model_ws, exist_ok=True)
 	# copy the files from the original directory to the new directory
@@ -237,8 +239,10 @@ def simulate_and_evaluate_modflow_model(params, problem, MODEL_NAME, NAME, LEVEL
 
 	modflow_model_name = "Michigan"
 
-	base_directory = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/')
-	original_exe_name = "/data2/MyDataBase/SWATGenXAppData/bin/MODFLOW-NWT_64.exe"
+
+
+	base_directory = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/')
+	original_exe_name = os.path.join("/data2/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
 	original_model_ws = os.path.join(base_directory , MODEL_NAME)
 	figure_directory = os.path.join(base_directory, f'calibration_figures_{MODEL_NAME}')
 	loaded_zones_dict = load_selective_zones(filenames, original_model_ws)
@@ -303,29 +307,29 @@ def zip_copy_unzip(source_dir, dest_dir):
 if __name__ == "__main__":
 
 	## run a single evaluation
-	NAMES = os.listdir('/data2/MyDataBase/SWATGenXAppData/SWAT_input/huc12/')
+	NAMES = os.listdir('/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/0000/huc12/')
 	#NAME = "40500012304"
 	#VPUID = "0405"
 	LEVEL = "huc12"
 	RESOLUTION = 250
 	MODEL_NAME = "MODFLOW_{RESOLUTION}m"
 	BASE_PATH = "D:/MyDataBase"
-	OUTPUT_path = "/data2/MyDataBase/SWATGenXAppData/"
+	OUTPUT_path = "/data/SWATGenXApp/GenXAppData/"
 	for NAME in NAMES:
 		VPUID = f"0{NAME[:3]}"
 		NAMES.remove('log.txt')
 		model_base = f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/"
 		MODFLOW_path = os.path.join(BASE_PATH,f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}")
 
-		source_dir = os.path.join(BASE_PATH, f"SWAT_input/{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m")
-		dest_dir = os.path.join(BASE_PATH, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m")
+		source_dir = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m")
+		dest_dir = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m")
 		zip_copy_unzip(source_dir, dest_dir)
 		initial_points_path       = os.path.join(BASE_PATH, model_base,  f'initial_points_{MODEL_NAME}.csv')
 		initial_values_path       = os.path.join(BASE_PATH, model_base,  f'initial_values_{MODEL_NAME}.csv')
 		best_simulation_filename  = os.path.join(BASE_PATH, model_base,  f'best_solution_{MODEL_NAME}.txt')
 
 		model_log_path            = os.path.join(BASE_PATH, model_base,   'log.txt')
-		general_log_path          = os.path.join(BASE_PATH, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/log.txt")
+		general_log_path          = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/log.txt")
 
 		figure_directory = os.path.join(BASE_PATH, model_base, f'calibration_figures_{MODEL_NAME}')
 		# remove figures directory if it exists
@@ -339,7 +343,7 @@ if __name__ == "__main__":
 		# plot filenames
 		plot_zones(filenames, model_directory)
 
-		cal_parms = pd.read_csv("/data2/MyDataBase/SWATGenXAppData/bin/cal_parms_MODFLOW.cal", sep="\s+", skiprows =1)
+		cal_parms = pd.read_csv("/data/SWATGenXApp/GenXAppData/bin/cal_parms_MODFLOW.cal", sep="\s+", skiprows =1)
 
 		#now define params
 		param_files, operation_types, problem = read_control_file(cal_parms)

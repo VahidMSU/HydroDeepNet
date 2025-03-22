@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import os
-#/data2/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXConfigPars.py
+#/data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXConfigPars.py
 @dataclass
 class MODFLOWGenXPaths:
     overwrite: bool = True
@@ -13,7 +13,7 @@ class MODFLOWGenXPaths:
     VPUID: str = None
     NAME: str = None
     RESOLUTION: int = None
-    moflow_exe_path = os.path.join("/data2/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
+    moflow_exe_path = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
     EPSG = "EPSG:26990"
     dpi = 300
     top = None
@@ -26,8 +26,8 @@ class MODFLOWGenXPaths:
         if self.username is not None and self.VPUID is not None and self.LEVEL is not None and self.NAME is not None and self.MODFLOW_MODEL_NAME is not None:
             
             
-            self.BASE_PATH = f"/data2/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
-            self.report_path: str = f"/data2/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
+            self.BASE_PATH = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
+            self.report_path: str = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
 
 
             self.MODFLOW_model_path = os.path.join(self.BASE_PATH, self.VPUID, self.LEVEL, self.NAME, self.MODFLOW_MODEL_NAME)

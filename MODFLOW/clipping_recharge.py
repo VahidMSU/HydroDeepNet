@@ -2,9 +2,9 @@ import arcpy
 import os
 
 RESOLUTION = 250
-path = f"/data2/MyDataBase/SWATGenXAppData/Recharge/Recharge_rasterized_{RESOLUTION}m.tif"
-reference_raster = f"/data2/MyDataBase/SWATGenXAppData/all_rasters/DEM_{RESOLUTION}m.tif"
-output_path = os.path.join("/data2/MyDataBase/SWATGenXAppData/all_rasters", f"Recharge_{RESOLUTION}m.tif")
+path = f"/data/SWATGenXApp/GenXAppData/Recharge/Recharge_rasterized_{RESOLUTION}m.tif"
+reference_raster = f"/data/SWATGenXApp/GenXAppData/all_rasters/DEM_{RESOLUTION}m.tif"
+output_path = os.path.join("/data/SWATGenXApp/GenXAppData/all_rasters", f"Recharge_{RESOLUTION}m.tif")
 arcpy.env.overwriteOutput = True
 arcpy.env.outputCoordinateSystem = arcpy.Describe(reference_raster).spatialReference
 arcpy.env.snapRaster = reference_raster

@@ -23,13 +23,13 @@ debug=True
 def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT_MODEL_NAME):
 
 
-    raster_folder = os.path.join(BASE_PATH, f"SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/rasters_input")
-    model_path = os.path.join(BASE_PATH, f'SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}')
+    raster_folder = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/rasters_input")
+    model_path = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}')
     moflow_exe_path=os.path.join(model_path,"MODFLOW-NWT_64.exe")
-    swat_lake_shapefile_path = os.path.join(BASE_PATH, f'SWAT_input/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp')
-    ref_raster_path = os.path.join(BASE_PATH, f'SWAT_input/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif')
-    subbasin_path = os.path.join(BASE_PATH, f"SWAT_input/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/subs1.shp")
-    SWAT_dem_path = os.path.join(BASE_PATH, f"SWAT_input/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif")
+    swat_lake_shapefile_path = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp')
+    ref_raster_path = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif')
+    subbasin_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/subs1.shp")
+    SWAT_dem_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif")
     swat_river_raster_path=os.path.join(model_path, 'swat_river.tif')
     swat_lake_raster_path=os.path.join(model_path,'lake_raster.tif')
 
@@ -54,7 +54,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
         'active': domain_raster_path,
         'MODEL_NAME': MODEL_NAME,
         }
-#if os.path.exists(f'/data2/MyDataBase/SWATGenXAppData/SWAT_input/{LEVEL}/{NAME}/best_solution.txt'):
+#if os.path.exists(f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/best_solution.txt'):
 
     raster_paths = generate_raster_paths(RESOLUTION, ML)
 
@@ -203,7 +203,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
 
     if obs_data:
         wel = flopy.modflow.ModflowWel(mf, stress_period_data=wel_data)
-        hob = flopy.modflow.ModflowHob(mf, iuhobsv = 41, hobdry = -9999., obs_data=obs_data)
+        hob = flopy.modflow.ModflowHob(mf, iuhobsv = 41, hobdry = --999., obs_data=obs_data)
 
     rasterize_SWAT_features(BASE_PATH,"rivers", swat_river_raster_path, load_raster_args)
 
@@ -236,7 +236,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
     nse, mse, mae, pbias, kge = create_plots_and_return_metrics (df_sim_obs, LEVEL, NAME, MODEL_NAME)
     ## save the model performance metrics in a csv file
     metrics = [MODEL_NAME, NAME, RESOLUTION, nse, mse, mae, pbias, kge]
-    metrics_path = os.path.join(BASE_PATH, f'SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/metrics.csv')
+    metrics_path = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/metrics.csv')
     with open(metrics_path, 'w') as f:
         f.write('MODEL_NAME,NAME,RESOLUTION,NSE,MSE,MAE,PBIAS,KGE\n')
         f.write(','.join(str(metric) for metric in metrics))
@@ -249,7 +249,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
     titles = ['water wells location', "SWL initial",'Head',  'Active Cells','K Horizontal 1',
             'K Horizontal 2', 'K Vertical 1', 'K Vertical 2', 'Recharge','base flow','Thickness 1', 'thickness 2']
 
-    model_input_figure_path = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/{LEVEL}/{NAME}/{MODEL_NAME}/input_figures.jpeg"
+    model_input_figure_path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/input_figures.jpeg"
 
     plot_data(datasets, titles, model_input_figure_path)
 
