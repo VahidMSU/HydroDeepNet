@@ -25,7 +25,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
 
     raster_folder = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/rasters_input")
     model_path = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}')
-    moflow_exe_path=os.path.join(model_path,"MODFLOW-NWT_64.exe")
+    moflow_exe_path=os.path.join(model_path,"modflow-nwt")
     swat_lake_shapefile_path = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp')
     ref_raster_path = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif')
     subbasin_path = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/subs1.shp")
@@ -110,7 +110,7 @@ def create_modflow_model(NAME, BASE_PATH, LEVEL,RESOLUTION, MODEL_NAME, ML, SWAT
     src,delr, delc = model_src(raster_paths['DEM'])
 
     os.makedirs(model_path, exist_ok=True)
-    shutil.copy2(os.path.join(BASE_PATH,"bin/MODFLOW-NWT_64.exe"), model_path)
+    shutil.copy2(os.path.join(BASE_PATH,"bin/modflow-nwt"), model_path)
 
     mf = flopy.modflow.Modflow(
         MODEL_NAME,

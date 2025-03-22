@@ -33,7 +33,7 @@ class MODGenXCore:
 		self.logger = Logger(verbose=True)
 		self.raster_folder            = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/rasters_input")
 		self.model_path               = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}')
-		self.moflow_exe_path          = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
+		self.moflow_exe_path          = os.path.join("/data/SWATGenXApp/codes/bin/", "modflow-nwt")
 		self.swat_lake_shapefile_path = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp')
 		self.ref_raster_path          = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif')
 		self.subbasin_path            = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/subs1.shp")
@@ -417,12 +417,12 @@ class MODGenXCore:
 		src,delr, delc = model_src(raster_paths['DEM'])
 
 		os.makedirs(self.model_path, exist_ok=True)
-		moflow_exe_path = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
+		moflow_exe_path = os.path.join("/data/SWATGenXApp/codes/bin/", "modflow-nwt")
 		shutil.copy2(moflow_exe_path, self.model_path)
 
 		assert os.path.exists(moflow_exe_path), f"MODFLOW executable not found at {moflow_exe_path}"
 
-		assert os.path.exists(os.path.join(self.model_path, "MODFLOW-NWT_64.exe")), "MODFLOW executable not found in the model path"
+		assert os.path.exists(os.path.join(self.model_path, "modflow-nwt")), "MODFLOW executable not found in the model path"
 
 		mf = flopy.modflow.Modflow(                                                       		                      ## model object
 			self.MODEL_NAME,

@@ -206,7 +206,7 @@ def load_selective_zones(selected_filenames, directory):
 
 def generate_new_model_ws_and_load(params, base_directory, MODEL_NAME, scenario_name, original_model_ws, modflow_model_name, original_exe_name, problem):
 	new_model_ws = os.path.join(base_directory, MODEL_NAME,  "Scenarios",  scenario_name)
-	new_exe_name = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
+	new_exe_name = os.path.join("/data/SWATGenXApp/codes/bin/", "modflow-nwt")
 	# make the directory if it does not exist
 	os.makedirs(new_model_ws, exist_ok=True)
 	# copy the files from the original directory to the new directory
@@ -242,7 +242,7 @@ def simulate_and_evaluate_modflow_model(params, problem, MODEL_NAME, NAME, LEVEL
 
 
 	base_directory = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/')
-	original_exe_name = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
+	original_exe_name = os.path.join("/data/SWATGenXApp/codes/bin/", "modflow-nwt")
 	original_model_ws = os.path.join(base_directory , MODEL_NAME)
 	figure_directory = os.path.join(base_directory, f'calibration_figures_{MODEL_NAME}')
 	loaded_zones_dict = load_selective_zones(filenames, original_model_ws)
