@@ -50,5 +50,6 @@ for resolution in resolutions:
         raster = arcpy.NumPyArrayToRaster(data, lower_left_corner, cell_size, cell_size, -999)
         
         # Save the raster
+        
         raster.save(output_path)
         print(f"Created raster: {output_path}")

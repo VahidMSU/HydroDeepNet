@@ -242,7 +242,7 @@ def simulate_and_evaluate_modflow_model(params, problem, MODEL_NAME, NAME, LEVEL
 
 
 	base_directory = os.path.join(f'/data/SWATGenXApp/GenXApp/{username}', f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/')
-	original_exe_name = os.path.join("/data2/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
+	original_exe_name = os.path.join("/data/SWATGenXApp/codes/bin/", "MODFLOW-NWT_64.exe")
 	original_model_ws = os.path.join(base_directory , MODEL_NAME)
 	figure_directory = os.path.join(base_directory, f'calibration_figures_{MODEL_NAME}')
 	loaded_zones_dict = load_selective_zones(filenames, original_model_ws)
@@ -324,12 +324,12 @@ if __name__ == "__main__":
 		source_dir = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m")
 		dest_dir = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m")
 		zip_copy_unzip(source_dir, dest_dir)
-		initial_points_path       = os.path.join(BASE_PATH, model_base,  f'initial_points_{MODEL_NAME}.csv')
-		initial_values_path       = os.path.join(BASE_PATH, model_base,  f'initial_values_{MODEL_NAME}.csv')
-		best_simulation_filename  = os.path.join(BASE_PATH, model_base,  f'best_solution_{MODEL_NAME}.txt')
+		initial_points_path      = os.path.join(BASE_PATH, model_base,  f'initial_points_{MODEL_NAME}.csv')
+		initial_values_path      = os.path.join(BASE_PATH, model_base,  f'initial_values_{MODEL_NAME}.csv')
+		best_simulation_filename = os.path.join(BASE_PATH, model_base,  f'best_solution_{MODEL_NAME}.txt')
 
-		model_log_path            = os.path.join(BASE_PATH, model_base,   'log.txt')
-		general_log_path          = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/log.txt")
+		model_log_path           = os.path.join(BASE_PATH, model_base,   'log.txt')
+		general_log_path         = os.path.join(f'/data/SWATGenXApp/GenXAppData/{username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/log.txt")
 
 		figure_directory = os.path.join(BASE_PATH, model_base, f'calibration_figures_{MODEL_NAME}')
 		# remove figures directory if it exists

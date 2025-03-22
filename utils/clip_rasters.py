@@ -12,6 +12,9 @@ def clip_raster_by_another(BASE_PATH, raster_path, in_masking, output_path):
     It extracts by extent and ensures the same number of rows and columns as in_masking.
     Also ensures the output is a single-band raster by extracting only the first band.
     """
+    logger.warning(f"Clipping raster {raster_path} by {in_masking}")
+    logger.info(f"Output path: {output_path}")
+    
     env = arcpy.env  # Use gdal_sa's env class
     env.overwriteOutput = True
     os.makedirs(os.path.join("_temp/"), exist_ok=True)
@@ -20,14 +23,10 @@ def clip_raster_by_another(BASE_PATH, raster_path, in_masking, output_path):
     
     # Open the input and mask rasters
     mask_ds = gdal.Open(in_masking)
-    if mask_ds is None:
-        logger.error(f"Cannot open reference raster: {in_masking}")
-        raise ValueError(f"Cannot open reference raster: {in_masking}")
-    
+    assert mask_ds is not None, f"Cannot open mask raster {in_masking}"
+
     input_ds = gdal.Open(raster_path)
-    if input_ds is None:
-        logger.error(f"Cannot open input raster {raster_path}")
-        raise ValueError(f"Cannot open input raster {raster_path}")
+    assert input_ds is not None, f"Cannot open input raster {raster_path}"
     
     # Get the CRS information
     mask_srs = osr.SpatialReference(wkt=mask_ds.GetProjection())
@@ -111,24 +110,50 @@ def clip_raster_by_another(BASE_PATH, raster_path, in_masking, output_path):
         logger.error(f"Failed to create output raster: {output_path}")
         raise ValueError(f"Failed to create output raster: {output_path}")
     
-    # Check the output statistics
+    # Check the output statistics without using ReadAsArray
     out_band = out_ds.GetRasterBand(1)
-    out_nodata = out_band.GetNoDataValue()
     
-    # Read data for validation
-    out_data = out_band.ReadAsArray()
-    valid_mask = (out_data != out_nodata) if out_nodata is not None else np.ones(out_data.shape, dtype=bool)
-    valid_data = out_data[valid_mask]
-    
-    if valid_data.size > 0:
-        min_val = np.nanmin(valid_data)
-        max_val = np.nanmax(valid_data)
-        mean_val = np.nanmean(valid_data)
-        std_val = np.nanstd(valid_data)
+    # Use GetStatistics which doesn't require gdal_array
+    try:
+        # Force computation of statistics (approx=False, force=True)
+        stats = out_band.GetStatistics(False, True)
+        min_val, max_val, mean_val, std_val = stats
         logger.info(f"Output raster stats: min={min_val}, max={max_val}, mean={mean_val}, stddev={std_val}")
-    else:
-        logger.warning("No valid data found in output raster!")
+        
+        if min_val == max_val:
+            logger.warning("Output raster has constant values, which might indicate a problem")
+    except Exception as e:
+        logger.warning(f"Could not compute statistics: {str(e)}")
+        
+        # Alternate method: scan a sample of pixels to check for valid data
+        width = out_band.XSize
+        height = out_band.YSize
+        
+        # Sample pixels to check validity
+        sample_size = min(100, width * height)
+        has_valid_data = False
+        
+        for _ in range(sample_size):
+            x = int(np.random.uniform(0, width))
+            y = int(np.random.uniform(0, height))
+            # Read a single pixel value
+            data = out_band.ReadRaster(x, y, 1, 1, buf_type=gdal.GDT_Float32)
+            if data:
+                import struct
+                value = struct.unpack('f', data)[0]
+                if not (np.isnan(value) or np.isinf(value)):
+                    has_valid_data = True
+                    break
+        
+        if not has_valid_data:
+            logger.warning("No valid data found in sampled pixels!")
     
+    # Check the data range in the output
+    min_max = out_band.ComputeRasterMinMax()
+    if "domain.tif" not in output_path: ### only for this raster, we excpet everything be 1
+        logger.info(f"Clipped raster data range: {min_max[0]} to {min_max[1]}")
+        assert min_max[0] != min_max[1], "Output raster has constant values"
+        
     # Clean up
     input_ds = None
     mask_ds = None

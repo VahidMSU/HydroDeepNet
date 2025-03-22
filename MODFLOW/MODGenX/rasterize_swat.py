@@ -41,8 +41,34 @@ def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_ra
 
     modflow_grid_path = shapefile_paths['grids']
 
-    # Set target CRS to EPSG:26990 (NAD83 / Michigan Central)
-    target_crs = "EPSG:26990"
+    # Get reference CRS from arguments if available
+    reference_crs = load_raster_args.get('reference_crs', None)
+    
+    # If reference CRS not provided, get it from the reference raster
+    if reference_crs is None:
+        from osgeo import gdal, osr
+        ref_ds = gdal.Open(ref_raster_path)
+        if ref_ds is not None:
+            reference_crs = ref_ds.GetProjection()
+            ref_ds = None
+            logger.info(f"Using reference raster CRS for projection")
+        else:
+            # Default to EPSG:26990 if we can't get the reference CRS
+            logger.warning(f"Cannot open reference raster, using default EPSG:26990")
+            reference_crs = osr.SpatialReference()
+            reference_crs.ImportFromEPSG(26990)
+            reference_crs = reference_crs.ExportToWkt()
+    
+    # Convert reference CRS to a format usable by geopandas
+    from osgeo import osr
+    srs = osr.SpatialReference()
+    srs.ImportFromWkt(reference_crs)
+    if srs.IsProjected():
+        target_crs = f"EPSG:{srs.GetAuthorityCode('PROJCS')}" if srs.GetAuthorityCode('PROJCS') else "EPSG:26990"
+    else:
+        target_crs = f"EPSG:{srs.GetAuthorityCode('GEOGCS')}" if srs.GetAuthorityCode('GEOGCS') else "EPSG:4326"
+    
+    logger.info(f"Target CRS for rasterization: {target_crs}")
     
     # Read the shapefile using geopandas and reproject to target CRS
     try:
@@ -53,7 +79,8 @@ def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_ra
             logger.info("Warning: Feature CRS is None or empty. Assuming EPSG:4326 (WGS 84).")
             original_feature.crs = "EPSG:4326"
         
-        # Reproject the features to the target CRS
+        # Explicitly reproject to the target CRS
+        logger.info(f"Reprojecting features from {original_feature.crs} to {target_crs}")
         original_feature = original_feature.to_crs(target_crs)
         logger.info(f"Reprojected feature CRS: {original_feature.crs}")
     except Exception as e:

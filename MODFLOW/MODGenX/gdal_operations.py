@@ -265,6 +265,73 @@ class gdal_sa:
                 print(f"Warning: Cannot open output raster for validation: {out_raster}")
 
     @staticmethod
+    def ValidateRaster(raster_path):
+
+        """
+        Validate a raster file for common issues:
+        1. All values are NaN
+        2. All values are Inf
+        3. All values are identical
+        Returns a dictionary with validation results
+        """
+        
+        # Result dictionary to store validation information
+        result = {
+            'is_valid': True,
+            'all_nan': False,
+            'all_inf': False, 
+            'all_identical': False,
+            'unique_value': None,
+            'message': 'Raster validation passed'
+        }
+        
+        try:
+            # Open the raster
+            ds = gdal.Open(raster_path)
+            if ds is None:
+                result['is_valid'] = False
+                result['message'] = f"Cannot open raster: {raster_path}"
+                return result
+            
+            # Read data
+            band = ds.GetRasterBand(1)
+            nodata = band.GetNoDataValue()
+            data = band.ReadAsArray()
+            
+            # Check if all values are NaN
+            if np.isnan(data).all():
+                result['is_valid'] = False
+                result['all_nan'] = True
+                result['message'] = "All values in the raster are NaN"
+                return result
+            
+            # Check if all values are Inf
+            if np.isinf(data).all():
+                result['is_valid'] = False
+                result['all_inf'] = True
+                result['message'] = "All values in the raster are Infinite"
+                return result
+            
+            # Check if all non-NoData values are identical
+            unique_values = np.unique(data)
+            # Remove NoData value from consideration if it exists
+            if nodata is not None:
+                unique_values = unique_values[unique_values != nodata]
+            
+            if len(unique_values) == 1:
+                result['all_identical'] = True
+                result['unique_value'] = float(unique_values[0])
+                result['message'] = f"All values in the raster are identical: {result['unique_value']}"
+                # This is not necessarily invalid, but flagged for information
+            
+            return result
+        
+        except Exception as e:
+            result['is_valid'] = False
+            result['message'] = f"Error during raster validation: {str(e)}"
+            return result
+
+    @staticmethod
     def SpatialReference(epsg_code):
         """Create a spatial reference object from an EPSG code"""
         sr = osr.SpatialReference()
