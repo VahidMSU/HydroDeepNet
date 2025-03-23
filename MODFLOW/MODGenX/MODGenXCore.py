@@ -22,7 +22,7 @@ from MODGenX.rasterize_swat import rasterize_SWAT_features
 import os
 import rasterio
 from osgeo import gdal, ogr
-from MODGenX.well_info import create_shapefile_from_modflow_grid_arcpy
+from MODGenX.well_info import ref_raster_to_shp_grid
 from osgeo import osr, gdal
 from MODGenX.config import MODFLOWGenXPaths
 from MODGenX.path_handler import PathHandler
@@ -519,7 +519,7 @@ class MODGenXCore:
 		# Create MODFLOW grid shapefile
 		self.logger.info("Creating MODFLOW grid shapefile")
 		grids_path = f'{self.out_shp}.geojson'
-		create_shapefile_from_modflow_grid_arcpy(
+		ref_raster_to_shp_grid(
 			self.BASE_PATH, 
 			self.model_path, 
 			self.MODEL_NAME, 
@@ -624,4 +624,4 @@ class MODGenXCore:
 		self.logger.info(f"Model input visualizations saved to {model_input_figure_path}")
 
 		create_error_zones_and_save(self.model_path, load_raster_args, self.ML)
-		self.logger.info("Error zones created and saved successfully")
+		self.logger.info("Zones created and saved successfully")

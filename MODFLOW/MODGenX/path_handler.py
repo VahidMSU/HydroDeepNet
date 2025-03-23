@@ -208,7 +208,7 @@ class PathHandler:
             "huc8": self.get_genxapp_data_path("NHDPlusData/WBDHU8/WBDHU8_26990.geojson"),
             "huc4": self.get_genxapp_data_path("NHDPlusData/WBDHU4/WBDHU4_26990.geojson"),
             "streams": self.get_genxapp_data_path("NHDPlusData/streams.pkl"),
-            "observations": self.get_genxapp_data_path("observations/observations_original.geojson"),
+            "observations": self.get_genxapp_data_path("observations/observations.geojson"),
         }
     
     def get_temporary_path(self, filename: str) -> str:
