@@ -72,56 +72,51 @@ def cleaning(df,active):
         logger.error(f"Error in cleaning function: {str(e)}")
         raise
 
-def sim_obs(BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLUTION, load_raster_args,df_obs, fitToMeter = 0.3048):
+def sim_obs(VPUID, username, BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLUTION, load_raster_args,df_obs, fitToMeter = 0.3048):
     """
     Compare observed and simulated water levels.
     """
     logger.info(f"Starting sim_obs comparison for {MODEL_NAME} with {len(df_obs)} observation points")
     start_time = time.time()
     
-    try:
-        SDIR = 'SWATplus_by_VPUID'
-        hds_path = os.path.join(BASE_PATH, f'{SDIR}/{LEVEL}/{NAME}/{MODEL_NAME}/', f'{MODEL_NAME}.hds')
-        
-        # Check if head file exists
-        if not os.path.exists(hds_path):
-            logger.error(f"Head file not found: {hds_path}")
-            raise FileNotFoundError(f"Head file not found: {hds_path}")
-            
-        # Load simulated heads
-        logger.info(f"Loading head file: {hds_path}")
-        headobj = flopy.utils.binaryfile.HeadFile(hds_path)
-        sim_head = headobj.get_data(totim=headobj.get_times()[-1])
-        logger.info(f"Loaded simulated heads with shape: {sim_head.shape}")
-        
-        model_top = mf.Dis.top.array
-        hcon_1 = mf.upw.hk.array[0]
-        
-        # Initialize column for simulated SWL
-        df_obs['sim_head_m'] = np.nan
+
+    SDIR = f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}'
+    hds_path = f'{SDIR}/{LEVEL}/{NAME}/{MODEL_NAME}/{MODEL_NAME}.hds'
+
+    assert os.path.exists(hds_path), f"Head file not found: {hds_path}"
+
+    # Load simulated heads
+    logger.info(f"Loading head file: {hds_path}")
+    headobj = flopy.utils.binaryfile.HeadFile(hds_path)
+    sim_head = headobj.get_data(totim=headobj.get_times()[-1])
+    logger.info(f"Loaded simulated heads with shape: {sim_head.shape}")
     
-        # Extract rows and columns
-        rows = df_obs['row'].values.astype(int)
-        cols = df_obs['col'].values.astype(int)
-        df_obs.loc[:, 'top'] = model_top[rows, cols]
+    model_top = mf.Dis.top.array
+    hcon_1 = mf.upw.hk.array[0]
     
-        df_obs.loc[:, 'sim_head_m'] = sim_head[0, rows, cols]
-        df_obs.loc[:, 'sim_SWL_m'] = model_top[rows, cols] - sim_head[0, rows, cols]
+    # Initialize column for simulated SWL
+    df_obs['sim_head_m'] = np.nan
+
+    # Extract rows and columns
+    rows = df_obs['row'].values.astype(int)
+    cols = df_obs['col'].values.astype(int)
+    df_obs.loc[:, 'top'] = model_top[rows, cols]
+
+    df_obs.loc[:, 'sim_head_m'] = sim_head[0, rows, cols]
+    df_obs.loc[:, 'sim_SWL_m'] = model_top[rows, cols] - sim_head[0, rows, cols]
+
+    df_obs['obs_head_m'] = fitToMeter*(df_obs['ELEV_DEM'] - df_obs['SWL'])
+    df_obs['obs_SWL_m'] = fitToMeter*df_obs['SWL']
+
+    count_before = len(df_obs)
+    df_obs.dropna(subset=['obs_head_m','obs_SWL_m', 'sim_head_m', 'obs_SWL_m'], inplace=True)
+    count_after = len(df_obs)
     
-        df_obs['obs_head_m'] = fitToMeter*(df_obs['ELEV_DEM'] - df_obs['SWL'])
-        df_obs['obs_SWL_m'] = fitToMeter*df_obs['SWL']
+    logger.info(f"Sim-obs comparison completed in {time.time() - start_time:.2f} seconds")
+    logger.info(f"Observation points: {count_before} before filtering, {count_after} after filtering")
     
-        count_before = len(df_obs)
-        df_obs.dropna(subset=['obs_head_m','obs_SWL_m', 'sim_head_m', 'obs_SWL_m'], inplace=True)
-        count_after = len(df_obs)
-        
-        logger.info(f"Sim-obs comparison completed in {time.time() - start_time:.2f} seconds")
-        logger.info(f"Observation points: {count_before} before filtering, {count_after} after filtering")
-        
-        return df_obs
-    except Exception as e:
-        logger.error(f"Error in sim_obs function: {str(e)}")
-        raise
+    return df_obs
+
 
 def smooth_invalid_thickness(array, size=25):
     """
@@ -183,7 +178,7 @@ def remove_isolated_cells(active, load_raster_args):
     plt.imshow(active[0], cmap='viridis')
     plt.colorbar()
     plt.title("Active Layer 1")
-    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/MODGenX/remove_isolated_cells_active_layer_1.png")
+    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/logs/remove_isolated_cells_active_layer_1.png")
     plt.close()
 
     LEVEL = load_raster_args['LEVEL']
@@ -199,11 +194,13 @@ def remove_isolated_cells(active, load_raster_args):
     ### where active is 1, ibound is 1
     new_ibound = np.where(active == 1, 1, ibound)
 
+    new_ibound = np.where(new_ibound == 9999, 0, new_ibound)
+
     plt.close()
     plt.imshow(new_ibound[0], cmap='viridis')
     plt.colorbar()
     plt.title("IBound Layer 1")
-    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/MODGenX/remove_isolated_cells_ibound_layer_1.png")
+    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/logs/remove_isolated_cells_ibound_layer_1.png")
     plt.close()
 
 
@@ -347,7 +344,7 @@ def defining_bound_and_active(BASE_PATH, subbasin_path, raster_folder, RESOLUTIO
 
     env.outputCoordinateSystem = GDAL.Describe(reference_raster_path).spatialReference
     env.extent = SWAT_dem_path
-    env.nodata = -999
+    env.nodata = 9999
 
     bound_raster_path = os.path.join  (raster_folder, 'bound.tif')
     domain_raster_path = os.path.join  (raster_folder, 'domain.tif')
@@ -376,7 +373,7 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
     if lake_flag:
         lake_raster = load_raster(swat_lake_raster_path,load_raster_args)
         #lake_raster = match_raster_dimensions(active,lake_raster)
-        lake_raster = np.where(lake_raster == -999, 0, lake_raster)
+        lake_raster = np.where(lake_raster == 9999, 0, lake_raster)
         lake_raster = np.where(lake_raster > 0, 1, 0)
     else:
         logger.info('no lake is considered for active domain')
@@ -386,7 +383,7 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
 
     bound = load_raster(bound_raster_path, load_raster_args)
     
-    bound = np.where(bound == -999, 0, bound)
+    bound = np.where(bound == 9999, 0, bound)
 
     bound = match_raster_dimensions(top,bound)
 
@@ -399,13 +396,13 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
     plt.imshow(bound, cmap='viridis')
     plt.colorbar()
     plt.title("Bound Layer 1")
-    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/MODGenX/bound_layer.png")
+    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/logs/bound_layer.png")
     plt.close()
 
     plt.imshow(active, cmap='viridis')
     plt.colorbar()
     plt.title("Active Layer 1")
-    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/MODGenX/active_layer.png")
+    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/logs/active_layer.png")
     plt.close()
 
 
@@ -419,7 +416,7 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
         plt.imshow(lake_raster, cmap='viridis')
         plt.colorbar()
         plt.title("Lake Layer 1")
-        plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/MODGenX/lake_layer.png")
+        plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/logs/lake_layer.png")
         plt.close()
         active=np.where((lake_raster==1) & (active==1), -1, active )
     else:
@@ -429,11 +426,11 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
     active = np.repeat(active[np.newaxis, :, :], nlay, axis=0 )
     active[nlay-1] =0
 # Loop through each layer and plot active domain:
-    active = np.where(active == -999, 0, active)
+    active = np.where(active == 9999, 0, active)
     plt.imshow(active[0], cmap='viridis')
     plt.colorbar()
     plt.title("Active Layer 1")
-    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/MODGenX/active_layer_1_.png")
+    plt.savefig(f"/data/SWATGenXApp/codes/MODFLOW/logs/active_layer_1_.png")
     return active, lake_raster
 
 def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData/'):
@@ -457,13 +454,13 @@ def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData
         logger.info(f"Attempting direct load of DEM file: {path}")
         with rasterio.open(path) as src:
             data = src.read(1)
-            no_data = src.nodata if src.nodata is not None else -999
+            no_data = src.nodata if src.nodata is not None else 9999
             data_min, data_max = data.min(), data.max()
             logger.info(f"Direct load - data range: {data_min} to {data_max}")
             if data_min > 0 and data_max < 10000:
                 logger.info(f"Using direct DEM data with valid range")
-                data = np.where(data == no_data, -999, data)
-                assert not np.all(data == -999), f"DEM data has all NoData values"
+                data = np.where(data == no_data, 9999, data)
+                assert not np.all(data == 9999), f"DEM data has all NoData values"
                 return data
         logger.info(f"Direct load didn't produce valid elevation range, trying clip method")
     
@@ -487,10 +484,10 @@ def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData
                 os.rename(temp_output, output_clip)
                 src = rasterio.open(output_clip)
             data = src.read(1)
-            no_data = src.nodata if src.nodata is not None else -999
+            no_data = src.nodata if src.nodata is not None else 9999
             data_min, data_max = data.min(), data.max()
             logger.info(f"Clipped raster data range: {data_min} to {data_max}")
-            data = np.where(data == no_data, -999, data)
+            data = np.where(data == no_data, 9999, data)
             if "DEM" in path and (data_min < -900000 or data_max > 900000):
                 logger.error(f"ERROR: Extreme values in clipped DEM. Attempting recovery.")
                 with rasterio.open(path) as orig_src:
@@ -499,8 +496,8 @@ def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData
                     logger.info(f"Original DEM range: {orig_min} to {orig_max}")
                     if orig_min > -900000 and orig_max < 900000:
                         logger.info(f"Using original DEM data with valid range")
-                        data = np.where(orig_data == orig_src.nodata, -999, orig_data)
-            if np.all(data == -999) or np.all(data < -900000) or np.all(data > 900000):
+                        data = np.where(orig_data == orig_src.nodata, 9999, orig_data)
+            if np.all(data == 9999) or np.all(data < -900000) or np.all(data > 900000):
                 logger.error(f"ERROR: All values in raster are invalid!")
                 
                 raise ValueError(f"Invalid raster data in {output_clip}")
@@ -515,10 +512,10 @@ def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData
                     band_max = src.read(i).max()
                     logger.warning(f"Band {i} range: {band_min} to {band_max}")
             data = src.read(1)
-            no_data = src.nodata if src.nodata is not None else -999
+            no_data = src.nodata if src.nodata is not None else 9999
             data_min, data_max = data.min(), data.max()
             logger.info(f"Reference/bound raster data range: {data_min} to {data_max}")
-            data = np.where(data == no_data, -999, data)
+            data = np.where(data == no_data, 9999, data)
             return data
 
 def read_raster(src, arg1):

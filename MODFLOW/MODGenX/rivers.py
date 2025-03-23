@@ -8,6 +8,8 @@ from MODGenX.Logger import Logger
 
 logger = Logger(verbose=True)   
 
+
+
 def river_gen(nrow, ncol, swat_river, top, ibound):
     """
     Generate river data based on given conditions.
@@ -48,7 +50,7 @@ def river_gen(nrow, ncol, swat_river, top, ibound):
     plt.close()
     plt.imshow(ibound[0])   
     plt.colorbar()
-    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/MODGenX/ibound.png')
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/ibound.png')
     plt.close()
     
     # Plot river cells
@@ -57,22 +59,21 @@ def river_gen(nrow, ncol, swat_river, top, ibound):
         river_cells_map[cell[1], cell[2]] = 1
     plt.imshow(river_cells_map)
     plt.colorbar()
-    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/MODGenX/river_cells.png')
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/river_cells.png')
     plt.close()
     
     # Plot top elevation
     plt.imshow(top)
     plt.colorbar()
-    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/MODGenX/top.png')
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/top.png')
     plt.close()
     
     # Plot swat_river
     plt.imshow(swat_river)
     plt.colorbar()
-    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/MODGenX/swat_river.png')
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/swat_river.png')
     plt.close()
-    
-    time.sleep(5)
+
     logger.info(f'Number of river cells: {len(river_data[0])}')
     return river_data
 

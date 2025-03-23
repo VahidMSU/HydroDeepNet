@@ -57,126 +57,151 @@ def well_data_import(mf,top, load_raster_args, z_botm, active, grids_path, MODEL
     VPUID = load_raster_args['VPUID']
     database_paths = database_file_paths()
 
-    try:
-        # Load the observation data
-        logger.info(f"Loading observations from {database_paths['observations']}")
-        obs = gpd.read_file(database_paths['observations'])
+    assert os.path.exists(database_paths['observations']), f"Observations file not found: {database_paths['observations']}"
+    assert os.path.exists(grids_path), f"Grids file not found: {grids_path}"
+
+    logger.info(f"Loading observations from {database_paths['observations']}")
+    logger.info(f"Loading MODFLOW grid from {grids_path}")
+
+    # Load the observation data
+    logger.info(f"Loading observations from {database_paths['observations']}")
+    obs = gpd.read_file(database_paths['observations'])
+    if "WELLID" in obs.columns:
+        obs.rename(columns={"WELLID": "wellid"}, inplace=True)
         
-        # Check if the required columns exist
-        required_cols = ['wellid', 'SWL', 'ELEV_DEM', 'PMP_CPCITY', 'WEL_STATUS', 'AQ_TYPE', 'geometry']
-        missing_cols = [col for col in required_cols if col not in obs.columns]
-        if missing_cols:
-            logger.warning(f"Missing columns in observations: {missing_cols}")
-            # Try to find equivalent columns or create defaults
-            if 'WELLID' in obs.columns and 'wellid' in missing_cols:
-                obs['wellid'] = obs['WELLID']
-            else:
-                obs['wellid'] = np.arange(len(obs))
+    # Check if the required columns exist
+    required_cols = ['wellid', 'SWL', 'ELEV_DEM', 'PMP_CPCITY', 'WEL_STATUS', 'AQ_TYPE', 'geometry']
+
+    for col in required_cols:
+         assert col in obs.columns, f"Missing required column: {col}"
+
+    obs = obs[required_cols]    
+
+    # Load the MODFLOW grid
+    logger.info(f"Loading MODFLOW grid from {grids_path}")
+    grids = gpd.read_file(grids_path)
+    
+    ## plot grid
+    grids.plot()
+    plt.title('Grid')
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/grid.png')
+    plt.close()
+
+    ## make sure both are the same crs
+    obs = obs.to_crs(grids.crs)
+    
+    # Check column names
+    logger.info(f"Grid columns: {grids.columns}")
+    
+    # Handle different column naming conventions
+    if 'Row' in grids.columns:
+        grids['row'] = grids['Row']
+    if 'Col' in grids.columns:
+        grids['col'] = grids['Col']
         
-        # Ensure we drop any existing row/col columns to avoid conflicts
-        if 'row' in obs.columns:
-            obs = obs.drop(columns=['row'])
-        if 'col' in obs.columns:
-            obs = obs.drop(columns=['col'])
-            
-        # Load the MODFLOW grid
-        logger.info(f"Loading MODFLOW grid from {grids_path}")
-        try:
-            grids = gpd.read_file(grids_path)
-            
-            # Check column names
-            logger.info(f"Grid columns: {grids.columns}")
-            
-            # Handle different column naming conventions
-            if 'Row' in grids.columns:
-                grids['row'] = grids['Row']
-            if 'Col' in grids.columns:
-                grids['col'] = grids['Col']
-                
-            # Ensure row and col columns exist
-            if 'row' not in grids.columns or 'col' not in grids.columns:
-                logger.error("Grid file does not have required row/col columns")
-                raise KeyError("Missing row/col columns in grid file")
-                
-            # Perform spatial join
-            logger.info("Performing spatial join between observations and grid")
-            df_obs = obs.sjoin(grids, how='inner')
-            logger.info(f"Joined observations: {len(df_obs)} records")
-            
-            # Create unique well IDs if they don't exist
-            if 'wellid' not in df_obs.columns:
-                df_obs['wellid'] = np.arange(0, len(df_obs))
-            
-            # Filter observations to valid ones
-            filter_conditions = (
-                df_obs.SWL.notna() & 
-                df_obs.ELEV_DEM.notna() & 
-                (df_obs.SWL <= 999) & 
-                df_obs.PMP_CPCITY.notna() & 
-                (df_obs.PMP_CPCITY > 10) & 
-                (df_obs.WEL_STATUS == 'ACT') &
-                (df_obs.AQ_TYPE != 'ROCK')
-            )
-            
-            df_obs = df_obs[filter_conditions]
-            logger.info(f"Filtered observations: {len(df_obs)} records")
-            
-            # If no observations remain after filtering, return empty data
-            if len(df_obs) == 0:
-                logger.warning("No valid observations remaining after filtering")
-                return None, None, None
-            
-            # Convert row and col to integers
-            rows = df_obs['row'].values.astype(int)
-            cols = df_obs['col'].values.astype(int)
-            
-            # Calculate heads
-            heads = fitToMeter * (df_obs['ELEV_DEM'].values - df_obs['SWL'].values)
-            
-            # Get the bottom elevations at the well locations
-            z_botm_well_loc = np.array([z_botm[i][rows, cols] for i in range(len(z_botm))])
-            
-            # Identify the layer where the SWL is above the bottom elevation of the layer
-            layer = np.argmax((heads[None, :] <= z_botm_well_loc), axis=0)
-            
-            # If SWL is below all layers, assign to the last active layer
-            layer[np.all(heads[None, :] > z_botm_well_loc, axis=0)] = len(z_botm) - 2
-            
-            # Assign layers to DataFrame
-            df_obs['layer'] = layer
-            
-            # Create well data
-            df_obs['wel_data'] = list(zip(df_obs['layer'], rows, cols, -1 * gpm_to_cmd * df_obs['PMP_CPCITY']))
-            
-            # Check if wells are in active cells
-            active_status = np.array([active[l][r, c] for l, r, c in zip(layer, rows, cols)])
-            df_obs['is_active'] = ~np.isin(active_status, [-1, 2, 0])
-            
-            # Filter to active wells
-            df_obs = df_obs[df_obs['is_active']]
-            
-            # Create well data for MODFLOW
-            wel_data = {per: list(df_obs['wel_data']) for per in range(mf.nper)}
-            
-            # Convert to integers for observation data
-            df_obs[['layer', 'row', 'col', 'wellid']] = df_obs[['layer', 'row', 'col', 'wellid']].astype(int)
-            
-            # Final check for data
-            if len(df_obs) == 0:
-                logger.warning("No active wells found")
-                return None, None, None
-            
-            # Create observation data
-            obs_data = df_obs[['layer', 'wellid', 'row', 'col', 'SWL']].apply(
-                lambda row: create_obs_data(row, top, mf), axis=1
-            ).tolist()
-            
-            return wel_data, obs_data, df_obs
-            
-        except Exception as e:
-            logger.error(f"Error processing MODFLOW grid: {str(e)}")
-            return None, None, None
-            
-    except Exception as e:
-        logger.error(f"Error in well_data_import: {str(e)}")
+    assert 'row' in grids.columns, "Missing required column: row"   
+    assert 'col' in grids.columns, "Missing required column: col"
+
+
+    # Perform spatial join
+    logger.info("Performing spatial join between observations and grid")
+    
+    assert len(obs) > 0, "No observations found"
+    assert len(grids) > 0, "No grid found"
+
+    df_obs = obs.sjoin(grids, how='inner')
+
+    logger.info(f"Joined observations: {len(df_obs)} records")
+    
+    assert len(df_obs) > 0, "No observations found in the grid"
+    # Create unique well IDs if they don't exist
+    if 'wellid' not in df_obs.columns:
+        df_obs['wellid'] = np.arange(0, len(df_obs))
+    
+    # Filter observations to valid ones
+    filter_conditions = (
+        df_obs.SWL.notna() & 
+        df_obs.ELEV_DEM.notna()
+    #    (df_obs.SWL <= 999) & 
+     #   df_obs.PMP_CPCITY.notna() & 
+     #   (df_obs.PMP_CPCITY > 10) & 
+     #   (df_obs.WEL_STATUS == 'ACT') &
+     #   (df_obs.AQ_TYPE != 'ROCK')
+    )
+
+    ### plot obs heads
+    import matplotlib.pyplot as plt
+    df_obs['SWL'] = df_obs['SWL'].astype(float)
+    df_obs.plot(column='SWL', legend=True)
+    plt.title('Observed Heads')
+    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/obs_heads.png')
+    plt.close()
+
+    ### some loggins
+    logger.info(f"Range OF SWL: {df_obs.SWL.min()} to {df_obs.SWL.max()}")
+    logger.info(f"Range OF ELEV_DEM: {df_obs.ELEV_DEM.min()} to {df_obs.ELEV_DEM.max()}")
+    logger.info(f"Range OF PMP_CPCITY: {df_obs.PMP_CPCITY.min()} to {df_obs.PMP_CPCITY.max()}")
+    logger.info(f"Unique values of WEL_STATUS: {df_obs.WEL_STATUS.unique()}")
+    logger.info(f"Unique values of AQ_TYPE: {df_obs.AQ_TYPE.unique()}")
+    logger.info(f"Unique values of wellid: {df_obs.wellid.unique()}")
+    logger.info(f"Unique values of row: {df_obs.row.unique()}")
+    logger.info(f"Unique values of col: {df_obs.col.unique()}")
+
+    df_obs = df_obs[filter_conditions]
+
+    assert len(df_obs) > 0, "No valid observations found"
+    
+    logger.info(f"Filtered observations: {len(df_obs)} records")
+    
+    # If no observations remain after filtering, return empty data
+    if len(df_obs) == 0:
+        logger.warning("No valid observations remaining after filtering")
         return None, None, None
+    
+    # Convert row and col to integers
+    rows = df_obs['row'].values.astype(int)
+    cols = df_obs['col'].values.astype(int)
+    
+    # Calculate heads
+    heads = fitToMeter * (df_obs['ELEV_DEM'].values - df_obs['SWL'].values)
+    
+    # Get the bottom elevations at the well locations
+    z_botm_well_loc = np.array([z_botm[i][rows, cols] for i in range(len(z_botm))])
+    
+    # Identify the layer where the SWL is above the bottom elevation of the layer
+    layer = np.argmax((heads[None, :] <= z_botm_well_loc), axis=0)
+    
+    # If SWL is below all layers, assign to the last active layer
+    layer[np.all(heads[None, :] > z_botm_well_loc, axis=0)] = len(z_botm) - 2
+    
+    # Assign layers to DataFrame
+    df_obs['layer'] = layer
+    
+    # Create well data
+    df_obs['wel_data'] = list(zip(df_obs['layer'], rows, cols, -1 * gpm_to_cmd * df_obs['PMP_CPCITY']))
+    
+    # Check if wells are in active cells
+    active_status = np.array([active[l][r, c] for l, r, c in zip(layer, rows, cols)])
+    df_obs['is_active'] = ~np.isin(active_status, [-1, 2, 0])
+    
+    # Filter to active wells
+    df_obs = df_obs[df_obs['is_active']]
+    
+    # Create well data for MODFLOW
+    wel_data = {per: list(df_obs['wel_data']) for per in range(mf.nper)}
+    
+    # Convert to integers for observation data
+    df_obs[['layer', 'row', 'col', 'wellid']] = df_obs[['layer', 'row', 'col', 'wellid']].astype(int)
+    
+    # Final check for data
+    if len(df_obs) == 0:
+        logger.warning("No active wells found")
+        return None, None, None
+    
+    # Create observation data
+    obs_data = df_obs[['layer', 'wellid', 'row', 'col', 'SWL']].apply(
+        lambda row: create_obs_data(row, top, mf), axis=1
+    ).tolist()
+    
+    return wel_data, obs_data, df_obs
+    

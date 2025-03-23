@@ -1,11 +1,4 @@
-import os
 from MODGenX.MODGenXCore import MODGenXCore
-from multiprocessing import Process, Queue
-from functools import partial
-import shutil
-import warnings
-import geopandas as gpd
-import rasterio
 import sys
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX/')
 from SWATGenX.utils import find_VPUID
@@ -49,4 +42,5 @@ if __name__ == '__main__':
 	SWAT_MODEL_NAME = 'SWAT_MODEL_Web_Application'
 	ML = False
 	modflow_model = MODGenXCore(username, NAME, VPUID, BASE_PATH, LEVEL, RESOLUTION, MODEL_NAME, ML, SWAT_MODEL_NAME)
+	
 	modflow_model.create_modflow_model()
