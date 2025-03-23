@@ -9,11 +9,11 @@ import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point, Polygon
 import matplotlib.pyplot as plt
-from MODGenX.Logger import Logger
+from MODGenX.logger_singleton import get_logger
 import rasterio
 from MODGenX.utils import load_raster, match_raster_dimensions
 
-logger = Logger(verbose=True)
+logger = get_logger()
 
 def create_error_zones_and_save(model_path, load_raster_args, ML=False):
     """
@@ -24,53 +24,26 @@ def create_error_zones_and_save(model_path, load_raster_args, ML=False):
     model_path : str
         Path to the MODFLOW model directory
     load_raster_args : dict
-        Dictionary containing parameters for raster loading
+        Dictionary containing parameters for raster loading with path_handler
     ML : bool, optional
         Whether machine learning predictions were used
     """
     logger.info("Creating error zones for model parameters")
     
-    # Get necessary parameters using path_handler if available
-    if 'path_handler' in load_raster_args:
-        path_handler = load_raster_args['path_handler']
-        ref_raster_path = path_handler.get_ref_raster_path()
-        fit_to_meter = path_handler.config.fit_to_meter
-        
-        # Get raster paths using path_handler
-        raster_paths = path_handler.get_raster_paths(ML)
-        
-        # Create error paths dictionary from raster_paths
-        error_paths = {}
-        for key, path in raster_paths.items():
-            if key.endswith('_er'):
-                error_paths[key] = path
-    else:
-        # Legacy mode - extract from load_raster_args
-        LEVEL = load_raster_args['LEVEL']
-        RESOLUTION = load_raster_args['RESOLUTION']
-        NAME = load_raster_args['NAME']
-        MODEL_NAME = load_raster_args['MODEL_NAME']
-        VPUID = load_raster_args['VPUID']
-        username = load_raster_args['username']
-        ref_raster_path = load_raster_args['ref_raster']
-        
-        # Get configuration if available
-        fit_to_meter = 0.3048  # default value
-        if 'config' in load_raster_args and hasattr(load_raster_args['config'], 'fit_to_meter'):
-            fit_to_meter = load_raster_args['config'].fit_to_meter
-        
-        # Define paths for error rasters
-        BASE_PATH = '/data/SWATGenXApp/GenXAppData/'
-        SDIR = 'all_rasters'
-        prefix = "predictions_ML" if ML else "kriging_stderr"
-        
-        error_paths = {
-            "k_horiz_1_er": os.path.join(BASE_PATH, SDIR, f"{prefix}_H_COND_1_{RESOLUTION}{'m' if not ML else ''}.tif"),
-            "k_horiz_2_er": os.path.join(BASE_PATH, SDIR, f"{prefix}_H_COND_2_{RESOLUTION}{'m' if not ML else ''}.tif"),
-            "thickness_1_er": os.path.join(BASE_PATH, SDIR, f"{prefix}_AQ_THK_1_{RESOLUTION}{'m' if not ML else ''}.tif"),
-            "thickness_2_er": os.path.join(BASE_PATH, SDIR, f"{prefix}_AQ_THK_2_{RESOLUTION}{'m' if not ML else ''}.tif"),
-            "SWL_er": os.path.join(BASE_PATH, SDIR, f"{prefix}_SWL_{RESOLUTION}{'m' if not ML else ''}.tif"),
-        }
+    # Ensure path_handler is provided
+    assert 'path_handler' in load_raster_args, "path_handler is required in load_raster_args"
+    path_handler = load_raster_args['path_handler']
+    ref_raster_path = path_handler.get_ref_raster_path()
+    fit_to_meter = path_handler.config.fit_to_meter
+    
+    # Get raster paths using path_handler
+    raster_paths = path_handler.get_raster_paths(ML)
+    
+    # Create error paths dictionary from raster_paths
+    error_paths = {}
+    for key, path in raster_paths.items():
+        if key.endswith('_er'):
+            error_paths[key] = path
     
     # Create zones directory
     zones_dir = os.path.join(model_path, "error_zones")

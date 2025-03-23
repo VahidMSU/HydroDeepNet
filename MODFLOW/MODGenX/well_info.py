@@ -7,14 +7,14 @@ try:
 except ImportError:
     from utils import *
       
-from MODGenX.Logger import Logger
+from MODGenX.logger_singleton import get_logger
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon
 import pyproj
 import os
 from typing import Dict, List, Tuple, Optional, Union
 
-logger = Logger(verbose=True)
+logger = get_logger()
 
 def ref_raster_to_shp_grid(
     BASE_PATH: str, 
@@ -161,7 +161,7 @@ def create_obs_data(row, top, mf, fitToMeter=0.3048):
         return None
 
 
-def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODEL_NAME, gpm_to_cmd=5.678, fitToMeter=0.3048):
+def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODEL_NAME, gpm_to_cmd=5.678):
     """
     Import and process well data for MODFLOW model.
     
@@ -172,7 +172,7 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     top : numpy.ndarray
         Top elevation array
     load_raster_args : dict
-        Dictionary with raster loading arguments
+        Dictionary with raster loading arguments, must include path_handler
     z_botm : list
         List of bottom elevations for each layer
     active : numpy.ndarray
@@ -183,8 +183,6 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
         Name of the MODFLOW model
     gpm_to_cmd : float, optional
         Conversion factor from gallons per minute to cubic meters per day
-    fitToMeter : float, optional
-        Conversion factor from feet to meters
         
     Returns:
     --------
@@ -193,14 +191,16 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     """
     logger.info(f"Importing well data for model: {MODEL_NAME}")
     
-    # Get paths and configuration
+    # Get path_handler from load_raster_args
+    assert 'path_handler' in load_raster_args, "path_handler is required in load_raster_args"
     path_handler = load_raster_args['path_handler']
     fitToMeter = path_handler.config.fit_to_meter
     
     log_dir = os.path.dirname(path_handler.get_log_path("well_data"))
 
     observations_path = path_handler.get_database_file_paths()['observations']
-    active_domain_path = "/data/SWATGenXApp/Users/vahidr32/SWATplus_by_VPUID/0405/huc12/04112500/MODFLOW_250m/rasters_input/basin_shape.shp"
+    active_domain_path = path_handler.get_raster_input_file('basin_shape.shp')
+    
     # Load observations
     active_domain_shp = gpd.read_file(active_domain_path)
     obs = gpd.read_file(observations_path) ## point
@@ -211,15 +211,22 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     ### covert to centroid
     grids['geometry'] = grids['geometry'].centroid
     logger.info(f"GRID COLUMNS: {grids.columns}")
-    assert "col" in grids.columns, "Column 'col' not found in grid shapefile"
-    assert "row" in grids.columns, "Column 'row' not found in grid shapefile"
+    
+    # Validate required columns
+    required_grid_columns = ["col", "row"]
+    for col in required_grid_columns:
+        assert col in grids.columns, f"Column '{col}' not found in grid shapefile"
+    
     #df_obs = gpd.sjoin_nearest(obs, grids, how='inner', max_distance=250)
     
     ## clip operations: polygon/\polygone->point with all attributes + row/col of the polygone
     df_obs = gpd.sjoin_nearest(obs, grids, how='inner', max_distance=250)
-    ## drop duplicates by averaging the values
-    assert "col" in df_obs.columns, "Column 'col' not found in spatial join result"
-    assert "row" in df_obs.columns, "Column 'row' not found in spatial join result"
+    
+    # Validate dataframe has required columns after spatial join
+    required_columns = ["col", "row", "SWL", "ELEV_DEM", "PMP_CPCITY", "WELLID"]
+    for col in required_columns:
+        assert col in df_obs.columns, f"Column '{col}' not found in spatial join result"
+    
     ## drop duplicates by averaging the values
     assert len(df_obs) > 0, "No observations found in the model domain"
     ### drop duplicates and keep the first
@@ -230,14 +237,10 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     ### now clip to the active domain and remove the points outside the active domain
     df_obs = gpd.sjoin(df_obs, active_domain_shp[['geometry']], how='inner', predicate='within')
     
-    ### assert 
-    assert "col" in df_obs.columns, "Column 'col' not found in spatial join result"
-    assert "row" in df_obs.columns, "Column 'row' not found in spatial join result"
-    assert "SWL" in df_obs.columns, "Column 'SWL' not found in spatial join result"
-    assert "ELEV_DEM" in df_obs.columns, "Column 'ELEV_DEM' not found in spatial join result"
-    assert "PMP_CPCITY" in df_obs.columns, "Column 'PMP_CPCITY' not found in spatial join result"
-    assert "WELLID" in df_obs.columns, "Column 'WELLID' not found in spatial join result"
-
+    # Validate dataframe still has required columns after clipping
+    for col in required_columns:
+        assert col in df_obs.columns, f"Column '{col}' not found after clipping to active domain"
+    
     ### assert the datatype
     datatypes = {
         "col": int,
