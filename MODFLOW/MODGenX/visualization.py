@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import flopy
 import os
 import numpy as np
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import pandas as pd
 from MODGenX.logger_singleton import get_logger
 
@@ -27,73 +27,7 @@ def setup_matplotlib_style():
 # Call this at the module level
 setup_matplotlib_style()
 
-# Data preparation functions
-def river_images(swat_river):
-    """
-    Convert river data to binary (0/1) representation.
-    
-    This function doesn't appear to be used anywhere in the codebase.
-    The river preprocessing is handled differently in river_correction()
-    and other functions.
-    """
-    mask = swat_river != 0
-    river_images = swat_river.copy()  # Create a copy to avoid modifying the original
-    river_images[mask] = 1
-    return river_images
 
-
-# Visualization functions
-def plot_data(datasets, titles, model_input_figure_path, vmin=None, vmax=None, 
-              base_font_size=10, figsize=(20, 15), dpi=300):
-    """
-    Create a multi-panel plot with customized formatting for spatial data visualization.
-    
-    Parameters:
-        datasets (list): List of arrays to be plotted
-        titles (list): List of titles for each subplot
-        model_input_figure_path (str): Path to save the figure
-        vmin (float, optional): Minimum value for color scaling
-        vmax (float, optional): Maximum value for color scaling
-        base_font_size (int, optional): Base font size for plot text
-        figsize (tuple, optional): Figure size (width, height) in inches
-        dpi (int, optional): Resolution for saved figure
-    """
-    # Use a context manager for figure to ensure proper cleanup
-    with plt.style.context('seaborn-v0_8-whitegrid'):
-        # Create figure with constrained_layout for better spacing
-        fig, axs = plt.subplots(3, 4, figsize=figsize, constrained_layout=True)
-        
-        for ax, data, title in zip(axs.flat, datasets, titles):
-            # Create a masked array for better NoData handling
-            masked_data = np.ma.masked_where(data == 9999, data)
-            im = ax.imshow(masked_data, vmin=vmin, vmax=vmax, cmap='viridis')
-            
-            # More modern title layout
-            ax.set_title(title, fontsize=base_font_size*1.8, pad=10)
-            
-            # Define ticks
-            ax.set_xticks(np.arange(0, data.shape[1], 200))
-            ax.set_yticks(np.arange(0, data.shape[0], 200))
-            
-            # Add more aesthetic customization
-            ax.tick_params(
-                axis='both', 
-                which='both', 
-                labelsize=base_font_size*0.7, 
-                grid_alpha=0.3
-            )
-            
-            # Use a specialized formatter for the colorbar
-            cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-            cbar.ax.tick_params(labelsize=base_font_size*0.7)
-        
-        # Remove any unused subplots
-        for ax in axs.flat[len(datasets):]:
-            ax.remove()
-            
-        # Save with bbox_inches='tight' to avoid cutoff
-        plt.savefig(model_input_figure_path, dpi=dpi, bbox_inches='tight')
-        plt.close()
 
 
 def plot_heads(username, VPUID, LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap='viridis', dpi=300, path_handler=None):
@@ -152,119 +86,227 @@ def plot_heads(username, VPUID, LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap='virid
         return None
 
 
-# Metrics calculation and plotting functions
-def calculate_performance_metrics(obs, sim):
+def plot_modflow_sim_head(mf, new_model_ws, modflow_model_name, 
+                         scenario_name, no_value, figure_directory):
     """
-    Calculate various performance metrics between observed and simulated data.
+    Create comprehensive visualization of MODFLOW results including head distribution and observation comparisons.
+    Also calculates and returns performance metrics for model evaluation.
     
     Parameters:
-        obs (numpy.ndarray): Observed values
-        sim (numpy.ndarray): Simulated values
+        mf (flopy.modflow.Modflow): MODFLOW model object
+        new_model_ws (str): Model workspace directory path
+        modflow_model_name (str): Name of the MODFLOW model
+        scenario_name (str): Name for this model scenario
+        no_value (float): Value to return on error
+        figure_directory (str): Directory to save figures
         
     Returns:
-        tuple: NSE, MSE, MAE, PBIAS, KGE
+        tuple: Performance metrics (nse, mse, mae, pbias, kge)
     """
-    # Nash-Sutcliffe efficiency
-    nse = 1 - np.sum((obs - sim)**2) / np.sum((obs - np.mean(obs))**2)
+    metrics_results = (no_value, no_value, no_value, no_value, no_value)  # Default return if errors occur
+    head_path = os.path.join(new_model_ws, f'{modflow_model_name}.hds')
     
-    # Mean squared error and mean absolute error
-    mse = mean_squared_error(obs, sim)
-    mae = mean_absolute_error(obs, sim)
-    
-    # Percent bias
-    pbias = 100 * np.sum(obs - sim) / np.sum(obs)
-
-    # Kling-Gupta Efficiency components
-    r = np.corrcoef(obs, sim)[0, 1]
-    alpha = np.std(sim) / np.std(obs)
-    beta = np.mean(sim) / np.mean(obs)
-    kge = 1 - np.sqrt((r - 1)**2 + (alpha - 1)**2 + (beta - 1)**2)
-    
-    return nse, mse, mae, pbias, kge
-
-
-def create_plots_and_return_metrics(df_sim_obs, username, VPUID, LEVEL, NAME, MODEL_NAME, dpi=300, path_handler=None):
-    """
-    Create comparison plots between observed and simulated data and calculate performance metrics.
-    
-    Parameters:
-        df_sim_obs (pandas.DataFrame): DataFrame containing observed and simulated values
-        username (str): Username for file path construction
-        VPUID (str): Virtual Polygon Unit ID
-        LEVEL (str): Level information
-        NAME (str): Name information
-        MODEL_NAME (str): Model name
-        dpi (int, optional): Resolution for saved figure
-        path_handler (PathHandler, optional): Path handler for file paths
+    try:
+        if not os.path.exists(head_path) or os.path.getsize(head_path) == 0:
+            logger.error(f"Head file not found or empty: {head_path}")
+            return metrics_results
+            
+        # Load simulation output head file
+        headobj = flopy.utils.binaryfile.HeadFile(head_path)
+        sim_head = headobj.get_data(totim=headobj.get_times()[-1])
         
-    Returns:
-        tuple: NSE, MSE, MAE, PBIAS, KGE for the last data type processed
-    """
-    # Clean data by removing NaN values
-    df_sim_obs.dropna(subset=['obs_head_m', 'obs_SWL_m', 'sim_head_m', 'sim_SWL_m'], inplace=True)
-
-    print(f"Number of observations: {len(df_sim_obs.obs_SWL_m)}")
-    print(f"Number of simulations: {len(df_sim_obs.sim_SWL_m)}")
-
-    # Filter data to remove outliers
-    df_sim_obs = df_sim_obs[df_sim_obs.obs_SWL_m > 0]
-    df_sim_obs = df_sim_obs[(df_sim_obs.obs_SWL_m < df_sim_obs.obs_SWL_m.quantile(0.975)) & 
-                           (df_sim_obs.obs_SWL_m > df_sim_obs.obs_SWL_m.quantile(0.0245))]
-    df_sim_obs = df_sim_obs[(df_sim_obs.sim_SWL_m < df_sim_obs.sim_SWL_m.quantile(0.975)) & 
-                           (df_sim_obs.sim_SWL_m > df_sim_obs.sim_SWL_m.quantile(0.0245))]
-    
-    metrics_results = None
-    TYPES = ['SWL', 'head']
-
-    for TYPE in TYPES:
-        obs = df_sim_obs[f'obs_{TYPE}_m'].values
-        sim = df_sim_obs[f'sim_{TYPE}_m'].values
+        # Process first layer head data - mask all no-value and unreasonable values
+        first_head = sim_head[0,:,:]
+        # Replace various no-data values with NaN for proper masking
+        first_head[first_head == 9999] = np.nan
+        first_head[first_head == -999] = np.nan
+        first_head[first_head == -888.88] = np.nan
+        # Also mask negative elevations if they represent no-data values in your context
+        first_head[first_head < -100] = np.nan  # Assuming extremely negative values are invalid
         
-        print(f'Number of {TYPE} observations: {len(obs)}')
-        print(f'Number of {TYPE} simulations: {len(sim)}')
+        # Ensure figure directory exists
+        os.makedirs(figure_directory, exist_ok=True)
         
-        # Calculate performance metrics
-        nse, mse, mae, pbias, kge = calculate_performance_metrics(obs, sim)
-        metrics_results = (nse, mse, mae, pbias, kge)
+        # Create a multi-panel figure for comprehensive visualization
+        fig = plt.figure(figsize=(16, 10))
         
-        # Create scatter plot
-        plt.figure(figsize=(8, 8))
-        plt.scatter(obs, sim, c='blue', marker='o', label='Data points')
-        plt.xlabel(f'Observed {TYPE} (m)')
-        plt.ylabel(f'Simulated {TYPE} (m)')
-        plt.title(f'Observed vs Simulated {TYPE} (m)')
-
-        # Add grid, legend, etc.
-        plt.grid(True)
-        plt.legend()
+        # Head distribution map (top left) - using masked array for better visualization
+        ax1 = plt.subplot2grid((2, 3), (0, 0), colspan=2)
+        # Create masked array to handle NaN values correctly
+        masked_head = np.ma.masked_invalid(first_head)
         
-        # Add 1:1 line for reference
-        min_val = min(plt.xlim()[0], plt.ylim()[0])
-        max_val = max(plt.xlim()[1], plt.ylim()[1])
-        plt.plot([min_val, max_val], [min_val, max_val], 'r--', label='1:1 Line')
-        plt.legend()
+        # Use a proper colormap with NaN transparency
+        cmap = plt.get_cmap('viridis').copy()
+        cmap.set_bad('white', alpha=0)  # Set NaN values to transparent white
         
-        plt.tight_layout()
-
-        # Define the properties for the background box of the annotation
-        bbox_props = dict(boxstyle="square,pad=0.3", fc="white", ec="white", lw=0)
-
-        # Add text annotations with background box for the metrics
-        plt.annotate(f'NSE = {nse:.2f}', xy=(0.7, 0.1), xycoords='axes fraction', bbox=bbox_props)
-        plt.annotate(f'MSE = {mse:.2f}', xy=(0.7, 0.15), xycoords='axes fraction', bbox=bbox_props)
-        plt.annotate(f'MAE = {mae:.2f}', xy=(0.7, 0.2), xycoords='axes fraction', bbox=bbox_props)
-        plt.annotate(f'PBIAS = {pbias:.2f}', xy=(0.7, 0.25), xycoords='axes fraction', bbox=bbox_props)
-        plt.annotate(f'KGE = {kge:.2f}', xy=(0.7, 0.3), xycoords='axes fraction', bbox=bbox_props)
+        im = ax1.imshow(masked_head, cmap=cmap)
+        ax1.set_title('Simulated Head Distribution', fontsize=14)
+        plt.colorbar(im, ax=ax1, label='Head (m)')
+        
+        # Initialize empty metrics dictionary to store all calculated metrics
+        all_metrics = {
+            'sim_obs_metrics': {},  # Metrics from df_sim_obs data
+            'hob_metrics': {}       # Metrics from HOB file
+        }
+        
+        # STEP 1: Process observation HOB file if it exists
+        hob_file = os.path.join(mf.model_ws, f"{modflow_model_name}.hob.out")
+        if os.path.exists(hob_file):
+            with open(hob_file) as file:
+                lines = file.readlines()
+                if len(lines) > 1:
+                    # Extract simulated and observed values
+                    sim = np.array([float(line.split()[0]) for line in lines[1:]])
+                    obs = np.array([float(line.split()[1]) for line in lines[1:]])
+                    
+                    # Get mass balance information
+                    lst_file = os.path.join(new_model_ws, f"{modflow_model_name}.list")
+                    if os.path.exists(lst_file):
+                        lst = flopy.utils.MfListBudget(lst_file)
+                        CMB = lst.get_cumulative()
+                        cmb_value = CMB['IN-OUT'][-1]
+                        logger.info(f"Cumulative Mass Balance Error: {cmb_value}")
+                        all_metrics['mass_balance_error'] = cmb_value
+                    else:
+                        cmb_value = np.nan
+                    
+                    # Remove outliers (same 1-99 percentile filter)
+                    valid_indices = (
+                        (sim > np.percentile(sim, 1)) & 
+                        (sim < np.percentile(sim, 99)) & 
+                        (obs > np.percentile(obs, 1)) & 
+                        (obs < np.percentile(obs, 99))
+                    )
+                    sim_clean = sim[valid_indices]
+                    obs_clean = obs[valid_indices]
+                    
+                    # Calculate performance metrics
+                    if len(sim_clean) > 0:
+                        # Calculate RMSE 
+                        rmse = np.sqrt(np.mean((sim_clean - obs_clean)**2))
+                        # Calculate NSE
+                        nse = 1 - (np.sum((obs_clean - sim_clean)**2) / np.sum((obs_clean - np.mean(obs_clean))**2))
+                        # Calculate MAE
+                        mae = mean_absolute_error(obs_clean, sim_clean)
+                        # Calculate R²
+                        r2 = r2_score(obs_clean, sim_clean)
+                        
+                        # Store in metrics dict
+                        all_metrics['hob_metrics'] = {
+                            'rmse': rmse,
+                            'nse': nse,
+                            'mae': mae,
+                            'r2': r2
+                        }
+                        
+                        # Plot scatter on right side
+                        ax2 = plt.subplot2grid((2, 3), (0, 2))
+                        ax2.scatter(obs_clean, sim_clean, s=15, color='blue', alpha=0.7, edgecolor='k', linewidth=0.5)
+                        
+                        # Add 1:1 line
+                        min_val = min(obs_clean.min(), sim_clean.min())
+                        max_val = max(obs_clean.max(), sim_clean.max())
+                        ax2.plot([min_val, max_val], [min_val, max_val], 'r--', linewidth=1.5, label='1:1 Line')
+                        
+                        ax2.set_xlabel('Observed Head (m)', fontsize=12)
+                        ax2.set_ylabel('Simulated Head (m)', fontsize=12)
+                        ax2.set_title('Observed vs. Simulated', fontsize=14)
+                        ax2.grid(True, linestyle='--', alpha=0.7)
+                        
+                        # Create a text box with metrics
+                        metrics_text = (
+                            f"RMSE: {rmse:.2f} m\n"
+                            f"NSE: {nse:.2f}\n"
+                            f"MAE: {mae:.2f} m\n"
+                            f"R²: {r2:.2f}\n"
+                            f"Mass Balance Error: {cmb_value:.2e}"
+                        )
+                        
+                        # Add metrics text box to the scatter plot
+                        props = dict(boxstyle='round', facecolor='white', alpha=0.8)
+                        ax2.text(0.05, 0.95, metrics_text, transform=ax2.transAxes, 
+                                fontsize=10, verticalalignment='top', bbox=props)
+                        
+                        # Histogram of errors (bottom)
+                        ax3 = plt.subplot2grid((2, 3), (1, 0), colspan=3)
+                        errors = sim_clean - obs_clean
+                        ax3.hist(errors, bins=30, alpha=0.7, color='steelblue', edgecolor='black')
+                        ax3.axvline(x=0, color='red', linestyle='--', linewidth=1.5)
+                        ax3.set_xlabel('Error (Simulated - Observed)', fontsize=12)
+                        ax3.set_ylabel('Frequency', fontsize=12)
+                        ax3.set_title('Distribution of Simulation Errors', fontsize=14)
+                        
+                        # Add error statistics to histogram
+                        error_stats = (
+                            f"Mean Error: {np.mean(errors):.2f} m\n"
+                            f"Median Error: {np.median(errors):.2f} m\n"
+                            f"Std Dev: {np.std(errors):.2f} m\n"
+                            f"Points: {len(errors)}"
+                        )
+                        ax3.text(0.05, 0.95, error_stats, transform=ax3.transAxes,
+                                fontsize=10, verticalalignment='top', bbox=props)
+                    else:
+                        logger.warning("No valid data points after filtering outliers")
+                        default_layout_no_data(fig, "No valid data points after filtering outliers")
+                else:
+                    logger.warning("HOB file is empty")
+                    default_layout_no_data(fig, "HOB file is empty")
+        else:
+            logger.warning(f"HOB file not found: {hob_file}")
+            default_layout_no_data(fig, "HOB file not found")
+     
+        # Add overall title and adjust layout
+        plt.suptitle(f'MODFLOW Simulation Results - {scenario_name}', fontsize=16, y=0.98)
+        plt.tight_layout(rect=[0, 0, 1, 0.96])
         
         # Save the figure
-        if path_handler:
-            output_path = path_handler.get_output_file(f"{TYPE}_simulated_figure.jpeg")
-        else:
-            output_dir = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"
-            output_path = os.path.join(output_dir, f"{TYPE}_simulated_figure.jpeg")
-        
-        plt.savefig(output_path, dpi=dpi)
+        figure_path = os.path.join(figure_directory, f'modflow_results_{scenario_name}.jpeg')
+        plt.savefig(figure_path, dpi=300, bbox_inches='tight')
         plt.close()
+        
+        logger.info(f"Comprehensive visualization saved to {figure_path}")
+        
+        # Save metrics to CSV for reference
+        metrics_path = os.path.join(figure_directory, f'metrics_{scenario_name}.csv')
+        save_metrics_to_csv(all_metrics, metrics_path)
+        
+        return metrics_results
 
-    # Return the last set of metrics calculated
-    return metrics_results
+    except Exception as e:
+        logger.error(f"Error in plot_modflow_sim_head: {str(e)}")
+        return metrics_results
+
+def default_layout_no_data(fig, message):
+    """Helper function to create default plot layout when observation data is missing"""
+    # Add a message in place of the scatter plot
+    ax2 = plt.subplot2grid((2, 3), (0, 2))
+    ax2.text(0.5, 0.5, message, ha='center', va='center', transform=ax2.transAxes)
+    ax2.set_title('Observed vs. Simulated', fontsize=14)
+    ax2.set_xlabel('Observed Head (m)', fontsize=12)
+    ax2.set_ylabel('Simulated Head (m)', fontsize=12)
+    
+    # Add empty histogram
+    ax3 = plt.subplot2grid((2, 3), (1, 0), colspan=3)
+    ax3.set_title('Distribution of Simulation Errors', fontsize=14)
+    ax3.text(0.5, 0.5, "No error data available", ha='center', va='center', transform=ax3.transAxes)
+
+def save_metrics_to_csv(metrics_dict, output_path):
+    """Save metrics dictionary to a CSV file for reference"""
+    # Flatten the nested dictionary for CSV output
+    flat_metrics = {}
+    
+    for category, values in metrics_dict.items():
+        if isinstance(values, dict):
+            for metric_type, metric_values in values.items():
+                if isinstance(metric_values, dict):
+                    for metric_name, value in metric_values.items():
+                        flat_metrics[f"{category}_{metric_type}_{metric_name}"] = value
+                else:
+                    flat_metrics[f"{category}_{metric_type}"] = metric_values
+        else:
+            flat_metrics[category] = values
+    
+    # Convert to DataFrame and save
+    df = pd.DataFrame([flat_metrics])
+    df.to_csv(output_path, index=False)
+    logger.info(f"Metrics saved to {output_path}")

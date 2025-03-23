@@ -26,8 +26,9 @@ class MODFLOWGenXPaths:
     # Bedrock parameters
     k_bedrock: float = 1e-4  # Bedrock hydraulic conductivity (m/day)
     bedrock_thickness: float = 40  # Bedrock thickness (m)
-    # Unit conversion factor (feet to meters)
-    fit_to_meter: float = 0.3048
+    # Unit conversion factors
+    fit_to_meter: float = 0.3048  # Feet to meters conversion
+    recharge_conv_factor: float = 0.0254/365.25  # Inch/year to meter/day conversion
     # Model convergence parameters
     headtol: float = 0.01  # Head change tolerance for convergence (m)
     fluxtol: float = 0.001  # Flux change tolerance for convergence (m³/day)

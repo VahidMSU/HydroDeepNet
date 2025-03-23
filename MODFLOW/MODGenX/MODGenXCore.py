@@ -12,12 +12,12 @@ import matplotlib.pyplot as plt
 from MODGenX.utils import (load_raster, 
 	match_raster_dimensions, active_domain,
 remove_isolated_cells, input_Data, GW_starting_head,
-model_src,  smooth_invalid_thickness, sim_obs)
+model_src)
 from MODGenX.rivers import river_gen, river_correction
 from MODGenX.lakes import lakes_to_drain
-from MODGenX.visualization import plot_data, create_plots_and_return_metrics
+from MODGenX.visualization import plot_modflow_sim_head
 from MODGenX.zonation import create_error_zones_and_save
-from MODGenX.well_info import well_location, well_data_import
+from MODGenX.well_info import  well_data_import
 from MODGenX.rasterize_swat import rasterize_SWAT_features
 import os
 import rasterio
@@ -591,38 +591,38 @@ class MODGenXCore:
 
 		if success:
 			self.logger.info("MODFLOW model ran successfully")
+			
+			# Create figure directory to store all plots
+			figure_directory = os.path.join(self.model_path, "visualization")
+			os.makedirs(figure_directory, exist_ok=True)
+
+			# Call plot_modflow_sim_head to create visualization AND get metrics in one step
+			no_value = 9999  # Default no-data value
+			nse, mse, mae, pbias, kge = plot_modflow_sim_head(
+				mf, 
+				self.model_path, 
+				self.MODEL_NAME, 
+				"base_scenario",  # Default scenario name for initial model run
+				no_value,
+				figure_directory,
+			)
+			
+			self.logger.info(f"Model evaluation metrics - NSE: {nse}, MSE: {mse}, MAE: {mae}, PBIAS: {pbias}, KGE: {kge}")
 		else:
 			self.logger.error("MODFLOW model failed to run")
 			self.logger.error(buff)
 			return
 
-		self.logger.info("Head plots generated successfully")
-		assert len(df_obs) > 0, "No observation data found"
-		df_sim_obs = sim_obs( self.VPUID,self.username, self.BASE_PATH, self.MODEL_NAME, mf, self.LEVEL, self.top, self.NAME, self.RESOLUTION, load_raster_args, df_obs)
-		nse, mse, mae, pbias, kge = create_plots_and_return_metrics(df_sim_obs, self.username, self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
-		self.logger.info(f"Model evaluation metrics - NSE: {nse}, MSE: {mse}, MAE: {mae}, PBIAS: {pbias}, KGE: {kge}")
-
+		self.logger.info("Model visualization and evaluation completed successfully")
+		
+		# Save metrics to CSV
 		metrics = [self.MODEL_NAME, self.NAME, self.RESOLUTION, nse, mse, mae, pbias, kge]
-		metrics_path = os.path.join(f'/data/SWATGenXApp/Users/{self.username}', f'SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/metrics.csv')
+		metrics_path = os.path.join(f'/data/SWATGenXApp/Users/{self.username}', 
+                              f'SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/metrics.csv')
 		with open(metrics_path, 'w') as f:
 			f.write('MODEL_NAME,NAME,RESOLUTION,NSE,MSE,MAE,PBIAS,KGE\n')
 			f.write(','.join(str(metric) for metric in metrics))
 		self.logger.info(f"Model metrics saved to {metrics_path}")
-
-		datasets = [
-			well_location(df_sim_obs, active, str(self.NAME), self.LEVEL, self.RESOLUTION, load_raster_args),
-   			smooth_invalid_thickness(self.top-strt[0]),
-			strt[0] , ibound[0],    k_horiz[0] ,     k_horiz[1],       k_vert[0],          k_vert[1],
-			recharge_data,swat_river,  self.top - z_botm[0], z_botm[0]-z_botm[1]
-		]
-
-		titles = ['water wells location', "SWL initial",'Head',  'Active Cells','K Horizontal 1',
-				'K Horizontal 2', 'K Vertical 1', 'K Vertical 2', 'Recharge','base flow','Thickness 1', 'thickness 2']
-
-		model_input_figure_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/input_figures.jpeg"
-
-		plot_data(datasets, titles, model_input_figure_path)
-		self.logger.info(f"Model input visualizations saved to {model_input_figure_path}")
 
 		create_error_zones_and_save(self.model_path, load_raster_args, self.ML)
 		self.logger.info("Zones created and saved successfully")

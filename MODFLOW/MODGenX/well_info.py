@@ -93,43 +93,6 @@ def ref_raster_to_shp_grid(
     
     return gdf
 
-def well_location(
-    df_sim_obs: pd.DataFrame, 
-    active: np.ndarray, 
-    NAME: str, 
-    LEVEL: str, 
-    RESOLUTION: Union[int, str], 
-    load_raster_args: Dict
-) -> np.ndarray:
-    """Create an array of well locations for visualization."""
-    if df_sim_obs is None or len(df_sim_obs) == 0:
-        logger.warning("No observation data provided for well location")
-        return np.zeros_like(active[0], dtype=float)
-    
-    # Initialize array with zeros
-    obs_array = np.zeros_like(active[0], dtype=float)
-    
-    # Extract only needed columns to numpy for faster processing
-    obs_np = df_sim_obs[['row', 'col', 'obs_SWL_m']].to_numpy()
-    logger.info(f'Number of observations in dataset: {len(obs_np)}')
-    
-    # Validate array bounds before assignment
-    valid_rows = np.where(
-        (obs_np[:, 0] >= 0) & 
-        (obs_np[:, 0] < obs_array.shape[0]) & 
-        (obs_np[:, 1] >= 0) & 
-        (obs_np[:, 1] < obs_array.shape[1])
-    )[0]
-    
-    # Assign values using validated indices
-    row_indices = obs_np[valid_rows, 0].astype(int)
-    col_indices = obs_np[valid_rows, 1].astype(int)
-    values = obs_np[valid_rows, 2]
-    
-    obs_array[row_indices, col_indices] = values
-    
-    # Generate the final array
-    return np.where((active[0] != 0) & (obs_array > 0), 1, 0)
 
 def create_obs_data(row, top, mf, fitToMeter=0.3048):
     """Create a head observation object for MODFLOW."""
