@@ -4,9 +4,9 @@ except ImportError:
 	from utils import *
 import numpy as np
 
-from MODGenX.Logger import Logger
+from MODGenX.logger_singleton import get_logger
 
-logger = Logger(verbose=True)
+logger = get_logger()
 
 def lakes_to_drain(swat_lake_raster_path, top, k_horiz, load_raster_args):
     """
@@ -21,7 +21,7 @@ def lakes_to_drain(swat_lake_raster_path, top, k_horiz, load_raster_args):
     k_horiz : list
         List of horizontal hydraulic conductivity arrays
     load_raster_args : dict
-        Dictionary containing parameters for raster loading
+        Dictionary containing parameters for raster loading with path_handler
     
     Returns:
     --------
@@ -29,29 +29,17 @@ def lakes_to_drain(swat_lake_raster_path, top, k_horiz, load_raster_args):
         List of tuples containing layer, row, column, elevation, and conductance for each drainage cell.
     """
     try:
-        # Get parameters from path_handler if available
-        if 'path_handler' in load_raster_args:
-            path_handler = load_raster_args['path_handler']
-            ref_raster_path = path_handler.get_ref_raster_path()
-            fit_to_meter = path_handler.config.fit_to_meter
-            log_dir = os.path.dirname(path_handler.get_log_path("lakes"))
-        else:
-            # Legacy mode
-            LEVEL = load_raster_args['LEVEL']
-            RESOLUTION = load_raster_args['RESOLUTION']
-            NAME = load_raster_args['NAME']
-            ref_raster_path = load_raster_args['ref_raster']
-            log_dir = "/data/SWATGenXApp/codes/MODFLOW/logs"
-            
-            # Get fit_to_meter from config if available
-            fit_to_meter = 0.3048  # default value
-            if 'config' in load_raster_args and hasattr(load_raster_args['config'], 'fit_to_meter'):
-                fit_to_meter = load_raster_args['config'].fit_to_meter
-                logger.info(f"Using fit_to_meter value from config: {fit_to_meter}")
+        # Ensure path_handler is provided
+        assert 'path_handler' in load_raster_args, "path_handler is required in load_raster_args"
+        path_handler = load_raster_args['path_handler']
+        ref_raster_path = path_handler.get_ref_raster_path()
+        fit_to_meter = path_handler.config.fit_to_meter
+        log_dir = os.path.dirname(path_handler.get_log_path("lakes"))
+        
+        logger.info(f"Using fit_to_meter value from config: {fit_to_meter}")
         
         # Load the lake raster and match its dimensions with the top elevation grid
         lake_raster = load_raster(swat_lake_raster_path, load_raster_args)
-
         lake_raster = match_raster_dimensions(load_raster(ref_raster_path, load_raster_args), lake_raster)
 
         # Handle infinite and NaN values

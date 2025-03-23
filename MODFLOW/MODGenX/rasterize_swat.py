@@ -43,37 +43,19 @@ def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_ra
     output_raster_path : str
         Path where output raster will be saved
     load_raster_args : dict
-        Dictionary containing various arguments needed for processing
+        Dictionary containing path_handler needed for processing
     """
-    # Extract parameters from load_raster_args - preferably use path_handler if available
-    if 'path_handler' in load_raster_args:
-        path_handler = load_raster_args['path_handler']
-        ref_raster_path = path_handler.get_ref_raster_path()
-        shapefile_paths = path_handler.get_shapefile_paths()
-        username = path_handler.config.username
-        VPUID = path_handler.config.VPUID
-        LEVEL = path_handler.config.LEVEL
-        NAME = path_handler.config.NAME
-        SWAT_MODEL_NAME = path_handler.config.SWAT_MODEL_NAME
-        log_dir = os.path.dirname(path_handler.get_log_path("rasterize"))
-    else:
-        # Legacy mode
-        LEVEL = load_raster_args['LEVEL']
-        RESOLUTION = load_raster_args['RESOLUTION']
-        NAME = load_raster_args['NAME']
-        SWAT_MODEL_NAME = load_raster_args['SWAT_MODEL_NAME']
-        username = load_raster_args['username']
-        VPUID = load_raster_args['VPUID']
-        ref_raster_path = load_raster_args['ref_raster']
-        log_dir = "/data/SWATGenXApp/codes/MODFLOW/logs"
-        
-        # Generate paths for shapefiles based on feature type
-        BASE_PATH = f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/'
-        shapefile_paths = {
-            "lakes": f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp',
-            "rivers": f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp',
-            "grids": f'{BASE_PATH}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.geojson',
-        }
+    # Ensure path_handler is provided
+    assert 'path_handler' in load_raster_args, "path_handler is required in load_raster_args"
+    path_handler = load_raster_args['path_handler']
+    ref_raster_path = path_handler.get_ref_raster_path()
+    shapefile_paths = path_handler.get_shapefile_paths()
+    username = path_handler.config.username
+    VPUID = path_handler.config.VPUID
+    LEVEL = path_handler.config.LEVEL
+    NAME = path_handler.config.NAME
+    SWAT_MODEL_NAME = path_handler.config.SWAT_MODEL_NAME
+    log_dir = os.path.dirname(path_handler.get_log_path("rasterize"))
     
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_raster_path), exist_ok=True)

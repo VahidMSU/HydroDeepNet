@@ -4,9 +4,9 @@ except ImportError:
     from utils import *
 import numpy as np
 
-from MODGenX.Logger import Logger
+from MODGenX.logger_singleton import get_logger
 
-logger = Logger(verbose=True)   
+logger = get_logger()   
 
 def river_gen(nrow, ncol, swat_river, top, ibound, load_raster_args=None):
     """
@@ -101,7 +101,7 @@ def river_correction(swat_river_raster_path, load_raster_args, basin, active):
     swat_river_raster_path : str
         Path to the SWAT river raster
     load_raster_args : dict
-        Dictionary containing parameters for raster loading
+        Dictionary containing parameters for raster loading with path_handler
     basin : numpy.ndarray
         Basin raster array
     active : numpy.ndarray
@@ -113,18 +113,13 @@ def river_correction(swat_river_raster_path, load_raster_args, basin, active):
         Processed river raster
     """
     
-    # Get fit_to_meter from config if available
-    fit_to_meter = 0.3048  # default value
-    if 'config' in load_raster_args and hasattr(load_raster_args['config'], 'fit_to_meter'):
-        fit_to_meter = load_raster_args['config'].fit_to_meter
-        logger.info(f"Using fit_to_meter value from config: {fit_to_meter}")
+    # Ensure path_handler is provided
+    assert 'path_handler' in load_raster_args, "path_handler is required in load_raster_args"
+    path_handler = load_raster_args['path_handler']
+    fit_to_meter = path_handler.config.fit_to_meter
+    log_dir = path_handler.get_log_path("river_correction").rsplit('/', 1)[0]
     
-    # Get path_handler if available for log paths
-    if 'path_handler' in load_raster_args:
-        path_handler = load_raster_args['path_handler']
-        log_dir = path_handler.get_log_path("river_correction").rsplit('/', 1)[0]
-    else:
-        log_dir = "/data/SWATGenXApp/codes/MODFLOW/logs"
+    logger.info(f"Using fit_to_meter value from config: {fit_to_meter}")
     
     with rasterio.open(swat_river_raster_path) as src:
         swat_river = src.read(1)

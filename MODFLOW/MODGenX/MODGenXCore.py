@@ -418,7 +418,7 @@ class MODGenXCore:
 
 		self.logger.info(f"Lake status: {lake_flag}")
 		assert np.max(self.top) != np.min(self.top), "Top elevation data is constant"	
-		active, lake_raster = active_domain(self.top, nlay, self.swat_lake_raster_path, self.swat_river_raster_path, load_raster_args, lake_flag, fitToMeter = 0.3048)
+		active, lake_raster = active_domain(self.top, nlay, self.swat_lake_raster_path, self.swat_river_raster_path, load_raster_args, lake_flag)
 
 		z_botm, k_horiz, k_vert ,recharge_data, SWL, head = input_Data (
 			active, self.top, load_raster_args,
