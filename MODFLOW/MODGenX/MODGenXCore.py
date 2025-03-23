@@ -9,7 +9,7 @@ import pyproj
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-from MODGenX.utils import (generate_raster_paths, load_raster, 
+from MODGenX.utils import (load_raster, 
 	match_raster_dimensions, active_domain,
 remove_isolated_cells, input_Data, GW_starting_head,
 model_src,  smooth_invalid_thickness, sim_obs)
@@ -24,9 +24,11 @@ import rasterio
 from osgeo import gdal, ogr
 from MODGenX.well_info import create_shapefile_from_modflow_grid_arcpy
 from osgeo import osr, gdal
+from MODGenX.config import MODFLOWGenXPaths
+from MODGenX.path_handler import PathHandler
 
 class MODGenXCore:
-	def __init__(self, username, NAME,VPUID, BASE_PATH, LEVEL, RESOLUTION, MODEL_NAME, ML, SWAT_MODEL_NAME):
+	def __init__(self, username, NAME, VPUID, BASE_PATH, LEVEL, RESOLUTION, MODEL_NAME, ML, SWAT_MODEL_NAME, config=None):
 		self.NAME        = NAME
 		self.BASE_PATH   = BASE_PATH
 		self.LEVEL       = LEVEL
@@ -36,29 +38,62 @@ class MODGenXCore:
 		self.ML          = ML
 		self.VPUID       = VPUID
 		self.username    = username
-		self.logger = Logger(verbose=True)
-		self.raster_folder            = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/rasters_input")
-		self.model_path               = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}')
-		self.moflow_exe_path          = "/data/SWATGenXApp/codes/bin/modflow-nwt"
-		self.swat_lake_shapefile_path = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp')
-		self.ref_raster_path          = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/DEM_{RESOLUTION}m.tif')
-		self.subbasin_path            = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/' f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/subs1.shp")
-		self.original_swat_dem = os.path.join(f'/data/SWATGenXApp/Users/{self.username}/', f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Rasters/DEM/dem.tif")
-		self.shape_geometry = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_subbasins.shp"
-		self.swat_river_raster_path   = os.path.join(self.model_path, 'swat_river.tif')
-		self.swat_lake_raster_path    = os.path.join(self.model_path,'lake_raster.tif')
-		self.head_of_last_time_step   = os.path.join(f'/data/SWATGenXApp/Users/{self.username}', fr"SWATplus_by_VPUID/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/head_of_last_time_step.jpeg")
-		self.output_heads             = os.path.join(f'/data/SWATGenXApp/Users/{self.username}',f'SWATplus_by_VPUID/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/',self.MODEL_NAME+'.hds')
-		self.out_shp                  = os.path.join(self.model_path, "Grids_MODFLOW")
-		self.raster_path              = os.path.join(self.raster_folder, f'{NAME}_DEM_{RESOLUTION}m.tif')
-		self.basin_path               = os.path.join(self.raster_folder, 'basin_shape.shp')
-		self.bound_path               = os.path.join(self.raster_folder, 'bound_shape.shp')
-		self.temp_image               = f'/data/SWATGenXApp/GenXAppData/codes/MODFLOW/MODGenX/_temp/{self.NAME}_{self.MODEL_NAME}.jpeg'
+		
+		# Use provided config or create a new one
+		if config is None:
+			self.config = MODFLOWGenXPaths(
+				username=username,
+				BASE_PATH=BASE_PATH,
+				MODFLOW_MODEL_NAME=MODEL_NAME,
+				SWAT_MODEL_NAME=SWAT_MODEL_NAME,
+				LEVEL=LEVEL,
+				VPUID=VPUID,
+				NAME=NAME,
+				RESOLUTION=RESOLUTION
+			)
+		else:
+			self.config = config
+		
+		# Initialize path handler
+		self.path_handler = PathHandler(self.config)
+		
+		 # Initialize logger with path_handler
+		self.logger = Logger(verbose=True, path_handler=self.path_handler)
+		
+		# Set commonly used paths
+		self.raster_folder = self.path_handler.get_raster_input_dir()
+		self.model_path = self.path_handler.get_model_path()
+		self.moflow_exe_path = self.path_handler.get_modflow_exe_path()
+		
+		# Set references to shapefile paths
+		shapefile_paths = self.path_handler.get_shapefile_paths()
+		self.swat_lake_shapefile_path = shapefile_paths["lakes"]
+		self.subbasin_path = shapefile_paths["subs"]
+		self.shape_geometry = shapefile_paths["subbasins"]
+		
+		# Set raster paths
+		self.ref_raster_path = self.path_handler.get_ref_raster_path()
+		self.original_swat_dem = self.path_handler.get_swat_dem_path()
+		self.swat_river_raster_path = self.path_handler.get_output_file('swat_river.tif')
+		self.swat_lake_raster_path = self.path_handler.get_output_file('lake_raster.tif')
+		
+		# Set output paths
+		self.head_of_last_time_step = self.path_handler.get_output_file('head_of_last_time_step.jpeg')
+		self.output_heads = self.path_handler.get_output_file(f'{MODEL_NAME}.hds')
+		self.out_shp = os.path.join(self.model_path, "Grids_MODFLOW")
+		
+		# Set working paths
+		self.raster_path = self.path_handler.get_raster_input_file(f'{NAME}_DEM_{RESOLUTION}m.tif')
+		self.basin_path = self.path_handler.get_raster_input_file('basin_shape.shp')
+		self.bound_path = self.path_handler.get_raster_input_file('bound_shape.shp')
+		self.temp_image = self.path_handler.get_temporary_path(f'{self.NAME}_{self.MODEL_NAME}.jpeg')
+		
+		# Set other parameters
 		self.EPSG = "EPSG:26990"
 		self.dpi = 300
 		self.top = None
-		self.bound_raster_path = None
-		self.domain_raster_path = None
+		self.bound_raster_path = self.path_handler.get_bound_raster_path()
+		self.domain_raster_path = self.path_handler.get_domain_raster_path()
 		self.RESOLUTION = RESOLUTION
 
 	def create_DEM_raster(self):
@@ -217,14 +252,91 @@ class MODGenXCore:
 		assert bound_res == ref_res, f"Bound raster resolution {bound_res} does not match reference raster resolution {ref_res}"
 
 	def discritization_configuration(self):
-		nrow, ncol = self.top.shape[0], self.top.shape[1]
-		n_sublay_1 = 2                                             # Number of sub-layers in the first layer
-		n_sublay_2 = 3                                             # Number of sub-layers in the second layer
-		nlay = n_sublay_1 + n_sublay_2 + 1                         # Adding 1 for the bedrock layer
-		k_bedrock = 1e-4                                           # bedrock hydrualic conductivity
-		bedrock_thickness = 40                                     # bedrock thickness
+		"""
+		Define the discretization configuration for the MODFLOW model using the config object.
+		
+		This method delegates to the utility function to avoid code duplication.
+		
+		Returns:
+		--------
+		tuple
+			nlay, nrow, ncol, n_sublay_1, n_sublay_2, k_bedrock, bedrock_thickness
+		"""
+		from MODGenX.utils import discritization_configuration as disc_config
+		return disc_config(self.top, self.config)
 
-		return nlay, nrow, ncol, n_sublay_1, n_sublay_2, k_bedrock, bedrock_thickness
+	def validate_data(self):
+		"""
+		Validate input data before model creation.
+		
+		Returns:
+		--------
+		bool
+			True if validation passes, False otherwise
+		"""
+		validation_errors = []
+		
+		# Validate paths
+		required_paths = [
+			(self.model_path, "Model directory"),
+			(self.ref_raster_path, "Reference raster"),
+			(self.original_swat_dem, "SWAT DEM")
+		]
+		
+		for path, desc in required_paths:
+			if not os.path.exists(path):
+				validation_errors.append(f"{desc} not found: {path}")
+		
+		# Validate DEM
+		if self.top is not None:
+			if np.isnan(self.top).any():
+				validation_errors.append("DEM contains NaN values")
+			if np.max(self.top) == np.min(self.top):
+				validation_errors.append("DEM is constant (all values equal)")
+		
+		# Log validation results
+		if validation_errors:
+			for error in validation_errors:
+				self.logger.error(f"Validation error: {error}")
+			return False
+		
+		self.logger.info("Data validation passed successfully")
+		return True
+
+	def handle_error(self, error, context, critical=False):
+		"""
+		Handle errors in a consistent way.
+		
+		Parameters:
+		-----------
+		error : Exception
+			The error that occurred
+		context : str
+			Description of what was happening when the error occurred
+		critical : bool, optional
+			Whether this is a critical error that should stop execution
+			
+		Returns:
+		--------
+		bool
+			False if critical error, True otherwise
+		"""
+		error_msg = f"Error in {context}: {str(error)}"
+		self.logger.error(error_msg)
+		
+		# Store error in a dedicated log file for the model
+		error_log_path = os.path.join(self.model_path, "error_log.txt")
+		try:
+			os.makedirs(os.path.dirname(error_log_path), exist_ok=True)
+			with open(error_log_path, 'a') as f:
+				f.write(f"{error_msg}\n")
+		except Exception as e:
+			self.logger.error(f"Could not write to error log: {str(e)}")
+		
+		if critical:
+			raise RuntimeError(f"Critical error in {context}: {str(error)}")
+		
+		return not critical
 
 	def create_modflow_model(self):
 		self.create_DEM_raster()
@@ -256,21 +368,11 @@ class MODGenXCore:
 		# Store the CRS for reference throughout the process
 		self.reference_crs = swat_dem_proj
 	
-		load_raster_args = {
-			'LEVEL': self.LEVEL,
-			'RESOLUTION': self.RESOLUTION,
-			'NAME': self.NAME,
-			'ref_raster': self.ref_raster_path,
-			'bound_raster': self.bound_raster_path,
-			'active': self.domain_raster_path,
-			'MODEL_NAME': self.MODEL_NAME,
-			'SWAT_MODEL_NAME': self.SWAT_MODEL_NAME,
-			'username': self.username,
-			'VPUID': self.VPUID,
-			'reference_crs': self.reference_crs  # Add reference CRS to the arguments
-		}
+		# Create load_raster_args using path_handler
+		load_raster_args = self.path_handler.create_load_raster_args()
 
-		raster_paths = generate_raster_paths(self.RESOLUTION, self.ML)
+		# Get raster paths from path_handler
+		raster_paths = self.path_handler.get_raster_paths(self.ML)
 
 		# Add detailed DEM inspection before loading
 		dem_path = raster_paths['DEM']
@@ -377,9 +479,9 @@ class MODGenXCore:
 		# Create the nwt package
 		nwt = flopy.modflow.ModflowNwt(																				  ## nwt package
 			mf,
-			headtol=0.01,                                      			# Lower tolerance for head change
-			fluxtol=0.001,                                     			# Lower tolerance for flux imbalance
-			maxiterout=100,                                    			# Increase the maximum number of outer iterations
+			headtol=self.config.headtol,                                      			# Lower tolerance for head change
+			fluxtol=self.config.fluxtol,                                     			# Lower tolerance for flux imbalance
+			maxiterout=self.config.maxiterout,                                    			# Increase the maximum number of outer iterations
 			thickfact=1e-04,                                   			# Thickness factor
 			linmeth=1,                                         			# Use the GMRES linear solution method
 			iprnwt=1,                                          			# self.logger.info to the MODFLOW listing file
@@ -486,12 +588,12 @@ class MODGenXCore:
 		from MODGenX.visualization import plot_heads
 		first_layer_simulated_head = plot_heads(self.username, self.VPUID, self.LEVEL, self.NAME, self.RESOLUTION, self.MODEL_NAME)
 
-		#if success:
-		#	self.logger.info("MODFLOW model ran successfully")
-		#else:
-		#	self.logger.error("MODFLOW model failed to run")
-		#	self.logger.error(buff)
-		#	return
+		if success:
+			self.logger.info("MODFLOW model ran successfully")
+		else:
+			self.logger.error("MODFLOW model failed to run")
+			self.logger.error(buff)
+			return
 
 		self.logger.info("Head plots generated successfully")
 		assert len(df_obs) > 0, "No observation data found"

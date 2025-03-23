@@ -4,18 +4,36 @@ import os
 import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import pandas as pd
+from MODGenX.Logger import Logger
 
+logger = Logger(verbose=True)
+
+# Modern matplotlib configuration for better visualization
+def setup_matplotlib_style():
+    """Configure matplotlib for better visualizations"""
+    plt.style.use('seaborn-v0_8-whitegrid')  # Use a modern style
+    plt.rcParams.update({
+        'figure.figsize': (10, 8),
+        'font.size': 12,
+        'axes.titlesize': 14,
+        'axes.labelsize': 12,
+        'xtick.labelsize': 10,
+        'ytick.labelsize': 10,
+        'legend.fontsize': 10,
+        'figure.dpi': 300,
+    })
+    
+# Call this at the module level
+setup_matplotlib_style()
 
 # Data preparation functions
 def river_images(swat_river):
     """
     Convert river data to binary (0/1) representation.
     
-    Parameters:
-        swat_river (numpy.ndarray): River data array
-        
-    Returns:
-        numpy.ndarray: Binary representation where all non-zero values are set to 1
+    This function doesn't appear to be used anywhere in the codebase.
+    The river preprocessing is handled differently in river_correction()
+    and other functions.
     """
     mask = swat_river != 0
     river_images = swat_river.copy()  # Create a copy to avoid modifying the original
@@ -39,36 +57,62 @@ def plot_data(datasets, titles, model_input_figure_path, vmin=None, vmax=None,
         figsize (tuple, optional): Figure size (width, height) in inches
         dpi (int, optional): Resolution for saved figure
     """
-    # Set a base font size
-    increased_font_size = base_font_size * 1.8  # Increase font size by 80%
+    # Use a context manager for figure to ensure proper cleanup
+    with plt.style.context('seaborn-v0_8-whitegrid'):
+        # Create figure with constrained_layout for better spacing
+        fig, axs = plt.subplots(3, 4, figsize=figsize, constrained_layout=True)
+        
+        for ax, data, title in zip(axs.flat, datasets, titles):
+            # Create a masked array for better NoData handling
+            masked_data = np.ma.masked_where(data == 9999, data)
+            im = ax.imshow(masked_data, vmin=vmin, vmax=vmax, cmap='viridis')
+            
+            # More modern title layout
+            ax.set_title(title, fontsize=base_font_size*1.8, pad=10)
+            
+            # Calculate appropriate tick intervals for 50 divisions
+            rows, cols = data.shape
+            x_interval = max(1, cols // 50)
+            y_interval = max(1, rows // 50)
+            
+            # Set ticks at exact intervals of 50 starting from 0
+            x_ticks = np.arange(0, cols, x_interval)
+            y_ticks = np.arange(0, rows, y_interval)
+            
+            ax.set_xticks(x_ticks)
+            ax.set_yticks(y_ticks)
+            
+            # Add grid based on these ticks
+            ax.grid(True, linestyle='--', alpha=0.5, color='gray')
+            
+            # Add more aesthetic customization
+            ax.tick_params(
+                axis='both', 
+                which='both', 
+                labelsize=base_font_size*0.7, 
+                grid_alpha=0.3
+            )
+            
+            # Use a specialized formatter for the colorbar
+            cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+            cbar.ax.tick_params(labelsize=base_font_size*0.7)
+            
+            # Label axes for clarity
+            if ax.is_last_row():
+                ax.set_xlabel('Columns', fontsize=base_font_size*0.9)
+            if ax.is_first_col():
+                ax.set_ylabel('Rows', fontsize=base_font_size*0.9)
+        
+        # Remove any unused subplots
+        for ax in axs.flat[len(datasets):]:
+            ax.remove()
+            
+        # Save with bbox_inches='tight' to avoid cutoff
+        plt.savefig(model_input_figure_path, dpi=dpi, bbox_inches='tight')
+        plt.close()
 
-    fig, axs = plt.subplots(3, 4, figsize=figsize)
-    for ax, data, title in zip(axs.flat, datasets, titles):
-        im = ax.imshow(data, vmin=vmin, vmax=vmax)
-        ax.set_title(title, fontsize=increased_font_size)
 
-        # Define the ticks to be at every 200th index value
-        ax.set_xticks(np.arange(0, data.shape[1], 200))
-        ax.set_yticks(np.arange(0, data.shape[0], 200))
-
-        # Define the labels to be the index value
-        ax.set_xticklabels(np.arange(0, data.shape[1], 200), rotation=90, fontsize=increased_font_size * 0.7)
-        ax.set_yticklabels(np.arange(0, data.shape[0], 200), fontsize=increased_font_size * 0.7)
-
-        # Set axis labels with increased font size
-        ax.set_xlabel('Column', fontsize=increased_font_size)
-        ax.set_ylabel('Row', fontsize=increased_font_size)
-
-        # Add and configure colorbar with increased font size
-        cbar = fig.colorbar(im, ax=ax)
-        cbar.ax.tick_params(labelsize=increased_font_size * 0.7)
-
-    plt.tight_layout()
-    plt.savefig(model_input_figure_path, dpi=dpi)
-    plt.close()
-
-
-def plot_heads(username, VPUID, LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap='viridis', dpi=300):
+def plot_heads(username, VPUID, LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap='viridis', dpi=300, path_handler=None):
     """
     Read a MODFLOW head binary file and create a plot for the head data for the last time step.
 
@@ -81,15 +125,21 @@ def plot_heads(username, VPUID, LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap='virid
         MODEL_NAME (str): Model name
         cmap (str, optional): Colormap to use for the plot
         dpi (int, optional): Resolution for saved figure
+        path_handler (PathHandler, optional): Path handler for file paths
         
     Returns:
         numpy.ndarray: Head data for the last time step
     """
-    BASE_PATH = f"/data/SWATGenXApp/Users/{username}/"
-    
-    # Create the headfile object
-    model_dir = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/')
-    head_file_path = os.path.join(model_dir, MODEL_NAME + '.hds')
+    # Use path_handler if provided, otherwise construct paths manually
+    if path_handler:
+        model_dir = path_handler.get_model_path()
+        head_file_path = path_handler.get_output_file(MODEL_NAME + '.hds')
+        output_path = path_handler.get_output_file("head_of_last_time_step.jpeg")
+    else:
+        BASE_PATH = f"/data/SWATGenXApp/Users/{username}/"
+        model_dir = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/')
+        head_file_path = os.path.join(model_dir, MODEL_NAME + '.hds')
+        output_path = os.path.join(model_dir, "head_of_last_time_step.jpeg")
     
     try:
         headobj = flopy.utils.binaryfile.HeadFile(head_file_path)
@@ -104,18 +154,35 @@ def plot_heads(username, VPUID, LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap='virid
         plt.figure(figsize=(10, 10))
         mask = head[0, :, :] > 0
         masked_data = np.ma.masked_where(~mask, head[0, :, :])
-        plt.imshow(masked_data, cmap=cmap)
-        plt.colorbar(label='Head (meters)')
+        im = plt.imshow(masked_data, cmap=cmap)
+        
+        # Calculate appropriate tick intervals for 50 divisions
+        rows, cols = masked_data.shape
+        x_interval = max(1, cols // 50)
+        y_interval = max(1, rows // 50)
+        
+        # Set ticks at exact intervals starting from 0
+        x_ticks = np.arange(0, cols, x_interval)
+        y_ticks = np.arange(0, rows, y_interval)
+        
+        plt.xticks(x_ticks)
+        plt.yticks(y_ticks)
+        
+        # Add grid based on these ticks
+        plt.grid(True, linestyle='--', alpha=0.5, color='gray')
+        
+        plt.colorbar(im, label='Head (meters)')
         plt.title('Heads for last time step')
+        plt.xlabel('Columns')
+        plt.ylabel('Rows')
 
-        output_path = os.path.join(model_dir, "head_of_last_time_step.jpeg")
-        plt.savefig(output_path, dpi=dpi)
+        plt.savefig(output_path, dpi=dpi, bbox_inches='tight')
         plt.close()
 
         return head[0, :, :]
     
     except Exception as e:
-        print(f"Error in plot_heads: {e}")
+        logger.error(f"Error in plot_heads: {e}")
         return None
 
 
@@ -150,7 +217,7 @@ def calculate_performance_metrics(obs, sim):
     return nse, mse, mae, pbias, kge
 
 
-def create_plots_and_return_metrics(df_sim_obs, username, VPUID, LEVEL, NAME, MODEL_NAME, dpi=300):
+def create_plots_and_return_metrics(df_sim_obs, username, VPUID, LEVEL, NAME, MODEL_NAME, dpi=300, path_handler=None):
     """
     Create comparison plots between observed and simulated data and calculate performance metrics.
     
@@ -162,6 +229,7 @@ def create_plots_and_return_metrics(df_sim_obs, username, VPUID, LEVEL, NAME, MO
         NAME (str): Name information
         MODEL_NAME (str): Model name
         dpi (int, optional): Resolution for saved figure
+        path_handler (PathHandler, optional): Path handler for file paths
         
     Returns:
         tuple: NSE, MSE, MAE, PBIAS, KGE for the last data type processed
@@ -223,8 +291,11 @@ def create_plots_and_return_metrics(df_sim_obs, username, VPUID, LEVEL, NAME, MO
         plt.annotate(f'KGE = {kge:.2f}', xy=(0.7, 0.3), xycoords='axes fraction', bbox=bbox_props)
         
         # Save the figure
-        output_dir = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"
-        output_path = os.path.join(output_dir, f"{TYPE}_simulated_figure.jpeg")
+        if path_handler:
+            output_path = path_handler.get_output_file(f"{TYPE}_simulated_figure.jpeg")
+        else:
+            output_dir = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"
+            output_path = os.path.join(output_dir, f"{TYPE}_simulated_figure.jpeg")
         
         plt.savefig(output_path, dpi=dpi)
         plt.close()

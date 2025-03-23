@@ -72,7 +72,7 @@ def cleaning(df,active):
         logger.error(f"Error in cleaning function: {str(e)}")
         raise
 
-def sim_obs(VPUID, username, BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLUTION, load_raster_args,df_obs, fitToMeter = 0.3048):
+def sim_obs(VPUID, username, BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLUTION, load_raster_args, df_obs, fitToMeter = 0.3048):
     """
     Compare observed and simulated water levels.
     """
@@ -94,14 +94,42 @@ def sim_obs(VPUID, username, BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLU
     model_top = mf.Dis.top.array
     hcon_1 = mf.upw.hk.array[0]
     
+    # Standardize column names - convert 'Row'/'Col' to 'row'/'col' if they exist
+    logger.info(f"Observation dataframe columns: {df_obs.columns.tolist()}")
+    column_mapping = {'Row': 'row', 'Col': 'col'}
+    for old_col, new_col in column_mapping.items():
+        if old_col in df_obs.columns and new_col not in df_obs.columns:
+            logger.info(f"Renaming column '{old_col}' to '{new_col}'")
+            df_obs = df_obs.rename(columns={old_col: new_col})
+    
+    # Check that required columns exist
+    required_cols = ['row', 'col', 'SWL', 'ELEV_DEM']
+    missing_cols = [col for col in required_cols if col not in df_obs.columns]
+    
+    if missing_cols:
+        error_msg = f"Missing required columns in observation data: {missing_cols}"
+        logger.error(error_msg)
+        raise KeyError(error_msg)
+    
     # Initialize column for simulated SWL
     df_obs['sim_head_m'] = np.nan
 
     # Extract rows and columns
     rows = df_obs['row'].values.astype(int)
     cols = df_obs['col'].values.astype(int)
+    
+    # Validate indices are within bounds
+    nrow, ncol = model_top.shape
+    valid_mask = (rows >= 0) & (rows < nrow) & (cols >= 0) & (cols < ncol)
+    
+    if not np.all(valid_mask):
+        invalid_count = np.sum(~valid_mask)
+        logger.warning(f"Found {invalid_count} observations with invalid row/col indices - filtering them out")
+        rows = rows[valid_mask]
+        cols = cols[valid_mask]
+        df_obs = df_obs[valid_mask].copy()
+    
     df_obs.loc[:, 'top'] = model_top[rows, cols]
-
     df_obs.loc[:, 'sim_head_m'] = sim_head[0, rows, cols]
     df_obs.loc[:, 'sim_SWL_m'] = model_top[rows, cols] - sim_head[0, rows, cols]
 
@@ -109,7 +137,7 @@ def sim_obs(VPUID, username, BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLU
     df_obs['obs_SWL_m'] = fitToMeter*df_obs['SWL']
 
     count_before = len(df_obs)
-    df_obs.dropna(subset=['obs_head_m','obs_SWL_m', 'sim_head_m', 'obs_SWL_m'], inplace=True)
+    df_obs.dropna(subset=['obs_head_m','obs_SWL_m', 'sim_head_m', 'sim_SWL_m'], inplace=True)
     count_after = len(df_obs)
     
     logger.info(f"Sim-obs comparison completed in {time.time() - start_time:.2f} seconds")
@@ -215,12 +243,13 @@ def GW_layers(thickness_1, thickness_2, n_sublay_1, n_sublay_2, bedrock_thicknes
     - thickness_1, thickness_2: Thickness of the first and second main layers.
     - n_sublay_1, n_sublay_2: Number of sub-layers in the first and second main layers.
     - top: Top elevation of the first layer.
-    - bedrock_bottom: Bottom elevation of the bedrock layer.
+    - bedrock_thickness: Thickness of the bedrock layer.
 
     Returns:
     - z_botm: List of bottom elevations for all layers.
     """
-
+    logger.info(f"Generating layer elevations with {n_sublay_1} sublayers in layer 1, {n_sublay_2} sublayers in layer 2")
+    
     bedrock_bottom = top - thickness_1 - thickness_2 - bedrock_thickness  # Define the bottom of the bedrock layer
 
     # Calculate sub-layer thicknesses
@@ -241,21 +270,42 @@ def GW_layers(thickness_1, thickness_2, n_sublay_1, n_sublay_2, bedrock_thicknes
     # Append the bottom elevation for the bedrock layer
     z_botm.append(bedrock_bottom)
 
-
+    logger.info(f"Generated {len(z_botm)} layer bottoms from {np.mean(top):.2f}m to {np.mean(bedrock_bottom):.2f}m")
     return z_botm
 
-def discritization_configuration(top):
+def discritization_configuration(top, config=None):
+    """
+    Define discretization configuration for the MODFLOW model.
+    
+    Parameters:
+    -----------
+    top : numpy.ndarray
+        Top elevation array
+    config : MODFLOWGenXPaths, optional
+        Configuration object with model parameters
+        
+    Returns:
+    --------
+    tuple
+        nlay, nrow, ncol, n_sublay_1, n_sublay_2, k_bedrock, bedrock_thickness
+    """
     nrow, ncol = top.shape[0], top.shape[1]
-    n_sublay_1 = 2  # Number of sub-layers in the first layer
-    n_sublay_2 = 3  # Number of sub-layers in the second layer
+    
+    # Use configuration values if provided, otherwise use defaults
+    if config:
+        n_sublay_1 = config.n_sublay_1
+        n_sublay_2 = config.n_sublay_2
+        k_bedrock = config.k_bedrock
+        bedrock_thickness = config.bedrock_thickness
+    else:
+        n_sublay_1 = 2  # Number of sub-layers in the first layer
+        n_sublay_2 = 3  # Number of sub-layers in the second layer
+        k_bedrock = 1e-4  # bedrock hydrualic conductivity
+        bedrock_thickness = 40  # bedrock thickness
 
     nlay = n_sublay_1 + n_sublay_2 + 1  # Adding 1 for the bedrock layer
 
-    k_bedrock = 1e-4  # bedrock hydrualic conductivity
-    bedrock_thickness = 40 ### bedrock
-
     return nlay, nrow, ncol, n_sublay_1, n_sublay_2, k_bedrock, bedrock_thickness
-
 
 def match_raster_dimensions(base_raster, target_raster)->np.ndarray:
     """
@@ -305,57 +355,6 @@ def padding_raster(base_shape, target_shape, target_raster):
 
     logger.info(f"Padded target raster shape: {padded_target_raster.shape}")
     return padded_target_raster
-
-
-def defining_bound_and_active(BASE_PATH, subbasin_path, raster_folder, RESOLUTION, SWAT_dem_path):
-
-    Subbasin = gpd.read_file(subbasin_path)
-
-
-    basin = Subbasin.dissolve().reset_index(drop=True)
-    buffered = Subbasin.buffer(100)
-
-    # Dissolve the buffered polygons to get a single outer boundary
-    basin['geometry'] = buffered.unary_union
-    basin = basin.set_geometry('geometry').copy()
-    basin ['Active'] = 1
-    basin_path = os.path.join(raster_folder, 'basin_shape.shp')
-
-    basin[['Active','geometry']].to_file(basin_path)
-
-    bound = basin.boundary.copy()
-    bound = bound.explode(index_parts=False)
-    bound = bound[bound.length == bound.length.max()]
-    bound = bound.buffer(RESOLUTION)
-    bound = gpd.GeoDataFrame(geometry=bound)
-    bound.crs = basin.crs
-    bound['Bound'] = 2
-    bound_path = os.path.join(raster_folder, 'bound_shape.shp')
-    bound[['Bound','geometry']].to_file(bound_path)
-
-    logger.info('Generated bound shape saved to:',os.path.basename(bound_path))
-    logger.info('Generated basin shape saved to:',os.path.basename(basin_path))
-
-    env = GDAL.env  # Use gdal_sa's env class
-    env.workspace = raster_folder
-    env.overwriteOutput = True  # Enable overwrite
-    reference_raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{RESOLUTION}m.tif")
-    env.snapRaster = reference_raster_path
-
-    env.outputCoordinateSystem = GDAL.Describe(reference_raster_path).spatialReference
-    env.extent = SWAT_dem_path
-    env.nodata = 9999
-
-    bound_raster_path = os.path.join  (raster_folder, 'bound.tif')
-    domain_raster_path = os.path.join  (raster_folder, 'domain.tif')
-    GDAL.PolygonToRaster_conversion(basin_path, "Active", domain_raster_path, cellsize=RESOLUTION)
-    logger.info('basin raster is created')
-    GDAL.PolygonToRaster_conversion(bound_path, "Bound", bound_raster_path, cellsize=RESOLUTION)
-    logger.info('bound raster is created')
-
-    return domain_raster_path, bound_raster_path
-
-
 
 
 def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, load_raster_args, lake_flag, fitToMeter = 0.3048):
@@ -434,16 +433,47 @@ def active_domain (top, nlay, swat_lake_raster_path, swat_river_raster_path, loa
     return active, lake_raster
 
 def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData/'):
+    """
+    Load and process a raster file.
+    
+    Parameters:
+    -----------
+    path : str
+        Path to the raster file
+    load_raster_args : dict
+        Dictionary containing parameters for raster loading
+    BASE_PATH : str, optional
+        Base path for data
+        
+    Returns:
+    --------
+    numpy.ndarray
+        Loaded and processed raster data
+    """
     assert os.path.exists(path), f"Raster file not found: {path}"
-    LEVEL = load_raster_args['LEVEL']
-    RESOLUTION = load_raster_args['RESOLUTION']
-    NAME = load_raster_args['NAME']
-    MODEL_NAME = load_raster_args['MODEL_NAME']
-    SWAT_MODEL_NAME = load_raster_args['SWAT_MODEL_NAME']
-    VPUID = load_raster_args['VPUID']
-    username = load_raster_args['username'] 
-
-    ref_raster_path = load_raster_args['ref_raster']
+    
+    # Use path_handler if available, otherwise use individual params
+    if 'path_handler' in load_raster_args:
+        path_handler = load_raster_args['path_handler']
+        LEVEL = path_handler.config.LEVEL
+        RESOLUTION = path_handler.config.RESOLUTION
+        NAME = path_handler.config.NAME
+        MODEL_NAME = path_handler.config.MODFLOW_MODEL_NAME
+        SWAT_MODEL_NAME = path_handler.config.SWAT_MODEL_NAME
+        VPUID = path_handler.config.VPUID
+        username = path_handler.config.username
+        ref_raster_path = path_handler.get_ref_raster_path()
+    else:
+        # Legacy mode - extract from load_raster_args
+        LEVEL = load_raster_args['LEVEL']
+        RESOLUTION = load_raster_args['RESOLUTION']
+        NAME = load_raster_args['NAME']
+        MODEL_NAME = load_raster_args['MODEL_NAME']
+        SWAT_MODEL_NAME = load_raster_args['SWAT_MODEL_NAME']
+        VPUID = load_raster_args['VPUID']
+        username = load_raster_args['username']
+        ref_raster_path = load_raster_args['ref_raster']
+    
     logger.info('*****************load_raster*****************')
     logger.info(f"Loading raster: {path}")
     if "DEM" in path:
@@ -452,57 +482,99 @@ def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData
     # For DEM files, try to load directly without clipping first
     if "DEM" in path:
         logger.info(f"Attempting direct load of DEM file: {path}")
-        with rasterio.open(path) as src:
-            data = src.read(1)
-            no_data = src.nodata if src.nodata is not None else 9999
-            data_min, data_max = data.min(), data.max()
-            logger.info(f"Direct load - data range: {data_min} to {data_max}")
-            if data_min > 0 and data_max < 10000:
-                logger.info(f"Using direct DEM data with valid range")
-                data = np.where(data == no_data, 9999, data)
-                assert not np.all(data == 9999), f"DEM data has all NoData values"
-                return data
-        logger.info(f"Direct load didn't produce valid elevation range, trying clip method")
+        try:
+            with rasterio.open(path) as src:
+                # Check for multi-band DEMs
+                if src.count > 1:
+                    logger.warning(f"DEM has {src.count} bands - extracting band 1 which typically contains elevation data")
+                    for i in range(1, src.count + 1):
+                        band_data = src.read(i)
+                        band_min, band_max = band_data.min(), band_data.max()
+                        logger.warning(f"Band {i} range: {band_min} to {band_max}")
+                
+                # Always use the first band for DEMs
+                data = src.read(1)
+                no_data = src.nodata if src.nodata is not None else 9999
+                data_min, data_max = data.min(), data.max()
+                logger.info(f"Direct load - data range: {data_min} to {data_max}")
+                
+                # Check if the data range looks reasonable for elevation
+                if data_min >= 0 and data_max < 10000:
+                    logger.info(f"Using direct DEM data with valid range")
+                    data = np.where(data == no_data, 9999, data)
+                    if np.all(data == 9999):
+                        logger.warning(f"DEM data has all NoData values, will try alternative method")
+                    else:
+                        return data
+                else:
+                    logger.warning(f"Direct load produced unusual elevation range: {data_min} to {data_max}, trying clip method")
+        except Exception as e:
+            logger.warning(f"Error in direct DEM load: {str(e)}, trying clip method")
     
+    # Continue with normal processing (clipping) if direct load doesn't work
     file_name = os.path.basename(path)
     file_name_without_ext = os.path.splitext(file_name)[0]
 
-    output_clip = os.path.join(f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input", f"{NAME}_{file_name_without_ext}.tif")
-    os.makedirs(os.path.join(f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}', LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input"), exist_ok=True)
+    user_vpuid_dir = os.path.join('/data/SWATGenXApp/Users', username, 'SWATplus_by_VPUID', VPUID)
+    model_input_dir = os.path.join(user_vpuid_dir, LEVEL, str(NAME), f"{MODEL_NAME}/rasters_input")
+    output_clip = os.path.join(model_input_dir, f"{NAME}_{file_name_without_ext}.tif")
+    os.makedirs(model_input_dir, exist_ok=True)
 
     # Skip clipping for reference and bound rasters
     if path != load_raster_args['ref_raster'] and path != load_raster_args['bound_raster']:
         clip_raster_by_another(BASE_PATH, path, ref_raster_path, output_clip)
+        
+        # Handle multi-band rasters - extract first band only
         with rasterio.open(output_clip) as src:
             count = src.count
             if count > 1:
                 logger.warning(f"WARNING: Clipped raster has {count} bands - extracting first band")
-                from osgeo import gdal
+                # Create a temporary file path
                 temp_output = output_clip + "_temp.tif"
-                gdal.Translate(temp_output, output_clip, bandList=[1])
-                os.remove(output_clip)
-                os.rename(temp_output, output_clip)
-                src = rasterio.open(output_clip)
+                
+                # Use gdal to extract just the first band
+                from osgeo import gdal
+                try:
+                    gdal.Translate(temp_output, output_clip, bandList=[1])
+                    # Replace the original file with the single-band version
+                    os.remove(output_clip)
+                    os.rename(temp_output, output_clip)
+                    logger.info(f"Successfully created single-band raster from band 1")
+                except Exception as e:
+                    logger.error(f"Error extracting band from multi-band raster: {str(e)}")
+                    if os.path.exists(temp_output):
+                        os.remove(temp_output)
+            
+            # Re-open the (possibly modified) raster to get the data
+            src = rasterio.open(output_clip)
             data = src.read(1)
             no_data = src.nodata if src.nodata is not None else 9999
             data_min, data_max = data.min(), data.max()
             logger.info(f"Clipped raster data range: {data_min} to {data_max}")
             data = np.where(data == no_data, 9999, data)
+            
+            # Special handling for DEM files with extreme values
             if "DEM" in path and (data_min < -900000 or data_max > 900000):
                 logger.error(f"ERROR: Extreme values in clipped DEM. Attempting recovery.")
-                with rasterio.open(path) as orig_src:
-                    orig_data = orig_src.read(1)
-                    orig_min, orig_max = orig_data.min(), orig_data.max()
-                    logger.info(f"Original DEM range: {orig_min} to {orig_max}")
-                    if orig_min > -900000 and orig_max < 900000:
-                        logger.info(f"Using original DEM data with valid range")
-                        data = np.where(orig_data == orig_src.nodata, 9999, orig_data)
+                try:
+                    with rasterio.open(path) as orig_src:
+                        orig_data = orig_src.read(1)
+                        orig_min, orig_max = orig_data.min(), orig_data.max()
+                        logger.info(f"Original DEM range: {orig_min} to {orig_max}")
+                        if orig_min > -900000 and orig_max < 900000:
+                            logger.info(f"Using original DEM data with valid range")
+                            data = np.where(orig_data == orig_src.nodata, 9999, orig_data)
+                except Exception as e:
+                    logger.error(f"Error trying to recover original DEM data: {str(e)}")
+            
+            # Final validation
             if np.all(data == 9999) or np.all(data < -900000) or np.all(data > 900000):
                 logger.error(f"ERROR: All values in raster are invalid!")
-                
                 raise ValueError(f"Invalid raster data in {output_clip}")
+                
             return data
     else:
+        # Direct loading for reference and bound rasters
         with rasterio.open(path) as src:
             count = src.count
             if count > 1:
@@ -511,6 +583,8 @@ def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData
                     band_min = src.read(i).min()
                     band_max = src.read(i).max()
                     logger.warning(f"Band {i} range: {band_min} to {band_max}")
+            
+            # Always use the first band
             data = src.read(1)
             no_data = src.nodata if src.nodata is not None else 9999
             data_min, data_max = data.min(), data.max()
@@ -518,114 +592,87 @@ def load_raster(path, load_raster_args, BASE_PATH='/data/SWATGenXApp/GenXAppData
             data = np.where(data == no_data, 9999, data)
             return data
 
-def read_raster(src, arg1):
-    raster = src.read(1)
-    if debug:
-        logger.info(f"{os.path.basename(arg1)} LOADED")
-    logger.info(f"raster size loaded:{raster.shape}")
-    return abs(raster)
-
-
 def model_src(DEM_path):
     src = rasterio.open(DEM_path)
     delr, delc = src.transform[0], -src.transform[4]
     return(src,delr, delc)
 
+def input_Data(active, top, load_raster_args, n_sublay_1, n_sublay_2, k_bedrock, bedrock_thickness, ML, fitToMeter=0.3048):
+    """
+    Prepare input data for the MODFLOW model.
+    """
+    # Use config object's fitToMeter value if provided
+    if 'config' in load_raster_args and hasattr(load_raster_args['config'], 'fit_to_meter'):
+        fitToMeter = load_raster_args['config'].fit_to_meter
+        logger.info(f"Using fit_to_meter value from config: {fitToMeter}")
 
-def generate_raster_paths(RESOLUTION,ML):
-
-    BASE_PATH = '/data/SWATGenXApp/GenXAppData/'
-
-    SDIR = 'all_rasters'
-
-    if ML:
-        return {
-            "DEM": os.path.join(BASE_PATH, SDIR, f"DEM_{RESOLUTION}m.tif"),
-            "k_horiz_1": os.path.join(BASE_PATH, SDIR, f"predictions_ML_H_COND_1_{RESOLUTION}.tif"),
-            "k_horiz_2": os.path.join(BASE_PATH, SDIR, f"predictions_ML_H_COND_2_{RESOLUTION}.tif"),
-            "k_vert_1": os.path.join(BASE_PATH, SDIR, f"predictions_ML_V_COND_1_{RESOLUTION}.tif"),
-            "k_vert_2": os.path.join(BASE_PATH, SDIR, f"predictions_ML_V_COND_2_{RESOLUTION}.tif"),
-            "thickness_1": os.path.join(BASE_PATH, SDIR, f"predictions_ML_AQ_THK_1_{RESOLUTION}.tif"),
-            "thickness_2": os.path.join(BASE_PATH, SDIR, f"predictions_ML_AQ_THK_2_{RESOLUTION}.tif"),
-            "recharge_data": os.path.join(BASE_PATH,SDIR ,f'Recharge_{RESOLUTION}m.tif'),
-            "SWL": os.path.join(BASE_PATH, SDIR, f"kriging_output_SWL_{RESOLUTION}m.tif"),
-            "k_horiz_1_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_H_COND_1_{RESOLUTION}m.tif"),
-            "k_horiz_2_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_H_COND_2_{RESOLUTION}m.tif"),
-            "k_vert_1_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_V_COND_1_{RESOLUTION}m.tif"),
-            "k_vert_2_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_V_COND_2_{RESOLUTION}m.tif"),
-            "thickness_1_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_AQ_THK_1_{RESOLUTION}m.tif"),
-            "thickness_2_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_AQ_THK_2_{RESOLUTION}m.tif"),
-            "SWL_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_SWL_{RESOLUTION}m.tif")
-        }
-
+    # Get raster paths from path_handler if available
+    if 'path_handler' in load_raster_args:
+        raster_paths = load_raster_args['path_handler'].get_raster_paths(ML)
     else:
-        return {
-            "DEM": os.path.join(BASE_PATH, SDIR, f"DEM_{RESOLUTION}m.tif"),
-            "k_horiz_1": os.path.join(BASE_PATH, SDIR, f"kriging_output_H_COND_1_{RESOLUTION}m.tif"),
-            "k_horiz_2": os.path.join(BASE_PATH, SDIR, f"kriging_output_H_COND_2_{RESOLUTION}m.tif"),
-            "k_vert_1": os.path.join(BASE_PATH, SDIR, f"kriging_output_V_COND_1_{RESOLUTION}m.tif"),
-            "k_vert_2": os.path.join(BASE_PATH, SDIR, f"kriging_output_V_COND_2_{RESOLUTION}m.tif"),
-            "thickness_1": os.path.join(BASE_PATH, SDIR, f"kriging_output_AQ_THK_1_{RESOLUTION}m.tif"),
-            "thickness_2": os.path.join(BASE_PATH, SDIR, f"kriging_output_AQ_THK_2_{RESOLUTION}m.tif"),
-            "recharge_data": os.path.join(BASE_PATH,SDIR, f'Recharge_{RESOLUTION}m.tif'),
-            "SWL": os.path.join(BASE_PATH, SDIR, f"kriging_output_SWL_{RESOLUTION}m.tif"),
-            "k_horiz_1_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_H_COND_1_{RESOLUTION}m.tif"),
-            "k_horiz_2_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_H_COND_2_{RESOLUTION}m.tif"),
-            "k_vert_1_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_V_COND_1_{RESOLUTION}m.tif"),
-            "k_vert_2_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_V_COND_2_{RESOLUTION}m.tif"),
-            "thickness_1_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_AQ_THK_1_{RESOLUTION}m.tif"),
-            "thickness_2_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_AQ_THK_2_{RESOLUTION}m.tif"),
-            "SWL_er": os.path.join(BASE_PATH, SDIR, f"kriging_stderr_SWL_{RESOLUTION}m.tif")
-            }
-
-
-def generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION,username, VPUID):
-    BASE_PATH = f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/'
-
-    return {
-
-        "lakes"  : f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp',
-        "rivers" : f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp',
-        "grids"  : f'{BASE_PATH}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.geojson',
-
-    }
-
-def database_file_paths():
-    BASE_PATH = '/data/SWATGenXApp/GenXAppData/'
-
-    return {
-        "COUNTY":       os.path.join(BASE_PATH,"Well_data_krigging/Counties_dis_gr.geojson"),
-        'huc12':        os.path.join(BASE_PATH,"NHDPlusData/WBDHU12/WBDHU12_26990.geojson"),
-        'huc8':         os.path.join(BASE_PATH,"NHDPlusData/WBDHU8/WBDHU8_26990.geojson"),
-        'huc4':         os.path.join(BASE_PATH,"NHDPlusData/WBDHU4/WBDHU4_26990.geojson"),
-        'streams':      os.path.join(BASE_PATH,"NHDPlusData/streams.pkl"),
-        'observations': os.path.join(BASE_PATH,"observations/observations_original.geojson"),
-
-    }
-
-def input_Data(active, top, load_raster_args, n_sublay_1,n_sublay_2,k_bedrock, bedrock_thickness,ML, fitToMeter=0.3048):
-
-
-    RESOLUTION = load_raster_args['RESOLUTION']
-
-    raster_paths = generate_raster_paths(RESOLUTION, ML)
+        # Legacy mode
+        RESOLUTION = load_raster_args['RESOLUTION']
+        logger.error("Path handler not available, cannot generate raster paths")
+        raise ValueError("Path handler is required for input data preparation")
+    
+    # Log all available raster paths for debugging
+    logger.info(f"Available raster path keys: {list(raster_paths.keys())}")
+    
+    # Check if required rasters exist
+    required_rasters = ["SWL", "recharge_data", "k_horiz_1", "k_horiz_2", "k_vert_1", "k_vert_2", "thickness_1", "thickness_2"]
+    missing_rasters = [r for r in required_rasters if r not in raster_paths]
+    
+    if missing_rasters:
+        logger.error(f"Missing required raster paths: {missing_rasters}")
+        logger.error(f"ML setting is: {ML}")
+        raise ValueError(f"Missing required raster paths: {missing_rasters}")
+    
     logger.info('0-########################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$$$$$')
-    SWL= smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["SWL"], load_raster_args),active))  #### SWL
+    SWL = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["SWL"], load_raster_args),active))  #### SWL
     logger.info('1-########################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$$$$$')
     recharge_data = cleaning((0.0254/365.25)*load_raster(raster_paths["recharge_data"], load_raster_args),active)  ### converting the unit from inch/year to m/day
 
-    k_horiz_1  = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_horiz_1"],load_raster_args), active))+2
-    k_horiz_2  = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_horiz_2"],load_raster_args),active))+2
-    k_vert_1   = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_vert_1"],load_raster_args),active))+2
-    k_vert_2   = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_vert_2"],load_raster_args),active))+2
-    thickness_1 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["thickness_1"],load_raster_args),active))+3
-    thickness_2 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["thickness_2"],load_raster_args),active))+3
+    # Load remaining rasters with additional error handling
+    try:
+        k_horiz_1 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_horiz_1"],load_raster_args), active))+2
+        k_horiz_2 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_horiz_2"],load_raster_args),active))+2
+        k_vert_1 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_vert_1"],load_raster_args),active))+2
+        k_vert_2 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_vert_2"],load_raster_args),active))+2
+        thickness_1 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["thickness_1"],load_raster_args),active))+3
+        thickness_2 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["thickness_2"],load_raster_args),active))+3
+    except Exception as e:
+        logger.error(f"Error loading parameter rasters: {str(e)}")
+        logger.info("Using default values for missing or corrupt rasters")
+        
+        # Use default values if loading fails
+        if 'k_horiz_1' not in locals():
+            logger.warning("Using default values for k_horiz_1")
+            k_horiz_1 = np.ones_like(active[0], dtype=float) * 5.0
+        
+        if 'k_horiz_2' not in locals():
+            logger.warning("Using default values for k_horiz_2")
+            k_horiz_2 = np.ones_like(active[0], dtype=float) * 3.0
+            
+        if 'k_vert_1' not in locals():
+            logger.warning("Using default values for k_vert_1")
+            k_vert_1 = np.ones_like(active[0], dtype=float) * 0.5
+            
+        if 'k_vert_2' not in locals():
+            logger.warning("Using default values for k_vert_2")
+            k_vert_2 = np.ones_like(active[0], dtype=float) * 0.3
+            
+        if 'thickness_1' not in locals():
+            logger.warning("Using default values for thickness_1")
+            thickness_1 = np.ones_like(active[0], dtype=float) * 20.0
+            
+        if 'thickness_2' not in locals():
+            logger.warning("Using default values for thickness_2")
+            thickness_2 = np.ones_like(active[0], dtype=float) * 40.0
 
     head = top-SWL
 
     k_horiz = [k_horiz_1] * n_sublay_1 + [k_horiz_2]*n_sublay_2 + [k_bedrock]
     k_vert = [k_vert_1]  * n_sublay_1 + [k_vert_2]*n_sublay_2 + [k_bedrock]
-    z_botm = GW_layers (thickness_1, thickness_2, n_sublay_1, n_sublay_2, bedrock_thickness, top)
-    # plt.imshow(z_botm[0])
-    # plt.close()
-    return (z_botm, k_horiz, k_vert ,recharge_data, SWL, head)
+    z_botm = GW_layers(thickness_1, thickness_2, n_sublay_1, n_sublay_2, bedrock_thickness, top)
+    
+    return (z_botm, k_horiz, k_vert, recharge_data, SWL, head)
