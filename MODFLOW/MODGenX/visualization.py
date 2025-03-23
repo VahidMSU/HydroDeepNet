@@ -4,9 +4,10 @@ import os
 import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import pandas as pd
-from MODGenX.Logger import Logger
+from MODGenX.logger_singleton import get_logger
 
-logger = Logger(verbose=True)
+# Use the singleton logger pattern instead of directly initializing Logger
+logger = get_logger()
 
 # Modern matplotlib configuration for better visualization
 def setup_matplotlib_style():

@@ -6,8 +6,10 @@ from osgeo import gdal, osr, ogr
 import shutil
 from MODGenX.Logger import Logger
 import contextlib
+from MODGenX.logger_singleton import get_logger
 
-logger = Logger(verbose=True)
+# Change the global logger initialization to use the singleton pattern
+logger = get_logger()
 
 # Context manager for GDAL datasets to ensure proper cleanup
 @contextlib.contextmanager
