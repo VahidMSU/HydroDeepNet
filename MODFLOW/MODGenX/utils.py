@@ -526,85 +526,6 @@ def read_raster(src, arg1):
     return abs(raster)
 
 
-def create_shapefile_from_modflow_grid_arcpy(BASE_PATH, model_path, MODEL_NAME, out_shp, raster_path):
-    # Step 1: Read the raster to get its extent
-    env = GDAL.env  # Use gdal_sa's env class
-    env.workspace = BASE_PATH
-    from osgeo import gdal
-    RESOLUTION = 250  # Update this if your model has a different resolution
-    # Check if the raster file exists
-    if not os.path.exists(raster_path):
-        logger.info(f"Warning: Raster file {raster_path} not found. Trying to use reference raster instead.")
-        # Try to find a reference raster in the all_rasters directory
-        try:
-            raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{RESOLUTION}m.tif")
-            if not os.path.exists(raster_path):
-                raise FileNotFoundError(f"Reference raster {raster_path} not found.")
-        except NameError:
-            # In case RESOLUTION is not defined in this scope
-            reference_options = [250, 100, 30]
-            for res in reference_options:
-                raster_path = os.path.join(BASE_PATH, f"all_rasters/DEM_{res}m.tif")
-                if os.path.exists(raster_path):
-                    logger.info(f"Using DEM_{res}m.tif as reference raster.")
-                    break
-            else:
-                raise FileNotFoundError("No suitable reference raster found.")
-    
-    # Use GDAL to get raster extent
-    ds = gdal.Open(raster_path)
-    if ds is None:
-        raise ValueError(f"Could not open raster file: {raster_path}")
-        
-    gt = ds.GetGeoTransform()
-    x_min_raster = gt[0]
-    y_max_raster = gt[3]
-    
-    # Clean up
-    ds = None
-
-    # Load the model
-    mf = flopy.modflow.Modflow.load(f"{MODEL_NAME}.nam", model_ws=model_path)
-
-    # Step 2: Use the raster extent to set xoff and yoff
-    xoff, yoff = x_min_raster, y_max_raster
-
-    sr = mf.modelgrid
-    angrot = sr.angrot
-    epsg_code = 26990  # Update this if your model has a different EPSG code
-
-    # Compute grid edges
-    delr, delc = sr.delr, sr.delc
-    xedges = np.hstack(([xoff], xoff + np.cumsum(delr)))
-    yedges = np.hstack(([yoff], yoff - np.cumsum(delc)))  # Use subtraction for yedges due to y-axis convention
-
-    # Generate arrays of vertices for all cells in the grid
-    xedges, yedges = np.meshgrid(xedges, yedges)
-    bottom_left = list(zip(xedges[:-1, :-1].ravel(), yedges[:-1, :-1].ravel()))
-    bottom_right = list(zip(xedges[:-1, 1:].ravel(), yedges[:-1, 1:].ravel()))
-    top_right = list(zip(xedges[1:, 1:].ravel(), yedges[1:, 1:].ravel()))
-    top_left = list(zip(xedges[1:, :-1].ravel(), yedges[1:, :-1].ravel()))
-
-    vertices = [list(box) for box in zip(bottom_left, bottom_right, top_right, top_left, bottom_left)]
-    geoms = [Polygon(verts) for verts in vertices]
-
-    # Add MODFLOW grid
-    rows, cols = np.indices((sr.nrow, sr.ncol))
-    rows_flat = rows.ravel()
-    cols_flat = cols.ravel()
-
-    # Create geodataframe
-    gdf = gpd.GeoDataFrame(
-        {'Row': rows_flat, 'Col': cols_flat, 'geometry': geoms},
-        crs=pyproj.CRS.from_epsg(epsg_code)
-    )
-
-    # Save to shapefile
-    gdf.to_file(out_shp)
-
-    logger.info(f"Shapefile saved to {out_shp}")
-    gdf.to_file(f'{out_shp}.geojson')
-
 def model_src(DEM_path):
     src = rasterio.open(DEM_path)
     delr, delc = src.transform[0], -src.transform[4]
@@ -659,13 +580,13 @@ def generate_raster_paths(RESOLUTION,ML):
 
 
 def generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION,username, VPUID):
-    BASE_PATH = f'/data/SWATGenXApp/Users/{username}/'
-    SDIR = f'SWATplus_by_VPUID/{VPUID}'
+    BASE_PATH = f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/'
+
     return {
 
-        "lakes"  : os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp'),
-        "rivers" : os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp'),
-        "grids"  : os.path.join(BASE_PATH, SDIR, f'{LEVEL}/{NAME}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.geojson')
+        "lakes"  : f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp',
+        "rivers" : f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp',
+        "grids"  : f'{BASE_PATH}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.geojson',
 
     }
 
