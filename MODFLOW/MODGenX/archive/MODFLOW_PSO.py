@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import flopy
 from sklearn.metrics import mean_absolute_error, r2_score
 from functools import partial
-from PSO_calibration import PSOOptimizer, save_final_results
+from MODFLOW.MODGenX.archive.PSO_calibration import PSOOptimizer, save_final_results
 import numpy as np
 import pandas as pd
 import shutil

@@ -1,11 +1,12 @@
 import logging
 import os
+from MODGenX.path_handler import PathHandler
 
 class Logger:
     """
     A simple logger class that logs messages to a file and console with timestamps.
     """
-    def __init__(self, report_path=None, verbose=True, rewrite=False, name="MODFLOWGenXLogger"):
+    def __init__(self, report_path=None, verbose=True, rewrite=False, name="MODFLOWGenXLogger", config=None, path_handler=None):
         """
         Initialize the Logger class.
 
@@ -14,11 +15,35 @@ class Logger:
             verbose (bool): Whether to print logs to console.
             rewrite (bool): Whether to rewrite the log file if it exists.
             name (str): Logger name.
+            config (MODFLOWGenXPaths): Configuration object.
+            path_handler (PathHandler): Path handler instance.
         """
-        self.report_path = report_path or "/data/SWATGenXApp/codes/MODFLOW/logs"
+        # Use path_handler if provided
+        if path_handler:
+            self.report_path = os.path.dirname(path_handler.get_log_path(name))
+            self.log_file = path_handler.get_log_path(name)
+        elif config:
+            # Create a temporary path handler if config is provided
+            # Import here to avoid circular imports
+            try:
+                from MODGenX.path_handler import PathHandler
+                temp_handler = PathHandler(config)
+                self.report_path = os.path.dirname(temp_handler.get_log_path(name))
+                self.log_file = temp_handler.get_log_path(name)
+            except ImportError:
+                # Fall back to legacy mode if PathHandler can't be imported
+                self.report_path = report_path or "/data/SWATGenXApp/codes/MODFLOW/logs"
+                self.log_file = os.path.join(self.report_path, f"{name}.log")
+        else:
+            # Legacy mode
+            self.report_path = report_path or "/data/SWATGenXApp/codes/MODFLOW/logs"
+            self.log_file = os.path.join(self.report_path, f"{name}.log")
+        
+        # Create the directory if it doesn't exist
+        os.makedirs(self.report_path, exist_ok=True)
+        
         self.verbose = verbose
         self.rewrite = rewrite
-        self.log_file = os.path.join(self.report_path, f"{name}.log")
         self.logger = self._setup_logger(name)
     
     def _setup_logger(self, name):

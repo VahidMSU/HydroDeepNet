@@ -1,58 +1,78 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional, Dict, List, Any, Union
 import os
-#/data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXConfigPars.py
+
 @dataclass
 class MODFLOWGenXPaths:
     overwrite: bool = True
-    username: str = None
-    BASE_PATH: str = None
-    report_path: str = None
-    MODFLOW_MODEL_NAME: str = None
-    SWAT_MODEL_NAME: str = None
-    LEVEL: str = None
-    VPUID: str = None
-    NAME: str = None
-    RESOLUTION: int = None
-    moflow_exe_path = os.path.join("/data/SWATGenXApp/codes/bin/", "modflow-nwt")
-    EPSG = "EPSG:26990"
-    dpi = 300
-    top = None
-    bound_raster_path = None
-    domain_raster_path = None
+    username: Optional[str] = None
+    BASE_PATH: Optional[str] = None
+    report_path: Optional[str] = None
+    MODFLOW_MODEL_NAME: Optional[str] = None
+    SWAT_MODEL_NAME: Optional[str] = None
+    LEVEL: Optional[str] = None
+    VPUID: Optional[str] = None
+    NAME: Optional[str] = None
+    RESOLUTION: Optional[int] = None
+    moflow_exe_path: str = field(default_factory=lambda: os.path.join("/data/SWATGenXApp/codes/bin/", "modflow-nwt"))
+    EPSG: str = "EPSG:26990"
+    dpi: int = 300
+    top: Any = None
+    bound_raster_path: Optional[str] = None
+    domain_raster_path: Optional[str] = None
+    # Model discretization parameters
+    n_sublay_1: int = 2  # Number of sub-layers in the first main layer
+    n_sublay_2: int = 3  # Number of sub-layers in the second main layer
+    # Bedrock parameters
+    k_bedrock: float = 1e-4  # Bedrock hydraulic conductivity (m/day)
+    bedrock_thickness: float = 40  # Bedrock thickness (m)
+    # Unit conversion factor (feet to meters)
+    fit_to_meter: float = 0.3048
+    # Model convergence parameters
+    headtol: float = 0.01  # Head change tolerance for convergence (m)
+    fluxtol: float = 0.001  # Flux change tolerance for convergence (m³/day)
+    maxiterout: int = 100  # Maximum number of outer iterations
 
-    active = None
-
-    def __post_init__(self):
-        if self.username is not None and self.VPUID is not None and self.LEVEL is not None and self.NAME is not None and self.MODFLOW_MODEL_NAME is not None:
-            
-            
-            self.BASE_PATH = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
-            self.report_path: str = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/"
-
-
-            self.MODFLOW_model_path = os.path.join(self.BASE_PATH, self.VPUID, self.LEVEL, self.NAME, self.MODFLOW_MODEL_NAME)
-            self.raster_folder = os.path.join(self.MODFLOW_model_path, "rasters_input")
-            self.swat_river_raster_path = os.path.join(self.MODFLOW_model_path, 'swat_river.tif')
-            self.swat_lake_raster_path = os.path.join(self.MODFLOW_model_path, 'lake_raster.tif')
-            self.head_of_last_time_step = os.path.join(self.MODFLOW_model_path, "head_of_last_time_step.jpeg")
-            self.output_heads = os.path.join(self.MODFLOW_model_path, f"{self.MODFLOW_MODEL_NAME}.hds")
-            self.out_shp = os.path.join(self.MODFLOW_model_path, "Grids_MODFLOW")
-
-
-            self.SWAT_model_path = os.path.join(self.BASE_PATH, self.VPUID, self.LEVEL, self.NAME, self.SWAT_MODEL_NAME)
-
-            
-            self.swat_lake_shapefile_path = os.path.join(self.SWAT_model_path, "Watershed/Shapes/SWAT_plus_lakes.shp")
-            self.ref_raster_path = os.path.join(self.SWAT_model_path, f"DEM_{self.RESOLUTION}m.tif")
-            self.subbasin_path = os.path.join(self.SWAT_model_path, "Watershed/Shapes/subs1.shp")
-            self.base_dem = os.path.join(self.SWAT_model_path, "Watershed/Rasters/DEM/dem.tif")
-            self.shape_geometry = os.path.join(self.SWAT_model_path, "Watershed/Shapes/SWAT_plus_subbasins.shp")
-
-
-            self.raster_path = os.path.join(self.raster_folder, f'{self.NAME}_DEM_{self.RESOLUTION}m.tif.tif')
-            self.basin_path = os.path.join(self.raster_folder, 'basin_shape.shp')
-            self.bound_path = os.path.join(self.raster_folder, 'bound_shape.shp')
-            self.temp_image = os.path.join("codes/MODFLOW/MODGenX/_temp", f"{self.NAME}_{self.MODFLOW_MODEL_NAME}.jpeg")
-
-        else:
-            raise ValueError('username is required')
+    # Enable string representation for easier debugging
+    def __str__(self):
+        """Return a string representation of the configuration."""
+        attrs = [f"{k}={v}" for k, v in self.__dict__.items()]
+        return f"MODFLOWGenXPaths({', '.join(attrs)})"
+    
+    # Allow retrieval of attributes by string name
+    def get(self, name, default=None):
+        """Get an attribute by name with an optional default value."""
+        return getattr(self, name, default)
+    
+    # Validate configuration
+    def validate(self):
+        """Validate configuration and set defaults for missing values."""
+        if self.RESOLUTION is None:
+            self.RESOLUTION = 250
+        
+        if self.MODFLOW_MODEL_NAME is None:
+            self.MODFLOW_MODEL_NAME = f'MODFLOW_{self.RESOLUTION}m'
+        
+        if self.SWAT_MODEL_NAME is None:
+            self.SWAT_MODEL_NAME = 'SWAT_MODEL_Web_Application'
+        
+        if self.LEVEL is None:
+            self.LEVEL = 'huc12'
+        
+        if self.BASE_PATH is None:
+            self.BASE_PATH = '/data/SWATGenXApp/GenXAppData/'
+        
+        # Validate model parameters
+        if self.n_sublay_1 <= 0:
+            self.n_sublay_1 = 2
+        
+        if self.n_sublay_2 <= 0:
+            self.n_sublay_2 = 3
+        
+        if self.k_bedrock <= 0:
+            self.k_bedrock = 1e-4
+        
+        if self.bedrock_thickness <= 0:
+            self.bedrock_thickness = 40
+        
+        return self

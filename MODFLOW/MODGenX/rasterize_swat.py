@@ -4,13 +4,31 @@ import geopandas as gpd
 import numpy as np
 from osgeo import gdal, osr, ogr
 import shutil
-try:
-    from MODGenX.utils import generate_shapefile_paths
-except ImportError:
-    from utils import generate_shapefile_paths
 from MODGenX.Logger import Logger
+import contextlib
 
 logger = Logger(verbose=True)
+
+# Context manager for GDAL datasets to ensure proper cleanup
+@contextlib.contextmanager
+def gdal_dataset(path, mode='r'):
+    """Context manager for safely opening and closing GDAL datasets."""
+    if mode == 'r':
+        ds = gdal.Open(path)
+    elif mode == 'w':
+        # You would need to specify driver, dimensions, etc. for write mode
+        ds = None
+    else:
+        raise ValueError(f"Unsupported mode: {mode}")
+    
+    if ds is None and mode == 'r':
+        raise ValueError(f"Could not open dataset: {path}")
+    
+    try:
+        yield ds
+    finally:
+        # Properly close dataset
+        ds = None
 
 def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_raster_args):
     """
@@ -27,28 +45,39 @@ def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_ra
     load_raster_args : dict
         Dictionary containing various arguments needed for processing
     """
-    # Extract parameters from load_raster_args
-    LEVEL = load_raster_args['LEVEL']
-    RESOLUTION = load_raster_args['RESOLUTION']
-    ref_raster_path = load_raster_args['ref_raster']
-    SWAT_MODEL_NAME = load_raster_args['SWAT_MODEL_NAME']
-    NAME = load_raster_args['NAME']
-    username = load_raster_args['username']
-    VPUID = load_raster_args['VPUID']
+    # Extract parameters from load_raster_args - preferably use path_handler if available
+    if 'path_handler' in load_raster_args:
+        path_handler = load_raster_args['path_handler']
+        ref_raster_path = path_handler.get_ref_raster_path()
+        shapefile_paths = path_handler.get_shapefile_paths()
+        username = path_handler.config.username
+        VPUID = path_handler.config.VPUID
+        LEVEL = path_handler.config.LEVEL
+        NAME = path_handler.config.NAME
+        SWAT_MODEL_NAME = path_handler.config.SWAT_MODEL_NAME
+        log_dir = os.path.dirname(path_handler.get_log_path("rasterize"))
+    else:
+        # Legacy mode
+        LEVEL = load_raster_args['LEVEL']
+        RESOLUTION = load_raster_args['RESOLUTION']
+        NAME = load_raster_args['NAME']
+        SWAT_MODEL_NAME = load_raster_args['SWAT_MODEL_NAME']
+        username = load_raster_args['username']
+        VPUID = load_raster_args['VPUID']
+        ref_raster_path = load_raster_args['ref_raster']
+        log_dir = "/data/SWATGenXApp/codes/MODFLOW/logs"
+        
+        # Generate paths for shapefiles based on feature type
+        BASE_PATH = f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/'
+        shapefile_paths = {
+            "lakes": f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp',
+            "rivers": f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp',
+            "grids": f'{BASE_PATH}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.geojson',
+        }
     
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_raster_path), exist_ok=True)
     
-    # Generate paths for shapefiles based on feature type
-    BASE_PATH = f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/'
-    
-    shapefile_paths = {
-
-        "lakes"  : f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp',
-        "rivers" : f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp',
-        "grids"  : f'{BASE_PATH}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.geojson',
-
-    }
     # Validate reference raster exists
     if not os.path.exists(ref_raster_path):
         logger.info(f"Reference raster not found: {ref_raster_path}")
@@ -71,28 +100,28 @@ def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_ra
     
     # STEP 1: Analyze reference raster to get exact dimensions and spatial properties
     logger.info(f"Analyzing reference raster: {ref_raster_path}")
-    ref_ds = gdal.Open(ref_raster_path)
-    if ref_ds is None:
-        logger.info(f"Cannot open reference raster: {ref_raster_path}")
+    try:
+        with gdal_dataset(ref_raster_path) as ref_ds:
+            ref_rows = ref_ds.RasterYSize
+            ref_cols = ref_ds.RasterXSize
+            ref_geotransform = ref_ds.GetGeoTransform()
+            ref_projection = ref_ds.GetProjection()
+            ref_srs = osr.SpatialReference()
+            ref_srs.ImportFromWkt(ref_projection)
+            
+            # Get spatial properties for coordinate transformations
+            x_min = ref_geotransform[0]
+            y_max = ref_geotransform[3]
+            x_res = ref_geotransform[1]
+            y_res = ref_geotransform[5]
+            x_max = x_min + (ref_cols * x_res)
+            y_min = y_max + (ref_rows * y_res)
+            
+            logger.info(f"Reference raster properties - Size: {ref_rows}x{ref_cols}, Resolution: {x_res}x{y_res}")
+            logger.info(f"Reference raster bounds: ({x_min}, {y_min}) to ({x_max}, {y_max})")
+    except ValueError as e:
+        logger.info(str(e))
         return
-    
-    ref_rows = ref_ds.RasterYSize
-    ref_cols = ref_ds.RasterXSize
-    ref_geotransform = ref_ds.GetGeoTransform()
-    ref_projection = ref_ds.GetProjection()
-    ref_srs = osr.SpatialReference()
-    ref_srs.ImportFromWkt(ref_projection)
-    
-    # Get spatial properties for coordinate transformations
-    x_min = ref_geotransform[0]
-    y_max = ref_geotransform[3]
-    x_res = ref_geotransform[1]
-    y_res = ref_geotransform[5]
-    x_max = x_min + (ref_cols * x_res)
-    y_min = y_max + (ref_rows * y_res)
-    
-    logger.info(f"Reference raster properties - Size: {ref_rows}x{ref_cols}, Resolution: {x_res}x{y_res}")
-    logger.info(f"Reference raster bounds: ({x_min}, {y_min}) to ({x_max}, {y_max})")
     
     # STEP 2: Check if feature file exists and has data
     if not os.path.exists(feature_path):

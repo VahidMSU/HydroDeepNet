@@ -8,77 +8,123 @@ from MODGenX.Logger import Logger
 
 logger = Logger(verbose=True)   
 
-
-
-def river_gen(nrow, ncol, swat_river, top, ibound):
+def river_gen(nrow, ncol, swat_river, top, ibound, load_raster_args=None):
     """
     Generate river data based on given conditions.
     
     Parameters:
-    - nrow: Number of rows in the grid
-    - ncol: Number of columns in the grid
-    - swat_river: 2D array containing SWAT river data
-    - top: 2D array containing top elevation data
-    - ibound: 3D array containing cell activity data
+    -----------
+    nrow : int
+        Number of rows in the grid
+    ncol : int
+        Number of columns in the grid
+    swat_river : 2D array
+        Array containing SWAT river data
+    top : 2D array
+        Array containing top elevation data
+    ibound : 3D array
+        Array containing cell activity data
+    load_raster_args : dict, optional
+        Dictionary containing parameters for raster loading, including config
     
     Returns:
-    - river_data: Dictionary containing information about river cells
+    --------
+    dict
+        Dictionary containing information about river cells
     """
-    logger.info(f"river_gen: nrow={nrow}, ncol={ncol}")
-    logger.info(f"river_gen: swat_river.shape={swat_river.shape}, top.shape={top.shape}, ibound.shape={ibound.shape}")
+    # Get fit_to_meter from config if available
+    fit_to_meter = 0.3048  # default value
+    if load_raster_args and 'config' in load_raster_args and hasattr(load_raster_args['config'], 'fit_to_meter'):
+        fit_to_meter = load_raster_args['config'].fit_to_meter
+        logger.info(f"Using fit_to_meter value from config: {fit_to_meter}")
     
-
-    # Print range of values for key arrays
-    logger.info(f"swat_river values range: {np.min(swat_river)} to {np.max(swat_river)}")
-    logger.info(f"top values range: {np.min(top)} to {np.max(top)}")
+    # Get log directory for diagnostics
+    log_dir = "/data/SWATGenXApp/codes/MODFLOW/logs"
+    if load_raster_args and 'path_handler' in load_raster_args:
+        try:
+            log_dir = os.path.dirname(load_raster_args['path_handler'].get_log_path("river_gen"))
+        except Exception:
+            pass  # Use default log_dir
     
-    river_data = {0: []}  # Initialize an empty list for layer 0
+    # Validate input shapes
+    assert top.shape == swat_river.shape, f"Shape mismatch: top {top.shape} vs swat_river {swat_river.shape}"
     
-    assert top.shape == swat_river.shape, "top and swat_river arrays must have the same shape"
-
-    for i in range(nrow):
-        for j in range(ncol):
-            # Check conditions to identify river cells
-            if swat_river[i,j] > 0 and top[i,j] > 0:
-                # Append river cell data to river_data
-                river_data[0].append([0, i, j, top[i,j] + 1, swat_river[i,j], top[i,j] - 1])
+    # Use vectorized operations for better performance
+    # Find river cells (where swat_river > 0 and top > 0)
+    river_mask = (swat_river > 0) & (top > 0)
+    rows, cols = np.where(river_mask)
     
-    assert len(river_data[0]) > 10, "No river cells found"
-
+    # Calculate river parameters for these cells
+    stages = top[river_mask] + 1
+    conds = swat_river[river_mask] * fit_to_meter
+    bottoms = top[river_mask] - 1
+    
+    # Create river cells list
+    river_data = {0: []}
+    for i, (r, c, stage, cond, bottom) in enumerate(zip(rows, cols, stages, conds, bottoms)):
+        river_data[0].append([0, r, c, stage, cond, bottom])
+    
+    # Log river statistics
+    num_river_cells = len(river_data[0])
+    logger.info(f"Generated {num_river_cells} river cells")
+    
+    if num_river_cells < 10:
+        logger.warning(f"Very few river cells ({num_river_cells}) - model may not behave correctly")
+    
     # Create visualizations
-    # Plot ibound
-    plt.close()
-    plt.imshow(ibound[0])   
-    plt.colorbar()
-    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/ibound.png')
-    plt.close()
+    from MODGenX.utils_cleanup import plot_diagnostic
     
-    # Plot river cells
+    # Create directory if it doesn't exist
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # Plot diagnostic maps
+    plot_diagnostic(ibound[0], "Active Cells", os.path.join(log_dir, "ibound.png"))
+    
+    # Create and plot river cells map
     river_cells_map = np.zeros_like(ibound[0])
     for cell in river_data[0]:
         river_cells_map[cell[1], cell[2]] = 1
-    plt.imshow(river_cells_map)
-    plt.colorbar()
-    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/river_cells.png')
-    plt.close()
+    plot_diagnostic(river_cells_map, "River Cells", os.path.join(log_dir, "river_cells.png"))
     
-    # Plot top elevation
-    plt.imshow(top)
-    plt.colorbar()
-    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/top.png')
-    plt.close()
+    # Plot additional diagnostics
+    plot_diagnostic(top, "Top Elevation", os.path.join(log_dir, "top.png"))
+    plot_diagnostic(swat_river, "SWAT River", os.path.join(log_dir, "swat_river.png"))
     
-    # Plot swat_river
-    plt.imshow(swat_river)
-    plt.colorbar()
-    plt.savefig('/data/SWATGenXApp/codes/MODFLOW/logs/swat_river.png')
-    plt.close()
-
-    logger.info(f'Number of river cells: {len(river_data[0])}')
     return river_data
 
 def river_correction(swat_river_raster_path, load_raster_args, basin, active):
-    """Process river raster to prepare it for MODFLOW"""
+    """
+    Process river raster to prepare it for MODFLOW
+    
+    Parameters:
+    -----------
+    swat_river_raster_path : str
+        Path to the SWAT river raster
+    load_raster_args : dict
+        Dictionary containing parameters for raster loading
+    basin : numpy.ndarray
+        Basin raster array
+    active : numpy.ndarray
+        Active cells array
+        
+    Returns:
+    --------
+    numpy.ndarray
+        Processed river raster
+    """
+    
+    # Get fit_to_meter from config if available
+    fit_to_meter = 0.3048  # default value
+    if 'config' in load_raster_args and hasattr(load_raster_args['config'], 'fit_to_meter'):
+        fit_to_meter = load_raster_args['config'].fit_to_meter
+        logger.info(f"Using fit_to_meter value from config: {fit_to_meter}")
+    
+    # Get path_handler if available for log paths
+    if 'path_handler' in load_raster_args:
+        path_handler = load_raster_args['path_handler']
+        log_dir = path_handler.get_log_path("river_correction").rsplit('/', 1)[0]
+    else:
+        log_dir = "/data/SWATGenXApp/codes/MODFLOW/logs"
     
     with rasterio.open(swat_river_raster_path) as src:
         swat_river = src.read(1)
@@ -88,6 +134,5 @@ def river_correction(swat_river_raster_path, load_raster_args, basin, active):
         swat_river = swat_river.astype(np.int32)
 
     assert not np.all(swat_river == 0), "No river cells found in the SWAT river raster"
-
 
     return swat_river

@@ -266,16 +266,12 @@ class gdal_sa:
 
     @staticmethod
     def ValidateRaster(raster_path):
-
         """
-        Validate a raster file for common issues:
-        1. All values are NaN
-        2. All values are Inf
-        3. All values are identical
+        Validate a raster file for common issues.
+        
         Returns a dictionary with validation results
         """
-        
-        # Result dictionary to store validation information
+        # Use context manager for safety
         result = {
             'is_valid': True,
             'all_nan': False,
@@ -285,47 +281,54 @@ class gdal_sa:
             'message': 'Raster validation passed'
         }
         
-        try:
-            # Open the raster
-            ds = gdal.Open(raster_path)
-            if ds is None:
-                result['is_valid'] = False
-                result['message'] = f"Cannot open raster: {raster_path}"
-                return result
-            
-            # Read data
-            band = ds.GetRasterBand(1)
-            nodata = band.GetNoDataValue()
-            data = band.ReadAsArray()
-            
-            # Check if all values are NaN
-            if np.isnan(data).all():
-                result['is_valid'] = False
-                result['all_nan'] = True
-                result['message'] = "All values in the raster are NaN"
-                return result
-            
-            # Check if all values are Inf
-            if np.isinf(data).all():
-                result['is_valid'] = False
-                result['all_inf'] = True
-                result['message'] = "All values in the raster are Infinite"
-                return result
-            
-            # Check if all non-NoData values are identical
-            unique_values = np.unique(data)
-            # Remove NoData value from consideration if it exists
-            if nodata is not None:
-                unique_values = unique_values[unique_values != nodata]
-            
-            if len(unique_values) == 1:
-                result['all_identical'] = True
-                result['unique_value'] = float(unique_values[0])
-                result['message'] = f"All values in the raster are identical: {result['unique_value']}"
-                # This is not necessarily invalid, but flagged for information
-            
+        if not os.path.exists(raster_path):
+            result['is_valid'] = False
+            result['message'] = f"File does not exist: {raster_path}"
             return result
-        
+            
+        try:
+            with gdal.Open(raster_path) as ds:
+                if ds is None:
+                    result['is_valid'] = False
+                    result['message'] = f"Cannot open raster: {raster_path}"
+                    return result
+                
+                # Read data
+                band = ds.GetRasterBand(1)
+                nodata = band.GetNoDataValue()
+                data = band.ReadAsArray()
+                
+                # Use efficient NumPy operations for validation
+                nan_mask = np.isnan(data)
+                if np.all(nan_mask):
+                    result['is_valid'] = False
+                    result['all_nan'] = True
+                    result['message'] = "All values in the raster are NaN"
+                    return result
+                
+                inf_mask = np.isinf(data)
+                if np.all(inf_mask):
+                    result['is_valid'] = False
+                    result['all_inf'] = True
+                    result['message'] = "All values in the raster are Infinite"
+                    return result
+                
+                # Check if all non-NoData values are identical
+                nodata_mask = data == nodata if nodata is not None else np.zeros_like(data, dtype=bool)
+                valid_data = data[~(nan_mask | inf_mask | nodata_mask)]
+                
+                if len(valid_data) == 0:
+                    result['is_valid'] = False
+                    result['message'] = "No valid data in raster (all values are NaN, Inf, or NoData)"
+                    return result
+                    
+                if len(np.unique(valid_data)) == 1:
+                    result['all_identical'] = True
+                    result['unique_value'] = float(valid_data[0])
+                    result['message'] = f"All values in the raster are identical: {result['unique_value']}"
+                
+                return result
+                
         except Exception as e:
             result['is_valid'] = False
             result['message'] = f"Error during raster validation: {str(e)}"
