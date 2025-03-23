@@ -40,8 +40,15 @@ def rasterize_SWAT_features(BASE_PATH, feature_type, output_raster_path, load_ra
     os.makedirs(os.path.dirname(output_raster_path), exist_ok=True)
     
     # Generate paths for shapefiles based on feature type
-    shapefile_paths = generate_shapefile_paths(LEVEL, NAME, SWAT_MODEL_NAME, RESOLUTION, username, VPUID)
+    BASE_PATH = f'/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/'
     
+    shapefile_paths = {
+
+        "lakes"  : f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/SWAT_plus_lakes.shp',
+        "rivers" : f'{BASE_PATH}/{SWAT_MODEL_NAME}/Watershed/Shapes/rivs1.shp',
+        "grids"  : f'{BASE_PATH}/MODFLOW_{RESOLUTION}m/Grids_MODFLOW.geojson',
+
+    }
     # Validate reference raster exists
     if not os.path.exists(ref_raster_path):
         logger.info(f"Reference raster not found: {ref_raster_path}")

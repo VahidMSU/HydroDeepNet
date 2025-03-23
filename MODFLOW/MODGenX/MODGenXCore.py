@@ -9,7 +9,10 @@ import pyproj
 import shutil
 import numpy as np
 import matplotlib.pyplot as plt
-from MODGenX.utils import generate_raster_paths, load_raster, match_raster_dimensions, active_domain, remove_isolated_cells, input_Data, GW_starting_head, model_src, create_shapefile_from_modflow_grid_arcpy, smooth_invalid_thickness, sim_obs
+from MODGenX.utils import (generate_raster_paths, load_raster, 
+	match_raster_dimensions, active_domain,
+remove_isolated_cells, input_Data, GW_starting_head,
+model_src,  smooth_invalid_thickness, sim_obs)
 from MODGenX.rivers import river_gen, river_correction
 from MODGenX.lakes import lakes_to_drain
 from MODGenX.visualization import plot_data, create_plots_and_return_metrics
@@ -19,7 +22,8 @@ from MODGenX.rasterize_swat import rasterize_SWAT_features
 import os
 import rasterio
 from osgeo import gdal, ogr
-
+from MODGenX.well_info import create_shapefile_from_modflow_grid_arcpy
+from osgeo import osr, gdal
 
 class MODGenXCore:
 	def __init__(self, username, NAME,VPUID, BASE_PATH, LEVEL, RESOLUTION, MODEL_NAME, ML, SWAT_MODEL_NAME):
@@ -234,21 +238,14 @@ class MODGenXCore:
 		self.logger.info(f'Model path: {self.model_path}')
 
 		self.defining_bound_and_active()
-
-		# Before loading any rasters, determine the CRS of the original SWAT DEM
-		# This will be our reference CRS for all rasters
-		from osgeo import gdal, osr
 		
 		# Check if SWAT DEM exists
-		if not os.path.exists(self.original_swat_dem):
-			self.logger.error(f"Original SWAT DEM not found: {self.original_swat_dem}")
-			raise FileNotFoundError(f"Original SWAT DEM not found: {self.original_swat_dem}")
-		
+		assert os.path.exists(self.original_swat_dem), f"SWAT DEM file not found at {self.original_swat_dem}"
+
 		# Get CRS from original SWAT DEM
 		swat_dem_ds = gdal.Open(self.original_swat_dem)
-		if swat_dem_ds is None:
-			self.logger.error(f"Cannot open original SWAT DEM: {self.original_swat_dem}")
-			raise ValueError(f"Cannot open original SWAT DEM: {self.original_swat_dem}")
+		assert swat_dem_ds, f"Failed to open SWAT DEM file at {self.original_swat_dem}"
+		
 		
 		swat_dem_proj = swat_dem_ds.GetProjection()
 		swat_dem_srs = osr.SpatialReference()
@@ -392,7 +389,8 @@ class MODGenXCore:
 			backflag=1, 		                               			# Use the Backward Formulation
 			maxbackiter=5		                               			# Maximum number of iterations for the Backward Formulation
 		)
-		bas = flopy.modflow.ModflowBas(mf, ibound=ibound, strt=strt)           										   ## basic package
+		
+		bas = flopy.modflow.ModflowBas(mf, ibound=np.where(ibound == 2, -1, ibound), strt=strt)           										   ## basic package
 
 		upw = flopy.modflow.ModflowUpw(                                        										   ## upw package
 			mf, hk=k_horiz, vka=k_vert,                        			# horizontal and vertical hydraulic conductivity
@@ -415,23 +413,49 @@ class MODGenXCore:
 		mf.write_input()                                                                                                ## write input files
 
 		self.logger.info("MODFLOW input files written successfully")
-
-		create_shapefile_from_modflow_grid_arcpy(self.BASE_PATH, self.model_path, self.MODEL_NAME, self.out_shp, self.raster_path)
-
+		
+		# Create MODFLOW grid shapefile
+		self.logger.info("Creating MODFLOW grid shapefile")
 		grids_path = f'{self.out_shp}.geojson'
+		create_shapefile_from_modflow_grid_arcpy(
+			self.BASE_PATH, 
+			self.model_path, 
+			self.MODEL_NAME, 
+			self.out_shp, 
+			self.ref_raster_path
+		)
+		assert os.path.exists(grids_path), f"MODFLOW grid shapefile not found at {grids_path}"
+		self.logger.info(f"MODFLOW grid shapefile created at {grids_path}")
 
-		wel_data,obs_data, df_obs =  well_data_import(
-			mf, self.top,
+		# Ensure reference raster is set correctly in load_raster_args
+		load_raster_args['ref_raster'] = self.ref_raster_path
+		
+
+		self.logger.info("Importing well data")
+		wel_data, obs_data, df_obs = well_data_import(
+			mf, 
+			self.top,
 			load_raster_args,
-			z_botm, active, grids_path,
+			z_botm, 
+			active, 
+			grids_path,
 			self.MODEL_NAME
-			
 		)
 
-		if obs_data:
+		assert len(df_obs) > 0, "No observation data found"
+		
+		if wel_data is None:
+			self.logger.warning("No well data available - proceeding without wells")
+		else:
+			self.logger.info(f"Successfully imported {len(wel_data[0]) if 0 in wel_data else 0} wells")
+			
+			# Add well package if we have well data
 			wel = flopy.modflow.ModflowWel(mf, stress_period_data=wel_data)
-			hob = flopy.modflow.ModflowHob(mf, iuhobsv=41, hobdry=9999., obs_data=obs_data)
-			self.logger.info(f"Added {len(obs_data)} observation wells to the model")
+			
+			# Add observation package if we have observation data
+			if obs_data and len(obs_data) > 0:
+				hob = flopy.modflow.ModflowHob(mf, iuhobsv=41, hobdry=0., obs_data=obs_data)
+				self.logger.info(f"Added {len(obs_data)} observation wells to the model")
 
 		rasterize_SWAT_features(self.BASE_PATH,"rivers", self.swat_river_raster_path, load_raster_args)
 
@@ -476,7 +500,7 @@ class MODGenXCore:
 		self.logger.info(f"Model evaluation metrics - NSE: {nse}, MSE: {mse}, MAE: {mae}, PBIAS: {pbias}, KGE: {kge}")
 
 		metrics = [self.MODEL_NAME, self.NAME, self.RESOLUTION, nse, mse, mae, pbias, kge]
-		metrics_path = os.path.join(f'/data/SWATGenXApp/Users/{self.username}', f'SWATplus_by_VPUID/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/metrics.csv')
+		metrics_path = os.path.join(f'/data/SWATGenXApp/Users/{self.username}', f'SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/metrics.csv')
 		with open(metrics_path, 'w') as f:
 			f.write('MODEL_NAME,NAME,RESOLUTION,NSE,MSE,MAE,PBIAS,KGE\n')
 			f.write(','.join(str(metric) for metric in metrics))
@@ -492,7 +516,7 @@ class MODGenXCore:
 		titles = ['water wells location', "SWL initial",'Head',  'Active Cells','K Horizontal 1',
 				'K Horizontal 2', 'K Vertical 1', 'K Vertical 2', 'Recharge','base flow','Thickness 1', 'thickness 2']
 
-		model_input_figure_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/input_figures.jpeg"
+		model_input_figure_path = f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/input_figures.jpeg"
 
 		plot_data(datasets, titles, model_input_figure_path)
 		self.logger.info(f"Model input visualizations saved to {model_input_figure_path}")
