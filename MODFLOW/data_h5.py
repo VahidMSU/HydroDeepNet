@@ -32,8 +32,8 @@ for resolution in resolutions:
         # Read data from HDF5 file
         with h5py.File(input_data_path, 'r') as f:
             data = f[f'FFR_Predicted obs_{space}_{resolution}m'][:]
-        # replace nan qith -999
-        data = np.nan_to_num(data, nan=-999)
+        # replace nan qith 9999
+        data = np.nan_to_num(data, nan=9999)
         # Create the raster
         reference_raster = f"/data/SWATGenXApp/GenXAppData/all_rasters/DEM_{resolution}m.tif"
         
@@ -47,7 +47,7 @@ for resolution in resolutions:
         
         # Convert numpy array to raster
         lower_left_corner = GDAL.Point(GDAL.Describe(reference_raster).extent.XMin, GDAL.Describe(reference_raster).extent.YMin)
-        raster = GDAL.NumPyArrayToRaster(data, lower_left_corner, cell_size, cell_size, -999)
+        raster = GDAL.NumPyArrayToRaster(data, lower_left_corner, cell_size, cell_size, 9999)
         
         # Save the raster
         

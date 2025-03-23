@@ -104,7 +104,7 @@ def clip_raster(in_raster, shapefile_path, output_path):
         format="GTiff",
         cutlineDSName=shapefile_path,
         cropToCutline=True,
-        dstNodata=-9999
+        dstNodata=99999
     )
     gdal.Warp(output_path, in_ds, options=options)
 

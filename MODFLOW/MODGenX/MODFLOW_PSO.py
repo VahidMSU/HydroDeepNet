@@ -130,8 +130,8 @@ def read_plot_evaluate(mf, new_model_ws, modflow_model_name, VPUID, NAME, LEVEL,
 			
 			first_head = sim_head[0,:,:]
 			#print(f"debug:\n unique values in first layer {np.unique(first_head)}")
-			# replace -999 with nan
-			first_head[first_head == -999] = np.nan
+			# replace 9999 with nan
+			first_head[first_head == 9999] = np.nan
 
 			# Create a figure with two subplots
 			fig, (ax1, ax2) = plt.subplots(1, 2)
