@@ -200,12 +200,14 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     log_dir = os.path.dirname(path_handler.get_log_path("well_data"))
 
     observations_path = path_handler.get_database_file_paths()['observations']
-    
+    active_domain_path = "/data/SWATGenXApp/Users/vahidr32/SWATplus_by_VPUID/0405/huc12/04112500/MODFLOW_250m/rasters_input/basin_shape.shp"
     # Load observations
+    active_domain_shp = gpd.read_file(active_domain_path)
     obs = gpd.read_file(observations_path) ## point
     logger.info(f"OBSERVATION COLUMNS: {obs.columns}")
     grids = gpd.read_file(grids_path)  ## polygone
     grids = grids.to_crs(obs.crs)
+    active_domain_shp = active_domain_shp.to_crs(obs.crs)
     ### covert to centroid
     grids['geometry'] = grids['geometry'].centroid
     logger.info(f"GRID COLUMNS: {grids.columns}")
@@ -222,8 +224,12 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     assert len(df_obs) > 0, "No observations found in the model domain"
     ### drop duplicates and keep the first
     df_obs = df_obs.drop_duplicates(subset=['col', 'row'], keep='first')
-        
-
+    ## drop "index_right" column
+    if "index_right" in df_obs.columns:
+        df_obs = df_obs.drop(columns=['index_right'])
+    ### now clip to the active domain and remove the points outside the active domain
+    df_obs = gpd.sjoin(df_obs, active_domain_shp[['geometry']], how='inner', predicate='within')
+    
     ### assert 
     assert "col" in df_obs.columns, "Column 'col' not found in spatial join result"
     assert "row" in df_obs.columns, "Column 'row' not found in spatial join result"
