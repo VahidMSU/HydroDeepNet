@@ -74,69 +74,6 @@ def cleaning(df, active):
         logger.error(f"Error in cleaning function: {str(e)}")
         raise
 
-def sim_obs(VPUID, username, BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLUTION, load_raster_args, df_obs):
-    """Compare observed and simulated water levels."""
-    logger.info(f"Starting sim_obs comparison for {MODEL_NAME} with {len(df_obs)} observation points")
-    start_time = time.time()
-    
-    # Ensure path_handler is provided
-    assert 'path_handler' in load_raster_args, "path_handler is required in load_raster_args"
-    path_handler = load_raster_args['path_handler']
-    fitToMeter = path_handler.config.fit_to_meter
-    
-    # Get head file path from path_handler
-    hds_path = path_handler.get_output_file(f"{MODEL_NAME}.hds")
-    
-    assert os.path.exists(hds_path), f"Head file not found: {hds_path}"
-
-    # Load simulated heads
-    logger.info(f"Loading head file: {hds_path}")
-    headobj = flopy.utils.binaryfile.HeadFile(hds_path)
-    sim_head = headobj.get_data(totim=headobj.get_times()[-1])
-    logger.info(f"Loaded simulated heads with shape: {sim_head.shape}")
-    
-    model_top = mf.Dis.top.array
-    
-    # Check that required columns exist
-    required_cols = ['row', 'col', 'SWL', 'ELEV_DEM']
-    missing_cols = [col for col in required_cols if col not in df_obs.columns]
-    
-    assert len(missing_cols) == 0, f"Missing required columns in observation data: {missing_cols}"
-    
-    # Initialize column for simulated SWL
-    df_obs['sim_head_m'] = np.nan
-
-    # Extract rows and columns
-    rows = df_obs['row'].values.astype(int)
-    cols = df_obs['col'].values.astype(int)
-    
-    # Validate indices are within bounds
-    nrow, ncol = model_top.shape
-    valid_mask = (rows >= 0) & (rows < nrow) & (cols >= 0) & (cols < ncol)
-    
-    if not np.all(valid_mask):
-        invalid_count = np.sum(~valid_mask)
-        logger.warning(f"Found {invalid_count} observations with invalid row/col indices - filtering them out")
-        rows = rows[valid_mask]
-        cols = cols[valid_mask]
-        df_obs = df_obs[valid_mask].copy()
-    
-    df_obs.loc[:, 'top'] = model_top[rows, cols]
-    df_obs.loc[:, 'sim_head_m'] = sim_head[0, rows, cols]
-    df_obs.loc[:, 'sim_SWL_m'] = model_top[rows, cols] - sim_head[0, rows, cols]
-
-    df_obs['obs_head_m'] = fitToMeter*(df_obs['ELEV_DEM'] - df_obs['SWL'])
-    df_obs['obs_SWL_m'] = fitToMeter*df_obs['SWL']
-
-    count_before = len(df_obs)
-    df_obs.dropna(subset=['obs_head_m','obs_SWL_m', 'sim_head_m', 'sim_SWL_m'], inplace=True)
-    count_after = len(df_obs)
-    
-    logger.info(f"Sim-obs comparison completed in {time.time() - start_time:.2f} seconds")
-    logger.info(f"Observation points: {count_before} before filtering, {count_after} after filtering")
-    
-    return df_obs
-
 def smooth_invalid_thickness(array, size=25):
     """Smooth out values in a 2D thickness array that are outside a given range"""
     logger.info(f"Smoothing invalid thickness values with filter size {size}")
@@ -548,7 +485,9 @@ def input_Data(active, top, load_raster_args, n_sublay_1, n_sublay_2, k_bedrock,
     assert 'path_handler' in load_raster_args, "path_handler is required in load_raster_args"
     path_handler = load_raster_args['path_handler']
     fitToMeter = path_handler.config.fit_to_meter
+    recharge_conv_factor = path_handler.config.recharge_conv_factor
     logger.info(f"Using fit_to_meter value from config: {fitToMeter}")
+    logger.info(f"Using recharge conversion factor from config: {recharge_conv_factor}")
 
     # Get raster paths from path_handler
     raster_paths = path_handler.get_raster_paths(ML)
@@ -565,11 +504,10 @@ def input_Data(active, top, load_raster_args, n_sublay_1, n_sublay_2, k_bedrock,
         logger.error(f"ML setting is: {ML}")
         raise ValueError(f"Missing required raster paths: {missing_rasters}")
     
-    logger.info('0-########################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$$$$$')
     SWL = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["SWL"], load_raster_args),active))  #### SWL
-    logger.info('1-########################&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$$$$$$$$$$$$$$$$$$$$$$$$$$')
-    recharge_data = cleaning((0.0254/365.25)*load_raster(raster_paths["recharge_data"], load_raster_args),active)  ### converting the unit from inch/year to m/day
-
+    
+    # Use the recharge conversion factor from config
+    recharge_data = cleaning(recharge_conv_factor*load_raster(raster_paths["recharge_data"], load_raster_args),active)  ### converting the unit from inch/year to m/day
 
     k_horiz_1 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_horiz_1"],load_raster_args), active))+2
     k_horiz_2 = smooth_invalid_thickness(cleaning(fitToMeter*load_raster(raster_paths["k_horiz_2"],load_raster_args),active))+2
