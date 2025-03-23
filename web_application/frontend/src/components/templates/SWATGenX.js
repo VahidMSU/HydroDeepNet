@@ -8,6 +8,9 @@ import {
   faMap,
   faCheckCircle,
   faExclamationTriangle,
+  faMapMarkedAlt,
+  faRuler,
+  faLayerGroup,
 } from '@fortawesome/free-solid-svg-icons';
 import ModelSettingsForm from '../forms/SWATGenX.js';
 import EsriMap from '../EsriMap.js';
@@ -29,10 +32,18 @@ import {
   MapInnerContainer,
   FeedbackMessage,
   FeedbackIcon,
+  TabContainer,
+  TabButton,
+  TabIcon,
+  StepIndicator,
+  StepCircle,
+  StepText,
+  StepConnector,
 } from '../../styles/SWATGenX.tsx';
 
 const SWATGenXTemplate = () => {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1); // Step 1: Station Selection, Step 2: Resolution & Analysis
   const [stationList] = useState([]);
   const [stationInput, setStationInput] = useState('');
   const [stationData, setStationData] = useState(null);
@@ -51,6 +62,23 @@ const SWATGenXTemplate = () => {
       console.log('Station details:', stationData);
     }
   }, [stationData]);
+
+  const handleNextStep = () => {
+    if (!stationInput.trim() && !stationData) {
+      setFeedbackMessage('Please provide a valid station number or select a station.');
+      setFeedbackType('error');
+      return;
+    }
+    setCurrentStep(2);
+    setFeedbackMessage('');
+    setFeedbackType('');
+  };
+
+  const handlePreviousStep = () => {
+    setCurrentStep(1);
+    setFeedbackMessage('');
+    setFeedbackType('');
+  };
 
   const handleSubmit = async () => {
     if (!stationInput.trim() && !stationData) {
@@ -76,7 +104,6 @@ const SWATGenXTemplate = () => {
     setFeedbackType('');
 
     try {
-      // Change the endpoint from /model-settings to /api/model-settings
       const response = await fetch('/api/model-settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -154,7 +181,20 @@ const SWATGenXTemplate = () => {
             </PanelHeader>
 
             <ConfigPanelContent>
+              <StepIndicator>
+                <StepCircle active={currentStep === 1} completed={currentStep > 1}>
+                  <FontAwesomeIcon icon={faMapMarkedAlt} />
+                </StepCircle>
+                <StepText active={currentStep === 1}>Station Selection</StepText>
+                <StepConnector completed={currentStep > 1} />
+                <StepCircle active={currentStep === 2} completed={currentStep > 2}>
+                  <FontAwesomeIcon icon={faLayerGroup} />
+                </StepCircle>
+                <StepText active={currentStep === 2}>Model Settings</StepText>
+              </StepIndicator>
+
               <ModelSettingsForm
+                currentStep={currentStep}
                 stationList={stationList}
                 stationInput={stationInput}
                 setStationInput={setStationInput}
@@ -170,6 +210,8 @@ const SWATGenXTemplate = () => {
                 setSensitivityFlag={setSensitivityFlag}
                 validationFlag={validationFlag}
                 setValidationFlag={setValidationFlag}
+                handleNextStep={handleNextStep}
+                handlePreviousStep={handlePreviousStep}
                 handleSubmit={handleSubmit}
                 loading={loading}
                 setLoading={setLoading}

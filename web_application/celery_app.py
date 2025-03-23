@@ -96,7 +96,7 @@ def make_celery(app=None):
         'web_application',
         broker=redis_url,
         backend=redis_url,
-        include=['app.tasks']
+        include=['app.swatgenx_tasks']
     )
     
     # Configure broker_connection_retry_on_startup to address deprecation warning
