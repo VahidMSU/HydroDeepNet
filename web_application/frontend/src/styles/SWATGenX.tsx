@@ -386,11 +386,15 @@ export const CheckboxText = styled.span`
 `;
 
 // Button styling
-export const SubmitButton = styled.button<{ isLoading: boolean }>`
-  background-color: ${props => props.isLoading ? '#5c5c5e' : '#ff8500'};
-  color: #1e1e1f;
+export const SubmitButton = styled.button<{ isLoading: boolean, secondary?: boolean }>`
+  background-color: ${props => {
+    if (props.isLoading) return '#5c5c5e';
+    if (props.secondary) return 'transparent';
+    return '#ff8500';
+  }};
+  color: ${props => props.secondary ? '#bbbbbb' : '#1e1e1f'};
   padding: 12px 16px;
-  border: none;
+  border: ${props => props.secondary ? '1px solid #bbbbbb' : 'none'};
   border-radius: 8px;
   cursor: ${props => props.isLoading ? 'not-allowed' : 'pointer'};
   font-weight: 600;
@@ -403,16 +407,31 @@ export const SubmitButton = styled.button<{ isLoading: boolean }>`
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.95rem;
+  flex: ${props => props.secondary ? '0 0 auto' : '1'};
   
   &:hover {
-    background-color: ${props => props.isLoading ? '#5c5c5e' : '#ffa733'};
+    background-color: ${props => {
+      if (props.isLoading) return '#5c5c5e';
+      if (props.secondary) return 'rgba(255, 255, 255, 0.05)';
+      return '#ffa733';
+    }};
     transform: ${props => props.isLoading ? 'none' : 'translateY(-2px)'};
-    box-shadow: ${props => props.isLoading ? 'none' : '0 4px 8px rgba(255, 133, 0, 0.3)'};
+    box-shadow: ${props => {
+      if (props.isLoading) return 'none';
+      if (props.secondary) return 'none';
+      return '0 4px 8px rgba(255, 133, 0, 0.3)';
+    }};
+    border-color: ${props => props.secondary ? '#ffd380' : 'transparent'};
+    color: ${props => props.secondary ? '#ffd380' : '#1e1e1f'};
   }
   
   &:active {
     transform: ${props => props.isLoading ? 'none' : 'translateY(0)'};
-    box-shadow: ${props => props.isLoading ? 'none' : '0 2px 4px rgba(255, 133, 0, 0.3)'};
+    box-shadow: ${props => {
+      if (props.isLoading) return 'none';
+      if (props.secondary) return 'none';
+      return '0 2px 4px rgba(255, 133, 0, 0.3)';
+    }};
   }
 `;
 
@@ -592,6 +611,100 @@ export const LoadingSpinner = styled.div`
   border-top-color: #ffffff;
   animation: ${spin} 1s ease-in-out infinite;
   margin-right: 8px;
+`;
+
+// Tab navigation
+export const TabContainer = styled.div`
+  display: flex;
+  border-bottom: 1px solid #3a3a3c;
+  margin-bottom: 16px;
+`;
+
+export const TabButton = styled.button<{ active: boolean }>`
+  background-color: ${props => props.active ? '#3a3a3c' : 'transparent'};
+  color: ${props => props.active ? '#ffd380' : '#bbbbbb'};
+  border: none;
+  padding: 12px 18px;
+  cursor: pointer;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: ${props => props.active ? '600' : '400'};
+  transition: all 0.2s ease;
+  border-bottom: 2px solid ${props => props.active ? '#ff8500' : 'transparent'};
+  
+  &:hover {
+    background-color: ${props => props.active ? '#3a3a3c' : 'rgba(255, 133, 0, 0.05)'};
+    color: #ffd380;
+  }
+`;
+
+export const TabIcon = styled.span`
+  font-size: 1.1rem;
+`;
+
+// Step indicator
+export const StepIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #3a3a3c;
+`;
+
+export const StepCircle = styled.div<{ active: boolean, completed: boolean }>`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  background-color: ${props => {
+    if (props.completed) return '#4caf50';
+    if (props.active) return '#ff8500';
+    return '#3a3a3c';
+  }};
+  color: #1c1c1e;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+`;
+
+export const StepText = styled.span<{ active: boolean }>`
+  color: ${props => props.active ? '#ffd380' : '#bbbbbb'};
+  font-weight: ${props => props.active ? '600' : '400'};
+  font-size: 0.9rem;
+  position: absolute;
+  top: 45px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+`;
+
+export const StepConnector = styled.div<{ completed: boolean }>`
+  height: 3px;
+  flex: 1;
+  margin: 0 10px;
+  background-color: ${props => props.completed ? '#4caf50' : '#3a3a3c'};
+  transition: all 0.3s ease;
+`;
+
+// Step container
+export const StepContainer = styled.div`
+  animation: ${fadeIn} 0.3s ease-in-out;
+  width: 100%;
+`;
+
+// Navigation buttons
+export const NavigationButtons = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 12px;
 `;
 
 
