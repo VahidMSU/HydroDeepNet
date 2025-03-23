@@ -54,46 +54,47 @@ class MODGenXCore:
 		else:
 			self.config = config
 		
-		# Initialize path handler
+		 # Use path_handler for accessing all paths
 		self.path_handler = PathHandler(self.config)
 		
-		 # Initialize logger with path_handler
+		# Initialize logger with path_handler
 		self.logger = Logger(verbose=True, path_handler=self.path_handler)
 		
-		# Set commonly used paths
-		self.raster_folder = self.path_handler.get_raster_input_dir()
+		# Core directories (used frequently throughout the class)
 		self.model_path = self.path_handler.get_model_path()
+		self.raster_folder = self.path_handler.get_raster_input_dir()
+		
+		# MODFLOW executable
 		self.moflow_exe_path = self.path_handler.get_modflow_exe_path()
 		
-		# Set references to shapefile paths
+		# Reference paths and important input data
+		self.ref_raster_path = self.path_handler.get_ref_raster_path()
+		self.original_swat_dem = self.path_handler.get_swat_dem_path()
+		self.bound_raster_path = self.path_handler.get_bound_raster_path()
+		self.domain_raster_path = self.path_handler.get_domain_raster_path()
+		
+		# Shapefile references (access via path_handler when needed)
 		shapefile_paths = self.path_handler.get_shapefile_paths()
 		self.swat_lake_shapefile_path = shapefile_paths["lakes"]
 		self.subbasin_path = shapefile_paths["subs"]
 		self.shape_geometry = shapefile_paths["subbasins"]
 		
-		# Set raster paths
-		self.ref_raster_path = self.path_handler.get_ref_raster_path()
-		self.original_swat_dem = self.path_handler.get_swat_dem_path()
+		 # Working file paths
+		self.basin_path = self.path_handler.get_raster_input_file('basin_shape.shp')
+		self.bound_path = self.path_handler.get_raster_input_file('bound_shape.shp')
 		self.swat_river_raster_path = self.path_handler.get_output_file('swat_river.tif')
 		self.swat_lake_raster_path = self.path_handler.get_output_file('lake_raster.tif')
 		
-		# Set output paths
-		self.head_of_last_time_step = self.path_handler.get_output_file('head_of_last_time_step.jpeg')
-		self.output_heads = self.path_handler.get_output_file(f'{MODEL_NAME}.hds')
+		# Output paths
 		self.out_shp = os.path.join(self.model_path, "Grids_MODFLOW")
 		
-		# Set working paths
-		self.raster_path = self.path_handler.get_raster_input_file(f'{NAME}_DEM_{RESOLUTION}m.tif')
-		self.basin_path = self.path_handler.get_raster_input_file('basin_shape.shp')
-		self.bound_path = self.path_handler.get_raster_input_file('bound_shape.shp')
+		# Temporary paths
 		self.temp_image = self.path_handler.get_temporary_path(f'{self.NAME}_{self.MODEL_NAME}.jpeg')
 		
-		# Set other parameters
+		# Other parameters
 		self.EPSG = "EPSG:26990"
 		self.dpi = 300
 		self.top = None
-		self.bound_raster_path = self.path_handler.get_bound_raster_path()
-		self.domain_raster_path = self.path_handler.get_domain_raster_path()
 		self.RESOLUTION = RESOLUTION
 
 	def create_DEM_raster(self):

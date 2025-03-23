@@ -11,7 +11,9 @@ import matplotlib.pyplot as plt
 from shapely.geometry import Point, Polygon
 from MODGenX.logger_singleton import get_logger
 import time
-from utils.clip_rasters import clip_raster_by_another
+from MODGenX.clip_rasters import clip_raster_by_another
+
+
 
 logger = get_logger()
 
