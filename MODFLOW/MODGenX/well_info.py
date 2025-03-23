@@ -150,6 +150,25 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     """Import and process well data for MODFLOW model."""
     logger.info(f"Importing well data for model: {MODEL_NAME}")
     
+    # First, validate that top array doesn't contain NaN values
+    if np.isnan(top).any():
+        logger.warning(f"NaN values found in top array - fixing...")
+        # Get the mean of non-NaN values
+        top_mean = np.nanmean(top)
+        # Replace NaN with the mean value
+        top = np.where(np.isnan(top), top_mean, top)
+        logger.info(f"Replaced NaN values in top array with mean value: {top_mean}")
+    
+    # Also check z_botm arrays for NaNs
+    for i, botm in enumerate(z_botm):
+        if np.isnan(botm).any():
+            logger.warning(f"NaN values found in z_botm layer {i} - fixing...")
+            # Get the mean of non-NaN values
+            botm_mean = np.nanmean(botm)
+            # Replace NaN with the mean value
+            z_botm[i] = np.where(np.isnan(botm), botm_mean, botm)
+            logger.info(f"Replaced NaN values in z_botm layer {i} with mean value: {botm_mean}")
+    
     # Validate input files exist
     observations_path =  "/data/SWATGenXApp/GenXAppData/observations/observations_original.geojson"
     assert os.path.exists(observations_path), f"Observations file not found: {observations_path}"
@@ -178,71 +197,129 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     logger.info(f"Grid CRS: {grids.crs}")
     
     # Ensure consistent column naming
-    if 'Row' in grids.columns and 'row' not in grids.columns:
-        grids['row'] = grids['Row']
-        ##drop the row column
-        grids.drop(columns=['Row'], inplace=True)
-    if 'Col' in grids.columns and 'col' not in grids.columns:
-        grids['col'] = grids['Col']
-        ##drop the col column
-        grids.drop(columns=['Col'], inplace=True)
+    if 'Row' in grids.columns:
+        grids = grids.rename(columns={'Row': 'row'})
+        if 'Row' in grids.columns:
+            grids.drop(columns=['Row'], inplace=True, errors='ignore')
+    
+    if 'Col' in grids.columns:
+        grids = grids.rename(columns={'Col': 'col'})
+        if 'Col' in grids.columns:
+            grids.drop(columns=['Col'], inplace=True, errors='ignore')
+    
+    # Ensure we have row and col in grids
+    if 'row' not in grids.columns or 'col' not in grids.columns:
+        logger.error("Grid data missing required row/col columns")
+        return None, None, pd.DataFrame()
     
     # Ensure CRS match
     logger.info(f"Reprojecting observations to match grid CRS: {grids.crs}")
     obs = obs.to_crs(grids.crs)
 
+    # Remove existing row/col columns from observations if present
+    # This prevents conflicts with the spatial join
     if 'col' in obs.columns and 'row' in obs.columns:
-        obs.drop(columns=['col', 'row'], inplace=True)
-
+        obs = obs.drop(columns=['col', 'row'])
 
     # Get model grid dimensions
     nrow, ncol = top.shape
     logger.info(f"Model grid dimensions: {nrow} rows x {ncol} columns")
     
-    # Perform spatial join - first create a spatial index for more efficient joining
+    # Perform spatial join
     logger.info("Performing spatial join between observations and grid")
+    df_obs = gpd.sjoin_nearest(obs, grids, how='inner', max_distance=250)
     
-    # Create a buffer around points to ensure they match with grid cells
-    # This is more reliable than using 'within' predicate which can miss points due to precision issues
-    buffer_dist = min(mf.modelgrid.delr.min(), mf.modelgrid.delc.min()) / 10
-    obs_buffered = obs.copy()
-    obs_buffered['geometry'] = obs_buffered.geometry.buffer(buffer_dist)
-    
-    # Use overlay operation instead of spatial join
-    df_obs = gpd.overlay(obs_buffered, grids, how='intersection')
-    
+    # Check if the join worked
     if len(df_obs) == 0:
-        # Try with clip as fallback
-        logger.warning("Intersection returned no results, trying clip method")
-        df_obs = gpd.clip(obs, grids)
+        logger.warning("No observations found in grid - trying with buffered points")
+        # Try with buffer around points
+        buffer_dist = min(mf.modelgrid.delr.min(), mf.modelgrid.delc.min()) / 2
+        obs_buffered = obs.copy()
+        obs_buffered['geometry'] = obs_buffered.geometry.buffer(buffer_dist)
+        df_obs = gpd.sjoin(obs_buffered, grids, how='inner')
     
+    # Check if we have observations
     if len(df_obs) == 0:
         logger.error("No observations found within model grid after spatial operations")
         return None, None, pd.DataFrame()
     
     logger.info(f"Joined observations before: {len(df_obs)} records")
     
+    # Log column names to help diagnose issues
+    logger.info(f"Columns after spatial join: {df_obs.columns.tolist()}")
+    
+    # Make sure we have row/col columns
+    # If we don't have them, they might be under different names
+    if 'row' not in df_obs.columns or 'col' not in df_obs.columns:
+        # Find row/col columns in all variations (row, Row, row_left, etc.)
+        row_cols = [col for col in df_obs.columns if 'row' in col.lower()]
+        col_cols = [col for col in df_obs.columns if 'col' in col.lower()]
+        
+        if row_cols:
+            df_obs['row'] = df_obs[row_cols[0]]
+            logger.info(f"Using column {row_cols[0]} for row values")
+        else:
+            logger.error("Cannot find row column in joined data")
+            return None, None, pd.DataFrame()
+            
+        if col_cols:
+            df_obs['col'] = df_obs[col_cols[0]]
+            logger.info(f"Using column {col_cols[0]} for col values")
+        else:
+            logger.error("Cannot find col column in joined data")
+            return None, None, pd.DataFrame()
+    
     # Convert numeric columns to ensure proper comparison
-    for col in ['SWL', 'ELEV_DEM', 'PMP_CPCITY']:
+    for col in ['SWL', 'ELEV_DEM', 'PMP_CPCITY', 'row', 'col']:
         if col in df_obs.columns:
             df_obs[col] = pd.to_numeric(df_obs[col], errors='coerce')
-   
-    df_obs = df_obs.dropna(subset=['SWL', 'ELEV_DEM'])
-    df_obs = df_obs.dropna(subset=['SWL'])
-    df_obs = df_obs.dropna(subset=['ELEV_DEM'])
-    df_obs = df_obs.dropna(subset=['PMP_CPCITY'])
-
+    
+    # Clean data - drop NaN values in critical columns
+    df_obs = df_obs.dropna(subset=['SWL', 'ELEV_DEM', 'PMP_CPCITY', 'row', 'col'])
+    
+    # Make sure values are reasonable
+    # Filter out negative or zero values where inappropriate
     df_obs = df_obs[df_obs['SWL'] > 0]
     df_obs = df_obs[df_obs['ELEV_DEM'] > 0]
-
+    
+    # Limit pumping rates to reasonable values
+    MAX_PUMP_RATE = 10000  # maximum reasonable pump rate in gpm
+    df_obs['PMP_CPCITY'] = df_obs['PMP_CPCITY'].clip(0, MAX_PUMP_RATE)
+    
     # Log statistics 
     logger.info(f"Observations after filtering: {len(df_obs)}")
-    assert len(df_obs) > 0, "No valid observations found after filtering"
-
+    
+    # Check if we have any valid wells left
+    if len(df_obs) == 0:
+        logger.warning("No valid observations remaining after filtering")
+        return None, None, pd.DataFrame()
+    
+    logger.info(f"SWL range: {df_obs.SWL.min()} to {df_obs.SWL.max()}")
+    logger.info(f"ELEV_DEM range: {df_obs.ELEV_DEM.min()} to {df_obs.ELEV_DEM.max()}")
+    
+    # Convert row/col to integers and ensure they're within model bounds
+    df_obs['row'] = df_obs['row'].astype(int)
+    df_obs['col'] = df_obs['col'].astype(int)
+    
+    # Filter out wells outside model boundaries
+    valid_wells = (
+        (df_obs['row'] >= 0) & 
+        (df_obs['row'] < nrow) & 
+        (df_obs['col'] >= 0) & 
+        (df_obs['col'] < ncol)
+    )
+    df_obs = df_obs[valid_wells]
+    
+    if len(df_obs) == 0:
+        logger.warning("No wells within valid model grid boundaries")
+        return None, None, pd.DataFrame()
+    
+    logger.info(f"Wells within valid grid bounds: {len(df_obs)}")
+    
     # Save diagnostic plot
     plt.figure(figsize=(10, 8))
     df_obs.plot(column='SWL', legend=True)
-    plt.title(f'coloumns: {df_obs.columns}')    
+    plt.title('Well Static Water Levels')
     log_dir = '/data/SWATGenXApp/codes/MODFLOW/logs'
     os.makedirs(log_dir, exist_ok=True)
     plt.savefig(f'{log_dir}/{MODEL_NAME}_obs_heads.png')
@@ -251,39 +328,53 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     # Process observation data
     logger.info("Processing observation data")
     
-    # Convert row and col to integers
-    df_obs['row'] = df_obs['row'].astype(int)
-    df_obs['col'] = df_obs['col'].astype(int)
-    
-    # CRITICAL: Filter out wells that are outside the model grid
-
-    # drop nan
-    df_obs = df_obs.dropna(subset=['SWL', 'ELEV_DEM'])
-    df_obs = df_obs.dropna(subset=['SWL'])
-    df_obs = df_obs.dropna(subset=['ELEV_DEM'])
-    df_obs = df_obs.dropna(subset=['PMP_CPCITY'])
-    
-
-    assert len(df_obs) > 0, "No valid observations found after filtering"
-
-    
-    logger.info(f"Wells within valid grid bounds: {len(df_obs)}")
-    
-    # Extract row and column arrays safely
+    # Extract row and column arrays
     rows = df_obs['row'].values
     cols = df_obs['col'].values
+    
+    logger.info(f"Rows: {rows.min()} to {rows.max()}")  
+    logger.info(f"Cols: {cols.min()} to {cols.max()}")
     
     # Calculate heads using vectorized operations
     heads = fitToMeter * (df_obs['ELEV_DEM'].values - df_obs['SWL'].values)
     
+    # Validate heads - make sure they're not NaN and within reasonable range
+    invalid_heads = np.isnan(heads)
+    if np.any(invalid_heads):
+        logger.warning(f"Found {np.sum(invalid_heads)} NaN head values - filtering...")
+        valid_head_mask = ~invalid_heads
+        heads = heads[valid_head_mask]
+        rows = rows[valid_head_mask]
+        cols = cols[valid_head_mask]
+        df_obs = df_obs[~invalid_heads.tolist()]
     
-    # Pre-allocate array with correct dimensions
+    if len(df_obs) == 0:
+        logger.warning("No valid heads remaining after filtering")
+        return None, None, pd.DataFrame()
+    
+    # Assign wells to appropriate model layers
+    # Pre-allocate array
     z_botm_well_loc = np.zeros((len(z_botm), len(rows)))
     
-    # Fill the array safely
+    # Fill the array
     for i in range(len(z_botm)):
         for j, (r, c) in enumerate(zip(rows, cols)):
-            z_botm_well_loc[i, j] = z_botm[i][r, c]
+            # Ensure model array values are not NaN
+            botm_val = z_botm[i][r, c]
+            if np.isnan(botm_val):
+                # Get mean of surrounding cells
+                r_min = max(0, r-1)
+                r_max = min(nrow-1, r+1)
+                c_min = max(0, c-1)
+                c_max = min(ncol-1, c+1)
+                neighbor_vals = z_botm[i][r_min:r_max+1, c_min:c_max+1]
+                botm_val = np.nanmean(neighbor_vals)
+                if np.isnan(botm_val):
+                    # Still NaN, use layer average
+                    botm_val = np.nanmean(z_botm[i])
+                z_botm[i][r, c] = botm_val
+            
+            z_botm_well_loc[i, j] = botm_val
     
     # Find layer for each well
     heads_below_layer = heads[None, :] <= z_botm_well_loc
@@ -294,7 +385,6 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     # Handle case where head is not below any layer bottom (assign to top active layer)
     mask_no_layer = ~np.any(heads_below_layer, axis=0)
     layer[mask_no_layer] = 0
-
     
     # Assign layers to DataFrame
     df_obs['layer'] = layer
@@ -302,23 +392,28 @@ def well_data_import(mf, top, load_raster_args, z_botm, active, grids_path, MODE
     # Create pumping data for wells
     pumping_rates = -1 * gpm_to_cmd * df_obs['PMP_CPCITY'].values
     
-    # Create well data
-    df_obs['wel_data'] = list(zip(layer, rows, cols, pumping_rates))
+    # Validate pumping rates (ensure no NaN values)
+    if np.isnan(pumping_rates).any():
+        logger.warning("NaN pumping rates found - setting to minimal value")
+        pumping_rates = np.where(np.isnan(pumping_rates), -0.1, pumping_rates)
     
-
-    # Filter to active wells
-    active_wells = df_obs.copy()
+    # Create well data tuples
+    well_data = []
+    for i, (lay, r, c, q) in enumerate(zip(layer, rows, cols, pumping_rates)):
+        # Final validation of indices
+        if 0 <= lay < len(z_botm)+1 and 0 <= r < nrow and 0 <= c < ncol:
+            well_data.append((lay, r, c, q))
     
-
-    
-    logger.info(f"Active wells: {len(active_wells)}")
+    # Update the dataframe
+    df_obs = df_obs.iloc[:len(well_data)].copy()  # Trim to match well_data length
+    df_obs['wel_data'] = well_data
     
     # Create well data for MODFLOW (stress periods)
-    wel_data = {per: list(active_wells['wel_data']) for per in range(mf.nper)}
+    wel_data = {per: well_data for per in range(mf.nper)}
     
     # Create observation data
     obs_data = []
-    for _, row in active_wells.iterrows():
+    for _, row in df_obs.iterrows():
         obs = create_obs_data(row, top, mf, fitToMeter)
         if obs is not None:
             obs_data.append(obs)
