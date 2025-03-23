@@ -70,20 +70,9 @@ def plot_data(datasets, titles, model_input_figure_path, vmin=None, vmax=None,
             # More modern title layout
             ax.set_title(title, fontsize=base_font_size*1.8, pad=10)
             
-            # Calculate appropriate tick intervals for 50 divisions
-            rows, cols = data.shape
-            x_interval = max(1, cols // 50)
-            y_interval = max(1, rows // 50)
-            
-            # Set ticks at exact intervals of 50 starting from 0
-            x_ticks = np.arange(0, cols, x_interval)
-            y_ticks = np.arange(0, rows, y_interval)
-            
-            ax.set_xticks(x_ticks)
-            ax.set_yticks(y_ticks)
-            
-            # Add grid based on these ticks
-            ax.grid(True, linestyle='--', alpha=0.5, color='gray')
+            # Define ticks
+            ax.set_xticks(np.arange(0, data.shape[1], 200))
+            ax.set_yticks(np.arange(0, data.shape[0], 200))
             
             # Add more aesthetic customization
             ax.tick_params(
@@ -96,12 +85,6 @@ def plot_data(datasets, titles, model_input_figure_path, vmin=None, vmax=None,
             # Use a specialized formatter for the colorbar
             cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
             cbar.ax.tick_params(labelsize=base_font_size*0.7)
-            
-            # Label axes for clarity
-            if ax.is_last_row():
-                ax.set_xlabel('Columns', fontsize=base_font_size*0.9)
-            if ax.is_first_col():
-                ax.set_ylabel('Rows', fontsize=base_font_size*0.9)
         
         # Remove any unused subplots
         for ax in axs.flat[len(datasets):]:
@@ -154,29 +137,11 @@ def plot_heads(username, VPUID, LEVEL, NAME, RESOLUTION, MODEL_NAME, cmap='virid
         plt.figure(figsize=(10, 10))
         mask = head[0, :, :] > 0
         masked_data = np.ma.masked_where(~mask, head[0, :, :])
-        im = plt.imshow(masked_data, cmap=cmap)
-        
-        # Calculate appropriate tick intervals for 50 divisions
-        rows, cols = masked_data.shape
-        x_interval = max(1, cols // 50)
-        y_interval = max(1, rows // 50)
-        
-        # Set ticks at exact intervals starting from 0
-        x_ticks = np.arange(0, cols, x_interval)
-        y_ticks = np.arange(0, rows, y_interval)
-        
-        plt.xticks(x_ticks)
-        plt.yticks(y_ticks)
-        
-        # Add grid based on these ticks
-        plt.grid(True, linestyle='--', alpha=0.5, color='gray')
-        
-        plt.colorbar(im, label='Head (meters)')
+        plt.imshow(masked_data, cmap=cmap)
+        plt.colorbar(label='Head (meters)')
         plt.title('Heads for last time step')
-        plt.xlabel('Columns')
-        plt.ylabel('Rows')
 
-        plt.savefig(output_path, dpi=dpi, bbox_inches='tight')
+        plt.savefig(output_path, dpi=dpi)
         plt.close()
 
         return head[0, :, :]

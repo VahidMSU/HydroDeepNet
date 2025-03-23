@@ -176,40 +176,13 @@ def plot_diagnostic(array, title, output_path, cmap='viridis', vmin=None, vmax=N
         True if plot was created successfully, False otherwise
     """
     try:
-        # Create figure with specified dimensions
         plt.figure(figsize=(10, 8))
-        
-        # Plot the array data
-        im = plt.imshow(array, cmap=cmap, vmin=vmin, vmax=vmax)
-        plt.colorbar(im, label=title)
+        plt.imshow(array, cmap=cmap, vmin=vmin, vmax=vmax)
+        plt.colorbar(label=title)
         plt.title(title)
-        
-        # Set axes grid lines at 50 interval spacing starting from 0
-        rows, cols = array.shape
-        
-        # Calculate appropriate tick intervals
-        x_interval = max(1, cols // 50)
-        y_interval = max(1, rows // 50)
-        
-        # Set ticks at exact intervals of 50 starting from 0
-        x_ticks = np.arange(0, cols, x_interval)
-        y_ticks = np.arange(0, rows, y_interval)
-        
-        plt.xticks(x_ticks)
-        plt.yticks(y_ticks)
-        
-        # Add grid based on these ticks
-        plt.grid(True, linestyle='--', alpha=0.7)
-        
-        # Add axes labels
-        plt.xlabel('Columns')
-        plt.ylabel('Rows')
-        
-        # Save with tight layout and high resolution
         plt.tight_layout()
-        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        plt.savefig(output_path, dpi=300)
         plt.close()
-        
         logger.info(f"Saved diagnostic plot to {output_path}")
         return True
     except Exception as e:

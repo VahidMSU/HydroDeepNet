@@ -93,23 +93,12 @@ def sim_obs(VPUID, username, BASE_PATH, MODEL_NAME, mf, LEVEL, top, NAME, RESOLU
     
     model_top = mf.Dis.top.array
     hcon_1 = mf.upw.hk.array[0]
-    
-    # Standardize column names - convert 'Row'/'Col' to 'row'/'col' if they exist
-    logger.info(f"Observation dataframe columns: {df_obs.columns.tolist()}")
-    column_mapping = {'Row': 'row', 'Col': 'col'}
-    for old_col, new_col in column_mapping.items():
-        if old_col in df_obs.columns and new_col not in df_obs.columns:
-            logger.info(f"Renaming column '{old_col}' to '{new_col}'")
-            df_obs = df_obs.rename(columns={old_col: new_col})
-    
+
     # Check that required columns exist
     required_cols = ['row', 'col', 'SWL', 'ELEV_DEM']
     missing_cols = [col for col in required_cols if col not in df_obs.columns]
     
-    if missing_cols:
-        error_msg = f"Missing required columns in observation data: {missing_cols}"
-        logger.error(error_msg)
-        raise KeyError(error_msg)
+    assert len(missing_cols) == 0, f"Missing required columns in observation data: {missing_cols}"
     
     # Initialize column for simulated SWL
     df_obs['sim_head_m'] = np.nan
