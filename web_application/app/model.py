@@ -172,7 +172,7 @@ def model_settings():
             }), 500
             
         # Celery task creation with retry logic
-        from web_application.app.swatgenx_tasks import create_model_task
+        from app.swatgenx_tasks import create_model_task
         
         max_retries = 3
         retry_delay = 1
