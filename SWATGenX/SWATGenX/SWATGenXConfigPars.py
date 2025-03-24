@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import os
 #/data/SWATGenXApp/codes/SWATGenX/SWATGenX/SWATGenXConfigPars.py
+
 @dataclass
 class SWATGenXPaths:
     overwrite: bool = True  
@@ -9,6 +10,7 @@ class SWATGenXPaths:
     SWATPlusEditor_path: str = '/usr/local/share/SWATPlusEditor/swatplus-editor/src/api'
     FPS_State_Territories: str = f'{base_path}USGS/FPS_States_and_Territories.csv'
     FPS_all_stations: str = f'{base_path}USGS/FPS_all_stations.csv'
+    FPS_CONUS_stations: str = f'{base_path}USGS/FPS_CONUS_stations.geojson'
     # Data Sources
     MODFLOW_MODEL_NAME: str = None
     SWAT_MODEL_NAME: str = None

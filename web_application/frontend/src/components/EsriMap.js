@@ -1,10 +1,20 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { loadModules } from 'esri-loader';
 
-const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = [] }) => {
+const EsriMap = ({
+  geometries = [],
+  streamsGeometries = [],
+  lakesGeometries = [],
+  stationPoints = [],
+  onStationSelect = null,
+  showStations = false,
+  selectedStationId = null,
+}) => {
   const mapRef = useRef(null);
   const viewRef = useRef(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
+  // Initial map setup
   useEffect(() => {
     let view;
 
@@ -36,17 +46,32 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
         view = new MapView({
           container: mapRef.current,
           map: map,
-          zoom: 5,
-          center: [-90, 38],
+          zoom: 4,
+          center: [-98, 39], // Center on CONUS (Continental US)
         });
 
         const polygonLayer = new GraphicsLayer();
         const streamLayer = new GraphicsLayer();
         const lakeLayer = new GraphicsLayer();
-        map.addMany([polygonLayer, streamLayer, lakeLayer]);
+        const stationLayer = new GraphicsLayer();
 
-        viewRef.current = { view, polygonLayer, streamLayer, lakeLayer };
+        map.addMany([polygonLayer, streamLayer, lakeLayer, stationLayer]);
 
+        viewRef.current = {
+          view,
+          polygonLayer,
+          streamLayer,
+          lakeLayer,
+          stationLayer,
+          // Store references to these classes for later use
+          Graphic,
+          Polygon,
+          Polyline,
+          Point,
+          webMercatorUtils,
+        };
+
+        // Add coordinate display
         view.on('pointer-move', (event) => {
           const point = view.toMap(event);
           if (point) {
@@ -57,6 +82,33 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
             }
           }
         });
+
+        // Add click handler for station selection
+        if (onStationSelect) {
+          view.on('click', (event) => {
+            // Only handle clicks if we're showing stations
+            if (!showStations) return;
+
+            const screenPoint = {
+              x: event.x,
+              y: event.y,
+            };
+
+            // Use hitTest to find if any station was clicked
+            view.hitTest(screenPoint).then((response) => {
+              const stationGraphics = response.results?.filter(
+                (result) => result.graphic.layer === stationLayer,
+              );
+
+              if (stationGraphics && stationGraphics.length > 0) {
+                const clickedStation = stationGraphics[0].graphic.attributes;
+                onStationSelect(clickedStation);
+              }
+            });
+          });
+        }
+
+        setIsLoaded(true);
       },
     );
 
@@ -66,10 +118,11 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
         viewRef.current = null;
       }
     };
-  }, []);
+  }, [onStationSelect, showStations]);
 
+  // Handle watershed geometries (existing functionality)
   useEffect(() => {
-    if (!viewRef.current) {
+    if (!viewRef.current || !isLoaded) {
       return;
     }
 
@@ -146,7 +199,71 @@ const EsriMap = ({ geometries = [], streamsGeometries = [], lakesGeometries = []
         }
       },
     );
-  }, [geometries, streamsGeometries, lakesGeometries]);
+  }, [geometries, streamsGeometries, lakesGeometries, isLoaded]);
+
+  // Handle station points rendering
+  useEffect(() => {
+    if (!viewRef.current || !isLoaded || !showStations) {
+      return;
+    }
+
+    const { stationLayer, Graphic, Point, view } = viewRef.current;
+
+    // Clear existing station points
+    stationLayer.removeAll();
+
+    // Only render stations if we're in station selection mode
+    if (showStations && stationPoints.length > 0) {
+      const stationGraphics = [];
+
+      stationPoints.forEach((station) => {
+        if (station.geometry && station.geometry.coordinates) {
+          const [longitude, latitude] = station.geometry.coordinates;
+
+          const point = new Point({
+            longitude,
+            latitude,
+            spatialReference: { wkid: 4326 },
+          });
+
+          // Determine if this station is selected
+          const isSelected = selectedStationId === station.properties.SiteNumber;
+
+          const stationGraphic = new Graphic({
+            geometry: point,
+            symbol: {
+              type: 'simple-marker',
+              color: isSelected ? [255, 0, 0, 0.8] : [0, 114, 206, 0.7],
+              size: isSelected ? '12px' : '8px',
+              outline: {
+                color: [255, 255, 255],
+                width: 1,
+              },
+            },
+            attributes: {
+              SiteNumber: station.properties.SiteNumber,
+              SiteName: station.properties.SiteName,
+              id: station.properties.id,
+            },
+            popupTemplate: {
+              title: '{SiteName}',
+              content: 'Station ID: {SiteNumber}',
+            },
+          });
+
+          stationLayer.add(stationGraphic);
+          stationGraphics.push(stationGraphic);
+        }
+      });
+
+      // Zoom to all stations if there's no selection
+      if (stationGraphics.length > 0 && !selectedStationId) {
+        view.when(() => {
+          view.goTo(stationGraphics, { animate: false });
+        });
+      }
+    }
+  }, [stationPoints, showStations, selectedStationId, isLoaded]);
 
   return (
     <>
