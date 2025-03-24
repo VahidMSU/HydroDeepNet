@@ -11,6 +11,8 @@ import {
   faMapMarkedAlt,
   faRuler,
   faLayerGroup,
+  faSearch,
+  faLocationDot,
 } from '@fortawesome/free-solid-svg-icons';
 import ModelSettingsForm from '../forms/SWATGenX.js';
 import EsriMap from '../EsriMap.js';
@@ -56,12 +58,43 @@ const SWATGenXTemplate = () => {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackType, setFeedbackType] = useState(''); // 'success' | 'error'
 
+  // New state for map-based selection
+  const [selectionTab, setSelectionTab] = useState('search'); // 'search' | 'map'
+  const [stationPoints, setStationPoints] = useState([]);
+  const [mapSelectionLoading, setMapSelectionLoading] = useState(false);
+  const [selectedStationOnMap, setSelectedStationOnMap] = useState(null);
+
   // Fetch station data effect
   useEffect(() => {
     if (stationData) {
       console.log('Station details:', stationData);
     }
   }, [stationData]);
+
+  // Fetch station geometries for map-based selection
+  useEffect(() => {
+    if (selectionTab === 'map' && stationPoints.length === 0 && !mapSelectionLoading) {
+      fetchStationGeometries();
+    }
+  }, [selectionTab, stationPoints.length, mapSelectionLoading]);
+
+  const fetchStationGeometries = async () => {
+    setMapSelectionLoading(true);
+    try {
+      const response = await fetch('/api/get_station_geometries');
+      if (!response.ok) {
+        throw new Error('Failed to fetch station geometries');
+      }
+      const data = await response.json();
+      setStationPoints(data.features || []);
+    } catch (error) {
+      console.error('Error fetching station geometries:', error);
+      setFeedbackMessage('Failed to load stations on map: ' + error.message);
+      setFeedbackType('error');
+    } finally {
+      setMapSelectionLoading(false);
+    }
+  };
 
   const handleNextStep = () => {
     if (!stationInput.trim() && !stationData) {
@@ -78,6 +111,28 @@ const SWATGenXTemplate = () => {
     setCurrentStep(1);
     setFeedbackMessage('');
     setFeedbackType('');
+  };
+
+  const handleStationSelectFromMap = async (stationAttributes) => {
+    setSelectedStationOnMap(stationAttributes);
+    // Fetch station details just like we would do from search
+    await handleStationSelect(stationAttributes.SiteNumber);
+  };
+
+  const handleStationSelect = async (stationNumber) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/get_station_characteristics?station=${stationNumber}`);
+      const data = await response.json();
+      setStationData(data);
+      setStationInput(stationNumber);
+    } catch (error) {
+      console.error('Error fetching station details:', error);
+      setFeedbackMessage('Failed to fetch station details: ' + error.message);
+      setFeedbackType('error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -129,6 +184,15 @@ const SWATGenXTemplate = () => {
     }
   };
 
+  // Switch between search and map tabs
+  const handleTabChange = (tab) => {
+    setSelectionTab(tab);
+    // Reset selection state when switching tabs
+    if (tab === 'search' && selectedStationOnMap) {
+      setSelectedStationOnMap(null);
+    }
+  };
+
   return (
     <Container>
       <Header>
@@ -157,7 +221,8 @@ const SWATGenXTemplate = () => {
               <PanelContent>
                 <p>
                   SWATGenX is an automated tool for creating SWAT+ models using USGS streamgage
-                  stations. You can locate a station by searching its site number or name.
+                  stations. You can locate a station by searching its site number or name, or by
+                  selecting it directly on the map.
                 </p>
                 <ul>
                   <li>Configure Landuse/Soil and DEM resolution</li>
@@ -181,6 +246,26 @@ const SWATGenXTemplate = () => {
             </PanelHeader>
 
             <ConfigPanelContent>
+              {currentStep === 1 && (
+                <TabContainer>
+                  <TabButton
+                    active={selectionTab === 'search'}
+                    onClick={() => handleTabChange('search')}
+                  >
+                    <TabIcon>
+                      <FontAwesomeIcon icon={faSearch} />
+                    </TabIcon>
+                    Search
+                  </TabButton>
+                  <TabButton active={selectionTab === 'map'} onClick={() => handleTabChange('map')}>
+                    <TabIcon>
+                      <FontAwesomeIcon icon={faLocationDot} />
+                    </TabIcon>
+                    Map Select
+                  </TabButton>
+                </TabContainer>
+              )}
+
               <StepIndicator>
                 <StepCircle active={currentStep === 1} completed={currentStep > 1}>
                   <FontAwesomeIcon icon={faMapMarkedAlt} />
@@ -237,6 +322,10 @@ const SWATGenXTemplate = () => {
               geometries={stationData?.geometries || []}
               streamsGeometries={stationData?.streams_geometries || []}
               lakesGeometries={stationData?.lakes_geometries || []}
+              stationPoints={stationPoints}
+              onStationSelect={handleStationSelectFromMap}
+              showStations={selectionTab === 'map' && currentStep === 1}
+              selectedStationId={selectedStationOnMap?.SiteNumber}
             />
           </MapInnerContainer>
         </MapContainer>

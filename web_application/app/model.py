@@ -7,6 +7,7 @@ from app.utils import (find_station, check_existing_models, get_huc12_geometries
                       get_huc12_streams_geometries, get_huc12_lakes_geometries)
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 from app.extensions import csrf
+import geopandas as gpd
 
 model_bp = Blueprint('model', __name__)
 
@@ -233,3 +234,50 @@ def model_settings():
 def model_confirmation():
     current_app.logger.info("Model Confirmation route called")
     return jsonify({"title": "Model Confirmation", "message": "Model confirmation page"})
+
+@model_bp.route('/api/get_station_geometries', methods=['GET'])
+def get_station_geometries():
+    """Fetch all station geometries for map-based selection."""
+    current_app.logger.info("Fetching station geometries for map display")
+    
+    try:
+        # Read station geometries from shapefile
+        FPS_geometry_name_shp_path = SWATGenXPaths.FPS_CONUS_stations
+        gdf = gpd.read_file(FPS_geometry_name_shp_path)
+        
+        # Convert to a simplified GeoJSON structure
+        stations_geojson = {
+            "type": "FeatureCollection",
+            "features": []
+        }
+        
+        # Process each station
+        for idx, row in gdf.iterrows():
+            try:
+                # Extract geometry and properties
+                geometry = row.geometry.__geo_interface__ if row.geometry else None
+                
+                # Only include points with valid geometry
+                if geometry:
+                    feature = {
+                        "type": "Feature",
+                        "geometry": geometry,
+                        "properties": {
+                            "SiteNumber": row.get("SiteNumber", ""),
+                            "SiteName": row.get("SiteName", ""),
+                            "id": idx
+                        }
+                    }
+                    stations_geojson["features"].append(feature)
+            except Exception as e:
+                current_app.logger.warning(f"Error processing station at index {idx}: {e}")
+                continue
+        
+        current_app.logger.info(f"Returning {len(stations_geojson['features'])} station geometries")
+        return jsonify(stations_geojson)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error fetching station geometries: {e}")
+        import traceback
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({"error": "Failed to fetch station geometries", "details": str(e)}), 500
