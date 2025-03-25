@@ -13,9 +13,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Handle authentication errors
-    if (error.response && error.response.status === 401) {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       console.error('Authentication error:', error);
-      // Redirect to login page or show authentication modal
+
+      // Clear authentication data
+      localStorage.removeItem('authToken');
+
+      // Redirect to login page
       window.location.href = '/login';
     }
 

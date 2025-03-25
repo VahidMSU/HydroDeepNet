@@ -389,55 +389,6 @@ const SWATGenXTemplate = () => {
               key={`map-${selectionTab}`} // Add a key to force remount when tab changes
             />
           </MapInnerContainer>
-
-          {/* Status indicator for map selection mode */}
-          {selectionTab === 'map' && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '10px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                backgroundColor: 'rgba(0,0,0,0.6)',
-                color: 'white',
-                padding: '5px 10px',
-                borderRadius: '4px',
-                fontSize: '14px',
-                zIndex: 1000,
-              }}
-            >
-              {mapSelectionLoading
-                ? 'Loading stations...'
-                : drawingMode
-                  ? 'Drawing selection tool active'
-                  : 'Click on a station to select it'}
-            </div>
-          )}
-
-          {/* Add debugging info in development */}
-          {process.env.NODE_ENV !== 'production' && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '30px',
-                right: '10px',
-                background: 'rgba(255,255,255,0.8)',
-                padding: '8px',
-                borderRadius: '4px',
-                fontSize: '12px',
-                maxWidth: '250px',
-              }}
-            >
-              <p>
-                <strong>Map Selection Debug:</strong>
-              </p>
-              <p>Selection Tab: {selectionTab}</p>
-              <p>Showing Stations: {selectionTab === 'map' && currentStep === 1 ? 'Yes' : 'No'}</p>
-              <p>Drawing Mode: {drawingMode ? 'On' : 'Off'}</p>
-              <p>Station Count: {stationPoints.length}</p>
-              <p>Selected: {selectedStationOnMap?.SiteNumber || 'None'}</p>
-            </div>
-          )}
         </MapContainer>
       </Content>
     </Container>

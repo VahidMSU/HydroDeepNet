@@ -4,6 +4,7 @@ from app.models import User
 from app.extensions import db, csrf
 from app.utils import send_verification_email
 from app.sftp_manager import create_sftp_user
+from app.decorators import conditional_login_required
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -162,3 +163,16 @@ def sign_up_redirect():
         current_app.logger.warning("POST to /sign_up received - redirecting to /api/signup")
         return redirect('/api/signup')
     return redirect('/#/signup')  # Redirect to the React router path
+
+@auth_bp.route('/api/validate-session', methods=['GET'])
+@conditional_login_required
+def validate_session():
+    """
+    Endpoint to validate if the current session is still valid.
+    Will return 401 if not logged in (handled by @conditional_login_required)
+    """
+    return jsonify({
+        "status": "success",
+        "message": "Session is valid",
+        "username": current_user.username
+    })
