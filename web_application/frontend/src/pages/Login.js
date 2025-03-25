@@ -70,6 +70,10 @@ const Login = () => {
         }
         // User is verified, proceed with login
         localStorage.setItem('authToken', data.token);
+        // Also store the username if available in the response
+        if (data.username) {
+          localStorage.setItem('username', data.username);
+        }
         navigate('/');
       } else {
         setErrors({ login: data.error });

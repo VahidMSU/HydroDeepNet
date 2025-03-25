@@ -42,6 +42,9 @@ export const verifyEmail = (data) => api.post('/verify', data);
 export const getUserDashboard = () => api.get('/user_dashboard');
 export const getUserFiles = (subdir = '') => api.get('/user_files', { params: { subdir } });
 
+// User information
+export const validateSession = () => api.get('/validate-session');
+
 // Visualizations
 export const getOptions = () => api.get('/get_options');
 export const getVisualizations = (name, ver, variable) =>

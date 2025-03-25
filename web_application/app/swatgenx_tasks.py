@@ -1,8 +1,13 @@
 import logging
 import os
 import sys
+import traceback
 from celery import shared_task
 from app.utils import single_model_creation, LoggerSetup
+from app.emailex import send_model_completion_email
+from app.models import User
+from flask import current_app
+from app.extensions import db
 
 # Set up logging
 log_dir = "/data/SWATGenXApp/codes/web_application/logs"
@@ -38,8 +43,46 @@ def create_model_task(self, username, site_no, ls_resolution, dem_resolution):
     
     try:
         # Direct function call (runs as celery worker user)
-        single_model_creation(username, site_no, ls_resolution, dem_resolution)
+        model_result = single_model_creation(username, site_no, ls_resolution, dem_resolution)
         logger.info(f"Model created successfully for user {username}, site {site_no}")
+        
+        # Prepare model info for email
+        model_info = {
+            "Site Number": site_no,
+            "LS Resolution": ls_resolution,
+            "DEM Resolution": dem_resolution,
+            "Creation Date": self.request.id  # Using task ID as a unique identifier
+        }
+        
+        # Find user's email
+        try:
+            # Since we're in a Celery task, we need to create application context
+            # Import what we need for this section
+            from flask import Flask
+            from app import create_app
+            
+            app = create_app()
+            with app.app_context():
+                user = User.query.filter_by(username=username).first()
+                if user and user.email:
+                    # Send email notification
+                    email_sent = send_model_completion_email(
+                        username, 
+                        user.email, 
+                        site_no, 
+                        model_info
+                    )
+                    if email_sent:
+                        logger.info(f"Model completion email sent to {user.email}")
+                    else:
+                        logger.warning(f"Failed to send model completion email to {user.email}")
+                else:
+                    logger.error(f"Could not find email for user {username}")
+        except Exception as email_error:
+            logger.error(f"Error sending model completion email: {str(email_error)}")
+            logger.error(traceback.format_exc())
+            # We don't raise this exception since the model was created successfully
+        
         return {"status": "success", "message": "Model created successfully"}
     except Exception as e:
         logger.error(f"Error creating model: {str(e)}")

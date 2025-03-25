@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import SessionChecker from '../components/SessionChecker';
+import UserInfo from '../components/UserInfo';
 import {
   Drawer,
   List,
@@ -93,6 +94,10 @@ const Layout = ({ children }) => {
             >
               HydroDeepNet
             </Typography>
+
+            {/* Add UserInfo component here */}
+            <UserInfo />
+
             <List>
               {[
                 { text: 'Home', icon: <HomeIcon />, path: '/' },
