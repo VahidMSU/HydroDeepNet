@@ -2,12 +2,14 @@ from flask import Blueprint, jsonify, request, current_app
 from flask_login import current_user
 import pandas as pd
 import ast
+from datetime import datetime  # Add this import for timestamp creation
 from app.decorators import conditional_login_required, conditional_verified_required
 from app.utils import (find_station, check_existing_models, get_huc12_geometries,
                       get_huc12_streams_geometries, get_huc12_lakes_geometries)
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 from app.extensions import csrf
 import geopandas as gpd
+from app.emailex import send_model_start_email
 
 model_bp = Blueprint('model', __name__)
 
@@ -190,6 +192,36 @@ def model_settings():
                 )
                 
                 current_app.logger.info(f"Model creation task {task.id} scheduled successfully")
+                
+                # Send email notification for task start
+                try:
+                    # Prepare model info for email
+                    model_info = {
+                        "Site Number": site_no,
+                        "LS Resolution": ls_resolution,
+                        "DEM Resolution": dem_resolution,
+                        "Request Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    
+                    # Send the email notification
+                    if current_user.email:
+                        email_sent = send_model_start_email(
+                            current_user.username,
+                            current_user.email,
+                            site_no,
+                            model_info,
+                            task.id
+                        )
+                        if email_sent:
+                            current_app.logger.info(f"Model start email sent to {current_user.email}")
+                        else:
+                            current_app.logger.warning(f"Failed to send model start email to {current_user.email}")
+                    else:
+                        current_app.logger.warning(f"No email address found for user {current_user.username}")
+                except Exception as email_error:
+                    current_app.logger.error(f"Error sending model start email: {str(email_error)}")
+                    # Continue with the response even if email fails
+                
                 response = jsonify({
                     "status": "success", 
                     "message": "Model creation started",
