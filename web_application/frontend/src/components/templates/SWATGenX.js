@@ -16,6 +16,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import ModelSettingsForm from '../forms/SWATGenX.js';
 import EsriMap from '../EsriMap.js';
+import SearchForm from '../SearchForm';
 import {
   Container,
   Header,
@@ -63,6 +64,8 @@ const SWATGenXTemplate = () => {
   const [stationPoints, setStationPoints] = useState([]);
   const [mapSelectionLoading, setMapSelectionLoading] = useState(false);
   const [selectedStationOnMap, setSelectedStationOnMap] = useState(null);
+  const [mapSelections, setMapSelections] = useState([]);
+  const [drawingMode, setDrawingMode] = useState(false);
 
   // Fetch station data effect
   useEffect(() => {
@@ -114,18 +117,55 @@ const SWATGenXTemplate = () => {
   };
 
   const handleStationSelectFromMap = async (stationAttributes) => {
+    console.log('Station selected from map:', stationAttributes);
+    if (!stationAttributes || !stationAttributes.SiteNumber) {
+      console.error('Invalid station attributes:', stationAttributes);
+      return;
+    }
+
     setSelectedStationOnMap(stationAttributes);
+    // Set the selected station as the only item in map selections
+    setMapSelections([
+      {
+        SiteNumber: stationAttributes.SiteNumber,
+        SiteName: stationAttributes.SiteName,
+      },
+    ]);
     // Fetch station details just like we would do from search
     await handleStationSelect(stationAttributes.SiteNumber);
+  };
+
+  const handleDrawComplete = (selectedStations) => {
+    // Update map selections with the stations within the drawn polygon
+    setMapSelections(selectedStations);
+    setDrawingMode(false); // Exit drawing mode after selection
+
+    // If only one station was selected, fetch its details
+    if (selectedStations.length === 1) {
+      handleStationSelect(selectedStations[0].SiteNumber);
+    } else if (selectedStations.length > 1) {
+      // If multiple stations, clear current selection but keep the list
+      setStationData(null);
+      setStationInput('');
+      // Show feedback to user about multiple stations
+      setFeedbackMessage(`${selectedStations.length} stations selected. Choose one to continue.`);
+      setFeedbackType('info');
+    }
   };
 
   const handleStationSelect = async (stationNumber) => {
     setLoading(true);
     try {
       const response = await fetch(`/api/get_station_characteristics?station=${stationNumber}`);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
       const data = await response.json();
       setStationData(data);
       setStationInput(stationNumber);
+      // Clear any previous feedback
+      setFeedbackMessage('');
+      setFeedbackType('');
     } catch (error) {
       console.error('Error fetching station details:', error);
       setFeedbackMessage('Failed to fetch station details: ' + error.message);
@@ -186,10 +226,17 @@ const SWATGenXTemplate = () => {
 
   // Switch between search and map tabs
   const handleTabChange = (tab) => {
+    console.log(`Changing tab from ${selectionTab} to ${tab}`);
     setSelectionTab(tab);
+
     // Reset selection state when switching tabs
     if (tab === 'search' && selectedStationOnMap) {
       setSelectedStationOnMap(null);
+    }
+
+    // Force disable drawing mode when switching away from map
+    if (tab !== 'map' && drawingMode) {
+      setDrawingMode(false);
     }
   };
 
@@ -278,29 +325,40 @@ const SWATGenXTemplate = () => {
                 <StepText active={currentStep === 2}>Model Settings</StepText>
               </StepIndicator>
 
-              <ModelSettingsForm
-                currentStep={currentStep}
-                stationList={stationList}
-                stationInput={stationInput}
-                setStationInput={setStationInput}
-                stationData={stationData}
-                setStationData={setStationData}
-                lsResolution={lsResolution}
-                setLsResolution={setLsResolution}
-                demResolution={demResolution}
-                setDemResolution={setDemResolution}
-                calibrationFlag={calibrationFlag}
-                setCalibrationFlag={setCalibrationFlag}
-                sensitivityFlag={sensitivityFlag}
-                setSensitivityFlag={setSensitivityFlag}
-                validationFlag={validationFlag}
-                setValidationFlag={setValidationFlag}
-                handleNextStep={handleNextStep}
-                handlePreviousStep={handlePreviousStep}
-                handleSubmit={handleSubmit}
-                loading={loading}
-                setLoading={setLoading}
-              />
+              {currentStep === 1 && selectionTab === 'map' ? (
+                <SearchForm
+                  setStationData={setStationData}
+                  setLoading={setLoading}
+                  mapSelections={mapSelections}
+                  setDrawingMode={setDrawingMode}
+                  drawingMode={drawingMode}
+                  handleStationSelect={handleStationSelect} // Pass this function for handling station selection
+                />
+              ) : (
+                <ModelSettingsForm
+                  currentStep={currentStep}
+                  stationList={stationList}
+                  stationInput={stationInput}
+                  setStationInput={setStationInput}
+                  stationData={stationData}
+                  setStationData={setStationData}
+                  lsResolution={lsResolution}
+                  setLsResolution={setLsResolution}
+                  demResolution={demResolution}
+                  setDemResolution={setDemResolution}
+                  calibrationFlag={calibrationFlag}
+                  setCalibrationFlag={setCalibrationFlag}
+                  sensitivityFlag={sensitivityFlag}
+                  setSensitivityFlag={setSensitivityFlag}
+                  validationFlag={validationFlag}
+                  setValidationFlag={setValidationFlag}
+                  handleNextStep={handleNextStep}
+                  handlePreviousStep={handlePreviousStep}
+                  handleSubmit={handleSubmit}
+                  loading={loading}
+                  setLoading={setLoading}
+                />
+              )}
 
               {feedbackMessage && (
                 <FeedbackMessage type={feedbackType}>
@@ -324,10 +382,62 @@ const SWATGenXTemplate = () => {
               lakesGeometries={stationData?.lakes_geometries || []}
               stationPoints={stationPoints}
               onStationSelect={handleStationSelectFromMap}
-              showStations={selectionTab === 'map' && currentStep === 1}
+              onDrawComplete={handleDrawComplete}
+              showStations={selectionTab === 'map'} // This should be correct based on selectionTab
               selectedStationId={selectedStationOnMap?.SiteNumber}
+              drawingMode={drawingMode}
+              key={`map-${selectionTab}`} // Add a key to force remount when tab changes
             />
           </MapInnerContainer>
+
+          {/* Status indicator for map selection mode */}
+          {selectionTab === 'map' && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                fontSize: '14px',
+                zIndex: 1000,
+              }}
+            >
+              {mapSelectionLoading
+                ? 'Loading stations...'
+                : drawingMode
+                  ? 'Drawing selection tool active'
+                  : 'Click on a station to select it'}
+            </div>
+          )}
+
+          {/* Add debugging info in development */}
+          {process.env.NODE_ENV !== 'production' && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: '30px',
+                right: '10px',
+                background: 'rgba(255,255,255,0.8)',
+                padding: '8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                maxWidth: '250px',
+              }}
+            >
+              <p>
+                <strong>Map Selection Debug:</strong>
+              </p>
+              <p>Selection Tab: {selectionTab}</p>
+              <p>Showing Stations: {selectionTab === 'map' && currentStep === 1 ? 'Yes' : 'No'}</p>
+              <p>Drawing Mode: {drawingMode ? 'On' : 'Off'}</p>
+              <p>Station Count: {stationPoints.length}</p>
+              <p>Selected: {selectedStationOnMap?.SiteNumber || 'None'}</p>
+            </div>
+          )}
         </MapContainer>
       </Content>
     </Container>
