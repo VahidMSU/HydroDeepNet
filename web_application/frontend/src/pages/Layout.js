@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import SessionChecker from '../components/SessionChecker';
 import {
   Drawer,
   List,
@@ -64,6 +65,9 @@ const Layout = ({ children }) => {
         color: 'white',
       }}
     >
+      {/* Add SessionChecker component */}
+      {localStorage.getItem('authToken') && <SessionChecker />}
+
       {localStorage.getItem('authToken') && (
         <Drawer
           variant="permanent"

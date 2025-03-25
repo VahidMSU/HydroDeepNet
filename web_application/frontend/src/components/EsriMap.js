@@ -17,6 +17,7 @@ const EsriMap = ({
   const viewRef = useRef(null);
   const sketchRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoadingGeometries, setIsLoadingGeometries] = useState(false);
 
   // Initial map setup
   useEffect(() => {
@@ -218,7 +219,12 @@ const EsriMap = ({
           view.on('click', (event) => {
             // Only handle clicks if we're showing stations and not in drawing mode
             if (!showStations || drawingMode) {
-              console.log('Click ignored: showStations:', showStations, 'drawingMode:', drawingMode);
+              console.log(
+                'Click ignored: showStations:',
+                showStations,
+                'drawingMode:',
+                drawingMode,
+              );
               return;
             }
 
@@ -229,64 +235,65 @@ const EsriMap = ({
             };
 
             // Use hitTest with specific options to better detect station points
-            view.hitTest(screenPoint, {
-              include: [stationLayer],
-              tolerance: 10  // Increase hit tolerance to make selection easier
-            }).then((response) => {
-              console.log('Hit test results:', response.results?.length || 0);
-              
-              // Filter for graphics from the station layer
-              const stationGraphics = response.results?.filter(
-                (result) => result.graphic.layer === stationLayer
-              );
+            view
+              .hitTest(screenPoint, {
+                include: [stationLayer],
+                tolerance: 10, // Increase hit tolerance to make selection easier
+              })
+              .then((response) => {
+                console.log('Hit test results:', response.results?.length || 0);
 
-              console.log('Station graphics found:', stationGraphics?.length || 0);
+                // Filter for graphics from the station layer
+                const stationGraphics = response.results?.filter(
+                  (result) => result.graphic.layer === stationLayer,
+                );
 
-              if (stationGraphics && stationGraphics.length > 0) {
-                const clickedStation = stationGraphics[0].graphic.attributes;
-                console.log('Station selected:', clickedStation);
-                onStationSelect(clickedStation);
-              } else {
-                // If no direct hit, try finding the closest station within a threshold
-                findClosestStation(event.mapPoint, 0.05);  // ~5km at equator
-              }
-            });
+                console.log('Station graphics found:', stationGraphics?.length || 0);
+
+                if (stationGraphics && stationGraphics.length > 0) {
+                  const clickedStation = stationGraphics[0].graphic.attributes;
+                  console.log('Station selected:', clickedStation);
+                  onStationSelect(clickedStation);
+                } else {
+                  // If no direct hit, try finding the closest station within a threshold
+                  findClosestStation(event.mapPoint, 0.05); // ~5km at equator
+                }
+              });
           });
 
           // Add helper function to find closest station
           const findClosestStation = (clickPoint, thresholdDegrees) => {
             if (!stationPoints || stationPoints.length === 0) return;
-            
+
             // Convert to geographic coordinates if needed
             const geographic = webMercatorUtils.webMercatorToGeographic(clickPoint);
             const clickLat = geographic ? geographic.latitude : clickPoint.latitude;
             const clickLon = geographic ? geographic.longitude : clickPoint.longitude;
-            
+
             let closestStation = null;
             let minDistance = Number.MAX_VALUE;
-            
+
             // Find closest station
-            stationPoints.forEach(station => {
+            stationPoints.forEach((station) => {
               if (station.geometry && station.geometry.coordinates) {
                 const [stationLon, stationLat] = station.geometry.coordinates;
-                
+
                 // Simple distance calculation (not accounting for Earth's curvature)
                 const distance = Math.sqrt(
-                  Math.pow(clickLat - stationLat, 2) + 
-                  Math.pow(clickLon - stationLon, 2)
+                  Math.pow(clickLat - stationLat, 2) + Math.pow(clickLon - stationLon, 2),
                 );
-                
+
                 if (distance < minDistance && distance < thresholdDegrees) {
                   minDistance = distance;
                   closestStation = {
                     SiteNumber: station.properties.SiteNumber,
                     SiteName: station.properties.SiteName,
-                    id: station.properties.id
+                    id: station.properties.id,
                   };
                 }
               }
             });
-            
+
             if (closestStation) {
               console.log('Closest station found:', closestStation);
               onStationSelect(closestStation);
@@ -329,6 +336,9 @@ const EsriMap = ({
     if (!viewRef.current || !isLoaded) {
       return;
     }
+
+    // Set loading state to true when starting to load geometries
+    setIsLoadingGeometries(true);
 
     const { view, polygonLayer, streamLayer, lakeLayer } = viewRef.current;
     polygonLayer.removeAll();
@@ -398,8 +408,14 @@ const EsriMap = ({
 
         if (allGraphics.length > 0) {
           view.when(() => {
-            view.goTo(allGraphics);
+            view.goTo(allGraphics).then(() => {
+              // Set loading state to false after geometries are loaded and map is zoomed
+              setIsLoadingGeometries(false);
+            });
           });
+        } else {
+          // If no graphics to load, still set loading to false
+          setIsLoadingGeometries(false);
         }
       },
     );
@@ -467,30 +483,30 @@ const EsriMap = ({
           view.goTo(stationGraphics, { animate: false });
         });
       }
-      
+
       // Add custom pointer cursor when hovering over stations
       if (view && stationLayer) {
-        view.whenLayerView(stationLayer).then(layerView => {
+        view.whenLayerView(stationLayer).then((layerView) => {
           let highlightedFeature = null;
-          
+
           // Watch for pointer move over the layer
-          view.on("pointer-move", (event) => {
-            view.hitTest(event).then(response => {
+          view.on('pointer-move', (event) => {
+            view.hitTest(event).then((response) => {
               // Remove any existing highlight
               if (highlightedFeature) {
                 highlightedFeature.remove();
                 highlightedFeature = null;
-                view.container.style.cursor = "default";
+                view.container.style.cursor = 'default';
               }
-              
+
               const stationHits = response.results?.filter(
-                result => result.graphic.layer === stationLayer
+                (result) => result.graphic.layer === stationLayer,
               );
-              
+
               if (stationHits && stationHits.length > 0) {
                 // Change cursor to pointer when over a station
-                view.container.style.cursor = "pointer";
-                
+                view.container.style.cursor = 'pointer';
+
                 // Optionally highlight the station
                 highlightedFeature = layerView.highlight(stationHits[0].graphic);
               }
@@ -517,24 +533,41 @@ const EsriMap = ({
           pointerEvents: 'none',
         }}
       />
-      {drawingMode && (
+
+      {/* Loading spinner overlay */}
+      {isLoadingGeometries && (
         <div
           style={{
             position: 'absolute',
-            top: '60px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: 'rgba(255,255,255,0.9)',
-            padding: '8px 15px',
-            borderRadius: '20px',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(255,255,255,0.5)',
             zIndex: 1000,
-            pointerEvents: 'none',
-            fontWeight: 'bold',
-            color: '#3273dc',
           }}
         >
-          Draw a polygon to select stations
+          <div
+            style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              border: '6px solid #f3f3f3',
+              borderTop: '6px solid #3273dc',
+              animation: 'spin 1s linear infinite',
+            }}
+          />
+          <style>
+            {`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}
+          </style>
         </div>
       )}
     </>
