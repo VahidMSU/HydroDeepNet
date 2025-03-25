@@ -8,7 +8,4 @@ npm prune
 echo "Building the application..."
 npm run build
 
-bash check_services.sh
-bash check_static_dirs.sh
-
-npm start &
+npm start

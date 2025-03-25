@@ -55,8 +55,10 @@ def send_model_completion_email(username, email, site_no, model_info=None):
     sender = "no-reply@ciwre.msu.edu"
     
     try:
+        from app.utils import find_VPUID
         from app.model_checks import check_model_completion, check_qswat_model_files, check_meterological_data
     except:
+        from utils import find_VPUID
         from model_checks import check_model_completion, check_qswat_model_files, check_meterological_data
 
     swat_model_exe_flag, swat_message = check_model_completion(username, site_no)
@@ -70,7 +72,7 @@ def send_model_completion_email(username, email, site_no, model_info=None):
     body = f"""
 Hello {username},
 
-Your SWAT model for site {site_no} has been created and is now available.
+Your SWAT model for site {find_VPUID(site_no)}/huc12/{site_no} has been created and is now available.
 
 Model Status Check Results:
 1. SWAT Model Execution: {"✅ Successful" if swat_model_exe_flag else "❌ Failed"} - {swat_message}
@@ -130,12 +132,13 @@ def send_model_start_email(username, email, site_no, model_info=None, task_id=No
     
     # Create the email content
     subject = f"SWAT Model Creation Started - Site {site_no}"
-    
+    from app.utils import find_VPUID
+
     # Create a message body
     body = f"""
 Hello {username},
 
-Your SWAT model creation for site {site_no} has been started and is now being processed.
+Your SWAT model creation for site {username}/{find_VPUID(site_no)}/huc12/{site_no} has been started and is now being processed.
 
 This process can take some time to complete. You will receive another email when the model creation is finished.
 
