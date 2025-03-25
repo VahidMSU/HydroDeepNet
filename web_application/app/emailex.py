@@ -54,6 +54,15 @@ def send_model_completion_email(username, email, site_no, model_info=None):
     # Define the sender
     sender = "no-reply@ciwre.msu.edu"
     
+    try:
+        from app.model_checks import check_model_completion, check_qswat_model_files, check_meterological_data
+    except:
+        from model_checks import check_model_completion, check_qswat_model_files, check_meterological_data
+
+    swat_model_exe_flag, swat_message = check_model_completion(username, site_no)
+    qswat_plus_outputs_flag, qswat_message = check_qswat_model_files(username, site_no)
+    meterological_data_flag, met_message = check_meterological_data(username, site_no)
+
     # Create the email content
     subject = f"SWAT Model Creation Complete - Site {site_no}"
     
@@ -61,7 +70,14 @@ def send_model_completion_email(username, email, site_no, model_info=None):
     body = f"""
 Hello {username},
 
-Your SWAT model for site {site_no} has been successfully created and is now available.
+Your SWAT model for site {site_no} has been created and is now available.
+
+Model Status Check Results:
+1. SWAT Model Execution: {"✅ Successful" if swat_model_exe_flag else "❌ Failed"} - {swat_message}
+2. QSWAT+ Processing: {"✅ Successful" if qswat_plus_outputs_flag else "❌ Failed"} - {qswat_message}
+3. Meteorological Data: {"✅ Successful" if meterological_data_flag else "❌ Failed"} - {met_message}
+
+Overall Status: {"✅ All checks passed" if all([swat_model_exe_flag, qswat_plus_outputs_flag, meterological_data_flag]) else "⚠️ Some checks failed"}
 
 You can access your model files through the User Dashboard in the HydroDeepNet application.
 
