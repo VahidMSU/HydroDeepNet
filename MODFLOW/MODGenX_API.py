@@ -143,9 +143,9 @@ def create_modflow_model(username, NAME, VPUID=None, BASE_PATH=None, LEVEL=None,
 if __name__ == '__main__':
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Create MODFLOW model with SWATGenX')
-    parser.add_argument('--username', required=False, help='Username for file paths', default='vahidr32')
-    parser.add_argument('--name', required=False, help='Name of the model (usually HUC ID)', default="04112500")
-    parser.add_argument('--vpuid', help='VPUID identifier, will be derived from NAME if not provided', default="0405")
+    parser.add_argument('--username', required=False, help='Username for file paths', default='admin')
+    parser.add_argument('--name', required=False, help='Name of the model (usually HUC ID)', default="05536265")
+    parser.add_argument('--vpuid', help='VPUID identifier, will be derived from NAME if not provided', default="0712")
     parser.add_argument('--base_path', default="/data/SWATGenXApp/GenXAppData/", help='Base path for data')
     parser.add_argument('--level', default='huc12', help='Level of analysis (huc12, huc8, etc.)')
     parser.add_argument('--resolution', type=int, default=250, help='Resolution in meters')

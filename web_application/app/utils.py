@@ -319,7 +319,7 @@ def find_VPUID(station_no):
     ].huc_cd.values[0][:4]
 
 
-def single_model_creation(username, site_no, ls_resolution, dem_resolution):
+def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolution):
     
     """ 
     Create a SWATGenX model for a single USGS site for a given user setting.

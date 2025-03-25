@@ -3,11 +3,14 @@ import os
 import sys
 import traceback
 from celery import shared_task
-from app.utils import single_model_creation, LoggerSetup
+from app.utils import single_swatplus_model_creation, LoggerSetup
 from app.emailex import send_model_completion_email
 from app.models import User
 from flask import current_app
 from app.extensions import db
+from app.utils import find_VPUID
+from app.check_MODFLOW_coverage import MODFLOW_coverage
+from MODFLOW.MODGenX_API import create_modflow_model
 
 # Set up logging
 log_dir = "/data/SWATGenXApp/codes/web_application/logs"
@@ -34,17 +37,49 @@ except Exception as e:
              autoretry_for=(Exception,), 
              retry_backoff=True, 
              retry_kwargs={'max_retries': 3})
+
+
 def create_model_task(self, username, site_no, ls_resolution, dem_resolution):
     """
     Task to create a SWAT model
     """
     logger.info("AppManager initialized!")
-    logger.info(f"Creating model for user {username}, site {site_no}")
+
+    VPUID = find_VPUID(site_no)
+    LEVEL = 'huc12'
+
+    logger.info(f"Creating model for user {username}/{VPUID}/{LEVEL}/{site_no}")
     
     try:
         # Direct function call (runs as celery worker user)
-        model_result = single_model_creation(username, site_no, ls_resolution, dem_resolution)
-        logger.info(f"Model created successfully for user {username}, site {site_no}")
+        single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolution)
+
+        logger.info(f"SWATGenX has finished processing for user {username}, site {VPUID}/{LEVEL}/{site_no}")
+
+
+        RESOLUTION = ls_resolution  ### 250
+        MODEL_NAME = f'MODFLOW_{RESOLUTION}m'
+        SWAT_MODEL_NAME = 'SWAT_MODEL_Web_Application'
+        
+        # Import the correct function from MODGenX_API
+        
+        if MODFLOW_coverage(site_no):
+            try:
+                # Call create_modflow_model with all required parameters
+                create_modflow_model(
+                    username=username,
+                    NAME=site_no, 
+                    VPUID=VPUID,
+                    LEVEL=LEVEL,
+                    RESOLUTION=RESOLUTION,
+                    MODEL_NAME=MODEL_NAME,
+                    ML=False,  # Set default value for ML parameter
+                    SWAT_MODEL_NAME=SWAT_MODEL_NAME
+                )
+                logger.info(f"MODGenX has finished processing for user {username}, site {VPUID}/{LEVEL}/{site_no}")
+            except Exception as modflow_error:
+                logger.error(f"Error creating MODFLOW model: {str(modflow_error)}")
+
         
         # Prepare model info for email
         model_info = {

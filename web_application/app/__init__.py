@@ -17,10 +17,6 @@ from flask_socketio import SocketIO, emit
 from redis import Redis, ConnectionError
 from app.routes_debug import register_debug_routes  # Add this import
 
-# Ensure the system path includes SWATGenX
-sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
-sys.path.append('/data/SWATGenXApp/codes/AI_agent') 
-
 # Create socketio instance at module level to export it
 socketio = SocketIO(cors_allowed_origins="*")
 
