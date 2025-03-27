@@ -5,9 +5,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+import shutil
 
-def create_report(output_path='./Michigan/report.html', start_year=2000, end_year=2005, 
-                 var="perc", precip_threshold=10, include_statistics=False, statistics_results=None):
+def create_report(output_path='./Michigan/reports/default/report.html', start_year=2000, end_year=2005, 
+                 var="perc", precip_threshold=10, include_statistics=False, statistics_results=None,
+                 include_soil_analysis=False, soil_results=None):
     """
     Generate an HTML report with analysis results and visualizations.
     
@@ -25,49 +27,114 @@ def create_report(output_path='./Michigan/report.html', start_year=2000, end_yea
         Whether to include detailed statistics in the report
     statistics_results : dict
         Dictionary with statistics results
+    include_soil_analysis : bool
+        Whether to include soil property analysis
+    soil_results : dict
+        Dictionary with soil analysis results
     """
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # Determine report directory structure
+    report_dir = os.path.dirname(output_path)
+    figs_dir = os.path.join(report_dir, 'figs')
+    soil_htmls_dir = os.path.join(report_dir, 'soil_htmls')
     
-    # Find all generated images - update to new filename pattern
-    cluster_images = glob.glob(f'./Michigan/figs/recharge_water_input_ratio_{start_year}_{end_year-1}_cluster*.png')
-    all_image = glob.glob(f'./Michigan/figs/recharge_water_input_ratio_{start_year}_{end_year-1}_all.png')
+    # Ensure all directories exist
+    os.makedirs(report_dir, exist_ok=True)
+    os.makedirs(figs_dir, exist_ok=True)
+    os.makedirs(soil_htmls_dir, exist_ok=True)
     
-    # If new pattern doesn't find files, try the old pattern as fallback
-    if not cluster_images:
-        cluster_images = glob.glob(f'./Michigan/figs/recharge_percolation_ratio_{start_year}_{end_year-1}_cluster*.png')
-    if not all_image:
-        all_image = glob.glob(f'./Michigan/figs/recharge_percolation_ratio_{start_year}_{end_year-1}_all.png')
+    print(f"Creating report in {report_dir}")
     
-    cluster_map = glob.glob('./Michigan/figs/clusters.png')
-    michigan_map = glob.glob('./Michigan/figs/michigan_clusters_map.png')
+    # Find and copy all generated images from the Michigan/figs directory to report figs directory
+    src_figs_dir = './Michigan/figs'
+    if os.path.exists(src_figs_dir):
+        # Create patterns for finding files
+        cluster_pattern = f'recharge_water_input_ratio_{start_year}_{end_year-1}_cluster*.png'
+        all_pattern = f'recharge_water_input_ratio_{start_year}_{end_year-1}_all.png'
+        
+        # Find files matching patterns
+        cluster_images_src = glob.glob(os.path.join(src_figs_dir, cluster_pattern))
+        all_image_src = glob.glob(os.path.join(src_figs_dir, all_pattern))
+        cluster_map_src = glob.glob(os.path.join(src_figs_dir, 'clusters.png'))
+        michigan_map_src = glob.glob(os.path.join(src_figs_dir, 'michigan_clusters_map.png'))
+        
+        # If new pattern doesn't find files, try the old pattern as fallback
+        if not cluster_images_src:
+            cluster_pattern = f'recharge_percolation_ratio_{start_year}_{end_year-1}_cluster*.png'
+            cluster_images_src = glob.glob(os.path.join(src_figs_dir, cluster_pattern))
+        if not all_image_src:
+            all_pattern = f'recharge_percolation_ratio_{start_year}_{end_year-1}_all.png'
+            all_image_src = glob.glob(os.path.join(src_figs_dir, all_pattern))
+            
+        # Copy files to report directory
+        for src_file in cluster_images_src + all_image_src + cluster_map_src + michigan_map_src:
+            if os.path.exists(src_file):
+                dest_file = os.path.join(figs_dir, os.path.basename(src_file))
+                shutil.copy2(src_file, dest_file)
+                print(f"Copied {src_file} to {dest_file}")
     
-    # Find statistics plots if available
+    # Create relative paths for images (for HTML)
+    cluster_images = [os.path.join("figs", os.path.basename(img)) for img in glob.glob(os.path.join(figs_dir, f"*cluster*.png"))]
+    all_image = [os.path.join("figs", os.path.basename(img)) for img in glob.glob(os.path.join(figs_dir, f"*all.png"))]
+    cluster_map = [os.path.join("figs", os.path.basename(img)) for img in glob.glob(os.path.join(figs_dir, "clusters.png"))]
+    michigan_map = [os.path.join("figs", os.path.basename(img)) for img in glob.glob(os.path.join(figs_dir, "michigan_clusters_map.png"))]
+    
+    # Find statistics plots and copy if available
     stats_plots = {}
     if include_statistics:
-        stats_plots['boxplot'] = glob.glob('./Michigan/figs/annual_variability_boxplot.png')
-        stats_plots['seasonal'] = glob.glob('./Michigan/figs/seasonal_comparison.png')
-        stats_plots['annual'] = glob.glob('./Michigan/figs/annual_trends.png')
-        stats_plots['cluster_comparison'] = glob.glob('./Michigan/figs/cluster_seasonal_comparison.png')
-        stats_plots['heatmap'] = glob.glob('./Michigan/figs/cluster_season_heatmap.png')
+        stats_file_patterns = {
+            'boxplot': 'annual_variability_boxplot.png',
+            'seasonal': 'seasonal_comparison.png',
+            'annual': 'annual_trends.png',
+            'cluster_comparison': 'cluster_seasonal_comparison.png',
+            'heatmap': 'cluster_season_heatmap.png'
+        }
+        
+        for key, pattern in stats_file_patterns.items():
+            src_files = glob.glob(os.path.join(src_figs_dir, pattern))
+            if src_files:
+                for src_file in src_files:
+                    dest_file = os.path.join(figs_dir, os.path.basename(src_file))
+                    shutil.copy2(src_file, dest_file)
+                    stats_plots[key] = [os.path.join("figs", os.path.basename(src_file))]
     
-    # Convert image paths to relative paths (keep "figs/" in path)
-    cluster_images = [os.path.join("figs", os.path.basename(img)) for img in cluster_images]
-    all_image = [os.path.join("figs", os.path.basename(img)) for img in all_image]
-    cluster_map = [os.path.join("figs", os.path.basename(img)) for img in cluster_map]
-    michigan_map = [os.path.join("figs", os.path.basename(img)) for img in michigan_map]
-    
-    # Convert statistics plots paths as well
-    if include_statistics:
-        for key in stats_plots:
-            stats_plots[key] = [os.path.join("figs", os.path.basename(img)) for img in stats_plots[key]]
+    # Handle soil analysis files
+    soil_plots = {}
+    if include_soil_analysis and soil_results and 'visualizations' in soil_results:
+        # Copy soil visualization files
+        soil_visuals = soil_results['visualizations']
+        for visual_type, src_path in soil_visuals.items():
+            if os.path.exists(os.path.join('./Michigan', src_path)):
+                # Determine source and destination paths
+                src_file = os.path.join('./Michigan', src_path)
+                # All visualization files go to figs directory
+                dest_file = os.path.join(figs_dir, os.path.basename(src_file))
+                shutil.copy2(src_file, dest_file)
+                # Update path for HTML reference
+                soil_plots[visual_type] = os.path.join("figs", os.path.basename(src_file))
+        
+        # Copy soil HTML tables
+        if 'tables' in soil_results:
+            for table_type, src_path in soil_results['tables'].items():
+                if os.path.exists(os.path.join('./Michigan', src_path)):
+                    # Determine source and destination paths
+                    src_file = os.path.join('./Michigan', src_path)
+                    # HTML tables go to soil_htmls directory
+                    dest_file = os.path.join(soil_htmls_dir, os.path.basename(src_file))
+                    shutil.copy2(src_file, dest_file)
+                    # Update path reference
+                    soil_results['tables'][table_type] = os.path.join("soil_htmls", os.path.basename(src_file))
     
     # Extract basic stats from images if possible
     cluster_stats = {}
     try:
         # For each cluster, try to extract some metrics from the images
         for i in range(5):
-            img_path = f'./Michigan/figs/recharge_percolation_ratio_{start_year}_{end_year-1}_cluster{i}.png'
+            # Look for images in the new report's figs directory
+            img_path = os.path.join(figs_dir, f'recharge_water_input_ratio_{start_year}_{end_year-1}_cluster{i}.png')
+            # Fallback to old naming pattern
+            if not os.path.exists(img_path):
+                img_path = os.path.join(figs_dir, f'recharge_percolation_ratio_{start_year}_{end_year-1}_cluster{i}.png')
+            
             if os.path.exists(img_path):
                 img = Image.open(img_path)
                 width, height = img.size
@@ -120,6 +187,13 @@ def create_report(output_path='./Michigan/report.html', start_year=2000, end_yea
             border-radius: 8px;
             border-left: 4px solid #2980b9;
         }}
+        .soil-section {{
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }}
         img {{
             max-width: 100%;
             height: auto;
@@ -159,6 +233,32 @@ def create_report(output_path='./Michigan/report.html', start_year=2000, end_yea
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #eee;
+        }}
+        .nav-tabs {{
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            border-bottom: 1px solid #ddd;
+        }}
+        .nav-tabs li {{
+            margin-right: 10px;
+        }}
+        .nav-tabs a {{
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #555;
+            background-color: #f5f5f5;
+            border-radius: 5px 5px 0 0;
+            transition: background-color 0.3s;
+        }}
+        .nav-tabs a:hover {{
+            background-color: #e0e0e0;
+        }}
+        .nav-tabs a.active {{
+            background-color: #3498db;
+            color: white;
         }}
     </style>
 </head>
@@ -247,6 +347,189 @@ def create_report(output_path='./Michigan/report.html', start_year=2000, end_yea
         
         # Close the section
         html_content += """
+    </div>
+"""
+    
+    # Add soil analysis section if requested
+    if include_soil_analysis and soil_results and soil_results.get('visualizations'):
+        html_content += """
+    <div class="soil-section">
+        <h2>Soil Properties Analysis</h2>
+        <p>This section analyzes the soil properties of agricultural lands across different watershed clusters. 
+        Understanding soil characteristics is crucial for interpreting percolation patterns, as soil composition 
+        directly affects water movement through the subsurface.</p>
+        
+        <ul class="nav-tabs">
+            <li><a href="#soil-overview" class="active">Overview</a></li>
+            <li><a href="#soil-clusters">Cluster Comparison</a></li>
+            <li><a href="#soil-correlations">Property Correlations</a></li>
+            <li><a href="#soil-boxplots">Distribution Analysis</a></li>
+        </ul>
+        
+        <div id="soil-overview">
+            <h3>Soil Properties Overview</h3>
+            <p>The following analysis examines key soil properties in agricultural areas across all watershed clusters:</p>
+"""
+        
+        # Add soil tables if available
+        if 'tables' in soil_results:
+            overall_table_path = soil_results['tables'].get('overall')
+            if overall_table_path:
+                try:
+                    with open(os.path.join(report_dir, overall_table_path), 'r') as f:
+                        soil_table_html = f.read()
+                    
+                    html_content += f"""
+            <div class="table-container">
+                {soil_table_html}
+            </div>
+            <p>The table above summarizes the key soil properties across all agricultural areas in the analyzed watersheds.</p>
+"""
+                except Exception as e:
+                    print(f"Error including soil table: {e}")
+                    html_content += "<p>Soil properties table not available</p>"
+        
+        # Add soil heatmap visualization
+        if 'heatmap' in soil_plots:
+            heatmap_path = soil_plots['heatmap']
+            html_content += f"""
+            <h3>Soil Properties by Cluster</h3>
+            <div class="img-container">
+                <img src="{heatmap_path}" alt="Soil Properties Heatmap" style="max-width: 90%;" />
+            </div>
+            <p>This heatmap visualizes how different soil properties vary across the watershed clusters. Color intensity represents the mean value of each property within a cluster.</p>
+"""
+        
+        # Close soil overview and start cluster comparison
+        html_content += """
+        </div>
+        
+        <div id="soil-clusters" style="display: none;">
+            <h3>Cluster Comparison of Soil Properties</h3>
+            <p>The following visualization compares key soil properties across different watershed clusters:</p>
+"""
+        
+        # Add bar chart for cluster comparison
+        if 'bar_chart' in soil_plots:
+            bar_chart_path = soil_plots['bar_chart']
+            html_content += f"""
+            <div class="img-container">
+                <img src="{bar_chart_path}" alt="Soil Properties Cluster Comparison" style="max-width: 90%;" />
+            </div>
+            <p>The chart above compares key soil properties across the five watershed clusters. Error bars represent standard deviation within each cluster.</p>
+"""
+        
+        # Add comparison table if available
+        if 'tables' in soil_results and 'comparison' in soil_results['tables']:
+            comparison_table_path = soil_results['tables']['comparison']
+            try:
+                with open(os.path.join(report_dir, comparison_table_path), 'r') as f:
+                    comparison_table_html = f.read()
+                
+                html_content += f"""
+            <div class="table-container">
+                {comparison_table_html}
+            </div>
+            <p>This table provides a direct comparison of mean values for key soil properties across the five clusters.</p>
+"""
+            except Exception as e:
+                print(f"Error including comparison table: {e}")
+        
+        # Close cluster comparison and start correlations
+        html_content += """
+        </div>
+        
+        <div id="soil-correlations" style="display: none;">
+            <h3>Correlations Between Soil Properties</h3>
+            <p>Understanding the relationships between different soil properties can provide insights into soil behavior and water movement:</p>
+"""
+        
+        # Add correlation heatmap
+        if 'correlation' in soil_plots:
+            correlation_path = soil_plots['correlation']
+            html_content += f"""
+            <div class="img-container">
+                <img src="{correlation_path}" alt="Soil Properties Correlation" style="max-width: 85%;" />
+            </div>
+            <p>This correlation matrix shows the Pearson correlation coefficients between different soil properties. 
+            Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.</p>
+            
+            <h4>Key Insights from Correlation Analysis:</h4>
+            <ul>
+                <li>Clay and silt content often show negative correlation with hydraulic conductivity, affecting water movement</li>
+                <li>Organic carbon content typically correlates positively with available water capacity</li>
+                <li>Bulk density often shows negative correlation with organic carbon and porosity</li>
+            </ul>
+"""
+        else:
+            html_content += "<p>Correlation analysis not available</p>"
+        
+        # Close correlations and start boxplots
+        html_content += """
+        </div>
+        
+        <div id="soil-boxplots" style="display: none;">
+            <h3>Distribution of Soil Properties by Cluster</h3>
+            <p>The following boxplots show the distribution of key soil properties across different watershed clusters:</p>
+"""
+        
+        # Add boxplots for key properties
+        boxplot_keys = [k for k in soil_plots.keys() if k.startswith('boxplot_')]
+        if boxplot_keys:
+            for key in boxplot_keys[:3]:  # Limit to 3 boxplots to avoid overwhelming the report
+                boxplot_path = soil_plots[key]
+                html_content += f"""
+            <div class="img-container">
+                <img src="{boxplot_path}" alt="Soil Property Distribution" style="max-width: 80%;" />
+            </div>
+"""
+            
+            html_content += """
+            <p>These boxplots illustrate the median (center line), interquartile range (box), and range (whiskers) of values 
+            for soil properties within each cluster. Outliers are shown as individual points.</p>
+            
+            <h4>Interpretations for Water Movement:</h4>
+            <ul>
+                <li>Higher clay content generally leads to slower infiltration but better water retention</li>
+                <li>Higher sand content typically results in faster infiltration but lower water holding capacity</li>
+                <li>Organic matter improves soil structure and water holding capacity</li>
+                <li>Available water capacity directly affects plant water availability and indirectly influences percolation</li>
+            </ul>
+"""
+        else:
+            html_content += "<p>Distribution analysis not available</p>"
+        
+        # Close boxplots and add JavaScript for tab navigation
+        html_content += """
+        </div>
+        
+        <script>
+            // Simple tab navigation
+            document.addEventListener('DOMContentLoaded', function() {
+                const tabs = document.querySelectorAll('.nav-tabs a');
+                
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Hide all content
+                        document.querySelectorAll('[id^="soil-"]').forEach(content => {
+                            content.style.display = 'none';
+                        });
+                        
+                        // Remove active class
+                        tabs.forEach(t => {
+                            t.classList.remove('active');
+                        });
+                        
+                        // Show selected content and mark tab as active
+                        const targetId = this.getAttribute('href').substring(1);
+                        document.getElementById(targetId).style.display = 'block';
+                        this.classList.add('active');
+                    });
+                });
+            });
+        </script>
     </div>
 """
     
@@ -423,9 +706,14 @@ def create_report(output_path='./Michigan/report.html', start_year=2000, end_yea
         if statistics_results and 'tables' in statistics_results:
             # Annual statistics
             if 'annual' in statistics_results['tables'] and 'overall' in statistics_results['tables']['annual']:
-                annual_table_path = statistics_results['tables']['annual']['overall']
+                annual_table_path = os.path.join(soil_htmls_dir, os.path.basename(statistics_results['tables']['annual']['overall']))
+                # Copy the file if it exists
+                src_annual_table = os.path.join('./Michigan', statistics_results['tables']['annual']['overall'])
+                if os.path.exists(src_annual_table):
+                    shutil.copy2(src_annual_table, annual_table_path)
+                    
                 try:
-                    with open(os.path.join('./Michigan', annual_table_path), 'r') as f:
+                    with open(annual_table_path, 'r') as f:
                         annual_table_html = f.read()
                     
                     html_content += f"""
@@ -438,9 +726,14 @@ def create_report(output_path='./Michigan/report.html', start_year=2000, end_yea
             
             # Seasonal statistics
             if 'seasonal' in statistics_results['tables'] and 'overall' in statistics_results['tables']['seasonal']:
-                seasonal_table_path = statistics_results['tables']['seasonal']['overall']
+                seasonal_table_path = os.path.join(soil_htmls_dir, os.path.basename(statistics_results['tables']['seasonal']['overall']))
+                # Copy the file if it exists
+                src_seasonal_table = os.path.join('./Michigan', statistics_results['tables']['seasonal']['overall'])
+                if os.path.exists(src_seasonal_table):
+                    shutil.copy2(src_seasonal_table, seasonal_table_path)
+                    
                 try:
-                    with open(os.path.join('./Michigan', seasonal_table_path), 'r') as f:
+                    with open(seasonal_table_path, 'r') as f:
                         seasonal_table_html = f.read()
                     
                     html_content += f"""
@@ -466,6 +759,7 @@ def create_report(output_path='./Michigan/report.html', start_year=2000, end_yea
             <li>There is significant spatial variability across the watershed clusters, indicating that geographic location plays an important role in determining the hydrological behavior.</li>
             <li>Temporal patterns show seasonal variations in the percolation to precipitation ratio, with higher values typically observed during certain months.</li>
             <li>The width of the confidence intervals indicates the level of uncertainty in the estimates, which varies across different clusters.</li>
+            {"<li>Soil properties, particularly texture and organic matter content, significantly influence percolation patterns across the watersheds.</li>" if include_soil_analysis else ""}
         </ul>
         
         <p>These findings can help inform water resource management strategies and agricultural practices in different regions of Michigan.</p>
@@ -494,9 +788,13 @@ if __name__ == "__main__":
     var = "perc"
     precip_threshold = 10
     
+    # Create a timestamped report name
+    report_name = f"report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    output_dir = f'./Michigan/reports/{report_name}'
+    
     # Generate report
     report_path = create_report(
-        output_path='./Michigan/report.html',
+        output_path=os.path.join(output_dir, 'report.html'),
         start_year=start_year,
         end_year=end_year,
         var=var,

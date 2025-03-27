@@ -12,6 +12,7 @@ import traceback
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import datetime
 
 # Add the utilities module to the path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -26,12 +27,14 @@ try:
         generate_statistics_tables,
         generate_statistics_plots
     )
+    from utils.soil_analysis import analyze_soil_properties
 except ImportError as e:
     print(f"Error importing required modules: {e}")
     print("Please ensure all required modules are properly installed")
     sys.exit(1)
 
-def run_detailed_analysis(landuse_data, var="perc", start_year=2000, end_year=2005, output_dir="./Michigan"):
+def run_detailed_analysis(landuse_data, var="perc", start_year=2000, end_year=2005, output_dir="./Michigan", 
+                         include_soil_analysis=True, base_path=None):
     """
     Runs detailed statistical analysis on the recharge data
     
@@ -45,6 +48,10 @@ def run_detailed_analysis(landuse_data, var="perc", start_year=2000, end_year=20
         Year range for analysis
     output_dir : str
         Output directory for results
+    include_soil_analysis : bool
+        Whether to include soil property analysis (True by default)
+    base_path : str
+        Base path to SWAT model directories (required for soil analysis)
     
     Returns:
     --------
@@ -82,7 +89,7 @@ def run_detailed_analysis(landuse_data, var="perc", start_year=2000, end_year=20
         monthly_stats, seasonal_stats, annual_stats, output_dir
     )
     
-    # Return results
+    # Prepare results dictionary
     results = {
         "statistics": {
             "monthly": monthly_stats,
@@ -92,6 +99,35 @@ def run_detailed_analysis(landuse_data, var="perc", start_year=2000, end_year=20
         "tables": table_paths,
         "plots": plot_paths
     }
+    
+    # Step 6: Run soil analysis (now included by default)
+    if include_soil_analysis and base_path:
+        print("\nStep 6: Running soil property analysis...")
+        try:
+            import multiprocessing
+            num_workers = max(1, int(multiprocessing.cpu_count() * 0.5))  # Use 50% of CPU cores
+            
+            soil_analysis_start = time.time()
+            soil_results = analyze_soil_properties(
+                base_path=base_path,
+                output_dir=output_dir,
+                model_limit=50,  # Limit to 50 models
+                num_workers=num_workers
+            )
+            
+            soil_analysis_time = time.time() - soil_analysis_start
+            print(f"Soil property analysis completed in {soil_analysis_time:.2f} seconds")
+            
+            if soil_results:
+                # Add soil analysis results to the main results
+                results["soil_analysis"] = soil_results
+                print(f"Added soil analysis with {len(soil_results['visualizations'])} visualizations")
+            else:
+                print("Soil analysis did not return any results")
+        except Exception as e:
+            print(f"Error during soil analysis: {e}")
+            traceback.print_exc()
+            print("Continuing without soil analysis results")
     
     print("Detailed analysis completed successfully")
     return results
@@ -118,6 +154,10 @@ def parse_arguments():
                         help='Fraction of CPU cores to use (0-1)')
     parser.add_argument('--skip-extraction', action='store_true',
                         help='Skip data extraction and use existing data')
+    parser.add_argument('--skip-soil-analysis', action='store_true',
+                        help='Skip soil property analysis in the report (soil analysis is included by default)')
+    parser.add_argument('--report-name', type=str, default="",
+                        help='Custom name for the report directory (default is timestamped name)')
     
     return parser.parse_args()
 
@@ -130,6 +170,28 @@ def main():
     import multiprocessing
     max_workers = max(1, int(multiprocessing.cpu_count() * args.cpus))
     
+    # Soil analysis is included by default unless explicitly skipped
+    include_soil_analysis = not args.skip_soil_analysis
+    
+    # Create timestamp for report directories
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    
+    # Set up reports directory structure
+    reports_dir = os.path.join(args.output_dir, "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+    
+    # Create a report name (custom or timestamped)
+    if args.report_name:
+        report_name = args.report_name
+    else:
+        report_name = f"detailed_report_{timestamp}"
+    
+    # Create full report directory path
+    report_dir = os.path.join(reports_dir, report_name)
+    os.makedirs(report_dir, exist_ok=True)
+    os.makedirs(os.path.join(report_dir, "figs"), exist_ok=True)
+    os.makedirs(os.path.join(report_dir, "soil_htmls"), exist_ok=True)
+    
     # Configuration summary
     print("\n" + "="*80)
     print("Detailed Analysis Configuration")
@@ -140,7 +202,9 @@ def main():
     print(f"Variable analyzed:   {args.var}")
     print(f"Precip. threshold:   {args.precip_threshold} mm")
     print(f"Output directory:    {args.output_dir}")
+    print(f"Report name:         {report_name}")
     print(f"Workers:             {max_workers}")
+    print(f"Include soil analysis: {include_soil_analysis}")
     print("="*80 + "\n")
     
     # Make sure output directories exist
@@ -185,24 +249,31 @@ def main():
             var=args.var,
             start_year=args.start_year,
             end_year=args.end_year,
-            output_dir=args.output_dir
+            output_dir=args.output_dir,
+            include_soil_analysis=include_soil_analysis,
+            base_path=args.base_path
         )
         analysis_time = time.time() - analysis_start_time
         print(f"Analysis completed in {analysis_time:.2f} seconds")
         
-        # Step 3: Update the report with statistical tables
-        print("\nStep 3: Updating the report...")
+        # Step 3: Generate the report with statistical tables
+        print("\nStep 3: Generating the detailed report...")
         from generate_report import create_report
+        
+        # Create the report in the new report directory
+        detailed_report_path = os.path.join(report_dir, 'detailed_report.html')
         report_path = create_report(
-            output_path=os.path.join(args.output_dir, 'detailed_report.html'),
+            output_path=detailed_report_path,
             start_year=args.start_year,
             end_year=args.end_year,
             var=args.var,
             precip_threshold=args.precip_threshold,
             include_statistics=True,
-            statistics_results=analysis_results
+            statistics_results=analysis_results,
+            include_soil_analysis=include_soil_analysis,
+            soil_results=analysis_results.get("soil_analysis")
         )
-        print(f"Updated report generated: {report_path}")
+        print(f"Detailed report generated: {report_path}")
         
         # Try to open the report in a browser
         try:
