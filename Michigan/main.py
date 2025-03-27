@@ -9,8 +9,8 @@ import os
 import sys
 import argparse
 import time
-import multiprocessing
 import traceback
+import datetime
 
 # Add the utilities module to the path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -35,7 +35,7 @@ def parse_arguments():
                         help='Number of models to analyze')
     parser.add_argument('--start-year', type=int, default=2000,
                         help='Start year for analysis')
-    parser.add_argument('--end-year', type=int, default=2005,
+    parser.add_argument('--end-year', type=int, default=2020,
                         help='End year for analysis (exclusive)')
     parser.add_argument('--var', type=str, default="perc",
                         help='Variable to analyze (e.g., "perc" for percolation)')
@@ -54,6 +54,10 @@ def parse_arguments():
                         help='Perform detailed statistical analysis')
     parser.add_argument('--save-data', action='store_true',
                         help='Save model data for future analysis')
+    parser.add_argument('--skip-soil-analysis', action='store_true',
+                        help='Skip soil property analysis in the report (soil analysis is included by default)')
+    parser.add_argument('--report-name', type=str, default="",
+                        help='Custom name for the report directory (default is timestamped name)')
     
     return parser.parse_args()
 
@@ -65,7 +69,8 @@ def check_dependencies():
     ]
     
     optional_packages = [
-        'contextily'  # For Michigan map with basemap
+        'contextily',  # For Michigan map with basemap
+        'seaborn'      # For enhanced visualizations
     ]
     
     missing = []
@@ -91,6 +96,9 @@ def check_dependencies():
 
 def main():
     """Main function to coordinate the workflow"""
+    # Import multiprocessing locally to ensure it's available
+    import multiprocessing
+    
     # Check dependencies
     if not check_dependencies():
         print("WARNING: Some dependencies are missing. The script may not work correctly.")
@@ -101,13 +109,35 @@ def main():
     # Parse arguments
     args = parse_arguments()
     
+    # Create timestamp for report directories
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    
     # Set up output directories
     os.makedirs(args.output_dir, exist_ok=True)
     os.makedirs(os.path.join(args.output_dir, "figs"), exist_ok=True)
     
+    # Set up reports directory
+    reports_dir = os.path.join(args.output_dir, "reports")
+    os.makedirs(reports_dir, exist_ok=True)
+    
+    # Create a report name (custom or timestamped)
+    if args.report_name:
+        report_name = args.report_name
+    else:
+        report_name = f"report_{timestamp}"
+    
+    # Create full report directory path
+    report_dir = os.path.join(reports_dir, report_name)
+    os.makedirs(report_dir, exist_ok=True)
+    os.makedirs(os.path.join(report_dir, "figs"), exist_ok=True)
+    os.makedirs(os.path.join(report_dir, "soil_htmls"), exist_ok=True)
+    
     # Calculate number of worker processes
     max_workers = max(1, int(multiprocessing.cpu_count() * args.cpus))
     print(f"Using {max_workers} workers out of {multiprocessing.cpu_count()} available cores")
+    
+    # Soil analysis is included by default unless explicitly skipped
+    include_soil_analysis = not args.skip_soil_analysis
     
     # Configuration summary
     print("\n" + "="*80)
@@ -119,7 +149,9 @@ def main():
     print(f"Variable analyzed:   {args.var}")
     print(f"Water input threshold: {args.precip_threshold} mm (precipitation + snowfall)")
     print(f"Output directory:    {args.output_dir}")
+    print(f"Report name:         {report_name}")
     print(f"Workers:             {max_workers}")
+    print(f"Include soil analysis: {include_soil_analysis}")
     print("="*80 + "\n")
     
     # Start timing
@@ -194,21 +226,26 @@ def main():
                 var=args.var,
                 start_year=args.start_year,
                 end_year=args.end_year,
-                output_dir=args.output_dir
+                output_dir=args.output_dir,
+                include_soil_analysis=include_soil_analysis,
+                base_path=args.base_path
             )
             
             detailed_time = time.time() - detailed_start_time
             print(f"Detailed analysis completed in {detailed_time:.2f} seconds")
             
             # Generate report with statistics
+            detailed_report_path = os.path.join(report_dir, 'detailed_report.html')
             report_path = create_report(
-                output_path=os.path.join(args.output_dir, 'detailed_report.html'),
+                output_path=detailed_report_path,
                 start_year=args.start_year,
                 end_year=args.end_year,
                 var=args.var,
                 precip_threshold=args.precip_threshold,
                 include_statistics=True,
-                statistics_results=analysis_results
+                statistics_results=analysis_results,
+                include_soil_analysis=include_soil_analysis,
+                soil_results=analysis_results.get("soil_analysis")
             )
             
             print(f"Detailed report saved to: {report_path}")
@@ -232,12 +269,40 @@ def main():
         print("\nStep 3: Generating HTML report...")
         try:
             report_start_time = time.time()
+            
+            # Run soil analysis (always run unless explicitly skipped)
+            soil_results = None
+            if include_soil_analysis:
+                print("Running soil property analysis for report...")
+                try:
+                    from utils.soil_analysis import analyze_soil_properties
+                    import multiprocessing
+                    num_workers = max(1, int(multiprocessing.cpu_count() * 0.5))
+                    
+                    soil_results = analyze_soil_properties(
+                        base_path=args.base_path,
+                        output_dir=args.output_dir,
+                        model_limit=args.model_nums,
+                        num_workers=num_workers
+                    )
+                    
+                    if soil_results:
+                        print(f"Soil analysis completed with {len(soil_results['visualizations'])} visualizations")
+                except Exception as e:
+                    print(f"Error during soil analysis: {e}")
+                    traceback.print_exc()
+                    print("Continuing without soil analysis")
+            
+            # Create the report
+            regular_report_path = os.path.join(report_dir, 'report.html')
             report_path = create_report(
-                output_path=os.path.join(args.output_dir, 'report.html'),
+                output_path=regular_report_path,
                 start_year=args.start_year,
                 end_year=args.end_year,
                 var=args.var,
-                precip_threshold=args.precip_threshold
+                precip_threshold=args.precip_threshold,
+                include_soil_analysis=(include_soil_analysis and soil_results is not None),
+                soil_results=soil_results
             )
             
             report_time = time.time() - report_start_time

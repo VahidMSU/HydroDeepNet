@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watershed Cluster Analysis Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .cluster-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #2980b9;
+        }
+        .soil-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            margin: 10px 0;
+        }
+        .img-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .timestamp {
+            font-style: italic;
+            color: #7f8c8d;
+            text-align: right;
+            margin-top: 20px;
+        }
+        .footnote {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .nav-tabs li {
+            margin-right: 10px;
+        }
+        .nav-tabs a {
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #555;
+            background-color: #f5f5f5;
+            border-radius: 5px 5px 0 0;
+            transition: background-color 0.3s;
+        }
+        .nav-tabs a:hover {
+            background-color: #e0e0e0;
+        }
+        .nav-tabs a.active {
+            background-color: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Watershed Cluster Analysis Report</h1>
+        <p>Analysis of Percolation to Total Water Input Ratio in Agricultural Lands</p>
+    </div>
+    
+    <div class="section">
+        <h2>Analysis Overview</h2>
+        <p>This report presents the results of a comprehensive analysis of the percolation to total water input ratio in agricultural lands across different watershed clusters in Michigan. The analysis was conducted using the SWAT model for years 2000-2019.</p>
+        
+        <p><strong>Key Parameters:</strong></p>
+        <ul>
+            <li>Variable analyzed: perc (percolation)</li>
+            <li>Water input threshold: 10.0mm</li>
+            <li>Total water input: precipitation + snowfall</li>
+            <li>Year range: 2000-2019</li>
+            <li>Land use focus: Agricultural land (code 82)</li>
+        </ul>
+        
+        <p>The watersheds were clustered based on their geographical location to identify regional patterns in hydrological behavior.</p>
+    </div>
+    
+    <div class="section">
+        <h2>Watershed Clustering</h2>
+        <p>The watersheds were grouped into 5 clusters based on their geographical coordinates using the K-means clustering algorithm. The spatial distribution of these clusters is shown below:</p>
+        
+        <div class="img-container">
+            <img src="figs/michigan_clusters_map.png" alt="Michigan Watershed Clusters Map" style="max-width: 80%;" />
+            <img src="figs/clusters.png" alt="Watershed Clusters Map" style="max-width: 80%;" />
+        </div>
+        
+        <p>Each cluster represents watersheds with similar geographical characteristics, allowing us to analyze regional variations in hydrological behavior across Michigan's Lower Peninsula.</p>
+        <p>The map shows the location of each watershed centroid, colored by its assigned cluster. This spatial organization helps identify regional patterns in the percolation to precipitation ratio.</p>
+    </div>
+    
+    <div class="section">
+        <h2>Overall Results</h2>
+        <p>The following chart shows the percolation to total water input ratio across all watersheds, providing a comprehensive view of the overall patterns:</p>
+        
+        <div class="img-container">
+            <img src="figs/recharge_water_input_ratio_2000_2019_all.png" alt="Overall Percolation Analysis" />
+        </div>
+        
+        <p>The shaded area represents the 95% confidence interval, indicating the uncertainty in the estimates across all watershed models. The calculation includes both precipitation and snowfall as total water input.</p>
+    </div>
+
+    <div class="cluster-section">
+        <h2>Cluster 0 Analysis</h2>
+        <p>Results for watersheds in geographic cluster 0:</p>
+        
+        <div class="img-container">
+            <img src="figs/recharge_water_input_ratio_2000_2019_cluster0.png" alt="Cluster 0 Analysis" />
+        </div>
+        
+        <p>The chart above shows the temporal variation in percolation to precipitation ratio for agricultural lands in watersheds belonging to Cluster 0.</p>
+
+        <h3>Image Details</h3>
+        <table>
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Image Resolution</td>
+                <td>7129 x 4743 pixels</td>
+            </tr>
+            <tr>
+                <td>File Size</td>
+                <td>2423.10 KB</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div class="cluster-section">
+        <h2>Cluster 1 Analysis</h2>
+        <p>Results for watersheds in geographic cluster 1:</p>
+        
+        <div class="img-container">
+            <img src="figs/recharge_water_input_ratio_2000_2019_cluster1.png" alt="Cluster 1 Analysis" />
+        </div>
+        
+        <p>The chart above shows the temporal variation in percolation to precipitation ratio for agricultural lands in watersheds belonging to Cluster 1.</p>
+
+        <h3>Image Details</h3>
+        <table>
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Image Resolution</td>
+                <td>7129 x 4743 pixels</td>
+            </tr>
+            <tr>
+                <td>File Size</td>
+                <td>1954.29 KB</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div class="cluster-section">
+        <h2>Cluster 2 Analysis</h2>
+        <p>Results for watersheds in geographic cluster 2:</p>
+        
+        <div class="img-container">
+            <img src="figs/recharge_water_input_ratio_2000_2019_cluster2.png" alt="Cluster 2 Analysis" />
+        </div>
+        
+        <p>The chart above shows the temporal variation in percolation to precipitation ratio for agricultural lands in watersheds belonging to Cluster 2.</p>
+
+        <h3>Image Details</h3>
+        <table>
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Image Resolution</td>
+                <td>7129 x 4743 pixels</td>
+            </tr>
+            <tr>
+                <td>File Size</td>
+                <td>2242.73 KB</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div class="cluster-section">
+        <h2>Cluster 3 Analysis</h2>
+        <p>Results for watersheds in geographic cluster 3:</p>
+        
+        <div class="img-container">
+            <img src="figs/recharge_water_input_ratio_2000_2019_cluster3.png" alt="Cluster 3 Analysis" />
+        </div>
+        
+        <p>The chart above shows the temporal variation in percolation to precipitation ratio for agricultural lands in watersheds belonging to Cluster 3.</p>
+
+        <h3>Image Details</h3>
+        <table>
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Image Resolution</td>
+                <td>7129 x 4743 pixels</td>
+            </tr>
+            <tr>
+                <td>File Size</td>
+                <td>1562.25 KB</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div class="cluster-section">
+        <h2>Cluster 4 Analysis</h2>
+        <p>Results for watersheds in geographic cluster 4:</p>
+        
+        <div class="img-container">
+            <img src="figs/recharge_water_input_ratio_2000_2019_cluster4.png" alt="Cluster 4 Analysis" />
+        </div>
+        
+        <p>The chart above shows the temporal variation in percolation to precipitation ratio for agricultural lands in watersheds belonging to Cluster 4.</p>
+
+        <h3>Image Details</h3>
+        <table>
+            <tr>
+                <th>Property</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Image Resolution</td>
+                <td>7129 x 4743 pixels</td>
+            </tr>
+            <tr>
+                <td>File Size</td>
+                <td>2268.95 KB</td>
+            </tr>
+        </table>
+
+    </div>
+
+    <div class="soil-section">
+        <h2>Soil Properties Analysis</h2>
+        <p>This section analyzes the soil properties of agricultural lands across different watershed clusters. 
+        Understanding soil characteristics is crucial for interpreting percolation patterns, as soil composition 
+        directly affects water movement through the subsurface.</p>
+        
+        <ul class="nav-tabs">
+            <li><a href="#soil-overview" class="active">Overview</a></li>
+            <li><a href="#soil-clusters">Cluster Comparison</a></li>
+            <li><a href="#soil-correlations">Property Correlations</a></li>
+            <li><a href="#soil-boxplots">Distribution Analysis</a></li>
+        </ul>
+        
+        <div id="soil-overview">
+            <h3>Soil Properties Overview</h3>
+            <p>The following analysis examines key soil properties in agricultural areas across all watershed clusters:</p>
+
+            <div class="table-container">
+                <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Property</th>
+      <th>Unit</th>
+      <th>Description</th>
+      <th>Mean</th>
+      <th>Median</th>
+      <th>Std Dev</th>
+      <th>Min</th>
+      <th>Max</th>
+      <th>Count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Albedo</td>
+      <td></td>
+      <td>Surface reflectivity</td>
+      <td>-3.088</td>
+      <td>-0.782</td>
+      <td>4.853</td>
+      <td>-24.785</td>
+      <td>0.284</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Available Water Capacity</td>
+      <td>mm/mm</td>
+      <td>Amount of water available to plants</td>
+      <td>-3.193</td>
+      <td>-0.908</td>
+      <td>4.853</td>
+      <td>-24.903</td>
+      <td>0.162</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Bulk Density</td>
+      <td>g/cm³</td>
+      <td>Soil mass per volume</td>
+      <td>-1.826</td>
+      <td>0.508</td>
+      <td>4.860</td>
+      <td>-23.598</td>
+      <td>1.572</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Calcium Carbonate</td>
+      <td>%</td>
+      <td>Lime content in soil</td>
+      <td>0.961</td>
+      <td>2.153</td>
+      <td>4.836</td>
+      <td>-18.765</td>
+      <td>7.000</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Clay Content</td>
+      <td>%</td>
+      <td>Percentage of clay particles</td>
+      <td>12.223</td>
+      <td>12.052</td>
+      <td>7.504</td>
+      <td>-14.016</td>
+      <td>31.302</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Electrical Conductivity</td>
+      <td>dS/m</td>
+      <td>Measure of soil salinity</td>
+      <td>-3.275</td>
+      <td>-0.993</td>
+      <td>4.853</td>
+      <td>-24.972</td>
+      <td>0.131</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Hydraulic Conductivity</td>
+      <td>mm/hr</td>
+      <td>Water transmission rate</td>
+      <td>122.553</td>
+      <td>94.377</td>
+      <td>73.632</td>
+      <td>8.415</td>
+      <td>343.408</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Organic Carbon</td>
+      <td>%</td>
+      <td>Organic matter content</td>
+      <td>-0.906</td>
+      <td>0.268</td>
+      <td>5.165</td>
+      <td>-22.355</td>
+      <td>9.013</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Rock Content</td>
+      <td>%</td>
+      <td>Percentage of rock fragments</td>
+      <td>2.670</td>
+      <td>4.108</td>
+      <td>4.858</td>
+      <td>-15.936</td>
+      <td>8.856</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Silt Content</td>
+      <td>%</td>
+      <td>Percentage of silt particles</td>
+      <td>19.407</td>
+      <td>19.379</td>
+      <td>9.607</td>
+      <td>-8.646</td>
+      <td>41.740</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Soil Depth</td>
+      <td>mm</td>
+      <td>Depth of soil profile</td>
+      <td>864.263</td>
+      <td>872.807</td>
+      <td>62.985</td>
+      <td>694.235</td>
+      <td>990.938</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Soil Type</td>
+      <td></td>
+      <td>Soil classification code</td>
+      <td>538847.186</td>
+      <td>362741.121</td>
+      <td>462905.035</td>
+      <td>179237.628</td>
+      <td>2214899.642</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <td>Soil pH</td>
+      <td></td>
+      <td>Acidity/alkalinity of soil</td>
+      <td>2.927</td>
+      <td>4.847</td>
+      <td>4.868</td>
+      <td>-18.962</td>
+      <td>7.257</td>
+      <td>49</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+            <p>The table above summarizes the key soil properties across all agricultural areas in the analyzed watersheds.</p>
+
+            <h3>Soil Properties by Cluster</h3>
+            <div class="img-container">
+                <img src="figs/soil_properties_heatmap.png" alt="Soil Properties Heatmap" style="max-width: 90%;" />
+            </div>
+            <p>This heatmap visualizes how different soil properties vary across the watershed clusters. Color intensity represents the mean value of each property within a cluster.</p>
+
+        </div>
+        
+        <div id="soil-clusters" style="display: none;">
+            <h3>Cluster Comparison of Soil Properties</h3>
+            <p>The following visualization compares key soil properties across different watershed clusters:</p>
+
+            <div class="img-container">
+                <img src="figs/soil_properties_clusters.png" alt="Soil Properties Cluster Comparison" style="max-width: 90%;" />
+            </div>
+            <p>The chart above compares key soil properties across the five watershed clusters. Error bars represent standard deviation within each cluster.</p>
+
+            <div class="table-container">
+                <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Cluster</th>
+      <th>Clay Content</th>
+      <th>Silt Content</th>
+      <th>Organic Carbon</th>
+      <th>Available Water Capacity</th>
+      <th>Hydraulic Conductivity</th>
+      <th>Soil pH</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>10.969</td>
+      <td>16.048</td>
+      <td>-0.095</td>
+      <td>-1.608</td>
+      <td>169.858</td>
+      <td>4.471</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>15.332</td>
+      <td>25.186</td>
+      <td>-1.348</td>
+      <td>-3.266</td>
+      <td>66.204</td>
+      <td>3.214</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>7.059</td>
+      <td>10.259</td>
+      <td>1.596</td>
+      <td>-2.732</td>
+      <td>209.385</td>
+      <td>2.656</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>18.028</td>
+      <td>28.425</td>
+      <td>-1.542</td>
+      <td>-3.718</td>
+      <td>63.042</td>
+      <td>2.787</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>9.586</td>
+      <td>17.148</td>
+      <td>-3.556</td>
+      <td>-4.628</td>
+      <td>98.208</td>
+      <td>1.597</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+            <p>This table provides a direct comparison of mean values for key soil properties across the five clusters.</p>
+
+        </div>
+        
+        <div id="soil-correlations" style="display: none;">
+            <h3>Correlations Between Soil Properties</h3>
+            <p>Understanding the relationships between different soil properties can provide insights into soil behavior and water movement:</p>
+
+            <div class="img-container">
+                <img src="figs/soil_properties_correlation.png" alt="Soil Properties Correlation" style="max-width: 85%;" />
+            </div>
+            <p>This correlation matrix shows the Pearson correlation coefficients between different soil properties. 
+            Strong positive correlations appear in dark blue, while strong negative correlations appear in dark red.</p>
+            
+            <h4>Key Insights from Correlation Analysis:</h4>
+            <ul>
+                <li>Clay and silt content often show negative correlation with hydraulic conductivity, affecting water movement</li>
+                <li>Organic carbon content typically correlates positively with available water capacity</li>
+                <li>Bulk density often shows negative correlation with organic carbon and porosity</li>
+            </ul>
+
+        </div>
+        
+        <div id="soil-boxplots" style="display: none;">
+            <h3>Distribution of Soil Properties by Cluster</h3>
+            <p>The following boxplots show the distribution of key soil properties across different watershed clusters:</p>
+
+            <div class="img-container">
+                <img src="figs/soil_clay_30m_boxplot.png" alt="Soil Property Distribution" style="max-width: 80%;" />
+            </div>
+
+            <div class="img-container">
+                <img src="figs/soil_silt_30m_boxplot.png" alt="Soil Property Distribution" style="max-width: 80%;" />
+            </div>
+
+            <div class="img-container">
+                <img src="figs/soil_carbon_30m_boxplot.png" alt="Soil Property Distribution" style="max-width: 80%;" />
+            </div>
+
+            <p>These boxplots illustrate the median (center line), interquartile range (box), and range (whiskers) of values 
+            for soil properties within each cluster. Outliers are shown as individual points.</p>
+            
+            <h4>Interpretations for Water Movement:</h4>
+            <ul>
+                <li>Higher clay content generally leads to slower infiltration but better water retention</li>
+                <li>Higher sand content typically results in faster infiltration but lower water holding capacity</li>
+                <li>Organic matter improves soil structure and water holding capacity</li>
+                <li>Available water capacity directly affects plant water availability and indirectly influences percolation</li>
+            </ul>
+
+        </div>
+        
+        <script>
+            // Simple tab navigation
+            document.addEventListener('DOMContentLoaded', function() {
+                const tabs = document.querySelectorAll('.nav-tabs a');
+                
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Hide all content
+                        document.querySelectorAll('[id^="soil-"]').forEach(content => {
+                            content.style.display = 'none';
+                        });
+                        
+                        // Remove active class
+                        tabs.forEach(t => {
+                            t.classList.remove('active');
+                        });
+                        
+                        // Show selected content and mark tab as active
+                        const targetId = this.getAttribute('href').substring(1);
+                        document.getElementById(targetId).style.display = 'block';
+                        this.classList.add('active');
+                    });
+                });
+            });
+        </script>
+    </div>
+
+    <div class="section">
+        <h2>Conclusions</h2>
+        <p>The analysis reveals several key insights about the percolation to precipitation ratio in agricultural lands across different watershed clusters:</p>
+        
+        <ul>
+            <li>There is significant spatial variability across the watershed clusters, indicating that geographic location plays an important role in determining the hydrological behavior.</li>
+            <li>Temporal patterns show seasonal variations in the percolation to precipitation ratio, with higher values typically observed during certain months.</li>
+            <li>The width of the confidence intervals indicates the level of uncertainty in the estimates, which varies across different clusters.</li>
+            <li>Soil properties, particularly texture and organic matter content, significantly influence percolation patterns across the watersheds.</li>
+        </ul>
+        
+        <p>These findings can help inform water resource management strategies and agricultural practices in different regions of Michigan.</p>
+    </div>
+    
+    <div class="footnote">
+        <p>Analysis conducted using SWAT model outputs. Percolation to total water input ratio was calculated only for agricultural areas with combined precipitation and snowfall exceeding 10.0mm.</p>
+        <p>For more information about the methodology and data sources, please refer to the technical documentation.</p>
+        <p class="timestamp">Report generated on: 2025-03-27 17:27:55</p>
+    </div>
+</body>
+</html>
