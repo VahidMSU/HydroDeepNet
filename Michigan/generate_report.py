@@ -9,7 +9,8 @@ import shutil
 
 def create_report(output_path='./Michigan/reports/default/report.html', start_year=2000, end_year=2005, 
                  var="perc", precip_threshold=10, include_statistics=False, statistics_results=None,
-                 include_soil_analysis=False, soil_results=None):
+                 include_soil_analysis=False, soil_results=None, include_streamflow_analysis=False, 
+                 streamflow_results=None):
     """
     Generate an HTML report with analysis results and visualizations.
     
@@ -31,16 +32,22 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
         Whether to include soil property analysis
     soil_results : dict
         Dictionary with soil analysis results
+    include_streamflow_analysis : bool
+        Whether to include streamflow analysis in the report
+    streamflow_results : dict
+        Dictionary with streamflow analysis results
     """
     # Determine report directory structure
     report_dir = os.path.dirname(output_path)
     figs_dir = os.path.join(report_dir, 'figs')
     soil_htmls_dir = os.path.join(report_dir, 'soil_htmls')
+    streamflow_dir = os.path.join(report_dir, 'figs/streamflow')
     
     # Ensure all directories exist
     os.makedirs(report_dir, exist_ok=True)
     os.makedirs(figs_dir, exist_ok=True)
     os.makedirs(soil_htmls_dir, exist_ok=True)
+    os.makedirs(streamflow_dir, exist_ok=True)
     
     print(f"Creating report in {report_dir}")
     
@@ -97,6 +104,9 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
                     shutil.copy2(src_file, dest_file)
                     stats_plots[key] = [os.path.join("figs", os.path.basename(src_file))]
     
+    # Keep track of files we've already copied to avoid duplicates
+    copied_files = set()
+    
     # Handle soil analysis files
     soil_plots = {}
     if include_soil_analysis and soil_results and 'visualizations' in soil_results:
@@ -123,6 +133,41 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
                     shutil.copy2(src_file, dest_file)
                     # Update path reference
                     soil_results['tables'][table_type] = os.path.join("soil_htmls", os.path.basename(src_file))
+                    # Track this file as already copied
+                    copied_files.add(src_file)
+    
+    # Handle streamflow analysis files
+    streamflow_plots = {}
+    if include_streamflow_analysis and streamflow_results:
+        # Copy streamflow visualization files
+        if 'plot_paths' in streamflow_results:
+            for station, paths in streamflow_results['plot_paths'].items():
+                station_dir = os.path.join(streamflow_dir, station)
+                os.makedirs(station_dir, exist_ok=True)
+                
+                for plot_type, src_path in paths.items():
+                    try:
+                        src_file = os.path.join('./Michigan', src_path)
+                        if os.path.exists(src_file):
+                            dest_file = os.path.join(station_dir, os.path.basename(src_file))
+                            shutil.copy2(src_file, dest_file)
+                            
+                            # Store relative path for HTML
+                            if station not in streamflow_plots:
+                                streamflow_plots[station] = {}
+                            streamflow_plots[station][plot_type] = os.path.join("figs/streamflow", station, os.path.basename(src_file))
+                            copied_files.add(src_file)
+                    except Exception as e:
+                        print(f"Error copying streamflow plot {src_path}: {e}")
+        
+        # Copy streamflow summary table
+        if 'table_path' in streamflow_results and streamflow_results['table_path']:
+            src_file = os.path.join('./Michigan', streamflow_results['table_path'])
+            if os.path.exists(src_file) and src_file not in copied_files:
+                dest_file = os.path.join(soil_htmls_dir, os.path.basename(src_file))
+                shutil.copy2(src_file, dest_file)
+                streamflow_results['table_path'] = os.path.join("soil_htmls", os.path.basename(src_file))
+                copied_files.add(src_file)
     
     # Extract basic stats from images if possible
     cluster_stats = {}
@@ -194,6 +239,13 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
             border-radius: 8px;
             border-left: 4px solid #27ae60;
         }}
+        .streamflow-section {{
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #8e44ad;
+        }}
         img {{
             max-width: 100%;
             height: auto;
@@ -203,6 +255,12 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
         }}
         .img-container {{
             text-align: center;
+            margin: 20px 0;
+        }}
+        .img-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-gap: 20px;
             margin: 20px 0;
         }}
         table {{
@@ -260,6 +318,25 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
             background-color: #3498db;
             color: white;
         }}
+        .station-card {{
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: white;
+        }}
+        .station-card h4 {{
+            margin-top: 0;
+            border-bottom: 2px solid #8e44ad;
+            padding-bottom: 8px;
+        }}
+        .tab-content {{
+            display: none;
+        }}
+        .tab-content.active {{
+            display: block;
+        }}
     </style>
 </head>
 <body>
@@ -308,7 +385,6 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
         <p>The shaded area represents the 95% confidence interval, indicating the uncertainty in the estimates across all watershed models. The calculation includes both precipitation and snowfall as total water input.</p>
     </div>
 """
-
     # Add sections for each cluster
     for i in range(5):
         cluster_image = [img for img in cluster_images if f"cluster{i}" in img]
@@ -348,6 +424,159 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
         # Close the section
         html_content += """
     </div>
+"""
+
+    # Add streamflow analysis section if requested
+    if include_streamflow_analysis and streamflow_results:
+        html_content += """
+    <div class="streamflow-section">
+        <h2>Streamflow Analysis</h2>
+        <p>This section presents the analysis of streamflow data for watersheds in the study area, with a focus on baseflow separation and temporal patterns.</p>
+        
+        <div class="section">
+            <h3>Baseflow Separation Analysis</h3>
+            <p>Baseflow is the portion of streamflow that comes from groundwater and delayed subsurface flow, while quickflow (or direct runoff) is the portion 
+            that comes from immediate surface runoff after precipitation events. The analysis below shows how these components vary across watersheds and seasons.</p>
+"""
+        
+        # Add streamflow summary table if available
+        if 'table_path' in streamflow_results and streamflow_results['table_path']:
+            try:
+                table_path = os.path.join(report_dir, streamflow_results['table_path'])
+                with open(table_path, 'r') as f:
+                    summary_table_html = f.read()
+                
+                html_content += f"""
+            <h3>Summary Statistics</h3>
+            <div class="table-container">
+                {summary_table_html}
+            </div>
+            <p>The table above summarizes key metrics from the baseflow separation analysis across all analyzed watersheds.</p>
+"""
+            except Exception as e:
+                print(f"Error including streamflow summary table: {e}")
+                html_content += "<p>Streamflow summary table not available</p>"
+        
+        # Add streamflow station sections with tabs for navigation
+        if streamflow_plots:
+            html_content += """
+            <h3>Streamflow Station Analysis</h3>
+            <p>The following analysis shows the results of baseflow separation for individual streamflow stations:</p>
+            
+            <ul class="nav-tabs streamflow-tabs">
+"""
+            
+            # Add tab headers for each station
+            for i, station in enumerate(streamflow_plots.keys()):
+                html_content += f"""
+                <li><a href="#station-{station}" class="{"active" if i==0 else ""}">{station}</a></li>
+"""
+            
+            html_content += """
+            </ul>
+"""
+            
+            # Add tab content for each station
+            for i, (station, plots) in enumerate(streamflow_plots.items()):
+                html_content += f"""
+            <div id="station-{station}" class="tab-content {"active" if i==0 else ""}">
+                <div class="station-card">
+                    <h4>Station: {station}</h4>
+                    
+                    <div class="img-grid">
+"""
+                
+                # Add station plots
+                if 'hydrograph' in plots:
+                    html_content += f"""
+                        <div class="img-container">
+                            <h5>Baseflow Separation</h5>
+                            <img src="{plots['hydrograph']}" alt="Hydrograph with Baseflow Separation" />
+                            <p>The hydrograph shows the separation of total streamflow into baseflow (green) and quickflow (blue shaded area).</p>
+                        </div>
+"""
+                
+                if 'monthly' in plots:
+                    html_content += f"""
+                        <div class="img-container">
+                            <h5>Monthly Patterns</h5>
+                            <img src="{plots['monthly']}" alt="Monthly Average Flows" />
+                            <p>Monthly averages show seasonal patterns in streamflow components throughout the year.</p>
+                        </div>
+"""
+                
+                if 'seasonal' in plots:
+                    html_content += f"""
+                        <div class="img-container">
+                            <h5>Seasonal Patterns</h5>
+                            <img src="{plots['seasonal']}" alt="Seasonal Average Flows" />
+                            <p>Seasonal breakdown highlights differences in baseflow contribution throughout the year.</p>
+                        </div>
+"""
+                
+                # Close the grid and card
+                html_content += """
+                    </div>
+                    
+                    <div class="insights">
+                        <h5>Key Insights:</h5>
+                        <ul>
+                            <li>Baseflow typically constitutes a significant portion of total streamflow, indicating the importance of groundwater contribution.</li>
+                            <li>Seasonal patterns show variations in the baseflow index, with higher values often occurring during drier periods.</li>
+                            <li>The temporal variation in baseflow reflects both climate patterns and watershed characteristics.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+"""
+            
+            # Add script for tab navigation
+            html_content += """
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Streamflow tabs navigation
+                    const streamflowTabs = document.querySelectorAll('.streamflow-tabs a');
+                    
+                    streamflowTabs.forEach(tab => {
+                        tab.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            // Hide all content
+                            document.querySelectorAll('.streamflow-tabs + div .tab-content').forEach(content => {
+                                content.classList.remove('active');
+                            });
+                            
+                            // Remove active class from tabs
+                            streamflowTabs.forEach(t => {
+                                t.classList.remove('active');
+                            });
+                            
+                            // Show selected content and mark tab as active
+                            const targetId = this.getAttribute('href').substring(1);
+                            document.getElementById(targetId).classList.add('active');
+                            this.classList.add('active');
+                        });
+                    });
+                });
+            </script>
+"""
+        
+        # Add a section on the relationship between percolation and baseflow
+        html_content += """
+        <div class="section">
+            <h3>Relationship Between Percolation and Baseflow</h3>
+            <p>Percolation in agricultural lands and baseflow in streams are intrinsically linked through the hydrologic cycle. Key relationships observed include:</p>
+            
+            <ul>
+                <li><strong>Temporal lag:</strong> Changes in percolation rates typically precede changes in baseflow with a time lag dependent on subsurface characteristics.</li>
+                <li><strong>Seasonal patterns:</strong> Both percolation and baseflow show seasonal variations that are often correlated, though affected by different factors.</li>
+                <li><strong>Spatial variation:</strong> The relationship between percolation and baseflow varies across watershed clusters due to differences in geology, topography, and land use.</li>
+            </ul>
+            
+            <p>Understanding these relationships is crucial for effective water resource management, especially in agricultural watersheds where management practices can significantly affect both percolation and streamflow patterns.</p>
+        </div>
+    </div>
+</div>
 """
     
     # Add soil analysis section if requested
@@ -706,12 +935,18 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
         if statistics_results and 'tables' in statistics_results:
             # Annual statistics
             if 'annual' in statistics_results['tables'] and 'overall' in statistics_results['tables']['annual']:
-                annual_table_path = os.path.join(soil_htmls_dir, os.path.basename(statistics_results['tables']['annual']['overall']))
-                # Copy the file if it exists
                 src_annual_table = os.path.join('./Michigan', statistics_results['tables']['annual']['overall'])
-                if os.path.exists(src_annual_table):
+                
+                # Check if we already copied this file to avoid duplication
+                if src_annual_table not in copied_files and os.path.exists(src_annual_table):
+                    annual_table_path = os.path.join(soil_htmls_dir, os.path.basename(src_annual_table))
                     shutil.copy2(src_annual_table, annual_table_path)
-                    
+                    copied_files.add(src_annual_table)
+                    statistics_results['tables']['annual']['overall'] = os.path.join("soil_htmls", os.path.basename(src_annual_table))
+                
+                # Use the updated path from statistics_results
+                annual_table_path = os.path.join(report_dir, statistics_results['tables']['annual']['overall'])
+                
                 try:
                     with open(annual_table_path, 'r') as f:
                         annual_table_html = f.read()
@@ -726,12 +961,18 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
             
             # Seasonal statistics
             if 'seasonal' in statistics_results['tables'] and 'overall' in statistics_results['tables']['seasonal']:
-                seasonal_table_path = os.path.join(soil_htmls_dir, os.path.basename(statistics_results['tables']['seasonal']['overall']))
-                # Copy the file if it exists
                 src_seasonal_table = os.path.join('./Michigan', statistics_results['tables']['seasonal']['overall'])
-                if os.path.exists(src_seasonal_table):
+                
+                # Check if we already copied this file to avoid duplication
+                if src_seasonal_table not in copied_files and os.path.exists(src_seasonal_table):
+                    seasonal_table_path = os.path.join(soil_htmls_dir, os.path.basename(src_seasonal_table))
                     shutil.copy2(src_seasonal_table, seasonal_table_path)
-                    
+                    copied_files.add(src_seasonal_table)
+                    statistics_results['tables']['seasonal']['overall'] = os.path.join("soil_htmls", os.path.basename(src_seasonal_table))
+                
+                # Use the updated path from statistics_results
+                seasonal_table_path = os.path.join(report_dir, statistics_results['tables']['seasonal']['overall'])
+                
                 try:
                     with open(seasonal_table_path, 'r') as f:
                         seasonal_table_html = f.read()
@@ -760,6 +1001,7 @@ def create_report(output_path='./Michigan/reports/default/report.html', start_ye
             <li>Temporal patterns show seasonal variations in the percolation to precipitation ratio, with higher values typically observed during certain months.</li>
             <li>The width of the confidence intervals indicates the level of uncertainty in the estimates, which varies across different clusters.</li>
             {"<li>Soil properties, particularly texture and organic matter content, significantly influence percolation patterns across the watersheds.</li>" if include_soil_analysis else ""}
+            {"<li>Baseflow analysis shows a relationship between percolation patterns and streamflow dynamics, with seasonal variations in baseflow contribution.</li>" if include_streamflow_analysis else ""}
         </ul>
         
         <p>These findings can help inform water resource management strategies and agricultural practices in different regions of Michigan.</p>

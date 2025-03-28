@@ -20,7 +20,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Import required modules
 try:
     from read_model_h5 import load_model_data
-    from utils.statistics import (
+    from utils.stats_helpers import (
         calculate_monthly_statistics, 
         calculate_seasonal_statistics, 
         calculate_annual_statistics,
