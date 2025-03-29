@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Download API Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #2b2b2c;
+        color: #fff;
+      }
+      h1,
+      h2 {
+        color: #ff8500;
+      }
+      .test-card {
+        background: #3a3a3c;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      .test-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+      .controls {
+        margin-bottom: 20px;
+      }
+      button {
+        padding: 8px 16px;
+        background-color: #ff8500;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+        margin-bottom: 10px;
+      }
+      button:hover {
+        background-color: #ffa733;
+      }
+      .output {
+        background: #1c1c1e;
+        border-radius: 4px;
+        padding: 10px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+        max-height: 200px;
+        overflow: auto;
+        font-family: monospace;
+      }
+      .status {
+        margin-top: 5px;
+        font-size: 14px;
+      }
+      .success {
+        color: #4caf50;
+      }
+      .error {
+        color: #f44336;
+      }
+      .info {
+        color: #2196f3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Download API Test Tool</h1>
+    <p>This tool helps diagnose download functionality issues across different environments.</p>
+
+    <div class="controls">
+      <button id="run-all-tests">Run All Tests</button>
+      <button id="clear-results">Clear Results</button>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 1: Basic Environment Info</div>
+      <button class="test-button" data-test="env-info">Run Test</button>
+      <div class="output" id="env-info-output"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 2: Relative URL Download</div>
+      <button class="test-button" data-test="relative-download">Test Download</button>
+      <div class="output" id="relative-download-output"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 3: Absolute URL Download</div>
+      <button class="test-button" data-test="absolute-download">Test Download</button>
+      <div class="output" id="absolute-download-output"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 4: API Endpoint Download</div>
+      <button class="test-button" data-test="api-download">Test Download</button>
+      <div class="output" id="api-download-output"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 5: Test User File Download</div>
+      <input
+        type="text"
+        id="user-file-path"
+        placeholder="Enter file path relative to user directory"
+        style="width: 80%; margin-bottom: 10px; padding: 8px"
+      />
+      <button class="test-button" data-test="user-file">Test Download</button>
+      <div class="output" id="user-file-output"></div>
+    </div>
+
+    <div class="test-card">
+      <div class="test-title">Test 6: Fetch with Different Options</div>
+      <select id="fetch-options" style="padding: 8px; margin-right: 10px">
+        <option value="basic">Basic Fetch</option>
+        <option value="credentials">With Credentials</option>
+        <option value="cors">CORS Mode</option>
+        <option value="no-cors">No-CORS Mode</option>
+        <option value="same-origin">Same-Origin Mode</option>
+      </select>
+      <button class="test-button" data-test="fetch-options">Test Fetch</button>
+      <div class="output" id="fetch-options-output"></div>
+    </div>
+
+    <script>
+      // Environment detection
+      const isDevelopment =
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.port === '3000';
+
+      // Utility to log messages to the output areas
+      function logToOutput(testId, message, type = 'info') {
+        const outputEl = document.getElementById(`${testId}-output`);
+        const timestamp = new Date().toLocaleTimeString();
+
+        // Create status element
+        const statusEl = document.createElement('div');
+        statusEl.className = `status ${type}`;
+        statusEl.textContent = `[${timestamp}] ${message}`;
+
+        // Clear if it's the first message of a new test
+        if (outputEl.dataset.testRun !== timestamp.split(':')[0]) {
+          outputEl.innerHTML = '';
+          outputEl.dataset.testRun = timestamp.split(':')[0];
+        }
+
+        outputEl.appendChild(statusEl);
+        outputEl.scrollTop = outputEl.scrollHeight;
+      }
+
+      // Utility to format objects as JSON strings
+      function formatObj(obj) {
+        return JSON.stringify(obj, null, 2);
+      }
+
+      // Get proper URL based on environment
+      function getProperUrl(path) {
+        // If the path is already absolute (starts with http), use it as is
+        if (path.startsWith('http')) {
+          return path;
+        }
+
+        // Ensure path starts with /
+        const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+        // In development, use the full origin
+        if (isDevelopment) {
+          return `${window.location.origin}${normalizedPath}`;
+        }
+
+        // In production, can use relative paths
+        return normalizedPath;
+      }
+
+      // Run a test to check the environment
+      async function testEnvInfo() {
+        const testId = 'env-info';
+        logToOutput(testId, 'Checking environment...', 'info');
+
+        const envInfo = {
+          userAgent: navigator.userAgent,
+          hostname: window.location.hostname,
+          port: window.location.port,
+          protocol: window.location.protocol,
+          pathname: window.location.pathname,
+          isDevelopment: isDevelopment,
+          origin: window.location.origin,
+        };
+
+        logToOutput(testId, 'Environment information:', 'success');
+        logToOutput(testId, formatObj(envInfo), 'info');
+
+        // Test URL conversion
+        const testPaths = [
+          '/api/test',
+          'api/test',
+          '/download/test.pdf',
+          'http://example.com/test',
+        ];
+
+        logToOutput(testId, 'URL conversion tests:', 'info');
+        testPaths.forEach((path) => {
+          const converted = getProperUrl(path);
+          logToOutput(testId, `${path} → ${converted}`, 'info');
+        });
+      }
+
+      // Test download with relative URL
+      async function testRelativeDownload() {
+        const testId = 'relative-download';
+        logToOutput(testId, 'Testing relative URL download...', 'info');
+
+        try {
+          // Use a small test file that should be available
+          const url = '/static/img/test-pattern.png';
+          logToOutput(testId, `Download URL: ${url}`, 'info');
+
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'test-pattern.png';
+          a.textContent = 'Download test file';
+          a.target = '_blank';
+          a.setAttribute('style', 'color: #ff8500; text-decoration: underline; cursor: pointer;');
+
+          // Add the link to the output
+          const outputEl = document.getElementById(`${testId}-output`);
+          outputEl.appendChild(a);
+
+          logToOutput(testId, 'Manual download link created. Click to test.', 'success');
+
+          // Also try a programmatic download
+          const response = await fetch(url, {
+            method: 'HEAD',
+          });
+
+          if (response.ok) {
+            logToOutput(testId, `File exists (Status: ${response.status})`, 'success');
+            logToOutput(testId, `Content-Type: ${response.headers.get('content-type')}`, 'info');
+            logToOutput(
+              testId,
+              `Content-Length: ${response.headers.get('content-length')}`,
+              'info',
+            );
+          } else {
+            logToOutput(testId, `File check failed (Status: ${response.status})`, 'error');
+          }
+        } catch (error) {
+          logToOutput(testId, `Error: ${error.message}`, 'error');
+        }
+      }
+
+      // Test download with absolute URL
+      async function testAbsoluteDownload() {
+        const testId = 'absolute-download';
+        logToOutput(testId, 'Testing absolute URL download...', 'info');
+
+        try {
+          // Use a small test file that should be available
+          const url = `${window.location.origin}/static/img/test-pattern.png`;
+          logToOutput(testId, `Download URL: ${url}`, 'info');
+
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'test-pattern.png';
+          a.textContent = 'Download test file';
+          a.target = '_blank';
+          a.setAttribute('style', 'color: #ff8500; text-decoration: underline; cursor: pointer;');
+
+          // Add the link to the output
+          const outputEl = document.getElementById(`${testId}-output`);
+          outputEl.appendChild(a);
+
+          logToOutput(testId, 'Manual download link created. Click to test.', 'success');
+
+          // Also try a programmatic download
+          const response = await fetch(url, {
+            method: 'HEAD',
+          });
+
+          if (response.ok) {
+            logToOutput(testId, `File exists (Status: ${response.status})`, 'success');
+            logToOutput(testId, `Content-Type: ${response.headers.get('content-type')}`, 'info');
+            logToOutput(
+              testId,
+              `Content-Length: ${response.headers.get('content-length')}`,
+              'info',
+            );
+          } else {
+            logToOutput(testId, `File check failed (Status: ${response.status})`, 'error');
+          }
+        } catch (error) {
+          logToOutput(testId, `Error: ${error.message}`, 'error');
+        }
+      }
+
+      // Test download with API endpoint
+      async function testApiDownload() {
+        const testId = 'api-download';
+        logToOutput(testId, 'Testing API endpoint download...', 'info');
+
+        try {
+          // Use the test-download-path API endpoint
+          const url = getProperUrl('/api/diagnostic/test-download');
+          logToOutput(testId, `Download URL: ${url}`, 'info');
+
+          // Try to fetch the endpoint
+          const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'include',
+          });
+
+          if (response.ok) {
+            logToOutput(
+              testId,
+              `API responded successfully (Status: ${response.status})`,
+              'success',
+            );
+
+            // Get the URL from the API response
+            const data = await response.json();
+            if (data.download_url) {
+              logToOutput(testId, `Download URL from API: ${data.download_url}`, 'info');
+
+              // Create a download link
+              const a = document.createElement('a');
+              a.href = data.download_url;
+              a.download = data.filename || 'test-file.txt';
+              a.textContent = 'Download file from API';
+              a.target = '_blank';
+              a.setAttribute(
+                'style',
+                'color: #ff8500; text-decoration: underline; cursor: pointer;',
+              );
+
+              // Add the link to the output
+              const outputEl = document.getElementById(`${testId}-output`);
+              outputEl.appendChild(a);
+
+              logToOutput(testId, 'Manual download link created. Click to test.', 'success');
+            } else {
+              logToOutput(testId, 'API did not return a download URL', 'error');
+            }
+          } else {
+            logToOutput(testId, `API call failed (Status: ${response.status})`, 'error');
+            try {
+              const errorData = await response.text();
+              logToOutput(testId, `Error response: ${errorData}`, 'error');
+            } catch (e) {
+              logToOutput(testId, 'Could not parse error response', 'error');
+            }
+          }
+        } catch (error) {
+          logToOutput(testId, `Error: ${error.message}`, 'error');
+        }
+      }
+
+      // Test user file download
+      async function testUserFileDownload() {
+        const testId = 'user-file';
+        const filePath = document.getElementById('user-file-path').value.trim();
+
+        if (!filePath) {
+          logToOutput(testId, 'Please enter a file path', 'error');
+          return;
+        }
+
+        logToOutput(testId, `Testing user file download for: ${filePath}`, 'info');
+
+        try {
+          // Construct the download URL
+          const downloadUrl = getProperUrl(`/download/${filePath}`);
+          logToOutput(testId, `Download URL: ${downloadUrl}`, 'info');
+
+          // Check if the file exists first with a HEAD request
+          const headResponse = await fetch(downloadUrl, {
+            method: 'HEAD',
+            credentials: 'include',
+          });
+
+          if (headResponse.ok) {
+            logToOutput(testId, `File exists (Status: ${headResponse.status})`, 'success');
+            logToOutput(
+              testId,
+              `Content-Type: ${headResponse.headers.get('content-type')}`,
+              'info',
+            );
+            logToOutput(
+              testId,
+              `Content-Length: ${headResponse.headers.get('content-length')}`,
+              'info',
+            );
+
+            // Create a download link
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = filePath.split('/').pop() || 'download';
+            a.textContent = 'Download file';
+            a.target = '_blank';
+            a.setAttribute('style', 'color: #ff8500; text-decoration: underline; cursor: pointer;');
+
+            // Add the link to the output
+            const outputEl = document.getElementById(`${testId}-output`);
+            outputEl.appendChild(document.createElement('br'));
+            outputEl.appendChild(a);
+
+            logToOutput(testId, 'Manual download link created. Click to test.', 'success');
+          } else {
+            logToOutput(testId, `File does not exist (Status: ${headResponse.status})`, 'error');
+            if (headResponse.status === 401) {
+              logToOutput(testId, 'Authentication required. Please log in first.', 'error');
+            }
+          }
+        } catch (error) {
+          logToOutput(testId, `Error: ${error.message}`, 'error');
+        }
+      }
+
+      // Test fetch with different options
+      async function testFetchOptions() {
+        const testId = 'fetch-options';
+        const option = document.getElementById('fetch-options').value;
+        logToOutput(testId, `Testing fetch with option: ${option}`, 'info');
+
+        try {
+          // Use a small test file that should be available
+          const url = getProperUrl('/static/img/test-pattern.png');
+          logToOutput(testId, `Test URL: ${url}`, 'info');
+
+          let fetchOptions = {};
+
+          switch (option) {
+            case 'basic':
+              fetchOptions = { method: 'GET' };
+              break;
+            case 'credentials':
+              fetchOptions = {
+                method: 'GET',
+                credentials: 'include',
+              };
+              break;
+            case 'cors':
+              fetchOptions = {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'include',
+              };
+              break;
+            case 'no-cors':
+              fetchOptions = {
+                method: 'GET',
+                mode: 'no-cors',
+              };
+              break;
+            case 'same-origin':
+              fetchOptions = {
+                method: 'GET',
+                mode: 'same-origin',
+                credentials: 'include',
+              };
+              break;
+          }
+
+          logToOutput(testId, `Fetch options: ${formatObj(fetchOptions)}`, 'info');
+
+          // Make the fetch request
+          const startTime = Date.now();
+          const response = await fetch(url, fetchOptions);
+          const endTime = Date.now();
+
+          logToOutput(testId, `Request time: ${endTime - startTime}ms`, 'info');
+
+          if (option === 'no-cors') {
+            // no-cors mode returns an opaque response, can't access status
+            logToOutput(testId, 'Fetch completed with no-cors mode', 'success');
+            logToOutput(testId, 'Note: Status code not accessible in this mode', 'info');
+          } else if (response.ok) {
+            logToOutput(testId, `Fetch successful (Status: ${response.status})`, 'success');
+
+            // Log headers
+            const headers = {};
+            response.headers.forEach((value, key) => {
+              headers[key] = value;
+            });
+            logToOutput(testId, `Response headers: ${formatObj(headers)}`, 'info');
+          } else {
+            logToOutput(testId, `Fetch failed (Status: ${response.status})`, 'error');
+          }
+        } catch (error) {
+          logToOutput(testId, `Error: ${error.message}`, 'error');
+        }
+      }
+
+      // Event listeners
+      document.addEventListener('DOMContentLoaded', () => {
+        // Run individual tests
+        document.querySelectorAll('.test-button').forEach((button) => {
+          button.addEventListener('click', () => {
+            const test = button.getAttribute('data-test');
+            switch (test) {
+              case 'env-info':
+                testEnvInfo();
+                break;
+              case 'relative-download':
+                testRelativeDownload();
+                break;
+              case 'absolute-download':
+                testAbsoluteDownload();
+                break;
+              case 'api-download':
+                testApiDownload();
+                break;
+              case 'user-file':
+                testUserFileDownload();
+                break;
+              case 'fetch-options':
+                testFetchOptions();
+                break;
+            }
+          });
+        });
+
+        // Run all tests
+        document.getElementById('run-all-tests').addEventListener('click', () => {
+          testEnvInfo();
+          setTimeout(testRelativeDownload, 500);
+          setTimeout(testAbsoluteDownload, 1000);
+          setTimeout(testApiDownload, 1500);
+          // Don't auto-run user file download as it needs input
+          setTimeout(() => testFetchOptions(), 2000);
+        });
+
+        // Clear results
+        document.getElementById('clear-results').addEventListener('click', () => {
+          document.querySelectorAll('.output').forEach((el) => {
+            el.innerHTML = '';
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

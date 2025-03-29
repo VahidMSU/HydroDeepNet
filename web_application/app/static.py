@@ -11,6 +11,10 @@ def serve_images(filename):
 def serve_videos(filename):
     return send_from_directory('/data/SWATGenXApp/GenXAppData/videos', filename)
 
+@static_bp.route('/static/visualizations/<path:filename>')
+def serve_visualizations(filename):
+    return send_from_directory('/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12', filename)
+
 @static_bp.route('/', defaults={'path': ''})
 @static_bp.route('/<path:path>')
 def serve_frontend(path):
