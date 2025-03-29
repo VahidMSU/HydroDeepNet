@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, send_from_directory, url_for
 import os
 import platform
 import sys
@@ -113,3 +113,84 @@ def test_model_settings():
             "message": "Error processing request",
             "details": str(e)
         }), 500
+
+# File system access diagnostics
+
+@diagnostic_bp.route('/file-access', methods=['GET'])
+def file_access_diagnostics():
+    """
+    Checks and reports file system access across important directories
+    """
+    results = {
+        "static_paths": {},
+        "download_endpoints": {},
+        "environment": os.environ.get('FLASK_ENV', 'not set')
+    }
+    
+    # Check static file paths
+    static_paths = {
+        "images": "/data/SWATGenXApp/GenXAppData/images",
+        "videos": "/data/SWATGenXApp/GenXAppData/videos",
+        "visualizations": "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12",
+        "user_files": "/data/SWATGenXApp/Users"
+    }
+    
+    for name, path in static_paths.items():
+        results["static_paths"][name] = {
+            "path": path,
+            "exists": os.path.exists(path),
+            "is_dir": os.path.isdir(path) if os.path.exists(path) else False,
+            "readable": os.access(path, os.R_OK) if os.path.exists(path) else False,
+            "sample_files": []
+        }
+        
+        # Try to list some sample files
+        if os.path.isdir(path) and os.access(path, os.R_OK):
+            try:
+                files = os.listdir(path)[:5]  # Just list first 5 files
+                results["static_paths"][name]["sample_files"] = files
+            except Exception as e:
+                results["static_paths"][name]["error"] = str(e)
+    
+    # Check endpoints for downloads
+    endpoints = {
+        "static_images": url_for('static.serve_images', filename='placeholder.jpg', _external=True),
+        "static_videos": url_for('static.serve_videos', filename='placeholder.mp4', _external=True),
+        "static_visualizations": url_for('static.serve_visualizations', filename='placeholder.png', _external=True),
+        "api_visualizations": url_for('api.api_serve_visualizations', filename='placeholder.png', _external=True),
+    }
+    
+    results["download_endpoints"] = endpoints
+    
+    return jsonify(results)
+
+@diagnostic_bp.route('/serve-test-file', methods=['GET'])
+def serve_test_file():
+    """
+    Generate and serve a test file to verify download capabilities
+    """
+    # Create test file content
+    test_content = f"""
+    SWATGenX File Access Test
+    Generated: {datetime.datetime.now().isoformat()}
+    Environment: {os.environ.get('FLASK_ENV', 'not set')}
+    Host: {request.host}
+    Platform: {platform.platform()}
+    Python: {sys.version}
+    """
+    
+    # Create a temporary directory to store the test file
+    test_dir = os.path.join(current_app.instance_path, 'test_files')
+    os.makedirs(test_dir, exist_ok=True)
+    
+    # Create the test file
+    test_file_path = os.path.join(test_dir, 'access_test.txt')
+    with open(test_file_path, 'w') as f:
+        f.write(test_content)
+    
+    return send_from_directory(
+        test_dir, 
+        'access_test.txt',
+        as_attachment=True, 
+        download_name='swatgenx_access_test.txt'
+    )
