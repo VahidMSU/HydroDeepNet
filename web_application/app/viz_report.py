@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app, send_file, redirect, send_from_directory
+from flask import Blueprint, jsonify, request, current_app, redirect, send_file, send_from_directory
 from flask_login import current_user
 import os
 import json
@@ -8,11 +8,121 @@ import tempfile
 from datetime import datetime
 from app.decorators import conditional_login_required, conditional_verified_required
 
-report_bp = Blueprint('report', __name__)
+# Combined blueprint for visualization and reporting
+viz_report_bp = Blueprint('viz_report', __name__)
 
+# ======= VISUALIZATION ROUTES =======
+@viz_report_bp.route('/api/get_options', methods=['GET'])
+@conditional_login_required
+@conditional_verified_required
+def get_options():
+    try:
+        names_path = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/"
+        variables = ['et', 'perc', 'precip', 'snofall', 'snomlt', 'surq_gen', 'wateryld']
+
+        if os.path.exists(names_path):
+            names = os.listdir(names_path)
+            if "log.txt" in names:
+                names.remove("log.txt")
+        else:
+            names = []
+        return jsonify({'names': names, 'variables': variables})
+    except Exception as e:
+        current_app.logger.error(f"Error fetching options: {e}")
+        return jsonify({"error": "Failed to fetch options"}), 500
+
+@viz_report_bp.route('/api/visualizations', methods=['GET'])
+@conditional_login_required
+@conditional_verified_required
+def visualizations():
+    current_app.logger.info("Visualizations route called")
+    name = request.args.get('NAME', default=None)
+    ver = request.args.get('ver', default=None)
+    variable = request.args.get('variable', default=None)
+
+    if not all([name, ver, variable]):
+        error_msg = "Please provide NAME, Version, and Variable."
+        current_app.logger.error(error_msg)
+        return jsonify({"error": error_msg}), 400
+
+    # Use filesystem path only to check if the directory exists
+    base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL"
+    if not os.path.exists(base_path):
+        error_msg = f"No visualization data found for watershed: {name}"
+        current_app.logger.error(error_msg)
+        return jsonify({"error": error_msg}), 404
+
+    video_path = os.path.join(base_path, "verifications_videos")
+    if not os.path.exists(video_path):
+        error_msg = f"No visualization videos found for watershed: {name}"
+        current_app.logger.error(error_msg)
+        return jsonify({"error": error_msg}), 404
+
+    variables = variable.split(",")
+    gif_urls = []
+    missing_vars = []
+
+    for var in variables:
+        # Check if file exists in filesystem
+        gif_file = os.path.join(video_path, f"{ver}_{var}_animation.gif")
+        if os.path.exists(gif_file):
+            # Return URL path, not filesystem path
+            gif_urls.append(f"/static/visualizations/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{var}_animation.gif")
+        else:
+            missing_vars.append(var)
+            current_app.logger.warning(f"Missing visualization for {var} in {gif_file}")
+
+    if not gif_urls:
+        error_msg = f"No visualizations found for NAME: {name}, Version: {ver}, Variables: {variables}."
+        if missing_vars:
+            error_msg += f" Missing variables: {', '.join(missing_vars)}"
+        current_app.logger.error(error_msg)
+        return jsonify({"error": error_msg}), 404
+
+    response_data = {
+        "gif_files": gif_urls
+    }
+    
+    if missing_vars:
+        response_data["warnings"] = f"Some variables were not found: {', '.join(missing_vars)}"
+
+    return jsonify(response_data)
+
+# Support both API and non-API versions of visualization routes
+@viz_report_bp.route('/api/static/visualizations/<name>/<ver>/<variable>.gif', methods=['GET'])
+@viz_report_bp.route('/static/visualizations/<name>/<ver>/<variable>.gif', methods=['GET'])
+@conditional_login_required
+@conditional_verified_required
+def serve_visualization(name, ver, variable):
+    """
+    Serve visualization GIFs with proper error handling
+    """
+    # Construct the path to the visualization file using the static URL
+    # This will be handled by Apache's Alias directive
+    static_url = f"/static/visualizations/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{variable}_animation.gif"
+    
+    # Check if the file exists on the filesystem before redirecting
+    file_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{name}/figures_SWAT_gwflow_MODEL/verifications_videos/{ver}_{variable}_animation.gif"
+    if not os.path.exists(file_path):
+        current_app.logger.error(f"Visualization not found: {file_path}")
+        return jsonify({"error": "Visualization not found"}), 404
+        
+    # Redirect to the static URL that will be handled by Apache
+    return redirect(static_url)
+
+# Support both API and non-API versions of vision system
+@viz_report_bp.route('/api/vision_system')
+@viz_report_bp.route('/vision_system')
+@conditional_login_required
+@conditional_verified_required
+def vision_system():
+    current_app.logger.info("Vision System route called")
+    return jsonify({"title": "Vision System", "message": "Vision System page"})
+
+# ======= REPORT ROUTES =======
 # Handle both API and non-API versions of reports route
-@report_bp.route('/api/reports', methods=['GET'])
-@report_bp.route('/reports', methods=['GET'])
+@viz_report_bp.route('/api/reports', methods=['GET'])
+@viz_report_bp.route('/reports', methods=['GET'])
 @conditional_login_required
 @conditional_verified_required
 def get_reports_redirect():
@@ -20,15 +130,15 @@ def get_reports_redirect():
     return redirect('/api/get_reports')
 
 # Handle report paths with the appropriate normalization
-@report_bp.route('/api/reports/<report_id>', methods=['GET'])
-@report_bp.route('/reports/<report_id>', methods=['GET'])
+@viz_report_bp.route('/api/reports/<report_id>', methods=['GET'])
+@viz_report_bp.route('/reports/<report_id>', methods=['GET'])
 @conditional_login_required
 @conditional_verified_required
 def report_view_redirect(report_id):
     """Redirect to the report view API endpoint"""
     return redirect(f"/api/reports/{report_id}/view")
 
-@report_bp.route('/api/generate_report', methods=['POST'])
+@viz_report_bp.route('/api/generate_report', methods=['POST'])
 @conditional_login_required
 @conditional_verified_required
 def generate_report():
@@ -160,7 +270,7 @@ def generate_report():
         current_app.logger.error(f"Error initiating report generation: {e}")
         return jsonify({"error": f"Failed to start report generation: {str(e)}"}), 500
 
-@report_bp.route('/api/get_reports', methods=['GET'])
+@viz_report_bp.route('/api/get_reports', methods=['GET'])
 @conditional_login_required
 @conditional_verified_required
 def get_reports():
@@ -198,7 +308,7 @@ def get_reports():
     reports.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
     return jsonify({"reports": reports})
 
-@report_bp.route('/api/reports/<report_id>/download', methods=['GET'])
+@viz_report_bp.route('/api/reports/<report_id>/download', methods=['GET'])
 @conditional_login_required
 @conditional_verified_required
 def download_report(report_id):
@@ -265,8 +375,8 @@ def download_report(report_id):
             'report_id': report_id
         }), 500
 
-@report_bp.route('/api/reports/<report_id>/view', methods=['GET'])
-@report_bp.route('/api/reports/<report_id>/view/<path:subpath>', methods=['GET'])
+@viz_report_bp.route('/api/reports/<report_id>/view', methods=['GET'])
+@viz_report_bp.route('/api/reports/<report_id>/view/<path:subpath>', methods=['GET'])
 @conditional_login_required
 @conditional_verified_required
 def view_report(report_id, subpath=None):
@@ -363,7 +473,7 @@ def view_report(report_id, subpath=None):
     
     return jsonify({'error': 'No viewable content found'}), 404
 
-@report_bp.route('/api/reports/<report_id>/status', methods=['GET'])
+@viz_report_bp.route('/api/reports/<report_id>/status', methods=['GET'])
 @conditional_login_required
 @conditional_verified_required
 def get_report_status(report_id):
@@ -442,8 +552,8 @@ def get_report_status(report_id):
             'message': 'Report is still being generated'
         })
 
-@report_bp.route('/api/reports/<report_id>', defaults={'path': ''})
-@report_bp.route('/api/reports/<report_id>/<path:path>')
+@viz_report_bp.route('/api/reports/<report_id>', defaults={'path': ''})
+@viz_report_bp.route('/api/reports/<report_id>/<path:path>')
 @conditional_login_required
 @conditional_verified_required
 def report_redirect(report_id, path=''):

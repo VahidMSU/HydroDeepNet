@@ -2,14 +2,14 @@ from flask import Blueprint, jsonify, request, current_app
 from flask_login import current_user
 import pandas as pd
 import ast
-from datetime import datetime  # Add this import for timestamp creation
+from datetime import datetime
 from app.decorators import conditional_login_required, conditional_verified_required
 from app.utils import (find_station, check_existing_models, get_huc12_geometries,
                       get_huc12_streams_geometries, get_huc12_lakes_geometries)
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 from app.extensions import csrf
 import geopandas as gpd
-from app.emailex import send_model_start_email
+from app.comm_utils import send_model_start_email, check_redis_health
 
 model_bp = Blueprint('model', __name__)
 
@@ -48,10 +48,6 @@ def get_station_characteristics():
     # Convert row to dict
     characteristics = station_row.iloc[0].to_dict()
     current_app.logger.info(f"Found station row for {station_no}")
-
-    # Check if a model already exists
-    #existance_flag = check_existing_models(station_no, config=SWATGenXPaths)
-    #characteristics['model_exists'] = str(existance_flag).capitalize()
 
     # Safely parse the HUC12 list from the CSV field
     # The CSV field looks like: "['040500040703','040500040508', ... ]"
@@ -131,39 +127,21 @@ def model_settings():
         
         # Check Redis connection first
         redis_working = False
-        redis_error = None
         
         try:
-            from redis import Redis
-            # Try multiple Redis URLs
-            redis_urls = [
-                current_app.config.get('REDIS_URL', 'redis://localhost:6379/0'),
-                'redis://127.0.0.1:6379/0',
-                'redis://redis:6379/0'
-            ]
+            # Use the consolidated Redis health check
+            redis_health = check_redis_health()
             
-            for url in redis_urls:
-                try:
-                    current_app.logger.info(f"Testing Redis connection at {url}")
-                    redis_client = Redis.from_url(url, socket_timeout=2, socket_connect_timeout=2)
-                    if redis_client.ping():
-                        current_app.logger.info(f"Redis connection successful at {url}")
-                        redis_working = True
-                        # Update the app's Redis URL if needed
-                        if url != current_app.config.get('REDIS_URL'):
-                            current_app.logger.info(f"Updating Redis URL from {current_app.config.get('REDIS_URL')} to {url}")
-                            current_app.config['REDIS_URL'] = url
-                        break
-                except Exception as e:
-                    current_app.logger.warning(f"Redis connection failed at {url}: {e}")
-                    redis_error = str(e)
-            
-            if not redis_working:
-                current_app.logger.error("All Redis connection attempts failed")
+            if redis_health['healthy']:
+                current_app.logger.info(f"Redis connection successful: {redis_health['message']}")
+                redis_working = True
+                # Redis URL is already updated in the health check function
+            else:
+                current_app.logger.error(f"Redis health check failed: {redis_health['message']}")
                 return jsonify({
                     "status": "error",
                     "message": "The model creation service is currently unavailable",
-                    "details": "Could not connect to Redis server"
+                    "details": redis_health['message']
                 }), 503
                 
         except ImportError as e:
@@ -203,7 +181,7 @@ def model_settings():
                         "Request Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
                     
-                    # Send the email notification
+                    # Send the email notification using our consolidated email utility
                     if current_user.email:
                         email_sent = send_model_start_email(
                             current_user.username,
