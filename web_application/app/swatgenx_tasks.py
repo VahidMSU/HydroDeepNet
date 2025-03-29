@@ -4,12 +4,12 @@ import sys
 import traceback
 from celery import shared_task
 from app.utils import single_swatplus_model_creation, LoggerSetup
-from app.emailex import send_model_completion_email
+from app.comm_utils import send_model_completion_email
+from app.model_utils import MODFLOW_coverage
 from app.models import User
 from flask import current_app
 from app.extensions import db
 from app.utils import find_VPUID
-from app.check_MODFLOW_coverage import MODFLOW_coverage
 from MODFLOW.MODGenX_API import create_modflow_model
 
 # Set up logging
