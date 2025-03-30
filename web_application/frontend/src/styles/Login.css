@@ -1,0 +1,43 @@
+.login-container {
+  min-height: 100vh;
+  padding: 2rem 0;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.login-card h2 {
+  color: #2c3e50;
+}
+
+.form-control:focus {
+  border-color: #4b6cb7;
+  box-shadow: 0 0 0 0.25rem rgba(75, 108, 183, 0.25);
+}
+
+.btn-primary {
+  background-color: #4b6cb7;
+  border-color: #4b6cb7;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #3b5998;
+  border-color: #3b5998;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+a {
+  color: #4b6cb7;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #3b5998;
+}

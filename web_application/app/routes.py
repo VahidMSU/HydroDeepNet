@@ -75,14 +75,16 @@ class AppManager:
         try:
             from app.extensions import csrf
             
-            # Fix the function signature to accept the path parameter
+            # Register a proper CSRF exempt handler for API routes that returns a response
+            @self.app.route('/api/<path:path>', methods=['GET', 'POST', 'PUT', 'DELETE'])
             @csrf.exempt
             def csrf_exempt_api(path):
-                # This function just returns None, it's only for the decorator
-                return None
-                
-            # Register the CSRF exempt endpoint for API routes
-            self.app.add_url_rule('/api/<path:path>', 'csrf_exempt_api', csrf_exempt_api, methods=['GET', 'POST', 'PUT', 'DELETE'])
+                # Forward the request to the appropriate route
+                self.app.logger.debug(f"CSRF exempt route for: /api/{path}")
+                # This is just a pass-through for CSRF exemption - we shouldn't actually get here
+                # Return a proper response instead of None
+                return redirect(f"/api/{path}", code=307)
+            
             self.app.logger.info("Set up CSRF exclusion for API routes")
             
             # Alternative approach: use direct blueprint exemption

@@ -7,6 +7,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+export const API_URL = '/api'; // Replace '/api' with your actual API base URL if needed
 
 // Add response interceptor for error handling
 api.interceptors.response.use(
@@ -37,6 +38,8 @@ export const signUp = (userData) => api.post('/signup', userData);
 export const login = (credentials) => api.post('/login', credentials);
 export const logout = () => api.post('/logout');
 export const verifyEmail = (data) => api.post('/verify', data);
+export const requestPasswordReset = (email) => api.post('/reset-password-request', { email });
+export const resetPassword = (resetData) => api.post('/reset-password', resetData);
 
 // User data
 export const getUserDashboard = () => api.get('/user_dashboard');

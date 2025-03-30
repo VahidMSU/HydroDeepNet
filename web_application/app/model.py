@@ -88,13 +88,9 @@ def get_station_characteristics():
 @model_bp.route('/api/model-settings', methods=['POST'])
 @conditional_login_required
 @conditional_verified_required
-@csrf.exempt  # Explicitly exempt from CSRF to prevent issues
+@csrf.exempt
 def model_settings():
-    """Model settings submission route."""
-    current_app.logger.info(f"Model settings route called via {request.url} - starting processing")
-    current_app.logger.info(f"Request headers: {dict(request.headers)}")
-    current_app.logger.info(f"Request content type: {request.content_type}")
-    
+        
     try:
         data = request.json
         if not data:
@@ -173,6 +169,8 @@ def model_settings():
         
         # Celery task creation with retry logic
         from app.swatgenx_tasks import create_model_task
+        import time
+        from datetime import datetime
         
         max_retries = 3
         retry_delay = 1
@@ -194,6 +192,7 @@ def model_settings():
                 try:
                     from app.task_tracker import task_tracker
                     task_info = task_tracker.get_task_status(task.id)
+                    
                     if not task_info:
                         # Register task if not already registered by the task itself
                         task_tracker.register_task(

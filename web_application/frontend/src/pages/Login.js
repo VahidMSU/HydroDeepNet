@@ -56,28 +56,22 @@ const Login = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        credentials: 'include', // Include cookies in the request
       });
+
       const data = await response.json();
-      if (data.success) {
-        if (!data.verified) {
-          // User is not verified, redirect to verify page with email
-          localStorage.setItem('verificationEmail', data.email);
-          alert(
-            data.message || 'Your email has not been verified. Redirecting to verification page.',
-          );
-          navigate('/verify');
-          return;
-        }
-        // User is verified, proceed with login
-        localStorage.setItem('authToken', data.token);
-        // Also store the username if available in the response
-        if (data.username) {
-          localStorage.setItem('username', data.username);
-        }
+      console.log('Login response:', data);
+
+      if (data.status === 'success') {
+        // User is logged in successfully
+        localStorage.setItem('username', data.user.username);
+        localStorage.setItem('userInfo', JSON.stringify(data.user));
+        // Store auth token to indicate logged-in state
+        localStorage.setItem('authToken', 'true');
         navigate('/');
       } else {
-        setErrors({ login: data.error });
-        alert(data.error || 'Login failed. Please try again.');
+        setErrors({ login: data.message || 'Login failed. Please try again.' });
+        alert(data.message || 'Login failed. Please try again.');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -122,6 +116,9 @@ const Login = () => {
               onChange={handleChange}
               error={Boolean(errors.username)}
               helperText={errors.username}
+              inputProps={{
+                autoComplete: 'username',
+              }}
               sx={{
                 bgcolor: 'white',
                 borderRadius: 1,
@@ -148,6 +145,9 @@ const Login = () => {
               onChange={handleChange}
               error={Boolean(errors.password)}
               helperText={errors.password}
+              inputProps={{
+                autoComplete: 'current-password',
+              }}
               sx={{
                 bgcolor: 'white',
                 borderRadius: 1,
@@ -163,17 +163,22 @@ const Login = () => {
                 },
               }}
             />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={formData.remember_me}
-                  onChange={handleChange}
-                  name="remember_me"
-                  sx={{ color: 'white' }}
-                />
-              }
-              label={<Typography sx={{ color: 'white' }}>Remember Me</Typography>}
-            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={formData.remember_me}
+                    onChange={handleChange}
+                    name="remember_me"
+                    sx={{ color: 'white' }}
+                  />
+                }
+                label={<Typography sx={{ color: 'white' }}>Remember Me</Typography>}
+              />
+              <Link to="/forgot-password" style={{ color: '#ff8500', textDecoration: 'none' }}>
+                <Typography variant="body2">Forgot Password?</Typography>
+              </Link>
+            </Box>
             <Button
               fullWidth
               type="submit"

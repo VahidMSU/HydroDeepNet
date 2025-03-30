@@ -13,6 +13,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_socketio import SocketIO, emit
 from redis import Redis, ConnectionError
+import logging
 
 # Create socketio instance at module level to export it
 socketio = SocketIO(cors_allowed_origins="*")
@@ -100,21 +101,25 @@ def create_app(config_class=Config):  # Update function signature
         logger.info(f"Loading user: {user_id}")
         return User.query.get(int(user_id))
 
-    # Load test user
-    with app.app_context():
-        test_user = User.query.get(1)
-        if (test_user):
-            logger.info(f"Test user loaded: {test_user.username}")
-        else:
-            logger.warning("Test user with ID 1 not found.")
-
-    # Note: Blueprints are now registered through AppManager in routes.py
-    # The following initialization will call app.register_blueprint for all necessary blueprints
-    
     # Ensure database tables exist
     with app.app_context():
-        db.create_all()
-        logger.info("Ensured database tables exist")
+        try:
+            db.create_all()
+            logger.info("Ensured database tables exist")
+            
+            # Try to load test user safely, without breaking the application if there are schema issues
+            try:
+                test_user = User.query.get(1)
+                if test_user:
+                    logger.info(f"Test user loaded: {test_user.username}")
+                else:
+                    logger.warning("Test user with ID 1 not found.")
+            except Exception as e:
+                logger.error(f"Error loading test user: {e}")
+                logger.warning("Application will continue without loading test user")
+        except Exception as e:
+            logger.error(f"Error creating database tables: {e}")
+            logger.warning("Application will attempt to continue with existing database")
 
     # Initialize Redis connection with better error handling and retry
     try:
