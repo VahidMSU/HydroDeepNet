@@ -1,0 +1,38 @@
+[Unit]
+Description=Multiple Celery Workers for SWATGenX
+After=network.target redis.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/data/SWATGenXApp/codes/web_application
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data/SWATGenXApp/codes/.venv/bin"
+Environment="FLASK_ENV=production"
+Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
+Environment="C_FORCE_ROOT=true"
+Environment="CELERY_LOG_LEVEL=DEBUG"
+
+# Start multiple workers with different concurrency settings
+# -n allows us to name each worker node uniquely
+# Each worker can process one heavy model creation job, with multiple worker processes that can run in parallel
+ExecStart=/bin/bash -c '/data/SWATGenXApp/codes/.venv/bin/celery -A celery_app multi start model_worker1 model_worker2 -Q:model_worker1,model_worker2 model_creation --concurrency=1 --prefetch-multiplier=1 --pool=prefork --loglevel=info'
+
+# Stop all workers when service stops
+ExecStop=/bin/bash -c '/data/SWATGenXApp/codes/.venv/bin/celery -A celery_app multi stopwait model_worker1 model_worker2'
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Set resource limits to prevent memory exhaustion
+LimitNOFILE=65536
+# Increase timeout for service operations
+TimeoutStartSec=60
+TimeoutStopSec=120
+
+# Logging
+StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/celery-multi-worker.log
+StandardError=append:/data/SWATGenXApp/codes/web_application/logs/celery-multi-worker-error.log
+
+[Install]
+WantedBy=multi-user.target

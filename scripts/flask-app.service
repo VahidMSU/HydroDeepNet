@@ -1,34 +1,25 @@
 [Unit]
-Description=Gunicorn instance to serve Flask application
-After=network.target
+Description=SWATGenX Flask Web Application
+After=network.target redis-server.service
 
 [Service]
 User=www-data
 Group=www-data
 WorkingDirectory=/data/SWATGenXApp/codes/web_application
-Environment="PATH=/data/SWATGenXApp/codes/.venv/bin"
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data/SWATGenXApp/codes/.venv/bin"
+Environment="FLASK_APP=run.py"
 Environment="FLASK_ENV=production"
 Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
+Environment="REDIS_URL=redis://127.0.0.1:6379/0"
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:5050 run:app --timeout 120 --access-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-access.log --error-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-error.log
 
-# Increase timeouts and better error handling
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/gunicorn \
-    --workers 3 \
-    --worker-class eventlet \
-    --bind 127.0.0.1:5050 \
-    --timeout 120 \
-    --keep-alive 65 \
-    --log-level info \
-    --access-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn_access.log \
-    --error-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn_error.log \
-    run:app
-
-# Restart policy to prevent downtime
+# Restart policy
 Restart=always
 RestartSec=5
 
 # Logging
-StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/flask-app-stdout.log
-StandardError=append:/data/SWATGenXApp/codes/web_application/logs/flask-app-stderr.log
+StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/flask-app.log
+StandardError=append:/data/SWATGenXApp/codes/web_application/logs/flask-app-error.log
 
 [Install]
 WantedBy=multi-user.target

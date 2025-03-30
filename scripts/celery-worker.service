@@ -1,6 +1,7 @@
 [Unit]
-Description=Celery Worker for Flask Application
-After=network.target redis.service
+Description=Celery Worker for SWATGenX
+After=network.target redis-server.service
+Requires=redis-server.service
 
 [Service]
 User=www-data
@@ -11,16 +12,20 @@ Environment="FLASK_ENV=production"
 Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
 Environment="C_FORCE_ROOT=true"
 Environment="CELERY_LOG_LEVEL=DEBUG"
+Environment="REDIS_URL=redis://127.0.0.1:6379/0"
+Environment="API_SERVER_PORT=5050"
 
-# Use celery_app instead of celery_worker for the Celery instance
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_app worker --loglevel=debug --concurrency=4
+# Configure worker for better handling of multiple tasks
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_app worker -n model_worker@%%h -Q model_creation --concurrency=4 --prefetch-multiplier=1 --max-tasks-per-child=1 -O fair --pool=prefork --loglevel=info
 
-# Restart policy
+# Proper restart policy to handle connection issues
 Restart=always
-RestartSec=5
+RestartSec=10
 
-# Increase timeout for service startup
-TimeoutStartSec=30
+# Set resource limits
+LimitNOFILE=65536
+TimeoutStartSec=60
+TimeoutStopSec=60
 
 # Logging
 StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/celery-worker.log

@@ -127,6 +127,24 @@ def make_celery(app=None):
         'retry_on_timeout': True
     }
     
+    # Queue configuration for different task types
+    celery.conf.task_routes = {
+        'app.swatgenx_tasks.create_model_task': {'queue': 'model_creation'},
+    }
+    
+    # Task execution settings
+    celery.conf.task_acks_late = True
+    celery.conf.worker_prefetch_multiplier = 1
+    celery.conf.worker_send_task_events = True
+    celery.conf.task_send_sent_event = True
+    
+    # Result backend configuration
+    celery.conf.result_expires = 60 * 60 * 24 * 7  # Results expire in 7 days
+    
+    # Task time limits (30 minutes soft, 12 hours hard)
+    celery.conf.task_soft_time_limit = 60 * 30  
+    celery.conf.task_time_limit = 60 * 60 * 12
+    
     # Save configuration to file for debugging
     try:
         config_log = os.path.join('/data/SWATGenXApp/codes/web_application/logs', 'celery_config.log')
@@ -135,6 +153,9 @@ def make_celery(app=None):
             f.write(f"Result Backend: {redis_url}\n")
             f.write(f"Include: {celery.conf.include}\n")
             f.write(f"Broker retry on startup: {celery.conf.broker_connection_retry_on_startup}\n")
+            f.write(f"Task routes: {celery.conf.task_routes}\n")
+            f.write(f"Worker prefetch multiplier: {celery.conf.worker_prefetch_multiplier}\n")
+            f.write(f"Task acks late: {celery.conf.task_acks_late}\n")
             f.write(f"Environment: {os.environ.get('FLASK_ENV', 'Not set')}\n")
         logger.info(f"Saved Celery configuration to {config_log}")
     except Exception as e:
