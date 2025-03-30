@@ -18,6 +18,11 @@ import {
   faInfoCircle,
   faExclamationTriangle,
   faChevronRight,
+  faThLarge,
+  faThList,
+  faList,
+  faSortAmountDown,
+  faSortAmountUp,
 } from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -37,6 +42,10 @@ import {
   FileTypeIcon,
   BadgeCount,
   DirectoryGuide,
+  ViewControls,
+  ViewButton,
+  ViewModeLabel,
+  ListViewHeader,
 } from '../../styles/UserDashboard.tsx';
 
 // Helper function to determine file type icon
@@ -116,8 +125,27 @@ const UserDashboardTemplate = ({
   handleDownloadFile,
   handleDownloadDirectory,
   errorMessage = '',
+  isLoading = false,
+  viewMode = 'grid-large',
+  setViewMode,
+  sortOrder = 'name-asc',
+  setSortOrder,
 }) => {
   const pathParts = currentPath ? currentPath.split('/').filter(Boolean) : [];
+
+  // Sort handler function to prepare for sort buttons
+  const handleSortChange = (newSortOrder) => {
+    setSortOrder(newSortOrder);
+  };
+
+  // Toggle sort direction
+  const toggleSortDirection = () => {
+    if (sortOrder.endsWith('-asc')) {
+      handleSortChange(sortOrder.replace('-asc', '-desc'));
+    } else {
+      handleSortChange(sortOrder.replace('-desc', '-asc'));
+    }
+  };
 
   return (
     <DashboardContainer>
@@ -198,46 +226,146 @@ const UserDashboardTemplate = ({
         ))}
       </BreadcrumbNav>
 
+      {/* View Controls */}
+      <ViewControls>
+        <ViewModeLabel>View:</ViewModeLabel>
+        <ViewButton
+          onClick={() => setViewMode('grid-large')}
+          className={viewMode === 'grid-large' ? 'active' : ''}
+          title="Large Grid View"
+        >
+          <FontAwesomeIcon icon={faThLarge} />
+        </ViewButton>
+        <ViewButton
+          onClick={() => setViewMode('grid-small')}
+          className={viewMode === 'grid-small' ? 'active' : ''}
+          title="Small Grid View"
+        >
+          <FontAwesomeIcon icon={faThList} />
+        </ViewButton>
+        <ViewButton
+          onClick={() => setViewMode('list-view')}
+          className={viewMode === 'list-view' ? 'active' : ''}
+          title="List View"
+        >
+          <FontAwesomeIcon icon={faList} />
+        </ViewButton>
+
+        <span style={{ flex: 1 }}></span>
+
+        <ViewModeLabel>Sort by:</ViewModeLabel>
+        <ViewButton
+          onClick={() =>
+            handleSortChange(
+              sortOrder.startsWith('name')
+                ? 'date-' + sortOrder.split('-')[1]
+                : 'name-' + sortOrder.split('-')[1],
+            )
+          }
+          title={sortOrder.startsWith('name') ? 'Sort by date' : 'Sort by name'}
+        >
+          {sortOrder.startsWith('name') ? 'Name' : 'Date'}
+        </ViewButton>
+        <ViewButton
+          onClick={toggleSortDirection}
+          title={sortOrder.endsWith('asc') ? 'Sort descending' : 'Sort ascending'}
+        >
+          <FontAwesomeIcon icon={sortOrder.endsWith('asc') ? faSortAmountUp : faSortAmountDown} />
+        </ViewButton>
+      </ViewControls>
+
+      {/* List View Header - Only show in list view */}
+      {viewMode === 'list-view' && (
+        <ListViewHeader>
+          <div className="name">Name</div>
+          <div className="details">
+            <span>Size</span>
+            <span>Last Modified</span>
+            <span>Type</span>
+          </div>
+          <div className="actions">Actions</div>
+        </ListViewHeader>
+      )}
+
       {/* Directory and File Grid */}
-      <ContentGrid>
+      <ContentGrid className={viewMode}>
         {/* Directories */}
         {contents.directories.map((dir, index) => (
           <FolderCard key={`dir-${index}`}>
-            <FolderHeader>
-              <FontAwesomeIcon icon={faFolder} className="icon" />
-              <h3 title={dir.name}>{dir.name}</h3>
-              {dir.items > 0 && <BadgeCount>{dir.items}</BadgeCount>}
-            </FolderHeader>
+            {viewMode === 'list-view' ? (
+              // List View Layout
+              <>
+                <div className="item-details">
+                  <FolderHeader>
+                    <FontAwesomeIcon icon={faFolder} className="icon" />
+                    <h3 title={dir.name}>{dir.name}</h3>
+                    {dir.items > 0 && <BadgeCount>{dir.items}</BadgeCount>}
+                  </FolderHeader>
 
-            <ItemInfo>
-              <p>
-                <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
-                Created: {formatDate(dir.created)}
-              </p>
-              <p>
-                <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
-                {dir.items} item{dir.items !== 1 ? 's' : ''}
-              </p>
-            </ItemInfo>
+                  <ItemInfo className="item-metadata">
+                    <p>
+                      <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                      {dir.items} item{dir.items !== 1 ? 's' : ''}
+                    </p>
+                    <p>
+                      <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
+                      {formatDate(dir.created)}
+                    </p>
+                    <span>Folder</span>
+                  </ItemInfo>
+                </div>
 
-            <FolderButton onClick={() => handleDirectoryClick(dir.path)}>
-              <FontAwesomeIcon icon={faFolderOpen} className="icon" />
-              Open Folder
-            </FolderButton>
-            <FileButton
-              as="a"
-              href={dir.download_zip_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(event) => {
-                event.preventDefault();
-                console.log('Download directory URL:', dir.download_zip_url);
-                handleDownloadDirectory(dir.download_zip_url);
-              }}
-              className="icon-only"
-            >
-              <FontAwesomeIcon icon={faDownload} className="icon" />
-            </FileButton>
+                <div className="item-actions">
+                  <FolderButton onClick={() => handleDirectoryClick(dir.path)}>
+                    <FontAwesomeIcon icon={faFolderOpen} className="icon" />
+                    Open
+                  </FolderButton>
+                  <FileButton
+                    onClick={(event) => {
+                      event.preventDefault();
+                      handleDownloadDirectory(dir.download_zip_url);
+                    }}
+                    className="icon-only"
+                  >
+                    <FontAwesomeIcon icon={faDownload} className="icon" />
+                  </FileButton>
+                </div>
+              </>
+            ) : (
+              // Grid View Layout
+              <>
+                <FolderHeader>
+                  <FontAwesomeIcon icon={faFolder} className="icon" />
+                  <h3 title={dir.name}>{dir.name}</h3>
+                  {dir.items > 0 && <BadgeCount>{dir.items}</BadgeCount>}
+                </FolderHeader>
+
+                <ItemInfo>
+                  <p>
+                    <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
+                    Created: {formatDate(dir.created)}
+                  </p>
+                  <p>
+                    <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                    {dir.items} item{dir.items !== 1 ? 's' : ''}
+                  </p>
+                </ItemInfo>
+
+                <FolderButton onClick={() => handleDirectoryClick(dir.path)}>
+                  <FontAwesomeIcon icon={faFolderOpen} className="icon" />
+                  Open Folder
+                </FolderButton>
+                <FileButton
+                  onClick={(event) => {
+                    event.preventDefault();
+                    handleDownloadDirectory(dir.download_zip_url);
+                  }}
+                  className="icon-only"
+                >
+                  <FontAwesomeIcon icon={faDownload} className="icon" />
+                </FileButton>
+              </>
+            )}
           </FolderCard>
         ))}
 
@@ -245,50 +373,95 @@ const UserDashboardTemplate = ({
         {currentPath !== '' &&
           contents.files.map((file, index) => (
             <FileCard key={`file-${index}`}>
-              <FileHeader>
-                <FontAwesomeIcon icon={getFileIcon(file.name)} className="icon" />
-                <h3 title={file.name}>{file.name}</h3>
-              </FileHeader>
+              {viewMode === 'list-view' ? (
+                // List View Layout
+                <>
+                  <div className="item-details">
+                    <FileHeader>
+                      <FontAwesomeIcon icon={getFileIcon(file.name)} className="icon" />
+                      <h3 title={file.name}>{file.name}</h3>
+                    </FileHeader>
 
-              <ItemInfo>
-                <p>
-                  <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
-                  Size: {formatFileSize(file.size)}
-                </p>
-                <p>
-                  <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
-                  Modified: {formatDate(file.modified)}
-                </p>
-                <span>
-                  {' '}
-                  {/* Replace <p> with <span> to avoid nesting issues */}
-                  <FileTypeIcon className={getFileExtension(file.name) || 'default'}>
-                    {getFileExtension(file.name).substring(0, 3)}
-                  </FileTypeIcon>
-                </span>
-              </ItemInfo>
+                    <ItemInfo className="item-metadata">
+                      <p>
+                        <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                        {formatFileSize(file.size)}
+                      </p>
+                      <p>
+                        <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
+                        {formatDate(file.modified)}
+                      </p>
+                      <FileTypeIcon className={getFileExtension(file.name) || 'default'}>
+                        {getFileExtension(file.name).substring(0, 3)}
+                      </FileTypeIcon>
+                    </ItemInfo>
+                  </div>
 
-              <FileButton
-                as="button" // Change to a button to avoid default anchor behavior
-                onClick={(event) => {
-                  event.preventDefault(); // Prevent default behavior
-                  event.stopPropagation(); // Prevent event bubbling
-                  console.log('FileButton clicked, download URL:', file.download_url); // Add logging
-                  handleDownloadFile(file.download_url); // Trigger the download
-                }}
-                className="icon-only"
-              >
-                <FontAwesomeIcon icon={faDownload} className="icon" />
-              </FileButton>
+                  <div className="item-actions">
+                    <FileButton
+                      onClick={(event) => {
+                        event.preventDefault();
+                        handleDownloadFile(file.download_url);
+                      }}
+                      className="icon-only"
+                    >
+                      <FontAwesomeIcon icon={faDownload} className="icon" />
+                    </FileButton>
+                  </div>
+                </>
+              ) : (
+                // Grid View Layout
+                <>
+                  <FileHeader>
+                    <FontAwesomeIcon icon={getFileIcon(file.name)} className="icon" />
+                    <h3 title={file.name}>{file.name}</h3>
+                  </FileHeader>
+
+                  <ItemInfo>
+                    <p>
+                      <FontAwesomeIcon icon={faInfoCircle} className="info-icon" />
+                      Size: {formatFileSize(file.size)}
+                    </p>
+                    <p>
+                      <FontAwesomeIcon icon={faCalendarAlt} className="info-icon" />
+                      Modified: {formatDate(file.modified)}
+                    </p>
+                    <span>
+                      <FileTypeIcon className={getFileExtension(file.name) || 'default'}>
+                        {getFileExtension(file.name).substring(0, 3)}
+                      </FileTypeIcon>
+                    </span>
+                  </ItemInfo>
+
+                  <FileButton
+                    onClick={(event) => {
+                      event.preventDefault();
+                      handleDownloadFile(file.download_url);
+                    }}
+                    className="icon-only"
+                  >
+                    <FontAwesomeIcon icon={faDownload} className="icon" />
+                  </FileButton>
+                </>
+              )}
             </FileCard>
           ))}
 
         {/* Empty State - Adjust the condition to account for hidden files at root */}
-        {contents.directories.length === 0 && contents.files.length === 0 && (
+        {contents.directories.length === 0 && contents.files.length === 0 && !isLoading && (
           <EmptyState>
             <FontAwesomeIcon icon={faFolder} className="icon" />
             <h3>No Files or Folders Found</h3>
             <p>This folder is currently empty</p>
+          </EmptyState>
+        )}
+
+        {/* Loading state */}
+        {isLoading && (
+          <EmptyState>
+            <div className="loading-spinner"></div>
+            <h3>Loading Content...</h3>
+            <p>Please wait while we retrieve your files</p>
           </EmptyState>
         )}
       </ContentGrid>
@@ -305,8 +478,13 @@ UserDashboardTemplate.propTypes = {
   currentPath: PropTypes.string,
   handleDirectoryClick: PropTypes.func.isRequired,
   handleDownloadFile: PropTypes.func.isRequired,
-  handleDownloadDirectory: PropTypes.func.isRequired, // Add this line
+  handleDownloadDirectory: PropTypes.func.isRequired,
   errorMessage: PropTypes.string,
+  isLoading: PropTypes.bool,
+  viewMode: PropTypes.oneOf(['grid-large', 'grid-small', 'list-view']),
+  setViewMode: PropTypes.func.isRequired,
+  sortOrder: PropTypes.string,
+  setSortOrder: PropTypes.func.isRequired,
 };
 
 export default UserDashboardTemplate;

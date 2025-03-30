@@ -36,9 +36,23 @@ export const DashboardHeader = styled.div`
 
 export const ContentGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.8rem;
   margin: 2rem 0;
+  
+  /* Different view modes */
+  &.grid-large {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  
+  &.grid-small {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+  
+  &.list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
 `;
 
 // Base card with shared properties
@@ -55,6 +69,46 @@ const BaseCard = styled.div`
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }
+  
+  /* List view styling */
+  .list-view & {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    height: auto;
+    
+    .item-details {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+    
+    .item-metadata {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      margin-right: 1.5rem;
+    }
+    
+    .item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+  }
+  
+  /* Small grid view styling */
+  .grid-small & {
+    padding: 1rem;
+    
+    h3 {
+      font-size: 0.9rem;
+    }
+    
+    .icon {
+      font-size: 1.5rem;
+    }
+  }
 `;
 
 // Folder card with distinctive styling
@@ -65,6 +119,11 @@ export const FolderCard = styled(BaseCard)`
   &:hover {
     border-left-color: ${colors.accentHover};
   }
+  
+  .list-view & {
+    border-left: none;
+    border-left: 4px solid ${colors.accent};
+  }
 `;
 
 // File card with distinctive styling
@@ -74,6 +133,11 @@ export const FileCard = styled(BaseCard)`
   
   &:hover {
     border-left-color: #52b0ff; /* Lighter info color */
+  }
+  
+  .list-view & {
+    border-left: none;
+    border-left: 4px solid ${colors.info};
   }
 `;
 
@@ -93,6 +157,22 @@ const BaseHeader = styled.div`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  
+  .list-view & {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+    flex: 0 0 30%;
+  }
+  
+  .grid-small & {
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+    
+    h3 {
+      font-size: 0.9rem;
+    }
   }
 `;
 
@@ -136,6 +216,26 @@ export const ItemInfo = styled.div`
     color: ${colors.textMuted};
     font-size: 0.9rem;
   }
+  
+  .list-view & {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    
+    p {
+      margin: 0;
+    }
+  }
+  
+  .grid-small & {
+    margin: 0.4rem 0;
+    font-size: 0.8rem;
+    
+    p {
+      margin: 0.2rem 0;
+    }
+  }
 `;
 
 const BaseButton = styled.button`
@@ -165,6 +265,18 @@ const BaseButton = styled.button`
 
   .icon {
     font-size: 1.2rem;
+  }
+  
+  .list-view & {
+    margin-top: 0;
+    width: auto;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .grid-small & {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
   }
 `;
 
@@ -255,6 +367,77 @@ export const BreadcrumbNav = styled.div`
         background-color: transparent;
       }
     }
+  }
+`;
+
+// View mode control styles
+export const ViewControls = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  background-color: ${colors.surfaceDark};
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+`;
+
+export const ViewButton = styled.button`
+  background: none;
+  border: none;
+  color: ${colors.textSecondary};
+  cursor: pointer;
+  font-size: 1.2rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    color: ${colors.accent};
+    background-color: rgba(255, 133, 0, 0.15);
+  }
+  
+  &.active {
+    color: ${colors.accent};
+    background-color: rgba(255, 133, 0, 0.25);
+  }
+`;
+
+export const ViewModeLabel = styled.span`
+  color: ${colors.textSecondary};
+  margin-right: 1rem;
+  font-size: 0.9rem;
+`;
+
+export const ListViewHeader = styled.div`
+  display: grid;
+  grid-template-columns: 30% 1fr 15%;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  background-color: ${colors.surfaceDark};
+  color: ${colors.textSecondary};
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  
+  .name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .details {
+    display: flex;
+    gap: 2rem;
+  }
+  
+  .actions {
+    text-align: right;
   }
 `;
 
