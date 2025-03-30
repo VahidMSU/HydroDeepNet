@@ -42,8 +42,8 @@ class SessionService {
    */
   async checkSession() {
     try {
-      // Call the session validation endpoint
-      await api.get('/validate-session');
+      // Call the session validation endpoint with the correct path
+      await api.get('/api/validate-session');
       return true;
     } catch (error) {
       console.log('Session check failed:', error);
@@ -67,6 +67,8 @@ class SessionService {
 
     // Clear any auth data
     localStorage.removeItem('authToken');
+    localStorage.removeItem('username');
+    localStorage.removeItem('userInfo');
 
     // Redirect to login page
     window.location.href = '/login';

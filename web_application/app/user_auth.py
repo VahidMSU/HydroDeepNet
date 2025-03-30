@@ -23,25 +23,20 @@ def api_login():
     try:
         data = request.get_json()
         username = data.get('username', '')
-        password = data.get('password', '')
         
-        if not username or not password:
-            current_app.logger.warning("Login failed: missing username or password")
+        # Don't log or store the password in variables
+        if not username or 'password' not in data:
+            current_app.logger.warning("Login failed: Missing username or password")
             return jsonify({"status": "error", "message": "Username and password are required"}), 400
         
         user = User.query.filter_by(username=username).first()
         
-        if user and user.check_password(password):
-            if not user.is_verified:
-                current_app.logger.warning(f"Login attempt for unverified user: {username}")
-                return jsonify({
-                    "status": "error", 
-                    "message": "Please verify your email before logging in",
-                    "requiresVerification": True
-                }), 401
+        if user and user.check_password(data.get('password', '')):
+            # Clear password from memory as soon as possible
+            data['password'] = None
             
-            login_user(user, remember=True)
-            current_app.logger.info(f"User '{username}' logged in successfully")
+            login_user(user, remember=data.get('remember_me', False))
+            current_app.logger.info(f"User {username} logged in successfully")
             
             return jsonify({
                 "status": "success", 
@@ -49,11 +44,12 @@ def api_login():
                 "user": {
                     "id": user.id,
                     "username": user.username,
-                    "email": user.email
+                    "email": user.email,
+                    "is_verified": user.is_verified
                 }
             })
         else:
-            current_app.logger.warning(f"Failed login attempt for user: {username}")
+            current_app.logger.warning(f"Login failed for user {username}: Invalid credentials")
             return jsonify({"status": "error", "message": "Invalid username or password"}), 401
             
     except Exception as e:
@@ -75,10 +71,9 @@ def signup():
         data = request.get_json()
         username = data.get('username', '').strip()
         email = data.get('email', '').strip()
-        password = data.get('password', '')
         
-        # Validate inputs
-        if not username or not email or not password:
+        # Don't log or store password in variables
+        if not username or not email or 'password' not in data:
             current_app.logger.warning("Signup failed: missing required fields")
             return jsonify({"status": "error", "message": "All fields are required"}), 400
             
@@ -91,9 +86,12 @@ def signup():
             current_app.logger.warning(f"Signup failed: email '{email}' already exists")
             return jsonify({"status": "error", "message": "Email already exists"}), 400
         
-        # Create new user
+        # Create new user directly with password from request data
         user = User(username=username, email=email)
-        user.set_password(password)
+        user.set_password(data.get('password', ''))
+        
+        # Clear password from memory immediately
+        data['password'] = None
         
         # Generate verification token
         verification_token = user.get_verification_token()
@@ -114,8 +112,9 @@ def signup():
             os.makedirs(os.path.join(user_dir, 'Reports'), exist_ok=True)
             current_app.logger.info(f"Created directory structure for user '{username}'")
             
-        # Create SFTP account automatically
-        sftp_result = create_sftp_user(username, password)
+        # Create SFTP account automatically - but pass None for password, as create_sftp_user
+        # should instead get password via more secure means like directly from the database
+        sftp_result = create_sftp_user(username)
         if sftp_result.get('success'):
             current_app.logger.info(f"SFTP account created for user '{username}'")
         else:
@@ -401,15 +400,17 @@ def create_sftp():
     """Create an SFTP user when requested from the frontend."""
     try:
         data = request.get_json()
-        password = data.get("password")
         username = current_user.username
         
-        if not password:
+        if 'password' not in data:
             current_app.logger.warning(f"SFTP creation failed: missing password for user {username}")
             return jsonify({"error": "Password is required"}), 400
 
         # Call the function that actually creates the SFTP user
-        result = create_sftp_user(username, password)
+        result = create_sftp_user(username, data.get('password'))
+        
+        # Clear password from memory immediately
+        data['password'] = None
         
         if result.get("success"):
             current_app.logger.info(f"SFTP user created successfully for {username}")

@@ -63,10 +63,29 @@ export const createApiMonitor = () => {
 
     // Only monitor API calls
     if (typeof url === 'string' && (url.startsWith('/api/') || url === '/hydro_geo_dataset')) {
+      // Sanitize request body to remove sensitive information before logging
+      let sanitizedBody = null;
+      if (options.body) {
+        try {
+          const bodyObj = JSON.parse(options.body);
+          // Create sanitized copy without password
+          const sanitized = { ...bodyObj };
+
+          // Replace password with asterisks if it exists
+          if (sanitized.password) {
+            sanitized.password = '********';
+          }
+
+          sanitizedBody = sanitized;
+        } catch (e) {
+          sanitizedBody = 'Non-JSON body';
+        }
+      }
+
       debugLog(`API Request to ${url}`, {
         method: options.method || 'GET',
         headers: options.headers,
-        body: options.body ? JSON.parse(options.body) : null,
+        body: sanitizedBody,
       });
 
       const startTime = Date.now();
@@ -80,6 +99,11 @@ export const createApiMonitor = () => {
         let responseData;
         try {
           responseData = await clonedResponse.json();
+
+          // Sanitize response if it contains sensitive information
+          if (responseData && responseData.user && responseData.user.password) {
+            responseData.user.password = '********';
+          }
         } catch (e) {
           responseData = await clonedResponse.text();
         }
