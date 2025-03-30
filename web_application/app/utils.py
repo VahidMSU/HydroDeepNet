@@ -377,13 +377,20 @@ def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolut
          logger.error(f"Output directory not found: /data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/")
     else:
         logger.info(f"Output directory found: /data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/")
+    
+    # Initialize model_path to None in case of exceptions
+    model_path = None
+    
     try:
         commander = SWATGenXCommand(config)
         model_path = commander.execute()
         logger.info(f"CommandX: Model created successfully: {model_path}") 
     except Exception as e:
         logger.error(f"CommandX: Model creation failed: {e}")
-
+        # Set a default path or failure indicator
+        expected_path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/huc12/{site_no}/SWAT_MODEL_Web_Application"
+        logger.error(f"Model would have been created at: {expected_path}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
        
     # Calibration, validation, sensitivity analysis
     #if calibration_flag or validation_flag or sensitivity_flag:

@@ -18,8 +18,8 @@ def get_working_redis_url():
     alternative_urls = [
         'redis://127.0.0.1:6379/0',  # Try explicit IP
         'redis://redis:6379/0',       # Try service name if using Docker
-        # Add potential production-specific Redis URL if different
-        'redis://localhost:6379/0?socket_timeout=5'
+        'redis://localhost:6379/0?socket_timeout=5',
+        'redis://localhost:6379/0?socket_connect_timeout=5'
     ]
     
     # Add retry logic to handle temporary Redis unavailability
@@ -32,6 +32,18 @@ def get_working_redis_url():
     logger.info(f"PYTHONPATH: {os.environ.get('PYTHONPATH', 'Not set')}")
     logger.info(f"PATH: {os.environ.get('PATH', 'Not set')}")
     logger.info(f"FLASK_ENV: {os.environ.get('FLASK_ENV', 'Not set')}")
+    
+    # First try explicit URL from environment variable if set
+    env_url = os.environ.get('REDIS_URL')
+    if env_url:
+        try:
+            logger.info(f"Testing Redis connection to {env_url} from environment variable")
+            client = Redis.from_url(env_url, socket_timeout=3, socket_connect_timeout=3)
+            client.ping()
+            logger.info("✅ Successfully connected to Redis using environment URL")
+            return env_url
+        except Exception as e:
+            logger.warning(f"Could not connect to Redis at {env_url} from environment: {e}")
     
     for attempt in range(max_retries):
         # First try the default
@@ -90,6 +102,9 @@ def make_celery(app=None):
         # Fall back to default URL and let Celery handle reconnection
         redis_url = 'redis://localhost:6379/0'
         logger.info(f"Falling back to default Redis URL: {redis_url}")
+    
+    # Export the working URL to environment for other processes to use
+    os.environ['REDIS_URL'] = redis_url
     
     # Create a more robust Celery configuration
     celery = Celery(

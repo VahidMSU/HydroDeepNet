@@ -23,6 +23,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import EmailIcon from '@mui/icons-material/Email';
 import InfoIcon from '@mui/icons-material/Info';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 
 const drawerWidth = 250;
 
@@ -106,6 +107,7 @@ const Layout = ({ children }) => {
                 { text: 'Michigan', icon: <PlaceIcon />, path: '/michigan' },
                 { text: 'Vision System', icon: <VisibilityIcon />, path: '/vision_system' },
                 { text: 'HydroGeoDataset', icon: <StorageIcon />, path: '/hydro_geo_dataset' },
+                { text: 'FTPS Server', icon: <CloudDownloadIcon />, path: '/ftps_server' },
                 { text: 'User Dashboard', icon: <DashboardIcon />, path: '/user_dashboard' },
                 { text: 'Contact', icon: <EmailIcon />, path: '/contact' },
                 { text: 'About', icon: <InfoIcon />, path: '/about' },

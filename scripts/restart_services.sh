@@ -50,6 +50,7 @@ cd "$SCRIPT_DIR" || exit 1
 sudo cp ./ciwre-bae.conf /etc/apache2/sites-available/
 sudo cp ./000-default.conf /etc/apache2/sites-available/
 sudo cp ./celery-worker.service /etc/systemd/system/
+sudo cp ./flask-app.service /etc/systemd/system/
 
 # Reload systemd
 log "Reloading systemd configuration..."
@@ -58,7 +59,6 @@ sudo systemctl daemon-reload
 # Enable Apache modules
 log "Enabling required Apache modules..."
 sudo a2enmod proxy proxy_http proxy_wstunnel headers rewrite ssl
-
 
 # Verify Apache configuration
 log "Checking Apache configuration..."
@@ -75,12 +75,70 @@ if [ -f "$SCRIPT_DIR/kill_port_process.sh" ]; then
   sleep 2
 fi
 
-# Restart Apache
+# Restart Redis with proper error handling
+log "Restarting Redis..."
+if systemctl is-active --quiet "redis-server"; then
+  restart_service "redis-server" "Redis"
+else
+  log "⚠️ Redis was not running, starting it..."
+  sudo systemctl start redis-server
+  if systemctl is-active --quiet "redis-server"; then
+    log "✅ Redis started successfully"
+  else
+    log "❌ Failed to start Redis"
+  fi
+fi
+
+# Wait for Redis to be fully ready
+log "Waiting for Redis to be fully ready..."
+attempts=0
+max_attempts=10
+redis_ready=false
+
+while [ $attempts -lt $max_attempts ] && [ "$redis_ready" = false ]; do
+  if redis-cli ping 2>/dev/null | grep -q "PONG"; then
+    log "✅ Redis is accepting connections"
+    redis_ready=true
+  else
+    log "⚠️ Redis not ready yet, waiting..."
+    attempts=$((attempts + 1))
+    sleep 1
+  fi
+done
+
+if [ "$redis_ready" = false ]; then
+  log "❌ Redis failed to become ready after $max_attempts attempts"
+fi
+
+# Restart services in the proper order
 restart_service "apache2" "Apache"
 restart_service "flask-app" "Flask app"
-restart_service "redis-server" "Redis"
-restart_service "celery-worker" "Celery worker"
 
+# Restart Celery worker with proper error handling
+log "Restarting Celery worker..."
+sudo systemctl stop celery-worker
+sleep 2
+sudo systemctl start celery-worker
+if systemctl is-active --quiet "celery-worker"; then
+  log "✅ Celery worker started successfully"
+else
+  log "❌ Failed to start Celery worker, checking logs..."
+  tail -n 20 /data/SWATGenXApp/codes/web_application/logs/celery-worker-error.log | tee -a "$LOG_FILE"
+  
+  # Attempt restart with debug info
+  log "Trying to start celery in foreground mode for debugging..."
+  cd "$WEB_DIR" || exit 1
+  source "$VENV_PATH/bin/activate"
+  PYTHONPATH="$APP_DIR:$WEB_DIR" celery -A celery_app worker --loglevel=info &
+  CELERY_PID=$!
+  sleep 5
+  if kill -0 $CELERY_PID 2>/dev/null; then
+    log "✅ Celery worker started manually in foreground"
+    sudo systemctl start celery-worker
+  else
+    log "❌ Celery worker failed to start manually"
+  fi
+fi
 
 # Check services status
 log "Checking service status..."

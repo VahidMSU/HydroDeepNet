@@ -8,6 +8,7 @@ from app.extensions import csrf, db, login_manager
 from app.models import User
 from app.utils import LoggerSetup
 from app.sftp_routes import sftp_bp  # Import SFTP API routes
+from app.ftps_routes import ftps_bp  # Import FTPS API routes
 from .api_routes import api_bp  # Import API routes
 from app.routes import AppManager
 from flask_cors import CORS
@@ -127,6 +128,9 @@ def create_app(config_class=Config):  # Update function signature
     
     app.register_blueprint(sftp_bp, url_prefix="/api/sftp")
     logger.info("Registered SFTP blueprints")
+    
+    app.register_blueprint(ftps_bp, url_prefix="/api/ftps")
+    logger.info("Registered FTPS blueprints")
     
     # Ensure database tables exist
     with app.app_context():

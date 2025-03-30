@@ -21,6 +21,7 @@ const Terms = lazy(() => import('./pages/Terms'));
 const SignUp = lazy(() => import('./pages/SignUp'));
 const Verify = lazy(() => import('./pages/Verify'));
 const Logout = lazy(() => import('./pages/Logout'));
+const FTPSServer = lazy(() => import('./components/templates/FTPS_server'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -144,6 +145,18 @@ const App = () => {
                   <Route path="/about" element={<AboutUs />} />
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/terms" element={<Terms />} />
+                  <Route
+                    path="/ftps_server"
+                    element={
+                      PRIVATE_MODE ? (
+                        <PrivateRoute>
+                          <FTPSServer />
+                        </PrivateRoute>
+                      ) : (
+                        <FTPSServer />
+                      )
+                    }
+                  />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Layout>
