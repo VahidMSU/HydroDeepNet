@@ -11,6 +11,7 @@ from app.debug import debug_bp, register_debug_routes
 from app.static import static_bp
 from app.hydrogeo import hydrogeo_bp
 from app.chatbot import chatbot_bp
+from app.password_reset import password_reset_bp
 
 class AppManager:
     def __init__(self, app):
@@ -108,6 +109,7 @@ class AppManager:
         self.app.register_blueprint(static_bp)
         self.app.register_blueprint(hydrogeo_bp)
         self.app.register_blueprint(chatbot_bp)
+        self.app.register_blueprint(password_reset_bp)
         
         # Register debug routes conditionally
         register_debug_routes(self.app)
