@@ -1,157 +1,245 @@
 #!/bin/bash
+# restart_services.sh
+# Complete service restart script for SWATGenX application
+# This will restart Redis, Celery workers, and the Flask application
 
-# Constants
+set -e
+
+# Define colors for better readability
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+# Define log file
 LOG_FILE="/data/SWATGenXApp/codes/web_application/logs/service_restart.log"
-APP_DIR="/data/SWATGenXApp/codes"
-SCRIPT_DIR="$APP_DIR/scripts"
-WEB_DIR="$APP_DIR/web_application"
-VENV_PATH="$APP_DIR/.venv"
-FRONTEND_DIR="$WEB_DIR/frontend"
-
-# Create log directory
-mkdir -p "$(dirname "$LOG_FILE")"
 
 # Logging function
 log() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+    echo -e "${GREEN}[$(date '+%Y-%m-%d %H:%M:%S')] $1${NC}" | tee -a "$LOG_FILE"
 }
 
-# Check for required commands
-for cmd in systemctl netstat curl apache2ctl npm; do
-  if ! command -v $cmd &> /dev/null; then
-    log "❌ Required command not found: $cmd"
-    echo "Please install $cmd and try again"
-    exit 1
-  fi
-done
-
-# Function to check service status
-check_service() {
-  if systemctl is-active --quiet "$1"; then
-    log "✅ $2 is running"
-  else
-    log "❌ $2 is not running"
-  fi
+error() {
+    echo -e "${RED}[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: $1${NC}" | tee -a "$LOG_FILE"
 }
 
-# Function to restart service
-restart_service() {
-  log "Restarting $2..."
-  if ! sudo systemctl restart "$1"; then
-    log "⚠️ Failed to restart $2"
-    return 1
-  fi
-  return 0
+warning() {
+    echo -e "${YELLOW}[$(date '+%Y-%m-%d %H:%M:%S')] WARNING: $1${NC}" | tee -a "$LOG_FILE"
 }
 
-# Copy configuration files
-log "Setting up daemon services..."
-cd "$SCRIPT_DIR" || exit 1
-sudo cp ./ciwre-bae.conf /etc/apache2/sites-available/
-sudo cp ./000-default.conf /etc/apache2/sites-available/
-sudo cp ./celery-worker.service /etc/systemd/system/
-sudo cp ./flask-app.service /etc/systemd/system/
+# Check if running as root
+if [[ $EUID -ne 0 ]]; then
+   error "This script must be run as root"
+   exit 1
+fi
 
-# Reload systemd
-log "Reloading systemd configuration..."
-sudo systemctl daemon-reload
+log "Starting service restart procedure"
 
-# Enable Apache modules
-log "Enabling required Apache modules..."
-sudo a2enmod proxy proxy_http proxy_wstunnel headers rewrite ssl
+# Detect Redis service name - could be redis.service or redis-server.service
+REDIS_SERVICE="redis-server.service"
+if ! systemctl list-unit-files | grep -q "$REDIS_SERVICE"; then
+    if systemctl list-unit-files | grep -q "redis.service"; then
+        REDIS_SERVICE="redis.service"
+    else
+        warning "Redis service not found as redis-server.service or redis.service"
+        # Try to find any Redis service
+        REDIS_SERVICE=$(systemctl list-unit-files | grep redis | head -n 1 | awk '{print $1}')
+        if [[ -z "$REDIS_SERVICE" ]]; then
+            error "Cannot find any Redis service"
+            REDIS_SERVICE="redis-server.service" # Default fallback
+        else
+            log "Found Redis service: $REDIS_SERVICE"
+        fi
+    fi
+fi
 
-# Verify Apache configuration
-log "Checking Apache configuration..."
-if sudo apache2ctl configtest; then
-  log "✅ Apache configuration is valid"
+# Copy service files to systemd directory
+log "Copying service files to systemd directory..."
+cp /data/SWATGenXApp/codes/scripts/celery-worker.service /etc/systemd/system/
+cp /data/SWATGenXApp/codes/scripts/flask-app.service /etc/systemd/system/
+# Don't copy our Redis service file, as the system already has one
+
+# Reload systemd to recognize the new service files
+log "Reloading systemd daemon..."
+systemctl daemon-reload
+
+# Check Redis configuration
+REDIS_CONF="/etc/redis/redis.conf"
+if [ -f "$REDIS_CONF" ]; then
+    log "Checking Redis configuration..."
+    # Ensure Redis is listening on localhost
+    if ! grep -q "^bind 127.0.0.1" "$REDIS_CONF"; then
+        warning "Redis is not configured to bind to localhost. Adding bind directive."
+        # Add or update bind directive
+        if grep -q "^#.*bind" "$REDIS_CONF"; then
+            sed -i 's/^#.*bind.*/bind 127.0.0.1/' "$REDIS_CONF"
+        else
+            echo "bind 127.0.0.1" >> "$REDIS_CONF"
+        fi
+    fi
+    
+    # Ensure Redis is not protected-mode (which can cause connection issues)
+    if grep -q "^protected-mode yes" "$REDIS_CONF"; then
+        warning "Redis is in protected mode. Disabling for local connections."
+        sed -i 's/^protected-mode yes/protected-mode no/' "$REDIS_CONF"
+    fi
+    
+    log "Redis configuration checked and updated if necessary."
 else
-  log "❌ Apache configuration test failed - attempting to fix permissions"
+    error "Redis configuration file not found at $REDIS_CONF"
+    # Create a minimal Redis config if it doesn't exist
+    log "Creating minimal Redis configuration..."
+    mkdir -p /etc/redis
+    cat > "$REDIS_CONF" << EOF
+bind 127.0.0.1
+protected-mode no
+port 6379
+dir /var/lib/redis
+EOF
+    log "Created minimal Redis configuration."
 fi
 
-# Handle ports 5050 and 3000
-log "Checking for processes on ports 5050.."
-if [ -f "$SCRIPT_DIR/kill_port_process.sh" ]; then
-  bash "$SCRIPT_DIR/kill_port_process.sh" 5050 || sudo fuser -k 5050/tcp
-  sleep 2
+# Stop existing services in reverse dependency order
+log "Stopping Flask application service..."
+systemctl stop flask-app.service 2>/dev/null || log "Flask app service was not running"
+
+log "Stopping Celery worker service..."
+systemctl stop celery-worker.service 2>/dev/null || log "Celery worker service was not running"
+
+log "Stopping Redis service..."
+systemctl stop $REDIS_SERVICE 2>/dev/null || log "Redis service was not running"
+
+# Wait for processes to fully stop
+log "Waiting for services to stop completely..."
+sleep 5
+
+# Check for any remaining Redis processes
+log "Checking for remaining Redis processes..."
+if pgrep -f "redis-server" > /dev/null; then
+    warning "Redis processes still running. Attempting to kill..."
+    pkill -f "redis-server" || log "Failed to kill Redis processes"
+    sleep 2
 fi
 
-# Restart Redis with proper error handling
-log "Restarting Redis..."
-if systemctl is-active --quiet "redis-server"; then
-  restart_service "redis-server" "Redis"
+# Check for any remaining Celery processes
+log "Checking for remaining Celery processes..."
+if pgrep -f "celery" > /dev/null; then
+    warning "Celery processes still running. Attempting to kill..."
+    pkill -f "celery" || log "Failed to kill Celery processes"
+    sleep 2
+fi
+
+# Check for any remaining gunicorn processes on port 5001
+log "Checking for gunicorn processes on port 5001..."
+if lsof -i :5001 > /dev/null 2>&1; then
+    warning "Gunicorn process still using port 5001. Attempting to kill..."
+    pkill -f "gunicorn" || log "Failed to kill gunicorn processes"
+    sleep 2
+fi
+
+# Check for any remaining gunicorn processes on port 5050
+log "Checking for gunicorn processes on port 5050..."
+if lsof -i :5050 > /dev/null 2>&1; then
+    warning "Gunicorn process still using port 5050. Attempting to kill..."
+    pkill -f "gunicorn" || log "Failed to kill gunicorn processes"
+    # Try using lsof to find and kill the process directly
+    pid=$(lsof -t -i:5050 2>/dev/null)
+    if [ ! -z "$pid" ]; then
+        warning "Killing process directly using PID: $pid"
+        kill -9 $pid
+    fi
+    sleep 2
+fi
+
+# Create required directories with correct permissions
+log "Ensuring proper directories and permissions..."
+mkdir -p /data/SWATGenXApp/codes/web_application/logs
+mkdir -p /var/lib/redis
+chown -R www-data:www-data /data/SWATGenXApp/codes/web_application/logs
+# Only attempt to change Redis directory permissions if it exists and we have the right user
+if [ -d "/var/lib/redis" ] && getent passwd redis >/dev/null; then
+    chown -R redis:redis /var/lib/redis
+    chmod 750 /var/lib/redis
+fi
+
+# Start services in dependency order
+log "Starting Redis service..."
+systemctl start $REDIS_SERVICE
+sleep 3
+
+# Verify Redis is running
+if systemctl is-active --quiet $REDIS_SERVICE; then
+    log "Redis service started successfully"
+    
+    # Test Redis connection directly
+    if redis-cli ping > /dev/null; then
+        log "Redis connection test successful"
+    else
+        error "Redis connection test failed. Please check Redis configuration."
+    fi
 else
-  log "⚠️ Redis was not running, starting it..."
-  sudo systemctl start redis-server
-  if systemctl is-active --quiet "redis-server"; then
-    log "✅ Redis started successfully"
-  else
-    log "❌ Failed to start Redis"
-  fi
+    error "Failed to start Redis service"
+    systemctl status $REDIS_SERVICE --no-pager
 fi
 
-# Wait for Redis to be fully ready
-log "Waiting for Redis to be fully ready..."
-attempts=0
-max_attempts=10
-redis_ready=false
+# Start Celery worker
+log "Starting Celery worker service..."
+systemctl start celery-worker.service
+sleep 3
 
-while [ $attempts -lt $max_attempts ] && [ "$redis_ready" = false ]; do
-  if redis-cli ping 2>/dev/null | grep -q "PONG"; then
-    log "✅ Redis is accepting connections"
-    redis_ready=true
-  else
-    log "⚠️ Redis not ready yet, waiting..."
-    attempts=$((attempts + 1))
-    sleep 1
-  fi
-done
-
-if [ "$redis_ready" = false ]; then
-  log "❌ Redis failed to become ready after $max_attempts attempts"
-fi
-
-# Restart services in the proper order
-restart_service "apache2" "Apache"
-restart_service "flask-app" "Flask app"
-
-# Restart Celery worker with proper error handling
-log "Restarting Celery worker..."
-sudo systemctl stop celery-worker
-sleep 2
-sudo systemctl start celery-worker
-if systemctl is-active --quiet "celery-worker"; then
-  log "✅ Celery worker started successfully"
+# Verify Celery worker is running
+if systemctl is-active --quiet celery-worker.service; then
+    log "Celery worker service started successfully"
 else
-  log "❌ Failed to start Celery worker, checking logs..."
-  tail -n 20 /data/SWATGenXApp/codes/web_application/logs/celery-worker-error.log | tee -a "$LOG_FILE"
-  
-  # Attempt restart with debug info
-  log "Trying to start celery in foreground mode for debugging..."
-  cd "$WEB_DIR" || exit 1
-  source "$VENV_PATH/bin/activate"
-  PYTHONPATH="$APP_DIR:$WEB_DIR" celery -A celery_app worker --loglevel=info &
-  CELERY_PID=$!
-  sleep 5
-  if kill -0 $CELERY_PID 2>/dev/null; then
-    log "✅ Celery worker started manually in foreground"
-    sudo systemctl start celery-worker
-  else
-    log "❌ Celery worker failed to start manually"
-  fi
+    error "Failed to start Celery worker service"
+    systemctl status celery-worker.service --no-pager
 fi
 
-# Check services status
-log "Checking service status..."
-check_service "apache2" "Apache"
-check_service "redis-server" "Redis"
-check_service "celery-worker" "Celery worker"
-check_service "flask-app" "Flask app"
+# Start Flask application
+log "Starting Flask application service..."
+systemctl start flask-app.service
+sleep 3
 
-# Check ports 5050 and 3000
-for PORT in 5050 3000; do
-  if netstat -tuln | grep ":$PORT " >/dev/null; then
-    log "✅ Service is running on port $PORT"
-  else
-    log "❌ Nothing is running on port $PORT"
-  fi
-done
+# Verify Flask application is running
+if systemctl is-active --quiet flask-app.service; then
+    log "Flask application service started successfully"
+else
+    error "Failed to start Flask application service"
+    systemctl status flask-app.service --no-pager
+fi
+
+# Enable services to start on boot
+log "Enabling services to start on boot..."
+# Use conditional enabling to avoid errors
+if systemctl is-active --quiet $REDIS_SERVICE; then
+    systemctl enable $REDIS_SERVICE 2>/dev/null || warning "Could not enable Redis service - it may be linked or controlled by another unit"
+fi
+systemctl enable celery-worker.service
+systemctl enable flask-app.service
+
+# Final status check
+log "Checking all service statuses..."
+echo -e "\n${GREEN}=== Redis Service Status ===${NC}"
+systemctl status $REDIS_SERVICE --no-pager
+echo -e "\n${GREEN}=== Celery Worker Service Status ===${NC}"
+systemctl status celery-worker.service --no-pager
+echo -e "\n${GREEN}=== Flask Application Service Status ===${NC}"
+systemctl status flask-app.service --no-pager
+
+# Output final status for log
+if systemctl is-active --quiet $REDIS_SERVICE && \
+   systemctl is-active --quiet celery-worker.service && \
+   systemctl is-active --quiet flask-app.service; then
+    log "All services restarted successfully!"
+else
+    error "One or more services failed to start. Please check the logs."
+fi
+
+# Print monitoring instructions
+echo -e "\n${GREEN}=== Monitoring Instructions ===${NC}"
+echo -e "To monitor Redis: ${YELLOW}redis-cli monitor${NC}"
+echo -e "To check Celery worker log: ${YELLOW}tail -f /data/SWATGenXApp/codes/web_application/logs/celery-worker.log${NC}"
+echo -e "To check Flask application log: ${YELLOW}tail -f /data/SWATGenXApp/codes/web_application/logs/flask-app.log${NC}"
+echo -e "To view task status: ${YELLOW}curl -X GET http://localhost:5050/api/user_tasks${NC}"
+
+log "Service restart procedure completed"

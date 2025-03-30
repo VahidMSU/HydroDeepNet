@@ -152,6 +152,25 @@ def model_settings():
                 "details": "Required modules not available"
             }), 500
             
+        # Check active tasks for this user, limit to 5 concurrent tasks
+        try:
+            from app.task_tracker import task_tracker
+            user_tasks = task_tracker.get_user_tasks(current_user.username)
+            active_tasks = [t for t in user_tasks if t.get('status') not in 
+                           [task_tracker.STATUS_SUCCESS, task_tracker.STATUS_FAILURE, task_tracker.STATUS_REVOKED]]
+            
+            if len(active_tasks) >= 5:
+                current_app.logger.warning(f"User {current_user.username} has {len(active_tasks)} active tasks, limit is 5")
+                return jsonify({
+                    "status": "error",
+                    "message": "You have reached the maximum limit of 5 concurrent model creation tasks. Please wait for some of your existing tasks to complete."
+                }), 429
+            
+            current_app.logger.info(f"User {current_user.username} has {len(active_tasks)} active tasks (under limit)")
+        except Exception as e:
+            current_app.logger.error(f"Error checking active tasks: {e}")
+            # Continue processing - we don't want to block model creation if task tracking fails
+        
         # Celery task creation with retry logic
         from app.swatgenx_tasks import create_model_task
         
@@ -170,6 +189,28 @@ def model_settings():
                 )
                 
                 current_app.logger.info(f"Model creation task {task.id} scheduled successfully")
+                
+                # Add task to the task tracker if not already registered by the task
+                try:
+                    from app.task_tracker import task_tracker
+                    task_info = task_tracker.get_task_status(task.id)
+                    if not task_info:
+                        # Register task if not already registered by the task itself
+                        task_tracker.register_task(
+                            task.id,
+                            current_user.username,
+                            site_no,
+                            {
+                                "ls_resolution": ls_resolution,
+                                "dem_resolution": dem_resolution,
+                                "start_time": time.time(),
+                                "source": "api_submission",
+                                "api_time": datetime.now().isoformat()
+                            }
+                        )
+                except Exception as track_error:
+                    current_app.logger.error(f"Error registering task with tracker: {track_error}")
+                    # Continue processing - we don't want to block model creation if task tracking fails
                 
                 # Send email notification for task start
                 try:
@@ -203,7 +244,8 @@ def model_settings():
                 response = jsonify({
                     "status": "success", 
                     "message": "Model creation started",
-                    "task_id": task.id
+                    "task_id": task.id,
+                    "queue_position": len(active_tasks) + 1
                 })
                 current_app.logger.info(f"Returning JSON response: {response.data}")
                 return response
@@ -291,3 +333,144 @@ def get_station_geometries():
         import traceback
         current_app.logger.error(traceback.format_exc())
         return jsonify({"error": "Failed to fetch station geometries", "details": str(e)}), 500
+
+@model_bp.route('/api/task_status/<task_id>', methods=['GET'])
+@conditional_login_required
+def get_task_status(task_id):
+    """Get the status of a specific task."""
+    current_app.logger.info(f"Task status check for task ID: {task_id}")
+    
+    try:
+        from app.task_tracker import task_tracker
+        task_info = task_tracker.get_task_status(task_id)
+        
+        if not task_info:
+            current_app.logger.warning(f"Task {task_id} not found in tracker")
+            
+            # Fall back to Celery's status check if not in our tracker
+            from app.swatgenx_tasks import create_model_task
+            celery_status = create_model_task.AsyncResult(task_id)
+            
+            if celery_status.state:
+                return jsonify({
+                    "status": "success",
+                    "task_status": celery_status.state,
+                    "task_id": task_id,
+                    "source": "celery_direct",
+                    "result": str(celery_status.result) if celery_status.result else None
+                })
+            else:
+                return jsonify({
+                    "status": "error",
+                    "message": "Task not found"
+                }), 404
+        
+        # Check if the user is authorized to view this task
+        if task_info.get('username') != current_user.username and not current_user.is_admin:
+            current_app.logger.warning(f"Unauthorized access to task {task_id} by user {current_user.username}")
+            return jsonify({
+                "status": "error",
+                "message": "You are not authorized to view this task"
+            }), 403
+            
+        return jsonify({
+            "status": "success",
+            "task_info": task_info
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error retrieving task status: {e}")
+        return jsonify({
+            "status": "error",
+            "message": "Error retrieving task status",
+            "details": str(e)
+        }), 500
+
+@model_bp.route('/api/user_tasks', methods=['GET'])
+@conditional_login_required
+def get_user_tasks():
+    """Get all tasks for the current user."""
+    current_app.logger.info(f"Fetching tasks for user: {current_user.username}")
+    
+    try:
+        from app.task_tracker import task_tracker
+        
+        # Get task limit from query parameters (default: 50)
+        limit = request.args.get('limit', 50, type=int)
+        
+        # Get status filter from query parameters (optional)
+        status_filter = request.args.get('status', None)
+        
+        # Get tasks for the user
+        user_tasks = task_tracker.get_user_tasks(current_user.username, limit=limit)
+        
+        # Apply status filter if provided
+        if status_filter:
+            user_tasks = [t for t in user_tasks if t.get('status') == status_filter]
+        
+        # Sort tasks by creation time (newest first)
+        user_tasks.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        return jsonify({
+            "status": "success",
+            "task_count": len(user_tasks),
+            "tasks": user_tasks
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error retrieving user tasks: {e}")
+        return jsonify({
+            "status": "error",
+            "message": "Error retrieving user tasks",
+            "details": str(e)
+        }), 500
+
+@model_bp.route('/api/active_tasks', methods=['GET'])
+@conditional_login_required
+def get_active_tasks():
+    """Get all active tasks in the system (admin only)."""
+    current_app.logger.info(f"Active tasks check by user: {current_user.username}")
+    
+    # Check if user is admin (implement your admin check here)
+    is_admin = current_user.username in ['admin', 'swatgenx'] 
+    if not is_admin:
+        current_app.logger.warning(f"Non-admin user {current_user.username} attempted to access active tasks")
+        return jsonify({
+            "status": "error",
+            "message": "Admin access required"
+        }), 403
+    
+    try:
+        from app.task_tracker import task_tracker
+        
+        # Get limit from query parameters (default: 50)
+        limit = request.args.get('limit', 50, type=int)
+        
+        # Get all active tasks
+        active_tasks = task_tracker.get_active_tasks(limit=limit)
+        
+        return jsonify({
+            "status": "success",
+            "task_count": len(active_tasks),
+            "tasks": active_tasks
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Error retrieving active tasks: {e}")
+        return jsonify({
+            "status": "error",
+            "message": "Error retrieving active tasks",
+            "details": str(e)
+        }), 500
+
+@model_bp.route('/api/task_dashboard', methods=['GET'])
+@conditional_login_required
+def task_dashboard():
+    """Dashboard showing task status and statistics."""
+    current_app.logger.info(f"Task dashboard accessed by user: {current_user.username}")
+    
+    return jsonify({
+        "status": "success",
+        "title": "Task Dashboard",
+        "message": "Dashboard showing all your model creation tasks"
+    })
