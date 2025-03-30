@@ -3,17 +3,14 @@ from flask import current_app, request, redirect
 from app.extensions import csrf
 from app.utils import LoggerSetup
 import os
-# Import all blueprints
-from app.health import health_bp
-from app.auth import auth_bp
-from app.user import user_bp
-from app.static import static_bp
+# Import consolidated blueprints
+from app.user_auth import user_auth_bp
 from app.model import model_bp
-from app.visualization import visualization_bp
+from app.viz_report import viz_report_bp
+from app.debug import debug_bp, register_debug_routes
+from app.static import static_bp
 from app.hydrogeo import hydrogeo_bp
-from app.report import report_bp
 from app.chatbot import chatbot_bp
-from app.diagnostic import diagnostic_bp  # Import the diagnostic blueprint
 
 class AppManager:
     def __init__(self, app):
@@ -91,7 +88,7 @@ class AppManager:
             # Alternative approach: use direct blueprint exemption
             # For each blueprint with 'api' in its name, exempt all its endpoints
             for blueprint_name, blueprint in self.app.blueprints.items():
-                if 'api' in blueprint_name.lower() or 'diagnostic' in blueprint_name.lower():
+                if 'api' in blueprint_name.lower() or 'debug' in blueprint_name.lower():
                     csrf.exempt(blueprint)
                     self.app.logger.info(f"Exempted blueprint {blueprint_name} from CSRF protection")
             
@@ -102,17 +99,16 @@ class AppManager:
 
     def init_routes(self):
         """Register all blueprints."""
-        # Register main blueprints
-        self.app.register_blueprint(health_bp)
-        self.app.register_blueprint(auth_bp)
-        self.app.register_blueprint(user_bp)
-        self.app.register_blueprint(static_bp)
+        # Register consolidated blueprints
+        self.app.register_blueprint(user_auth_bp)
         self.app.register_blueprint(model_bp)
-        self.app.register_blueprint(visualization_bp)
+        self.app.register_blueprint(viz_report_bp)
+        self.app.register_blueprint(static_bp)
         self.app.register_blueprint(hydrogeo_bp)
-        self.app.register_blueprint(report_bp)
         self.app.register_blueprint(chatbot_bp)
-        self.app.register_blueprint(diagnostic_bp)  # Register the diagnostic blueprint
         
-        self.app.logger.info("All blueprints registered, including diagnostic tools")
+        # Register debug routes conditionally
+        register_debug_routes(self.app)
+        
+        self.app.logger.info("All blueprints registered")
 

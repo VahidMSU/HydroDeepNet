@@ -7,16 +7,12 @@ from config import Config
 from app.extensions import csrf, db, login_manager
 from app.models import User
 from app.utils import LoggerSetup
-from app.sftp_routes import sftp_bp  # Import SFTP API routes
-from app.ftps_routes import ftps_bp  # Import FTPS API routes
-from .api_routes import api_bp  # Import API routes
 from app.routes import AppManager
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_socketio import SocketIO, emit
 from redis import Redis, ConnectionError
-from app.routes_debug import register_debug_routes  # Add this import
 
 # Create socketio instance at module level to export it
 socketio = SocketIO(cors_allowed_origins="*")
@@ -62,16 +58,6 @@ def create_app(config_class=Config):  # Update function signature
 
     # Initialize SocketIO with the app
     socketio.init_app(app)
-    
-#    @socketio.on('connect')
-#    def on_connect():
-#        logger.info('Client connected')
-#        emit('message', {'data': 'Connected to WebSocket!'})
-
-#    @socketio.on('disconnect')
-#    def on_disconnect():
-#        logger.info('Client disconnected')
-#        emit('message', {'data': 'Disconnected from WebSocket!'})
 
     # Load configurations
     app.config.from_object(config_class)  # Update to use config_class
@@ -107,7 +93,7 @@ def create_app(config_class=Config):  # Update function signature
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = 'api_login'  # Corrected login view
+    login_manager.login_view = 'user_auth.api_login'  # Updated login view to use new blueprint
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -122,24 +108,13 @@ def create_app(config_class=Config):  # Update function signature
         else:
             logger.warning("Test user with ID 1 not found.")
 
-    # Register Blueprints
-    app.register_blueprint(api_bp, url_prefix="/api")
-    logger.info("Registered API blueprints")    
-    
-    app.register_blueprint(sftp_bp, url_prefix="/api/sftp")
-    logger.info("Registered SFTP blueprints")
-    
-    app.register_blueprint(ftps_bp, url_prefix="/api/ftps")
-    logger.info("Registered FTPS blueprints")
+    # Note: Blueprints are now registered through AppManager in routes.py
+    # The following initialization will call app.register_blueprint for all necessary blueprints
     
     # Ensure database tables exist
     with app.app_context():
         db.create_all()
         logger.info("Ensured database tables exist")
-
-    # Import and initialize routes
-    AppManager(app)
-    logger.info("Application routes initialized")
 
     # Initialize Redis connection with better error handling and retry
     try:
@@ -178,23 +153,9 @@ def create_app(config_class=Config):  # Update function signature
     else:
         logger.warning("Rate limiting using memory storage (Redis unavailable)")
 
-    # Function to ensure path is within the base directory
-    def secure_path(user_path, allowed_paths):
-        abs_target_dir = os.path.abspath(os.path.realpath(user_path))  # Double sanitization
-
-        if not any(abs_target_dir.startswith(os.path.abspath(base)) for base in allowed_paths):
-            logger.error(f"Unauthorized path access attempt: {user_path}")
-            abort(403, description="Unauthorized path access")
- 
-        return abs_target_dir
-
-    # Example usage
-    allowed_dirs = [
-        "/data/SWATGenXApp/codes/web_application",
-        "/data/SWATGenXApp/Users",
-        "/data/SWATGenXApp/GenXAppData"
-    ]
-    secure_path("/data/SWATGenXApp/Users", allowed_dirs)
+    # Initialize routes via AppManager
+    AppManager(app)
+    logger.info("Application routes initialized through AppManager")
 
     # Apply secure headers
     @app.after_request
