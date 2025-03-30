@@ -11,6 +11,7 @@ const SWATGenX = lazy(() => import('./pages/SWATGenX'));
 const Visualizations = lazy(() => import('./pages/Visualizations'));
 const Michigan = lazy(() => import('./pages/Michigan'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const VisionSystem = lazy(() => import('./pages/VisionSystem'));
 const HydroGeoDataset = lazy(() => import('./pages/HydroGeoDataset'));
 const UserDashboard = lazy(() => import('./pages/UserDashboard'));
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           {/* Private routes with Layout */}
           <Route
             path="/*"

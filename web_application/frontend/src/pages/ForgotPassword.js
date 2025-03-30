@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { requestPasswordReset } from '../services/api';
 
-const ForgetPassword = () => {
+const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -125,7 +125,7 @@ const ForgetPassword = () => {
                 Remember your password? Sign in
               </Link>
 
-              <Link href="#" variant="body2" onClick={() => navigate('/register')}>
+              <Link href="#" variant="body2" onClick={() => navigate('/signup')}>
                 Don't have an account? Sign up
               </Link>
             </Box>
@@ -136,4 +136,4 @@ const ForgetPassword = () => {
   );
 };
 
-export default ForgetPassword;
+export default ForgotPassword;
