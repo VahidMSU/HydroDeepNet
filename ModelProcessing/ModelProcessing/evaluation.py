@@ -47,7 +47,7 @@ class SwatModelEvaluator:
 
 		def __init__(self, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, TxtInOut=None, SCENARIO=None):
 				
-				self.execution_file = '/data/MyDataBase/bin/swatplus'
+				self.execution_file = '/data/SWATGenXApp/codes/bin/swatplus'
 				self.key = str(random_scenario_name_generator())
 				self.SCENARIO = SCENARIO if SCENARIO is not None else "Scenario_" + self.key
 				self.BASE_PATH = BASE_PATH

@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 def find_VPUID(station_no):
-	CONUS_streamflow_data = pd.read_csv("/data/MyDataBase/CIWRE-BAE/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv", dtype={'site_no': str,'huc_cd': str})
+	CONUS_streamflow_data = pd.read_csv("/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv", dtype={'site_no': str,'huc_cd': str})
 	return CONUS_streamflow_data[
 		CONUS_streamflow_data.site_no == station_no
 	].huc_cd.values[0][:4]

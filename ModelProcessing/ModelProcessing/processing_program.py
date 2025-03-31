@@ -7,15 +7,13 @@ import shutil
 from skopt.space import Real
 from ModelProcessing.utils import delete_previous_runs, delete_previous_figures
 from ModelProcessing.utils import read_swat_input_data, write_swat_input_data, read_control_file
-from ModelProcessing.utils import update_time, nyskip_define, update_print_prt_file, update_swat_codes_bsn, activate_ET_print, update_gwflow_head_output_times
+from ModelProcessing.utils import update_time, nyskip_define, update_print_prt_file, update_swat_codes_bsn, activate_ET_print
 from ModelProcessing.PSO_calibration import PSOOptimizer, save_final_results
 from ModelProcessing.sensitivity import SensitivityAnalysis
 import time
 import pandas as pd
 from ModelProcessing.utils import is_cpu_usage_low
-from ModelProcessing.recharge import create_recharge_image_for_name
 import logging	
-from ModelProcessing.get_best_performance import Performance_evaluator
 from multiprocessing import Process
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 def wrapper_function_model_evaluation              (params, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, problem, param_files, operation_types, TxtInOut, SCENARIO): 
@@ -50,7 +48,7 @@ class ProcessingProgram:
 				self.verification_samples = config['verification_samples']
 
 		def global_path_define(self):
-				self.original_cal_file         = os.path.join(self.BASE_PATH, f'bin/cal_parms_{self.MODEL_NAME}.cal')
+				self.original_cal_file         = f'/data/SWATGenXApp/codes/bin/cal_parms_{self.MODEL_NAME}.cal'
 				self.general_log_path          = os.path.join(self.BASE_PATH, f'SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/log.txt')
 				self.model_base                = os.path.join(self.BASE_PATH, f'SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/')  
 				self.TxtInOut                  = os.path.join(self.model_base, f'{self.MODEL_NAME}/Scenarios/Default/TxtInOut/')
@@ -193,7 +191,7 @@ class ProcessingProgram:
 				nyskip_define(self.TxtInOut,  self.nyskip)
 				update_print_prt_file(self.TxtInOut, daily_flow_printing=True, hru_printing= print_hru) 
 				activate_ET_print(self.TxtInOut)
-				update_gwflow_head_output_times(self.TxtInOut)
+				
 
 				
 		def get_space_and_problem(self):
@@ -216,9 +214,6 @@ class ProcessingProgram:
 				print_hru = True
 				self.update_model_time_and_printing(print_hru = print_hru)
 				list_of_best_solutions = self.get_the_best_values()
-	
-				#performance_evaluator = Performance_evaluator(base_path=self.BASE_PATH, LEVEL = self.LEVEL, VPUID = self.VPUID)
-				#list_of_best_solutions = performance_evaluator.get_best_solutions(self.NAME)
 
 
 				logging.info(f"Number of best solutions are {len(list_of_best_solutions)}")
