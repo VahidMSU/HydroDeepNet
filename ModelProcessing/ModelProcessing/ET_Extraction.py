@@ -8,8 +8,6 @@ from multiprocessing import Pool
 import itertools
 import shutil
 
-from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
-
 class ExtractMODISET:
     def __init__(self, NAME, LEVEL, VPUID, MODEL_NAME, start_year, end_year, resolution):
 
@@ -20,11 +18,11 @@ class ExtractMODISET:
         self.end_year = end_year
         self.resolution = resolution
         self.VPUID = VPUID
-        self.lsus1_shp = f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes/lsus1.shp"
-        self.database_path = f"{SWATGenXPaths.HydroGeoDataSet_path}/HydroGeoDataset_ML_{resolution}.h5"
+        self.lsus1_shp = f"/data/SWATGenXApp/GenXAppData/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Watershed/Shapes/lsus1.shp"
+        self.database_path = f"/data/MyDataBase/HydroGeoDataset_ML_{resolution}.h5"
         self.h5_group_name = "MODIS_ET"
         self.original_model_path = f"/data/SWATGenXApp/GenXAppData/{self.LEVEL}/{self.NAME}/MODIS_ET/"
-        self.model_processing_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{self.VPUID}/{self.LEVEL}/{self.NAME}/MODIS_ET/"
+        self.model_processing_path = f"/data/MyDataBase/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/MODIS_ET/"
         shutil.rmtree(self.model_processing_path, ignore_errors=True)
         shutil.rmtree(self.original_model_path, ignore_errors=True)
         
@@ -70,22 +68,18 @@ class ExtractMODISET:
 
             # Combine the masks to identify the valid rows and columns
             combined_mask = lat_mask & lon_mask
-
+            
             # Check if any valid points are found
             if np.any(combined_mask):
-                return self._extracted_from_get_rowcol_range_by_latlon_21(combined_mask)
+                # Get row and column indices where the combined mask is True
+                row_indices, col_indices = np.where(combined_mask)
+                min_row_number = np.min(row_indices)
+                max_row_number = np.max(row_indices)
+                min_col_number = np.min(col_indices)
+                max_col_number = np.max(col_indices)
+                return min_row_number, max_row_number, min_col_number, max_col_number
             else:
                 return None, None, None, None
-
-    # TODO Rename this here and in `get_rowcol_range_by_latlon`
-    def _extracted_from_get_rowcol_range_by_latlon_21(self, combined_mask):
-        # Get row and column indices where the combined mask is True
-        row_indices, col_indices = np.where(combined_mask)
-        min_row_number = np.min(row_indices)
-        max_row_number = np.max(row_indices)
-        min_col_number = np.min(col_indices)
-        max_col_number = np.max(col_indices)
-        return min_row_number, max_row_number, min_col_number, max_col_number
             
 
     def ExtractMODISDataForCatchment(self, bounding_box):
@@ -172,7 +166,7 @@ if __name__ == "__main__":
     The output will save in the respective model VPUD/LEVEL/NAME/MODIS_ET/MODIS_ET.csv
     """
     # Directory path for your SWATplus models
-    NAMES_DIR = f"{SWATGenXPaths.swatgenx_outlet_path}/0000/huc12/"
+    NAMES_DIR = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
     
     # List all directories or files in NAMES_DIR
 

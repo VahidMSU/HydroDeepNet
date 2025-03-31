@@ -2,7 +2,6 @@ import contextlib
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import os
 import glob
-import itertools
 import pandas as pd
 import numpy as np
 import shutil
@@ -10,11 +9,6 @@ import psutil
 import time
 from datetime import datetime
 import logging
-import sys
-try:
-	from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
-except ImportError:
-	from SWATGenXConfigPars import SWATGenXPaths
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 ### add date in logging
@@ -117,8 +111,8 @@ def checking_the_number_true_stations(BASE_PATH, LEVEL, VPUID, NAME, END_YEAR, S
 		"""
 
 
-		#stations_path = glob.glob(os.path.join(BASE_PATH, fr"{LEVEL}/{NAME}/streamflow_data/",'*.csv'))
-		stations_path = glob.glob(fr"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/streamflow_data/*.csv")
+		#stations_path = glob.glob(os.path.join(BASE_PATH, fr"SWATplus_by_VPUID/{LEVEL}/{NAME}/streamflow_data/",'*.csv'))
+		stations_path = glob.glob(fr"/data/MyDataBase/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/streamflow_data/*.csv")
 
 
 		number_of_stations = 0
@@ -217,7 +211,7 @@ def copy_files(NAME, VPUID, MODEL_NAME, path_to_copy, OUTPUT_PATH):
 			logging.info(f'created path: {os.path.join(OUTPUT_PATH, VPUID, "huc12", NAME, MODEL_NAME)}')
 
 		if 'cal' in path_to_copy and path_to_copy['cal']:
-			shutil.copy2(f"{SWATGenXPaths.bin_path}/{os.path.basename(path_to_copy['cal'])}", os.path.join(OUTPUT_PATH, VPUID, 'huc12', NAME))
+			shutil.copy2(f"/data/MyDataBase/bin/{os.path.basename(path_to_copy['cal'])}", os.path.join(OUTPUT_PATH, VPUID, 'huc12', NAME))
 			logging.info(f'created path: {os.path.join(OUTPUT_PATH, VPUID, "huc12", NAME)}')
 
 
@@ -298,8 +292,8 @@ def clean_up(SCV_args):
 		sensitivity_flag = SCV_args['sensitivity_flag']
 		calibration_flag = SCV_args['calibration_flag']
 
-		cal_file_path = os.path.join(BASE_PATH, f'{VPUID}/{LEVEL}/{NAME}/')
-		scenarios_path = os.path.join(BASE_PATH, f'{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/Scenarios')
+		cal_file_path = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/')
+		scenarios_path = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/Scenarios')
 
 		# Delete scenarios and figures
 		delete_previous_runs(scenarios_path)
@@ -391,7 +385,8 @@ def update_gwflow_head_output_times(TxtInOut_path):
 		for i, line in enumerate(lines):
 				if "Times for Groundwater Head Output" in line:
 						section_start = i
-						for j in range(section_start + 1, len(lines)):
+						# Find where the years end by finding the next non-year, non-empty line
+						for j in range(i + 1, len(lines)):
 								stripped_line = lines[j].strip()
 								if not stripped_line or not stripped_line[0].isdigit():
 										section_end = j
@@ -407,10 +402,10 @@ def update_gwflow_head_output_times(TxtInOut_path):
 						"Times for Groundwater Head Output\n",
 						f"{expexted_num_months}\n"
 				]
-				new_lines.extend(
-				    f"\t{year}  {month}\n"
-				    for year, month in itertools.product(range(yrc_start, yrc_end +
-				                                               1), range(1, 13)))
+				for year in range(yrc_start, yrc_end + 1):
+						for month in range(1, 13):
+								new_lines.append(f"\t{year}  {month}\n")
+
 				# Replace the old lines with the new ones
 				lines = lines[:section_start] + new_lines + lines[section_end:]
 
@@ -423,46 +418,46 @@ def update_gwflow_head_output_times(TxtInOut_path):
 def read_swat_input_data(TxtInOut_path, file_name):
 		# sourcery skip: extract-method
 		if file_name == 'gwflow.input':
-			dataframe = pd.DataFrame(columns=['zone', 'hhc', 'sy', 'k_sb', 'thickness_sb'])
-			with open(os.path.join(TxtInOut_path, file_name)) as file:
-				lines = file.readlines()
-				datas = ['Aquifer Hydraulic', 'Aquifer Specific Yield', 'Streambed Hydraulic', 'Streambed Thickness']
-				names = ['hhc', 'sy', 'k_sb', 'thickness_sb']
-				for data, name in zip(datas, names):
-					for i, line in enumerate(lines):
-						if data in line:
-							number_of_zone = int(lines[i + 1].strip())
-							for j in range(number_of_zone):
-								zone, value = lines[i + 2 + j].split()
-								zone = int(zone)
-								value = float(value)
-								# Check if zone is already in dataframe
-								if zone in dataframe['zone'].values:
-										dataframe.loc[dataframe['zone'] == zone, name] = value
-								else:
-									# Create a new row and use concat
-									new_row = pd.DataFrame({'zone': [zone], name: [value]})
-									new_row[name] = new_row[name].astype(float)
-									if dataframe.empty:
-											dataframe = new_row.copy()
-									else:
-										dataframe = pd.concat([dataframe, new_row], ignore_index=True, sort=False).copy()
-			return dataframe
+				dataframe = pd.DataFrame(columns=['zone', 'hhc', 'sy', 'k_sb', 'thickness_sb'])
+				with open(os.path.join(TxtInOut_path, file_name)) as file:
+						lines = file.readlines()
+						datas = ['Aquifer Hydraulic', 'Aquifer Specific Yield', 'Streambed Hydraulic', 'Streambed Thickness']
+						names = ['hhc', 'sy', 'k_sb', 'thickness_sb']
+						for data, name in zip(datas, names):
+								for i, line in enumerate(lines):
+										if data in line:
+												number_of_zone = int(lines[i + 1].strip())
+												for j in range(number_of_zone):
+														zone, value = lines[i + 2 + j].split()
+														zone = int(zone)
+														value = float(value)
+														# Check if zone is already in dataframe
+														if zone in dataframe['zone'].values:
+																dataframe.loc[dataframe['zone'] == zone, name] = value
+														else:
+																# Create a new row and use concat
+																new_row = pd.DataFrame({'zone': [zone], name: [value]})
+																new_row[name] = new_row[name].astype(float)
+																if dataframe.empty:
+																		dataframe = new_row.copy()
+																else:
+																	dataframe = pd.concat([dataframe, new_row], ignore_index=True, sort=False).copy()
+				return dataframe
 		else:
-			with open(os.path.join(TxtInOut_path, file_name)) as file:
-				lines = file.readlines()
-				data = []
-				start_row = 2
-				headers = lines[1].split()
-				# Check if the last header is "description" and exclude it
-				if headers[-1].lower() == 'description':
-						headers = headers[:-1]
-				for line in lines[start_row:]:
-						row_data = line.split()
-						if len(row_data) > len(headers):
-								row_data = row_data[:len(headers)]
-						data.append(row_data)
-			return pd.DataFrame(data, columns=headers)
+				with open(os.path.join(TxtInOut_path, file_name)) as file:
+						lines = file.readlines()
+						data = []
+						start_row = 2
+						headers = lines[1].split()
+						# Check if the last header is "description" and exclude it
+						if headers[-1].lower() == 'description':
+								headers = headers[:-1]
+						for line in lines[start_row:]:
+								row_data = line.split()
+								if len(row_data) > len(headers):
+										row_data = row_data[:len(headers)]
+								data.append(row_data)
+				return pd.DataFrame(data, columns=headers)
 
 
 
@@ -494,21 +489,21 @@ def write_swatgwflow_input_data(TxtInOut_path, file_name, df):
 
 def write_swat_input_data(TxtInOut_path, df, file_name):
 
-	if file_name=='gwflow.input':
-		write_swatgwflow_input_data(TxtInOut_path, file_name, df)
-	else:
-		with open(os.path.join(TxtInOut_path ,file_name), 'w') as file:
-			current_date = datetime.now().strftime('%Y-%m-%d %H:%M')
-			readme_line = f"{file_name}: by myself on {current_date}"
-			# Write the readme line
-			file.write(readme_line + '\n')
-			# Write the headers
-			headers = "  ".join(df.columns)
-			file.write(f"{headers}\n")
-			# Write the rows
-			for _, row in df.iterrows():
-					row_str = "  ".join(map(str, row.values))
-					file.write(f"{row_str}\n")
+		if file_name=='gwflow.input':
+				write_swatgwflow_input_data(TxtInOut_path, file_name, df)
+		else:
+				with open(os.path.join(TxtInOut_path ,file_name), 'w') as file:
+						current_date = datetime.now().strftime('%Y-%m-%d %H:%M')
+						readme_line = f"{file_name}: by myself on {current_date}"
+						# Write the readme line
+						file.write(readme_line + '\n')
+						# Write the headers
+						headers = "  ".join(df.columns)
+						file.write(f"{headers}\n")
+						# Write the rows
+						for _, row in df.iterrows():
+								row_str = "  ".join(map(str, row.values))
+								file.write(f"{row_str}\n")
 
 def update_time(TxtInOut_path, START_YEAR, END_YEAR):
 		time = read_swat_input_data(TxtInOut_path, file_name='time.sim')

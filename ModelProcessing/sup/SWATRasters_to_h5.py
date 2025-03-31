@@ -73,7 +73,7 @@ def add_gssurgo_dem_landuse(NAME, ver = 0):
     """
 
     swat_base_path = f"/data2/MyDataBase/SWATGenXAppData/SWAT_input/huc12/{NAME}/SWAT_MODEL/Watershed/Rasters/"
-    SWATplus_output = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
+    SWATplus_output = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
 
     raster_files = [
         ("Soil", "soil_30m.tif"),
@@ -107,7 +107,7 @@ print("Finished processing all data")
 
 
 if __name__ == "__main__":
-    swat_base_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/"
+    swat_base_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
     NAMES = os.listdir(swat_base_path)
     NAMES.remove("log.txt")
     for NAME in NAMES:

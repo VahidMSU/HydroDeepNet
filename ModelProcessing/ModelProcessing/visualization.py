@@ -26,7 +26,7 @@ def get_figures(BASE_PATH, LEVEL, VPUID, NAME,MODEL_NAME):
 
     for time_step in ['daily', 'monthly']:
         stations = pd.DataFrame(columns=['station_name', 'objective_values', 'file'])
-        files = glob.glob(os.path.join(BASE_PATH,f'{VPUID}/{LEVEL}/{NAME}/', f"figures_{MODEL_NAME}_calibration_{time_step}", "*.jpeg"))
+        files = glob.glob(os.path.join(BASE_PATH,f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/', f"figures_{MODEL_NAME}_calibration_{time_step}", "*.jpeg"))
         if len(files)>100:
             for i, file in enumerate(files):
                 obj_value = float(os.path.basename(file).split('_')[0])
@@ -38,7 +38,7 @@ def get_figures(BASE_PATH, LEVEL, VPUID, NAME,MODEL_NAME):
             for station in stations['station_name'].unique():
                 temp = stations[stations['station_name'] == station]
                 fig_to_save = temp.sort_values(by='objective_values', ascending=False).iloc[0]['file']
-                directory_path_si = os.path.join(BASE_PATH, f'{VPUID}/{LEVEL}/{NAME}/calibration_figures_{MODEL_NAME}/')
+                directory_path_si = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/calibration_figures_{MODEL_NAME}/')
                 os.makedirs(directory_path_si, exist_ok=True)
                 try:
                     shutil.copy2(fig_to_save, directory_path_si)

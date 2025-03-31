@@ -11,12 +11,12 @@ def verification_process_for_name(params,problem, param_files, operation_types, 
     
         
     no_value = 1e6
-    model_base= os.path.join(BASE_PATH, f'{VPUID}/{LEVEL}/{NAME}/')
+    model_base= os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/')
 
     RESOLUTION = 250
     model_log_path   = os.path.join(model_base, "log.txt")  
     
-    general_log_path = os.path.join(BASE_PATH,f'{VPUID}/{LEVEL}/log.txt')
+    general_log_path = os.path.join(BASE_PATH,f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/log.txt')
     rech_out_folder  = os.path.join(model_base,f'recharg_output_{MODEL_NAME}/{SCENARIO}')
     gis_folder = os.path.join(model_base,f'{MODEL_NAME}/gwflow_gis')
     verification_performance_path = os.path.join(model_base,f'recharg_output_{MODEL_NAME}/{SCENARIO}/verification_performance_{MODEL_NAME}.txt')
@@ -25,7 +25,7 @@ def verification_process_for_name(params,problem, param_files, operation_types, 
     TxtInOut = os.path.join(model_base,f'{MODEL_NAME}/Scenarios/Default/TxtInOut/')
     
     stage = 'verification'
-    evaluator = SwatModelEvaluator(VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, SCENARIO)
+    evaluator = SwatModelEvaluator(BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, SCENARIO)
     objective_value = evaluator.simulate_and_evaluate_swat_model(params, problem, param_files, operation_types, TxtInOut)
     
     verification_output = f' {NAME},{VPUID},{MODEL_NAME},{START_YEAR},{END_YEAR},{objective_value}\n'

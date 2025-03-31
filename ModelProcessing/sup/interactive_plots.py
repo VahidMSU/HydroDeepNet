@@ -72,7 +72,7 @@ def process_swatplus_output(NAME, ver, var_name):
     """
     Process the SWAT+ output to generate videos and static plots.
     """
-    path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
+    path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
     with h5py.File(path, "r") as f:
         # Generate video for spatiotemporal data
         generate_spatiotemporal_video(f, var_name, NAME, ver)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     """
     Main function to process multiple variables, names, and verification stages.
     """
-    NAMES = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12")
+    NAMES = os.listdir("/data/MyDataBase/SWATplus_by_VPUID/0000/huc12")
     NAMES.remove("log.txt")
     for var_name in ["et", "perc", "precip", "snofall", "snomlt", "surq_gen", "wateryld"]:
         for NAME in NAMES:

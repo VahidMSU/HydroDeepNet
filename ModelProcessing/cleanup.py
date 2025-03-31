@@ -1,6 +1,6 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
-from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
+
 
 def process_name(NAME):
     base_path = os.path.join(path, NAME, "SWAT_gwflow_MODEL")
@@ -26,13 +26,13 @@ def process_name(NAME):
             file_path = os.path.join(modis_et_path, file)
             os.system(f"rm -rf {file_path}")
 
-    remove_path = f"{SWATGenXPaths.swatgenx_outlet_path}/0000/huc12/{NAME}/SWAT_gwflow_MODEL/recharg_output"
+    remove_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/recharg_output"
     if os.path.exists(remove_path):
         os.system(f"rm -rf {remove_path}")
 
 
 if __name__ == "__main__":
-    path = f"{SWATGenXPaths.swatgenx_outlet_path}/0000/huc12/"
+    path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
     NAMES = os.listdir(path)
     NAMES.remove("log.txt")
 
