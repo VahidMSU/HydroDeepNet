@@ -48,6 +48,11 @@ class AppManager:
                 
             # Skip for API routes that already have the /api prefix
             if request.path.startswith('/api/'):
+                # Fix for duplicate /api/api/ pattern
+                if request.path.startswith('/api/api/'):
+                    new_path = request.path.replace('/api/api/', '/api/', 1)
+                    self.app.logger.warning(f"Fixing duplicate API prefix: {request.path} -> {new_path}")
+                    return redirect(new_path, code=307)  # 307 preserves the HTTP method
                 return None
                 
             # Skip for download routes

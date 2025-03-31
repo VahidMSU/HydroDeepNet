@@ -539,7 +539,9 @@ const SWATGenXTemplate = () => {
                 </MapControlsContainer>
 
                 {/* Station selection panel */}
-                <StationSelectionPanel visible={showStationPanel && mapSelections.length > 0}>
+                <StationSelectionPanel
+                  visible={showStationPanel && mapSelections.length > 0 ? 'true' : undefined}
+                >
                   <StationSelectionHeader>
                     <span>
                       <FontAwesomeIcon icon={faStream} /> Stream Gauge Station
