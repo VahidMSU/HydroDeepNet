@@ -19,14 +19,9 @@ import os
 try:
 	from ModelProcessing.utils import log_errors, write_model_parameters
 	from ModelProcessing.utils import filling_observations
-	from ModelProcessing.gw_head_comparision import GroundwaterModelAnalysis
-	from ModelProcessing.et_comparision import Compare_MODIS_et_SWAT
-	from ModelProcessing.yld_compare import evaluate_yield
 except Exception:
 	from utils import log_errors, filling_observations, write_model_parameters
-	from gw_head_comparision import GroundwaterModelAnalysis
-	from et_comparision import Compare_MODIS_et_SWAT
-	from yld_compare import evaluate_yield
+
 
 ### add time to loggings
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -446,49 +441,3 @@ class SwatModelEvaluator:
 								logging.info(message)
 								return self.no_value
 
-
-def evaluate_scenario(base_path, vpuid, level, name, model_name, start_year, end_year, nyskip, no_value, stage, i):
-    """
-    Function to evaluate a single scenario for a given SWAT model.
-    """
-    try:
-        scenario = f"verification_stage_{i}"
-        evaluator = SwatModelEvaluator(
-            base_path, vpuid, level, name, model_name, start_year, end_year, nyskip, no_value, stage, SCENARIO=scenario
-        )
-        return evaluator.model_evaluation()
-    except Exception as e:
-        return f"Error processing {name}, stage {i}: {e}"
-
-
-if __name__ == "__main__":
-
-	# Define the parameters for the evaluation
-    NAMES = os.listdir('/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/')
-    NAMES.remove("log.txt")
-    BASE_PATH = '/data/MyDataBase/'
-    LEVEL = 'huc12'
-    VPUID = '0000'
-    MODEL_NAME = 'SWAT_gwflow_MODEL'
-    START_YEAR = 1997
-    END_YEAR = 2020
-    nyskip = 3
-    no_value = 1e6
-    stage = 'verification'
-    num_stages = 5  # Number of verification stages
-
-    # Prepare inputs for parallel processing
-    tasks = [
-        (BASE_PATH, VPUID, LEVEL, name, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, i)
-        for name in NAMES
-        for i in range(num_stages)
-    ]
-
-    # Use multiprocessing to parallelize the evaluations
-    with Pool(processes=10) as pool:
-        results = pool.starmap(evaluate_scenario, tasks)
-
-    # Handle or log results as needed
-    for idx, result in enumerate(results):
-        name, stage_id = tasks[idx][3], tasks[idx][10]
-        print(f"Result for {name}, stage {stage_id}: {result}")

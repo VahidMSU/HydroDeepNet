@@ -81,8 +81,8 @@ def fetch_new_ranges(VPUID, NAME, LEVEL, BASE_PATH, MODEL_NAME):
         
         plt.legend()
         plt.grid(True)
-        os.makedirs(f"/data/MyDataBase/SWATplus_by_VPUID/{VPUID}/huc12/{NAME}/parameter_vs_best_score/", exist_ok=True)
-        plt.savefig(f"/data/MyDataBase/SWATplus_by_VPUID/{VPUID}/huc12/{NAME}/parameter_vs_best_score/{parameter}_vs_best_score_{MODEL_NAME}.jpeg", dpi= 300)
+        os.makedirs(f"/data/SWATGenX/Users/{username}/SWATplus_by_VPUID/{VPUID}/huc12/{NAME}/parameter_vs_best_score/", exist_ok=True)
+        plt.savefig(f"/data/SWATGenX/Users/{username}/SWATplus_by_VPUID/{VPUID}/huc12/{NAME}/parameter_vs_best_score/{parameter}_vs_best_score_{MODEL_NAME}.jpeg", dpi= 300)
         plt.close()
 
     return new_ranges
