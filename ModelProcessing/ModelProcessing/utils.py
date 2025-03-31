@@ -365,55 +365,6 @@ def activate_ET_print(TxtInOut_path):
 		with open(os.path.join(TxtInOut_path,'print.prt'), 'w') as file:
 				file.writelines(lines)
 
-def update_gwflow_head_output_times(TxtInOut_path):
-		gwflow_input = os.path.join(TxtInOut_path, 'gwflow.input')
-		time_sim = os.path.join(TxtInOut_path, 'time.sim')
-		# Read the time.sim file to extract start and end years
-		time_sime = pd.read_csv(time_sim, skiprows=1, sep="\s+", engine='python')
-		yrc_start = time_sime["yrc_start"].iloc[0]
-		yrc_end = time_sime["yrc_end"].iloc[0]
-
-		# Read the gwflow.input file
-		with open(gwflow_input, 'r') as f:
-				lines = f.readlines()
-
-		# Find and modify the "Times for Groundwater Head Output" section
-		section_start = None
-		section_end = None
-
-		# Locate the start and end of the "Times for Groundwater Head Output" section
-		for i, line in enumerate(lines):
-				if "Times for Groundwater Head Output" in line:
-						section_start = i
-						# Find where the years end by finding the next non-year, non-empty line
-						for j in range(i + 1, len(lines)):
-								stripped_line = lines[j].strip()
-								if not stripped_line or not stripped_line[0].isdigit():
-										section_end = j
-										break
-						if section_end is None:
-								section_end = len(lines)  # In case it reaches the end of the file
-						break
-
-		# Replace the lines in the section with new year information
-		if section_start is not None:
-				expexted_num_months = (yrc_end - yrc_start + 1) * 12
-				new_lines = [
-						"Times for Groundwater Head Output\n",
-						f"{expexted_num_months}\n"
-				]
-				for year in range(yrc_start, yrc_end + 1):
-						for month in range(1, 13):
-								new_lines.append(f"\t{year}  {month}\n")
-
-				# Replace the old lines with the new ones
-				lines = lines[:section_start] + new_lines + lines[section_end:]
-
-		# Write the updated lines to gwflow.input_
-		with open(gwflow_input, 'w') as f:
-				f.writelines(lines)
-
-
 
 def read_swat_input_data(TxtInOut_path, file_name):
 		# sourcery skip: extract-method
