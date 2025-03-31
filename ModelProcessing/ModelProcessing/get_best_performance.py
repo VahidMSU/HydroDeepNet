@@ -1,13 +1,11 @@
 import os
 import pandas as pd
-from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
 
 class Performance_evaluator:
-    def __init__(self, base_path , LEVEL = "huc12", VPUID = "0000"):
-        self.base_path = SWATGenXPaths.swatgenx_outlet_path
+    def __init__(self, base_path = "/data/MyDataBase/", LEVEL = "huc12", VPUID = "0000"):
         self.LEVEL = LEVEL
         self.VPUID = VPUID
-        self.base_path = os.path.join(base_path, f"{self.VPUID}/{self.LEVEL}/")
+        self.base_path = os.path.join(base_path, f"SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/")
 
 
     # Calculates the best keys based on weighted NSE for given criteria
@@ -16,8 +14,9 @@ class Performance_evaluator:
         df['weighted_NSE'] = df['weight'] * df['NSE']
         df_grouped = df.groupby('key').sum().reset_index()
         ## dtype must be float
-        df_grouped['weighted_NSE'] = df_grouped['weighted_NSE'].astype(float)
-        return df_grouped.nlargest(number_of_best, 'weighted_NSE')['key'].values
+        df_grouped['weighted_NSE'] = df_grouped['weighted_NSE'].astype(float)        
+        best_keys = df_grouped.nlargest(number_of_best, 'weighted_NSE')['key'].values
+        return best_keys
 
     # Main function to get the best parameters for a given watershed
     def get_best_solutions(self, name):
@@ -34,10 +33,8 @@ class Performance_evaluator:
 
         return [dict(zip(best_parameters.columns, x)) for x in best_parameters.values]  
 
-from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
-VPUID = "0407"
 # Set the base path and list of watersheds
-base_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/huc12/"
+base_path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
 names = [name for name in os.listdir(base_path) if name != "log.txt"]
 
 # Create an instance of WatershedAnalyzer and process each watershed

@@ -3,89 +3,96 @@ from multiprocessing import Process, Manager
 import pyDOE
 import time
 from ModelProcessing.utils import is_cpu_usage_low
+from ModelProcessing.utils import log_errors
 import matplotlib.pyplot as plt
 from ModelProcessing.utils import delete_previous_runs
 import os
-from ModelProcessing.SWATGenXLogging import LoggerSetup
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-def run_initial_evaluation(n_initial, X_initial, GlobalBestScore_collection,BASE_PATH, LEVEL,VPUID, NAME, MODEL_NAME, model_log_path, wrapped_model_evaluation, cal_parms, best_simulation_filename, n_evaluated=0):
+def run_initial_evaluation(n_initial, X_initial, GlobalBestScore_collection,BASE_PATH, LEVEL,VPUID, NAME, MODEL_NAME, model_log_path, general_log_path, wrapped_model_evaluation, cal_parms, best_simulation_filename, n_evaluated=0):
 		
-	with Manager() as manager:
-			
-		next_points = X_initial
-		processes = []
-		active_processes = []
-		message = f"{MODEL_NAME}:{NAME}:{VPUID} number of initial points: {n_initial}"
+		with Manager() as manager:
+				
+				next_points = X_initial
+				processes = []
+				active_processes = []
+				message = f"{MODEL_NAME}:{NAME}:{VPUID} number of initial points: {n_initial}"
+				log_errors(general_log_path, message)
+				log_errors(model_log_path, message)
+
+				results_list = manager.list([None] * n_initial)  # Shared list for scores
+
+				for index, next_point in enumerate(next_points):
+						save_new_point_to_file(next_point, BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME)
+						#save_new_point_to_file(next_point,cal_parms, BASE_PATH, LEVEL, NAME, MODEL_NAME)   # this line is for debug
+						process = Process(target=model_evaluation_wrapper, args=(index, results_list, next_point, wrapped_model_evaluation))
+						process.start()
+						processes.append(process)
+						active_processes.append(process)
+						n_evaluated += 1
+
+				# Wait for all processes to finish
+				for process in processes:
+						process.join()
+
+				# check if the processes are still active
+				for process in active_processes:
+						if process.is_alive():
+								process.terminate()
+								process.join()
+								message = f"{MODEL_NAME}:{NAME}:{VPUID} Terminated a process"
+								log_errors(general_log_path, message)
+								log_errors(model_log_path, message)
+								logging.info(message)
 
 
-		results_list = manager.list([None] * n_initial)  # Shared list for scores
-
-		for index, next_point in enumerate(next_points):
-			save_new_point_to_file(next_point, BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME)
-			#save_new_point_to_file(next_point,cal_parms, BASE_PATH, LEVEL, NAME, MODEL_NAME)   # this line is for debug
-			process = Process(target=model_evaluation_wrapper, args=(index, results_list, next_point, wrapped_model_evaluation))
-			process.start()
-			processes.append(process)
-			active_processes.append(process)
-			n_evaluated += 1
-
-		# Wait for all processes to finish
-		for process in processes:
-			process.join()
-
-		# check if the processes are still active
-		for process in active_processes:
-			if process.is_alive():
-				process.terminate()
-				process.join()
-				message = f"{MODEL_NAME}:{NAME}:{VPUID} Terminated a process"
-				print(message)
-					
+				# Update scores from the processes
+				LocalBestScore = np.array(list(results_list))
+				# if does not exists the type is w, otherwise it is a
+				
+				save_local_best_parameters(BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME, cal_parms, LocalBestScore, next_points, type_write='w')
 
 
-		# Update scores from the processes
-		LocalBestScore = np.array(list(results_list))
-		# if does not exists the type is w, otherwise it is a
-		
-		save_local_best_parameters(BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME, cal_parms, LocalBestScore, next_points, type_write='w')
+				# Update Global bests based on the new scores
+				logging.info(f"Local Best Score: {LocalBestScore}")
 
+				message = f"{MODEL_NAME}:{NAME}:{VPUID} Local Best Score: {LocalBestScore}"
+				log_errors(general_log_path, message)
+				log_errors(model_log_path, message)
+				# replace None in LocalBestScore with np.inf
+				LocalBestScore = np.where(LocalBestScore is None, np.inf, LocalBestScore)
+				GlobalBestIndex = np.argmin(LocalBestScore)
+				GlobalBest = X_initial[GlobalBestIndex]
+				GlobalBestScore = LocalBestScore[GlobalBestIndex]
 
-		# Update Global bests based on the new scores
-		print(f"LocalBestScore: {LocalBestScore}")
+				GlobalBestScore_collection.append(GlobalBestScore)
 
-		message = f"{MODEL_NAME}:{NAME}:{VPUID} Local Best Score: {LocalBestScore}"
-		print(message)
-		# replace None in LocalBestScore with np.inf
-		LocalBestScore = np.where(LocalBestScore is None, np.inf, LocalBestScore)
-		GlobalBestIndex = np.argmin(LocalBestScore)
-		GlobalBest = X_initial[GlobalBestIndex]
-		GlobalBestScore = LocalBestScore[GlobalBestIndex]
+				message = f"{MODEL_NAME}:{NAME}:{VPUID} Global Best Score: {GlobalBestScore} for initial runs"
+				log_errors(general_log_path, message)
+				log_errors(model_log_path, message)
+				logging.info(message)
 
-		GlobalBestScore_collection.append(GlobalBestScore)
-
-		message = f"{MODEL_NAME}:{NAME}:{VPUID} Global Best Score: {GlobalBestScore} for initial runs"
-		print(message)
-
-		# Save the best parameters to the file
-		best_params = GlobalBest
-		best_objective_value = GlobalBestScore
-		save_current_best(best_params, best_objective_value, cal_parms, best_simulation_filename, model_log_path, VPUID, NAME, MODEL_NAME)
-		while not is_cpu_usage_low():
-				time.sleep(10)
-	# Sort the initial points based on the scores
-	sorted_indices = np.argsort(LocalBestScore)
-	X_initial_sorted = X_initial[sorted_indices]
-	return X_initial_sorted, LocalBestScore, GlobalBest, GlobalBestScore, GlobalBestScore_collection
+				# Save the best parameters to the file
+				best_params = GlobalBest
+				best_objective_value = GlobalBestScore
+				save_current_best(best_params, best_objective_value, cal_parms, best_simulation_filename, model_log_path, general_log_path, VPUID, NAME, MODEL_NAME)
+				while not is_cpu_usage_low():
+						time.sleep(10)
+		# Sort the initial points based on the scores
+		sorted_indices = np.argsort(LocalBestScore)
+		X_initial_sorted = X_initial[sorted_indices]
+		return X_initial_sorted, LocalBestScore, GlobalBest, GlobalBestScore, GlobalBestScore_collection
 
 def save_local_best_parameters(BASE_PATH, LEVEL,VPUID, NAME, MODEL_NAME, cal_parms, LocalBestScore, next_points, type_write='w'):
 		# if the file already exists, do not write the header
-		with open(os.path.join(BASE_PATH,VPUID,LEVEL,NAME,f'local_best_solution_{MODEL_NAME}.txt'), type_write) as f:
-			# the header of the scores is BEST_SCORE
-			if type_write=='w':
-				f.write('best_score,'+','.join(cal_parms.name.values)+'\n')
-			for i in range(len(LocalBestScore)):
-				f.write(f"{LocalBestScore[i]}, {','.join([str(x) for x in next_points[i]])}\n")
-					
+		with open(os.path.join(BASE_PATH,'SWATplus_by_VPUID',VPUID,LEVEL,NAME,f'local_best_solution_{MODEL_NAME}.txt'), type_write) as f:
+				# the header of the scores is BEST_SCORE
+				if type_write=='w':
+						f.write('best_score,'+','.join(cal_parms.name.values)+'\n')
+				for i in range(len(LocalBestScore)):
+						f.write(f"{LocalBestScore[i]}, {','.join([str(x) for x in next_points[i]])}\n")
+						
 
 def update_velocity_by_role(i, X, V, LocalBest, GlobalBest, InertiaWeight, C1, C2, role):
 		
@@ -140,35 +147,36 @@ def update_particle(i, X, V, LocalBest, GlobalBest, InertiaWeight, C1, C2, Vmax,
 		score = wrapped_model_evaluation(X[i])
 
 		results_list[i] = (X[i], V[i], score)
+		
 
-
-class PSOOptimizer():
-
-		def __init__(self, problem, config, wrapped_model_evaluation, cal_parms):
+class PSOOptimizer:
+		
+		def __init__(self, problem, BASE_PATH, LEVEL,VPUID, NAME, MODEL_NAME, model_log_path, general_log_path, wrapped_model_evaluation, max_it, n_particles, cal_parms, best_simulation_filename, termination_tolerance, epsilon, C1F=0.5, C1I=1, C2I=0.5, C2F=1, Vmax=0.1, InertiaMin=0.4, InertiaMax=1):
 				self.problem = problem
-				self.config = config
-				self.max_it = config.max_cal_iterations
-				self.n_particles = config.cal_pool_size
-				self.C1F = config.C1F
-				self.C1I = config.C1I
-				self.C2I = config.C2I
-				self.C2F = config.C2F
-				self.Vmax = config.Vmax
-				self.InertiaMin = config.InertiaMin	
-				self.InertiaMax = config.InertiaMax
-				self.BASE_PATH = config.BASE_PATH
-				self.LEVEL = config.LEVEL
-				self.NAME = config.NAME
-				self.VPUID = config.VPUID
-				self.MODEL_NAME = config.MODEL_NAME
-				self.model_log_path = config.model_log_path
+				self.max_it = max_it
+				self.n_particles = n_particles
+				self.C1F = C1F
+				self.C1I = C1I
+				self.C2I = C2I
+				self.C2F = C2F
+				self.Vmax = Vmax
+				self.InertiaMin = InertiaMin
+				self.InertiaMax = InertiaMax
+				self.BASE_PATH = BASE_PATH
+				self.LEVEL = LEVEL
+				self.NAME = NAME
+				self.VPUID = VPUID
+				self.MODEL_NAME = MODEL_NAME
+				self.model_log_path = model_log_path
+				self.general_log_path = general_log_path
 				self.wrapped_model_evaluation = wrapped_model_evaluation
+				self.n_particles = n_particles
 				self.NV = len(problem['bounds'])
 				self.MinB = np.array([low for low, high in problem['bounds']])
 				self.MaxB = np.array([high for low, high in problem['bounds']])
-				self.Vmax = self.Vmax * (self.MaxB - self.MinB)
+				self.Vmax = Vmax * (self.MaxB - self.MinB)
 				self.cal_parms = cal_parms  
-				self.best_simulation_filename = config.best_simulation_filename
+				self.best_simulation_filename = best_simulation_filename
 				self.X = None
 				self.V = None
 				self.LocalBest = None
@@ -176,10 +184,8 @@ class PSOOptimizer():
 				self.GlobalBestScore = np.inf
 				self.GlobalBestScore_collection = []
 				self.LocalBestScore_collection = []
-				self.termination_tolerance = config.termination_tolerance	
-				self.epsilon = config.epsilon
-				self.logger = LoggerSetup(report_path=self.model_log_path)
-				self.logger = self.logger.setup_logger("PSO")	
+				self.termination_tolerance = termination_tolerance
+				self.epsilon = epsilon
 
 		def tell(self, initial_values=None, initial_points=None):
 				
@@ -191,12 +197,13 @@ class PSOOptimizer():
 						X_initial[:, i] = X_initial[:, i] * (self.MaxB[i] - self.MinB[i]) + self.MinB[i]
 						
 				message = f"{self.MODEL_NAME}:{self.NAME} number of initial points: {n_initial}"
-				self.logger.info(message)	
+				log_errors(self.general_log_path, message)
+				log_errors(self.model_log_path, message)
 
 				X_initial_sorted, LocalBestScore, GlobalBest, GlobalBestScore, GlobalBestScore_collection = run_initial_evaluation(n_initial, X_initial, self.GlobalBestScore_collection,self.BASE_PATH,
-																							self.LEVEL, self.VPUID, self.NAME, self.MODEL_NAME, self.model_log_path, 
-																							self.wrapped_model_evaluation, self.cal_parms, 
-																							self.best_simulation_filename)
+																																																												self.LEVEL, self.VPUID, self.NAME, self.MODEL_NAME, self.model_log_path, 
+																																																												self.general_log_path, self.wrapped_model_evaluation, self.cal_parms, 
+																																																												self.best_simulation_filename)
 				
 				self.X = select_best_initial_positions(self.n_particles, n_initial, X_initial_sorted, LocalBestScore)
 				self.LocalBest = np.copy(self.X)
@@ -223,7 +230,7 @@ class PSOOptimizer():
 										process = Process(target=update_particle, args=(i, self.X, self.V, self.LocalBest, self.GlobalBest, InertiaWeight, C1, C2, self.Vmax, self.MinB, self.MaxB, role, results_list,self.wrapped_model_evaluation))
 										processes.append(process)
 										while not is_cpu_usage_low():
-												self.logger.info(self.model_log_path, "Waiting for CPU usage to be low")	
+												logging.info("Waiting for CPU usage to be low")
 												time.sleep(10)
 										process.start()
 										#time.sleep(20)
@@ -242,7 +249,7 @@ class PSOOptimizer():
 												self.GlobalBest = self.X[i]
 												self.GlobalBestScore = score
 												# save the best parameters to the file
-												save_current_best(self.GlobalBest, self.GlobalBestScore, self.cal_parms, self.best_simulation_filename, self.model_log_path, self.VPUID, self.NAME, self.MODEL_NAME)
+												save_current_best(self.GlobalBest, self.GlobalBestScore, self.cal_parms, self.best_simulation_filename, self.model_log_path, self.general_log_path, self.VPUID, self.NAME, self.MODEL_NAME)
 												save_local_best_parameters(self.BASE_PATH, self.LEVEL,self.VPUID, self.NAME, self.MODEL_NAME, self.cal_parms, self.LocalBestScore, self.LocalBest,type_write='a')
 										self.LocalBestScore_collection.append([i, It, self.LocalBestScore[i]])
 
@@ -254,13 +261,14 @@ class PSOOptimizer():
 								# this is a simple criterion and can be changed
 
 								if It > 25 and np.std(self.GlobalBestScore_collection[-self.termination_tolerance:]) < self.epsilon:
-									message = f"{self.MODEL_NAME}:{self.NAME} Early stopping at iteration {It} with std: {np.std(self.GlobalBestScore_collection[-self.termination_tolerance:])}"
-									self.logger.info(self.model_log_path, message)
-									self.cleanup_scenario_directory(message)
-									break
+										message = f"{self.MODEL_NAME}:{self.NAME} Early stopping at iteration {It} with std: {np.std(self.GlobalBestScore_collection[-self.termination_tolerance:])}"
+										log_errors(self.general_log_path, message)
+										log_errors(self.model_log_path, message)
+										self.cleanup_scenario_directory(message)
+										break
 
 								message = f"{self.MODEL_NAME}:{self.NAME} Iteration {It} Global Best Score: {self.GlobalBestScore}"
-								self.logger.info(message)
+								logging.info(message)
 								self.cleanup_scenario_directory(message)
 								plt.figure(figsize=(10, 6))
 								plt.plot(self.GlobalBestScore_collection, color='b', marker='o', linestyle='-', linewidth=2, markersize=6)
@@ -269,8 +277,8 @@ class PSOOptimizer():
 								plt.title('Global Best Improvement')
 								plt.grid(True, which="both", ls="--", c='gray', alpha=0.5)
 								# make sure the directory exists
-								os.makedirs(fr"{self.BASE_PATH}/{self.VPUID}/{self.LEVEL}/{self.NAME}/figures_{self.MODEL_NAME}", exist_ok=True)
-								plt.savefig(fr"{self.BASE_PATH}/{self.VPUID}/{self.LEVEL}/{self.NAME}/figures_{self.MODEL_NAME}/GlobalBestImprovement.png", dpi=300)
+								os.makedirs(fr"/data/MyDataBase/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/figures_{self.MODEL_NAME}", exist_ok=True)
+								plt.savefig(fr"/data/MyDataBase/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/figures_{self.MODEL_NAME}/GlobalBestImprovement.png", dpi=300)
 								plt.close()
 
 						save_final_results(self.GlobalBestScore, self.GlobalBest, self.cal_parms, self.best_simulation_filename, self.model_log_path)
@@ -278,19 +286,20 @@ class PSOOptimizer():
 						return self.GlobalBest, self.GlobalBestScore
 
 		def cleanup_scenario_directory(self, message):
-				self.logger.info(self.model_log_path, message)
+				log_errors(self.general_log_path, message)
+				log_errors(self.model_log_path, message)
 				delete_previous_runs(
-						f"{self.BASE_PATH}/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios"
+						f"/data/MyDataBase/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios"
 				)
 		
 		
 def save_new_point_to_file(next_point, BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME):
 		# save the next point to the file
-		path = os.path.join(BASE_PATH, VPUID,LEVEL,NAME,f'initial_point_calibration_{MODEL_NAME}.txt')
-		with open(os.path.join(BASE_PATH,VPUID,LEVEL,NAME,f'initial_point_calibration_{MODEL_NAME}.txt'), 'a') as f:
+		path = os.path.join(BASE_PATH,'SWATplus_by_VPUID', VPUID,LEVEL,NAME,f'initial_point_calibration_{MODEL_NAME}.txt')
+		with open(os.path.join(BASE_PATH,'SWATplus_by_VPUID',VPUID,LEVEL,NAME,f'initial_point_calibration_{MODEL_NAME}.txt'), 'a') as f:
 				f.write(','.join([str(x) for x in next_point])+'\n')
 
-def save_current_best(best_params, best_objective_value, cal_parms, best_simulation_filename, model_log_path,VPUID, NAME, MODEL_NAME):
+def save_current_best(best_params, best_objective_value, cal_parms, best_simulation_filename, model_log_path, general_log_path,VPUID, NAME, MODEL_NAME):
 		
 		with open(best_simulation_filename, 'w') as f:
 				for x, y in zip(cal_parms.name.values, best_params):
@@ -298,7 +307,8 @@ def save_current_best(best_params, best_objective_value, cal_parms, best_simulat
 				f.write(f"Best objective value: {best_objective_value}\n")
 				
 		message = f"{MODEL_NAME}:{NAME}:{VPUID} New best found: {best_objective_value}"
-		print(message)
+		log_errors(model_log_path, message)
+		log_errors(general_log_path, message)
 
 
 def save_final_results(best_score,best_position,cal_parms, best_simulation_filename, model_log_path):
@@ -308,7 +318,7 @@ def save_final_results(best_score,best_position,cal_parms, best_simulation_filen
 				for x, y in zip(cal_parms.name.values, best_params):
 						f.write(f"{x}, {y:.2f}\n")
 				f.write(f"Final best objective value: {best_objective_value}\n")
-		self.logger.info(model_log_path, f"Final calibration completed with best objective value {best_objective_value}")
+		log_errors(model_log_path, f"Final calibration completed with best objective value {best_objective_value}")
 		
 		
 def define_role(LocalBestScore,i):

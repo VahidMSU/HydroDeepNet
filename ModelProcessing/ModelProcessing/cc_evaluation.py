@@ -1,4 +1,3 @@
-import itertools
 import os
 import shutil
 import subprocess
@@ -9,18 +8,18 @@ from multiprocessing import Process, Queue
 from ModelProcessing.convert2h5 import write_SWAT_OUTPUT_h5
 import pandas as pd
 import time 
-from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', handlers=[
 		logging.FileHandler("swat_model_runner.log"),
 		logging.StreamHandler()
 ])
-import os
 
-from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
+
+
 class SWATModelRunner:
 		def __init__(self, scenario_path, cc_model_path, log_path, name, vpuid, config):
 				self.config = config
-				self.BASE_PATH = SWATGenXPaths.swatgenx_outlet_path
+				self.BASE_PATH = self.config.get("BASE_PATH", "/data/MyDataBase/SWATplus_by_VPUID")
 				self.scenario_path = scenario_path
 				self.cc_model_path = cc_model_path
 				self.log_path = log_path
@@ -62,7 +61,8 @@ class SWATModelRunner:
 				for i, line in enumerate(lines):
 						if "Times for Groundwater Head Output" in line:
 								section_start = i
-								for j in range(section_start + 1, len(lines)):
+								# Find where the years end by finding the next non-year, non-empty line
+								for j in range(i + 1, len(lines)):
 										stripped_line = lines[j].strip()
 										if not stripped_line or not stripped_line[0].isdigit():
 												section_end = j
@@ -78,10 +78,10 @@ class SWATModelRunner:
 								"Times for Groundwater Head Output\n",
 								f"{expexted_num_months}\n"
 						]
-						new_lines.extend(
-							f"\t{year}  {month}\n"
-							for year, month in itertools.product(range(yrc_start, yrc_end +
-																	1), range(1, 13)))
+						for year in range(yrc_start, yrc_end + 1):
+								for month in range(1, 13):
+										new_lines.append(f"\t{year}  {month}\n")
+
 						# Replace the old lines with the new ones
 						lines = lines[:section_start] + new_lines + lines[section_end:]
 
@@ -149,7 +149,7 @@ class SWATModelRunner:
 				## supress output
 				start_time = time.time()
 				logging.info(f"Running: {cc_name}, {self.name}")
-				subprocess.run([f"{SWATGenXPaths.bin_path}/swatplus"], cwd=cc_model_path_new, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+				subprocess.run(["/data/MyDataBase/bin/swatplus"], cwd=cc_model_path_new, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 				end_time = time.time()
 				duration = (end_time - start_time)/60
 				logging.info(f"Elapsed time for {cc_name}:  {duration:.2f} minutes")
@@ -157,16 +157,15 @@ class SWATModelRunner:
 				streamflow_data_path = os.path.join(self.BASE_PATH, self.vpuid, self.level, self.name, 'streamflow_data/')
 				fig_files_paths = os.path.join(self.BASE_PATH, self.vpuid, self.level, self.name)
 				if self.config.get("stage", "historical") == "historical":
-					evaluator = SwatModelEvaluator(self.BASE_PATH, self.vpuid, self.level, self.name, self.model_name, self.start_year, self.end_year, self.nyskip, self.no_value, 'historical', cc_name)
+					evaluator = SwatModelEvaluator("/data/MyDataBase", self.vpuid, self.level, self.name, self.model_name, self.start_year, self.end_year, self.nyskip, self.no_value, 'historical', cc_name)
 					objective_function_values = evaluator.model_evaluation(cc_model_path_new, streamflow_data_path, fig_files_paths, cc_name)
 		def clean_up_cc_model(self, cc_name):
-				import os
 				cc_model_path_new = os.path.join(self.cc_model_path, cc_name)
 				files = os.listdir(cc_model_path_new)
 				for file in files:
-						if (not file.endswith('.pcp') and not file.endswith('.tmp')
-						    and file != "SWAT_OUTPUT.h5"):
-								os.remove(os.path.join(cc_model_path_new, file))
+						if not (file.endswith('.pcp') or file.endswith('.tmp')):
+								if file != "SWAT_OUTPUT.h5":
+									os.remove(os.path.join(cc_model_path_new, file))
 		
 		def run_all_cc_models(self, cc_name):
 				self.clean_up(cc_name)
@@ -178,7 +177,7 @@ class SWATModelRunner:
 
 class SWAT_cc_controller:
 		def __init__(self, config=None):
-				self.BASE_PATH = SWATGenXPaths.swatgenx_outlet_path
+				self.BASE_PATH = config.get("BASE_PATH", "/data/MyDataBase/SWATplus_by_VPUID")
 				self.NAME = config.get("NAME", None)
 				self.VPUID = config.get("VPUID", None)
 				self.CC_SCENARIO = config.get("CC_SCENARIO", "historical")

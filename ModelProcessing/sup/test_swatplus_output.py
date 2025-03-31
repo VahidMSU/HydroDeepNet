@@ -65,7 +65,7 @@ if __name__ == "__main__":
     safe to run: yes
 
     """
-    base_path = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/"
+    base_path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/"
 
     NAMES = os.listdir(base_path)
     NAMES.remove("log.txt")

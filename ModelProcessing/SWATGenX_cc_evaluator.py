@@ -1,13 +1,12 @@
 # sourcery skip: swap-if-else-branches, use-named-expression
 from ModelProcessing.cc_evaluation import SWAT_cc_controller
-from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
 
 if __name__ == "__main__":
 		parallel = True
 
 		config = {
 				"CC_SCENARIO": "MPI-ESM1-2-HR_ssp",
-				"BASE_PATH": SWATGenXPaths.swatgenx_outlet_path,	
+				"BASE_PATH": "/data/MyDataBase/SWATplus_by_VPUID",
 				"start_year": 2015,
 				"end_year": 2100,
 				"model_name": "SWAT_gwflow_MODEL",

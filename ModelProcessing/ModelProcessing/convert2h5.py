@@ -10,17 +10,18 @@ from multiprocessing import Process, Semaphore, Queue, current_process
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
 class Gwflow2h5:
-    def __init__(self, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, file_name):
+    def __init__(self, DIC, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, file_name):
+        self.DIC = DIC
         self.VPUID = VPUID
         self.LEVEL = LEVEL
         self.NAME = NAME
         self.MODEL_NAME = MODEL_NAME
         self.SCENARIO = SCENARIO
         self.file_name = file_name
-        self.scenario_path = os.path.join(SWATGenXPaths.swatgenx_outlet_path, f"{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}")
-        self.output_h5_path = os.path.join(SWATGenXPaths.swatgenx_outlet_path,  VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, "SWAT_OUTPUT.h5")
-        self.gwflow_var_path = os.path.join(SWATGenXPaths.swatgenx_outlet_path, f"{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}/{file_name}")
-        self.gwflow_input = os.path.join(SWATGenXPaths.swatgenx_outlet_path, f"{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}/gwflow.input")
+        self.scenario_path = os.path.join(DIC, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}")
+        self.output_h5_path = os.path.join(DIC, 'SWATplus_by_VPUID', VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, "SWAT_OUTPUT.h5")
+        self.gwflow_var_path = os.path.join(DIC, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}/{file_name}")
+        self.gwflow_input = os.path.join(DIC, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}/gwflow.input")
         self.year = 0
         self.row = 0
         self.title = ""
@@ -89,13 +90,13 @@ def remove_gwflow_dataset(SWAT_H5_path):
     except Exception as e:
         logging.error(f"Error removing gwflow dataset: {e}")
 
-def write_hru_metadata(VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO):
+def write_hru_metadata(DIC, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO):
     def create_hru_datasets(f, df, column_name, dataset_name):
         f.create_dataset(f"metadata/hru/{dataset_name}", data=df[column_name].values, compression='gzip')
 
     """ Write HRU metadata to the h5 file"""
     try:
-        scenario_path = os.path.join(SWATGenXPaths.swatgenx_outlet_path, f"{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}/")
+        scenario_path = os.path.join(DIC, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}/")
         hru_data = os.path.join(scenario_path, "hru-data.hru")
         output_h5_path = os.path.join(scenario_path, "SWAT_OUTPUT.h5")
 
@@ -134,9 +135,9 @@ def read_SWAT_data(swat_output_file):
     except Exception as e:
         logging.error(f"Error reading SWAT data: {e}")
 
-def convert2h5( VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, TIME_STEPS, FILE_NAMES):
+def convert2h5(DIC, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, TIME_STEPS, FILE_NAMES):
     try:
-        scenario_path = os.path.join(SWATGenXPaths.swatgenx_outlet_path, f"{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}/")
+        scenario_path = os.path.join(DIC, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}/")
         output_h5_path = os.path.join(scenario_path, "SWAT_OUTPUT.h5")
 
         if os.path.exists(output_h5_path):
@@ -169,14 +170,14 @@ def convert2h5( VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, TIME_STEPS, FILE_NAMES
     except Exception as e:
         logging.error(f"Error converting to h5: {e}")
 
-def process_scenario(VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, semaphore, queue):
+def process_scenario(DIC, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, semaphore, queue):
     TIME_STEPS = ["yr", "mon"]
     FILE_NAMES = ["channel_sd", 'hru_wb']
 
     try:
         semaphore.acquire()
-        convert2h5(VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, TIME_STEPS, FILE_NAMES)
-        write_hru_metadata(VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO)
+        convert2h5(DIC, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, TIME_STEPS, FILE_NAMES)
+        write_hru_metadata(DIC, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO)
 
         FILE_NAMES = [
             'gwflow_flux_gwet', 'gwflow_flux_gwsoil', 'gwflow_flux_gwsw',
@@ -185,13 +186,13 @@ def process_scenario(VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, semaphore, queue)
             'gwflow_flux_satex', 'gwflow_flux_tile',
         ]
 
-        scenario_path = os.path.join(SWATGenXPaths.swatgenx_outlet_path, f"{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}")
+        scenario_path = os.path.join(DIC, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}")
         SWAT_H5_path = os.path.join(scenario_path, "SWAT_OUTPUT.h5")
 
         remove_gwflow_dataset(SWAT_H5_path)
         for FILE_NAME in FILE_NAMES:
             logging.info(f"###### Working on {FILE_NAME} ######")
-            processor = Gwflow2h5(VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, FILE_NAME)
+            processor = Gwflow2h5(DIC, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, FILE_NAME)
             processor.extract_row_col()
             processor.read_gwflow_variable()
 
@@ -201,34 +202,32 @@ def process_scenario(VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, semaphore, queue)
         semaphore.release()
         queue.put(current_process().name)
 
-from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
-
 def write_SWAT_OUTPUT_h5(CC_MODEL, selected_NAME=None, number_of_processes=50):
     LEVEL = "huc12"
     MODEL_NAME = "climate_change_models"
-    DIC = SWATGenXPaths.swatgenx_outlet_path
+    DIC = "/data/MyDataBase/"
     max_processes = 50
     semaphore = Semaphore(max_processes)
     queue = Queue()
 
     processes = []
-    VPUIDs = os.listdir("{SWATGenXPaths.swatgenx_outlet_path}")
+    VPUIDs = os.listdir("/data/MyDataBase/SWATplus_by_VPUID")
     for VPUID in VPUIDs:
-        NAMES = os.listdir(f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/huc12")
+        NAMES = os.listdir(f"/data/MyDataBase/SWATplus_by_VPUID/{VPUID}/huc12")
         NAMES.remove("log.txt")
         for NAME in NAMES:
             if selected_NAME and NAME != selected_NAME:
                 continue
-            cc_model_path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/huc12/{NAME}/climate_change_models"
+            cc_model_path = f"/data/MyDataBase/SWATplus_by_VPUID/{VPUID}/huc12/{NAME}/climate_change_models"
 
             SCENARIOS = [cc_name for cc_name in os.listdir(cc_model_path) if not cc_name.endswith('.jpeg') and CC_MODEL in cc_name]
             for SCENARIO in SCENARIOS:
-                destination_path = os.path.join(SWATGenXPaths.swatgenx_outlet_path, f"{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}")
+                destination_path = os.path.join(DIC, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/{SCENARIO}")
                 if "SWAT_OUTPUT.h5" in os.listdir(destination_path):
                     os.remove(os.path.join(destination_path, "SWAT_OUTPUT.h5"))
                 
                 logging.info(f"###### Working on {VPUID}/{NAME}/{SCENARIO} ######")
-                p = Process(target=process_scenario, args=(SWATGenXPaths.swatgenx_outlet_path, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, semaphore, queue))
+                p = Process(target=process_scenario, args=(DIC, VPUID, LEVEL, NAME, MODEL_NAME, SCENARIO, semaphore, queue))
                 p.start()
                 processes.append(p)
 

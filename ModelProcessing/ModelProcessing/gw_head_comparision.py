@@ -11,10 +11,10 @@ import time
 class GroundwaterModelAnalysis:
 		def __init__(self, NAME, MODEL_NAME, VPUID, LEVEL, TxtInOut_path, resolution="250", key=None):
 				self.resolution = resolution
-				self.NAME_PATH = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/"
+				self.NAME_PATH = f"/data/MyDataBase/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/"
 				self.MODEL_PATH = f"{self.NAME_PATH}/{MODEL_NAME}/"
 				self.TxtInOut_path = TxtInOut_path
-				self.h5_path = f"/data/MyDataBase/HydroGeoDataSet/HydroGeoDataset_ML_{self.resolution}.h5"
+				self.h5_path = f"/data/MyDataBase/HydroGeoDataset_ML_{self.resolution}.h5"
 				self.gwflow_state_head= f"{self.TxtInOut_path}/gwflow_state_head"
 				self.gwflow_centroids = f"{self.MODEL_PATH}/gwflow_gis/grids_points.shp"
 				self.fig_path = f"{self.NAME_PATH}/figures_{MODEL_NAME}"
@@ -151,7 +151,7 @@ class GroundwaterModelAnalysis:
 				if diff_cols > 0:
 						simulated_heads = np.pad(simulated_heads, ((0, 0), (0, diff_cols)), mode='constant', constant_values=np.nan)
 
-				self.simulated_heads = np.where(self.observed_head.isna(), np.nan, simulated_heads)
+				self.simulated_heads = np.where(self.observed_head == np.nan, np.nan, simulated_heads)
 				
 				assert self.simulated_heads.shape == self.observed_head.shape, f"Expected {self.observed_head.shape} but got {self.simulated_heads.shape}"
 				self.observed_head = np.where(simulated_heads == 0, np.nan, self.observed_head)
@@ -225,10 +225,7 @@ class GroundwaterModelAnalysis:
 				os.makedirs(f"{self.fig_path}/SWL", exist_ok=True)
 				plt.savefig(f"{self.fig_path}/SWL/{nse_score:.2f}_{int(time.time())}.png", dpi=150)
 				plt.close()
-try:
-	from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
-except:
-	from SWATGenXConfigPars import SWATGenXPaths
+
 
 if __name__ == "__main__":
 
@@ -236,7 +233,7 @@ if __name__ == "__main__":
 		MODEL_NAME = "SWAT_gwflow_MODEL"
 		VPUID = "0000"
 		LEVEL = "huc12"
-		MODEL_PATH = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"
+		MODEL_PATH = f"/data/MyDataBase/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/"
 		TxtInOut_path = f"{MODEL_PATH}/Scenarios/Scenario_60b06818-d35f-4054-a42e-10198a63ddad"
 
 		print(f"model path: {MODEL_PATH}")

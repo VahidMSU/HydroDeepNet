@@ -3,11 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os 
 import time 
-try:
-	from ModelProcessing.SWATGenXConfigPars import SWATGenXPaths
-except:
-	from SWATGenXConfigPars import SWATGenXPaths
-
 class evaluate_yield:
 
     def __init__(self, swat_annual_yld):
@@ -150,14 +145,8 @@ class evaluate_yield:
             print(f"Error: {e}")
             return None, None, None, None, None
 
-
-
 if __name__ == "__main__":
-    VPUID = '0000'
-    NAME = '04166000'
-    LEVEL = 'huc12'
-    MODEL_NAME = 'SWAT_MODEL'   
-    path = f"{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/Scenarios/verification_stage_0/basin_crop_yld_yr.txt"
-    evaluation_yield = evaluate_yield(path)
-    yld_nse_value, yld_rmse_value, yld_kge_value, yld_mape_value, yld_pbias_value = evaluation_yield.process_and_evaluate()
-    evaluation_yield.plot_yield_comparison(output_dir=os.getcwd())
+    path = "/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/04166000/SWAT_gwflow_MODEL/Scenarios/verification_stage_0/basin_crop_yld_yr.txt"
+    eval = evaluate_yield(path)
+    yld_nse_value, yld_rmse_value, yld_kge_value, yld_mape_value, yld_pbias_value = eval.process_and_evaluate()
+    eval.plot_yield_comparison(output_dir=os.getcwd())

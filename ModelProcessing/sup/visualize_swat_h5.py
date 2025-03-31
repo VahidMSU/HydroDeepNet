@@ -11,7 +11,7 @@ import psutil
 import logging
 
 def generate_static_plots(f, group, NAME):
-    figs_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/figures_SWAT_gwflow_MODEL/watershed_static_plots"
+    figs_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/figures_SWAT_gwflow_MODEL/watershed_static_plots"
     # If group is Landuse, read lookup table
     if group == "Landuse":
         lookup_table = f["Landuse/lookup_table"][()].decode("utf-8")
@@ -107,7 +107,7 @@ def generate_spatiotemporal_animation(f, var_name, NAME, ver):
     mask = f[f"hru_wb_30m/2000/1/perc"][:]
     DEM = f[f"DEM/dem"][:]
     assert mask.shape == DEM.shape, f"Mask and DEM shapes do not match: {mask.shape} != {DEM.shape}"
-    video_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/figures_SWAT_gwflow_MODEL/verifications_videos"
+    video_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/figures_SWAT_gwflow_MODEL/verifications_videos"
 
     rows, cols = mask.shape
     dpi = 100
@@ -173,9 +173,9 @@ def ram_usage():
 		return used_memory
 
 def visualize_swatplus_h5(NAME="04136000", ver=0):
-    path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
-    figs_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/figures_SWAT_gwflow_MODEL/watershed_static_plots"
-    video_path = f"/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12/{NAME}/figures_SWAT_gwflow_MODEL/verifications_videos"
+    path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/SWAT_gwflow_MODEL/Scenarios/verification_stage_{ver}/SWATplus_output.h5"
+    figs_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/figures_SWAT_gwflow_MODEL/watershed_static_plots"
+    video_path = f"/data/MyDataBase/SWATplus_by_VPUID/0000/huc12/{NAME}/figures_SWAT_gwflow_MODEL/verifications_videos"
     # Create directories for outputs
     os.makedirs(f"{video_path}", exist_ok=True)
     os.makedirs(f"{figs_path}", exist_ok=True)
@@ -219,7 +219,7 @@ def worker_process(sem, name, ver):
         # Release the semaphore after the process completes
         sem.release()
 if __name__ == "__main__":
-    NAMES = os.listdir("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12")
+    NAMES = os.listdir("/data/MyDataBase/SWATplus_by_VPUID/0000/huc12")
     NAMES.remove("log.txt")
     n_workers = 12  # Number of worker processes
     sem = Semaphore(n_workers)  # Semaphore to control active processes
