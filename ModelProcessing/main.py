@@ -37,7 +37,7 @@ if __name__ == "__main__":
 	logger.info("Starting SWATGenX model processing")
 
 	MODEL_NAME = 'SWAT_MODEL_Web_Application'
-	username = "vahidr32"
+	username = "admin"
 	NAME = "05536265"
 	## make a config dictornary
 	sensitivity_flag = False

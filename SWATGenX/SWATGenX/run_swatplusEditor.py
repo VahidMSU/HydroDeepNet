@@ -41,6 +41,7 @@ def run_swatplus_editor(SWATGenXPaths, vpuid: str, level: str, name: str, model_
 
     # Run SWAT+ with error handling
     try:
+
         RunAll(
             project_db=project_db,
             editor_version="2.3.3",
@@ -60,7 +61,26 @@ def run_swatplus_editor(SWATGenXPaths, vpuid: str, level: str, name: str, model_
             input_files_dir=input_files_dir,
             swat_version="SWAT+"
         )
-        print("Successfully ran SWAT+ model")
+        print("SWAT+ model simulation completed")
+
+        ### there might a problem with the print.prt duplicate prints. we need to trim the print.prt file and run the program one more tjme
+        print_path = os.path.join(input_files_dir, "print.prt")
+        if os.path.exists(print_path):
+            with open(print_path, 'r') as file:
+                lines = file.readlines()
+            # Remove duplicate lines
+            unique_lines = list(dict.fromkeys(lines))
+            ## continue if there is no duplicate lines
+            if len(unique_lines) == len(lines):
+                print("No duplicate lines found in print.prt")
+                return
+            print(f"Duplicate lines found in {print_path}. Writing unique lines to the file.")
+            
+            with open(print_path, 'w') as file:
+                file.writelines(unique_lines)
+            ### now run the executable again
+            import subprocess
+            subprocess.run([SWATGenXPaths.swat_exe, project_db], cwd=input_files_dir)
     except Exception as e:
         print(f"Error running SWAT+ model: {e}")
         return

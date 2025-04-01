@@ -15,8 +15,8 @@ Environment="CELERY_LOG_LEVEL=DEBUG"
 Environment="REDIS_URL=redis://127.0.0.1:6379/0"
 Environment="API_SERVER_PORT=5050"
 
-# Configure worker for better handling of multiple tasks
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_app worker -n model_worker@%%h -Q model_creation --concurrency=4 --prefetch-multiplier=1 --max-tasks-per-child=1 -O fair --pool=prefork --loglevel=info
+# Configure worker with fixed parameters for stable queue processing
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_worker worker --loglevel=info -n model_worker@%%h -Q model_creation --concurrency=4 --prefetch-multiplier=1 --max-tasks-per-child=10 -O fair --without-heartbeat --without-gossip
 
 # Proper restart policy to handle connection issues
 Restart=always
