@@ -1,4 +1,8 @@
 ### the purpose of this code is to provide a mechanism to return SWAT+ parameter unit
+from ModelProcessing.logging_utils import get_logger
+
+# Initialize logger
+logger = get_logger(__name__)
 
 channel_units = {
 	'jday': 'day',
@@ -113,9 +117,13 @@ def get_channel_unit(parameter):
 	:param parameter: str, the parameter name
 	:return: str, the unit of the parameter
 	"""
-	return channel_units.get(parameter, 'None')
+	unit = channel_units.get(parameter, 'None')
+	if unit == 'None':
+		logger.warning(f"No unit found for channel parameter: {parameter}")
+	return unit
 	
 def list_of_variables(dataset_name):
+	logger.debug(f"Getting list of variables for dataset: {dataset_name}")
 	if dataset_name == 'hru_wb':
 		return ['perc', 'et', 'pet', 'snomlt', 
 	'surq_cha', 'latq', 'wateryld', 'perc', 'et',
@@ -147,14 +155,28 @@ def list_of_variables(dataset_name):
 		'dox_out', 'san_out', 'sil_out', 'cla_out',
 		'sag_out', 'lag_out', 'grv_out', 
 		'water_temp']
+	
+	logger.warning(f"Unknown dataset name: {dataset_name}")
+	return []
+
 def get_hrus_unit(parameter):
 	"""
 	:param parameter: str, the parameter name
 	:return: str, the unit of the parameter
 	"""
-	return hrus_units.get(parameter, 'None')
+	unit = hrus_units.get(parameter, 'None')
+	if unit == 'None':
+		logger.warning(f"No unit found for HRU parameter: {parameter}")
+	return unit
 
 
 if __name__ == '__main__':
-	print(get_channel_unit('precip'))
-	print(get_hrus_unit('precip'))
+	logger.info("Testing unit retrieval functions")
+	channel_unit = get_channel_unit('precip')
+	hrus_unit = get_hrus_unit('precip')
+	logger.info(f"Channel precip unit: {channel_unit}")
+	logger.info(f"HRU precip unit: {hrus_unit}")
+	
+	# Test with unknown parameter
+	unknown_unit = get_channel_unit('unknown_parameter')
+	logger.info(f"Unknown parameter unit: {unknown_unit}")

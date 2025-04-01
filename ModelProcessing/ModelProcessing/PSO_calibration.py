@@ -338,7 +338,7 @@ class PSOOptimizer:
             return self.GlobalBest, self.GlobalBestScore
 
     def cleanup_scenario_directory(self, message):
-        logger.error(message)
+        logger.info(message)
         delete_previous_runs(self.config.scenarios_path)
         
 def save_new_point_to_file(next_point, config):
