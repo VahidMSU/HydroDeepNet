@@ -77,7 +77,7 @@ if __name__ == "__main__":
         "MAX_AREA": 1500,
         "MIN_AREA": 500,
         "GAP_percent": 10,
-        "username": "vahidr32",
+        "username": "admin",
     }
 
     swat_commander = SWATGenXCommand(swatgenx_config)
