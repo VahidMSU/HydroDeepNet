@@ -1,8 +1,11 @@
+import sys
 import os
-from ModelProcessing.logging_utils import setup_logger
-from ModelProcessing.find_VPUID import find_VPUID
+import json
+import logging
+import argparse
 from ModelProcessing.processing_program import ProcessingProgram
-
+from ModelProcessing.config import ModelConfig
+from ModelProcessing.logging_utils import setup_logger, get_logger
 """
 /***************************************************************************
 		SWATGenX
@@ -22,61 +25,81 @@ from ModelProcessing.processing_program import ProcessingProgram
 ***************************************************************************/
 """
 
-if __name__ == "__main__":
-	# Setup global logger
-	log_dir = '/data/SWATGenXApp/codes/ModelProcessing/logs'
-	os.makedirs(log_dir, exist_ok=True)
+def parse_args():
+	parser = argparse.ArgumentParser(description='Run ModelProcessing script with configurations.')
+	parser.add_argument('--config', type=str, help='Path to JSON config file')
+	parser.add_argument('--username', type=str, help='Username', required=True)
+	parser.add_argument('--vpuid', type=str, help='VPUID')
+	parser.add_argument('--level', type=str, default='huc12', help='Level (default: huc12)')
+	parser.add_argument('--name', type=str, help='Name')
+	parser.add_argument('--model-name', type=str, help='Model name', required=True)
+	parser.add_argument('--sensitivity', action='store_true', help='Run sensitivity analysis', default=False)
+	parser.add_argument('--calibration', action='store_true', help='Run calibration', default=True)
+	parser.add_argument('--verification', action='store_true', help='Run verification', default=False)
+	
+	return parser.parse_args()
+
+def main():
+	# Initialize the central application logger
 	logger = setup_logger(
 		name='ModelProcessing',
-		log_file=f'{log_dir}/model_processing.log',
-		level='INFO',
-		format_string='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-		date_format='%m/%d/%Y %I:%M:%S %p'
+		log_file='/data/SWATGenXApp/codes/ModelProcessing/logs/ModelProcessing.log',
+		level=logging.INFO
 	)
 	
-	logger.info("Starting SWATGenX model processing")
+	logger.info("Starting ModelProcessing application")
+	
+	args = parse_args()
+	
+	# Load configuration from file if provided
+	if args.config:
+		logger.info(f"Loading configuration from {args.config}")
+		try:
+			with open(args.config, 'r') as f:
+				config_data = json.load(f)
+			config = ModelConfig(**config_data)
+			logger.info("Configuration loaded successfully")
+		except Exception as e:
+			logger.error(f"Failed to load configuration from {args.config}: {str(e)}")
+			sys.exit(1)
+	else:
+		# Auto-determine VPUID from name if not provided
+		vpuid = args.vpuid
+		if not vpuid and args.name:
+			logger.info(f"VPUID not provided, determining from NAME: {args.name}")
+			# Use the station ID/name as the VPUID when it's not explicitly provided
+			from ModelProcessing.find_VPUID import find_VPUID
+			vpuid = find_VPUID(args.name)
+			logger.info(f"Auto-determined VPUID: {vpuid}")
+		
+		# Use command line arguments to create config
+		logger.info("Creating configuration from command line arguments")
+		config = ModelConfig(
+			username=args.username,
+			VPUID=vpuid,
+			LEVEL=args.level,
+			NAME=args.name,
+			MODEL_NAME=args.model_name,
+			sensitivity_flag=args.sensitivity,
+			calibration_flag=args.calibration,
+			verification_flag=args.verification
+		)
+	
+	# Log the configuration
+	logger.info(f"Configuration: Model={config.MODEL_NAME}, Name={config.NAME}, VPUID={config.VPUID}")
+	logger.info(f"Process flags: Sensitivity={config.sensitivity_flag}, Calibration={config.calibration_flag}, Verification={config.verification_flag}")
+	
+	# Run the processing program
+	try:
+		process = ProcessingProgram(config)
+		result = process.SWATGenX_SCV()
+		logger.info(f"Processing completed with result: {result}")
+	except Exception as e:
+		logger.error(f"Processing failed: {str(e)}", exc_info=True)
+		sys.exit(1)
+	
+	logger.info("ModelProcessing application completed successfully")
+	sys.exit(0)
 
-	MODEL_NAME = 'SWAT_MODEL_Web_Application'
-	username = "admin"
-	NAME = "05536265"
-	## make a config dictornary
-	sensitivity_flag = False
-	calibration_flag = True
-	verification_flag = False
-
-	config = {
-		'LEVEL': 'huc12',
-		'NAME': NAME,
-		'MODEL_NAME': MODEL_NAME,
-		'VPUID': find_VPUID(NAME),	
-		'BASE_PATH': f"/data/SWATGenXApp/Users/{username}",
-		'username': username,
-		'sensitivity_flag': sensitivity_flag,
-		'calibration_flag': calibration_flag,
-		'verification_flag': verification_flag,
-		'START_YEAR': 2006,
-		'END_YEAR': 2010,
-		'nyskip': 1,
-		'sen_total_evaluations': 1000,
-		'sen_pool_size': 120,
-		'num_levels': 10,
-		'cal_pool_size': 5,
-		'max_cal_iterations': 75,
-		'termination_tolerance': 15,
-		'epsilon': 0.001,
-		'Ver_START_YEAR': 1997,
-		'Ver_END_YEAR': 2020,
-		'Ver_nyskip': 3,
-		'range_reduction_flag': False,
-		'pet': 1,
-		'cn': 1,
-		'no_value': 1e6,
-		'verification_samples': 5,
-	}
-	
-	logger.info(f"Processing model: {MODEL_NAME} for station: {NAME}")
-	
-	processor = ProcessingProgram(config)
-	processor.SWATGenX_SCV()
-	
-	logger.info("SWATGenX model processing completed")
+if __name__ == "__main__":
+	main()
