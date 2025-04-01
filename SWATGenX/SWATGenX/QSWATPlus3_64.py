@@ -29,7 +29,7 @@ try:
 except ImportError:
     from SWATGenXConfigPars import SWATGenXPaths
 sys.path.append(SWATGenXPaths.QSWATPlus_env_path)
-from qgis.core import QgsApplication, QgsProject, QgsRasterLayer # type: ignore 
+from qgis.core import QgsApplication, QgsProject, QgsRasterLayer, QgsVectorLayer # type: ignore 
 import atexit
 import sys
 import os
@@ -40,6 +40,7 @@ from QSWATPlus.delineation import Delineation
 from QSWATPlus.hrus import HRUs 
 import traceback
 from SWATGenXLogging import LoggerSetup
+from QSWATPlus.QSWATUtils import QSWATUtils, FileTypes
 
 class DummyInterface(object):
     """Dummy iface."""
@@ -138,7 +139,48 @@ class runHUC():
         self.logger.info(f'gv.existingWshed {gv.existingWshed}')
         self.logger.info(f'ProjectDir {self.projDir}')
         lakesFile = f'{self.projDir}/Watershed/Shapes/SWAT_plus_lakes.shp'
-        assert os.path.isfile(lakesFile), f'No lakes file {lakesFile}'
+        
+        # Handle lakes properly - first check if file exists
+        if os.path.isfile(lakesFile):
+            self.logger.info(f'Lakes file found: {lakesFile}')
+            
+            # Set the file path in the UI
+            self.delin._dlg.selectLakes.setText(lakesFile)
+            self.delin._dlg.selectLakes.setEnabled(True)
+            
+            # Set the file path in global variables
+            gv.lakeFile = lakesFile
+            
+            # Explicitly load the lakes shapefile before processing
+            root = QgsProject.instance().layerTreeRoot()
+            
+            # Load lakes layer to the project if not already loaded
+            lakesLayer = QSWATUtils.getLayerByFilename(root.findLayers(), lakesFile, FileTypes._LAKES, None, None, None)[0]
+            if not lakesLayer:
+                self.logger.info(f'Loading lakes layer from {lakesFile}')
+                # Get DEM layer to use as sublayer for loading lakes
+                demLayer = QSWATUtils.getLayerByFilename(root.findLayers(), gv.demFile, FileTypes._DEM, None, None, None)[0]
+                
+                # Load lakes layer explicitly
+                lakesLayerName = os.path.splitext(os.path.basename(lakesFile))[0]
+                lakesLayer = QgsVectorLayer(lakesFile, lakesLayerName, 'ogr')
+                if lakesLayer.isValid():
+                    QgsProject.instance().addMapLayer(lakesLayer)
+                    self.logger.info(f'Successfully loaded lakes layer {lakesFile}')
+                else:
+                    self.logger.info(f'Failed to load lakes layer from {lakesFile}')
+            
+            # Mark lakes as not processed yet
+            self.delin.lakesDone = False
+            
+            # Explicitly add lakes before finalizing delineation
+            self.delin.addLakes()
+            self.logger.info('Lakes added to the project')
+        else:
+            self.logger.info(f'No lakes file found at {lakesFile}')
+            self.delin._dlg.selectLakes.setText('')
+            self.delin._dlg.selectLakes.setEnabled(False)
+
         self.delin.finishDelineation()
         self.delin._dlg.close()
         self.hrus = HRUs(gv, self.dlg.reportsBox)
