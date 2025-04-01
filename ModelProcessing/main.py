@@ -1,7 +1,8 @@
-import logging
+import os
+from ModelProcessing.logging_utils import setup_logger
+from ModelProcessing.find_VPUID import find_VPUID
+from ModelProcessing.processing_program import ProcessingProgram
 
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename='/data/SWATGenXApp/codes/ModelProcessing/logs/log.txt')
 """
 /***************************************************************************
 		SWATGenX
@@ -21,13 +22,19 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefm
 ***************************************************************************/
 """
 
-from ModelProcessing.find_VPUID import find_VPUID
-from ModelProcessing.processing_program import ProcessingProgram
-
-
-
 if __name__ == "__main__":
-
+	# Setup global logger
+	log_dir = '/data/SWATGenXApp/codes/ModelProcessing/logs'
+	os.makedirs(log_dir, exist_ok=True)
+	logger = setup_logger(
+		name='ModelProcessing',
+		log_file=f'{log_dir}/model_processing.log',
+		level='INFO',
+		format_string='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+		date_format='%m/%d/%Y %I:%M:%S %p'
+	)
+	
+	logger.info("Starting SWATGenX model processing")
 
 	MODEL_NAME = 'SWAT_MODEL_Web_Application'
 	username = "vahidr32"
@@ -48,12 +55,12 @@ if __name__ == "__main__":
 		'calibration_flag': calibration_flag,
 		'verification_flag': verification_flag,
 		'START_YEAR': 2006,
-		'END_YEAR': 2020,
-		'nyskip': 3,
+		'END_YEAR': 2010,
+		'nyskip': 1,
 		'sen_total_evaluations': 1000,
 		'sen_pool_size': 120,
 		'num_levels': 10,
-		'cal_pool_size': 50,
+		'cal_pool_size': 5,
 		'max_cal_iterations': 75,
 		'termination_tolerance': 15,
 		'epsilon': 0.001,
@@ -67,5 +74,9 @@ if __name__ == "__main__":
 		'verification_samples': 5,
 	}
 	
+	logger.info(f"Processing model: {MODEL_NAME} for station: {NAME}")
+	
 	processor = ProcessingProgram(config)
 	processor.SWATGenX_SCV()
+	
+	logger.info("SWATGenX model processing completed")
