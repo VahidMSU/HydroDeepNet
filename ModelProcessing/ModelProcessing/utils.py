@@ -24,52 +24,52 @@ def check_number_of_files(output_dir):
 
 
 def write_model_parameters(param_files, params, problem, operation_types, scenario_TxtInOut, original_TxtInOut):
-		logging.info(f"Writing model parameters to {scenario_TxtInOut}")
-		params_dict = dict(zip(problem['names'], params))
-		for file_name, variables in param_files.items():
-				df = read_swat_input_data(original_TxtInOut, file_name=file_name)
-				for var in variables:
-						operation = operation_types.get(var, 'replace')  # default to 'replace' if not found
-						value = params_dict[var]
-						if 'hhc' in var or 'sy' in var or 'k_sb' in var or 'thickness_sb' in var:
-								zone_value  = int(var.split('_')[0])-1
-								column_name = var.split('_')[1:]
-								if operation == 'add':
-										df.loc[zone_value,column_name] += value
-								elif operation == 'multiply':
-										df.loc[zone_value,column_name] *= value
-								elif operation == 'percentage':
-										df.loc[zone_value,column_name] += df[zone_value,column_name] * (value / 100)
-								elif operation == 'replace':
-										df.loc[zone_value,column_name] = value
-						else:
-								df[var] = df[var].astype(float)
-								if operation == 'replace':
-										df[var] = value
-								elif operation == 'multiply':
-										df[var] *= value
-								elif operation == 'add':
-										df[var] += value
-								elif operation == 'percentage':
-										df[var] += df[var] * (value / 100)
+	logging.info(f"Writing model parameters to {scenario_TxtInOut}")
+	params_dict = dict(zip(problem['names'], params))
+	for file_name, variables in param_files.items():
+			df = read_swat_input_data(original_TxtInOut, file_name=file_name)
+			for var in variables:
+					operation = operation_types.get(var, 'replace')  # default to 'replace' if not found
+					value = params_dict[var]
+					if 'hhc' in var or 'sy' in var or 'k_sb' in var or 'thickness_sb' in var:
+							zone_value  = int(var.split('_')[0])-1
+							column_name = var.split('_')[1:]
+							if operation == 'add':
+									df.loc[zone_value,column_name] += value
+							elif operation == 'multiply':
+									df.loc[zone_value,column_name] *= value
+							elif operation == 'percentage':
+									df.loc[zone_value,column_name] += df[zone_value,column_name] * (value / 100)
+							elif operation == 'replace':
+									df.loc[zone_value,column_name] = value
+					else:
+							df[var] = df[var].astype(float)
+							if operation == 'replace':
+									df[var] = value
+							elif operation == 'multiply':
+									df[var] *= value
+							elif operation == 'add':
+									df[var] += value
+							elif operation == 'percentage':
+									df[var] += df[var] * (value / 100)
 
-				write_swat_input_data(scenario_TxtInOut, df, file_name=file_name)
+			write_swat_input_data(scenario_TxtInOut, df, file_name=file_name)
 
 
 def log_errors(filename, line_to_append):
-		current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
-		if not os.path.exists(filename):
-				logging.info(f"Creating log file: {filename}")
-				os.makedirs(os.path.dirname(filename), exist_ok=True)
-		with open(filename, 'a') as file:
-				file.write(f"{current_time} - {line_to_append}\n")
+	current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+	if not os.path.exists(filename):
+		logging.info(f"Creating log file: {filename}")
+		os.makedirs(os.path.dirname(filename), exist_ok=True)
+	with open(filename, 'a') as file:
+		file.write(f"{current_time} - {line_to_append}\n")
 
 def load_initial_data(initial_points_path, initial_values_path):
-		if os.path.exists(initial_points_path) and os.path.exists(initial_values_path):
-				initial_points = np.loadtxt(initial_points_path, delimiter=',')
-				initial_objective_values = np.loadtxt(initial_values_path, delimiter=',')
-				return initial_points, initial_objective_values
-		return None, None
+	if os.path.exists(initial_points_path) and os.path.exists(initial_values_path):
+		initial_points = np.loadtxt(initial_points_path, delimiter=',')
+		initial_objective_values = np.loadtxt(initial_values_path, delimiter=',')
+		return initial_points, initial_objective_values
+	return None, None
 def filling_observations(df_complete, observed):
 		"""
 		Fill missing observations in a time series using the Holt-Winters Exponential Smoothing model.
@@ -269,52 +269,6 @@ def delete_previous_figures(directory_path):
 								logging.info(f"Error deleting {file_path}: {e}")
 
 
-
-def clean_up(SCV_args):
-
-		"""
-		Clean up files related to the calibration and sensitivity analysis of a model.
-
-		Parameters:
-		BASE_PATH (str): Base directory path.
-		LEVEL (str): Level of the model (e.g., 'huc12').
-		NAME (str): Name of the model.
-		MODEL_NAME (str): Name of the model file.
-		bayesian_model_path (str): Path to the Bayesian model file.
-		sensitivity_flag (bool): Flag to delete sensitivity analysis files.
-		calibration_flag (bool): Flag to delete calibration files.
-		"""
-		BASE_PATH = SCV_args['BASE_PATH']
-		LEVEL = SCV_args['LEVEL']
-		VPUID = SCV_args['VPUID']
-		NAME = SCV_args['NAME']
-		MODEL_NAME = SCV_args['MODEL_NAME']
-		sensitivity_flag = SCV_args['sensitivity_flag']
-		calibration_flag = SCV_args['calibration_flag']
-
-		cal_file_path = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/')
-		scenarios_path = os.path.join(BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}/Scenarios')
-
-		# Delete scenarios and figures
-		delete_previous_runs(scenarios_path)
-
-		if calibration_flag == True:
-				_extracted_from_clean_up_30(cal_file_path, MODEL_NAME, BASE_PATH)
-		if sensitivity_flag == True:
-				delete_previous_figures(os.path.join(cal_file_path, f"figures_{MODEL_NAME}_sensitivity_daily"))
-				delete_previous_figures(os.path.join(cal_file_path, f"figures_{MODEL_NAME}_sensitivity_monthly"))
-
-				sensitivity_files = ['initial_points', 'morris_Si', 'initial_values']
-				for file_name in sensitivity_files:
-						file_path = os.path.join(cal_file_path, f'{file_name}_{MODEL_NAME}.csv')
-						try:
-								os.remove(file_path)
-						except FileNotFoundError:
-								logging.info(f'File not found: {file_path}')
-						except Exception as e:
-								logging.info(f'Error removing {file_name}: {e}')
-
-		logging.info(f'clean up is done.{MODEL_NAME}:{NAME}:{VPUID}. calibration_flag:{calibration_flag}. sensitivity_flag:{sensitivity_flag}\t')
 
 # TODO Rename this here and in `clean_up`
 def _extracted_from_clean_up_30(cal_file_path, MODEL_NAME, BASE_PATH):
@@ -530,24 +484,3 @@ def update_print_prt_file(TxtInOut_path, daily_flow_printing=True, hru_printing=
 				file.writelines(lines[start_replacement_idx:end_replacement_idx])  # Formatted lines
 				if end_replacement_idx < len(lines):
 						file.writelines(lines[end_replacement_idx:])  # The rest of the original content
-
-def checking_models_under_processing(process_name, LEVEL):
-		""" this function checks the number of models under processing and returns the names of the models under processing"""
-		count = 0
-		NAME_under_processing=[]
-
-		for process in psutil.process_iter(['pid', 'name', 'exe']):
-
-				try:
-						if process_name in process.info['name'].lower() and "editor" not in process.info['name'].lower() and LEVEL in process.info['exe']:
-								count += 1
-
-								exe_path = process.info['exe'].split(f'{LEVEL}')[1]
-								first_part_of_path = exe_path.split('//')[1]
-								NAME_under_processing.append(str(first_part_of_path))
-				except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-						# Handle processes that have terminated or cannot be accessed
-						continue
-
-		logging.info(f"Total number of processes named '{process_name}': {count}")	
-		return(list(np.unique(NAME_under_processing)))

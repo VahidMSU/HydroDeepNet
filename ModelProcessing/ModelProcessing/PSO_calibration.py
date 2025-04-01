@@ -4,85 +4,113 @@ import pyDOE
 import time
 from ModelProcessing.utils import is_cpu_usage_low
 from ModelProcessing.utils import log_errors
-import matplotlib.pyplot as plt
 from ModelProcessing.utils import delete_previous_runs
 import os
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-def run_initial_evaluation(n_initial, X_initial, GlobalBestScore_collection,BASE_PATH, LEVEL,VPUID, NAME, MODEL_NAME, model_log_path, general_log_path, wrapped_model_evaluation, cal_parms, best_simulation_filename, n_evaluated=0):
-		
-		with Manager() as manager:
-				
-				next_points = X_initial
-				processes = []
-				active_processes = []
-				message = f"{MODEL_NAME}:{NAME}:{VPUID} number of initial points: {n_initial}"
-				log_errors(general_log_path, message)
-				log_errors(model_log_path, message)
-
-				results_list = manager.list([None] * n_initial)  # Shared list for scores
-
-				for index, next_point in enumerate(next_points):
-						save_new_point_to_file(next_point, BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME)
-						#save_new_point_to_file(next_point,cal_parms, BASE_PATH, LEVEL, NAME, MODEL_NAME)   # this line is for debug
-						process = Process(target=model_evaluation_wrapper, args=(index, results_list, next_point, wrapped_model_evaluation))
-						process.start()
-						processes.append(process)
-						active_processes.append(process)
-						n_evaluated += 1
-
-				# Wait for all processes to finish
-				for process in processes:
-						process.join()
-
-				# check if the processes are still active
-				for process in active_processes:
-						if process.is_alive():
-								process.terminate()
-								process.join()
-								message = f"{MODEL_NAME}:{NAME}:{VPUID} Terminated a process"
-								log_errors(general_log_path, message)
-								log_errors(model_log_path, message)
-								logging.info(message)
-
-
-				# Update scores from the processes
-				LocalBestScore = np.array(list(results_list))
-				# if does not exists the type is w, otherwise it is a
-				
-				save_local_best_parameters(BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME, cal_parms, LocalBestScore, next_points, type_write='w')
-
-
-				# Update Global bests based on the new scores
-				logging.info(f"Local Best Score: {LocalBestScore}")
-
-				message = f"{MODEL_NAME}:{NAME}:{VPUID} Local Best Score: {LocalBestScore}"
-				log_errors(general_log_path, message)
-				log_errors(model_log_path, message)
-				# replace None in LocalBestScore with np.inf
-				LocalBestScore = np.where(LocalBestScore is None, np.inf, LocalBestScore)
-				GlobalBestIndex = np.argmin(LocalBestScore)
-				GlobalBest = X_initial[GlobalBestIndex]
-				GlobalBestScore = LocalBestScore[GlobalBestIndex]
-
-				GlobalBestScore_collection.append(GlobalBestScore)
-
-				message = f"{MODEL_NAME}:{NAME}:{VPUID} Global Best Score: {GlobalBestScore} for initial runs"
-				log_errors(general_log_path, message)
-				log_errors(model_log_path, message)
-				logging.info(message)
-
-				# Save the best parameters to the file
-				best_params = GlobalBest
-				best_objective_value = GlobalBestScore
-				save_current_best(best_params, best_objective_value, cal_parms, best_simulation_filename, model_log_path, general_log_path, VPUID, NAME, MODEL_NAME)
-				while not is_cpu_usage_low():
-						time.sleep(10)
-		# Sort the initial points based on the scores
-		sorted_indices = np.argsort(LocalBestScore)
-		X_initial_sorted = X_initial[sorted_indices]
-		return X_initial_sorted, LocalBestScore, GlobalBest, GlobalBestScore, GlobalBestScore_collection
+def run_initial_evaluation(n_initial, X_initial, GlobalBestScore_collection, BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME, model_log_path, general_log_path, wrapped_model_evaluation, cal_parms, best_simulation_filename, n_evaluated=0):
+    """Run initial evaluation of particles and save results
+    
+    Args:
+        n_initial: Number of initial particles
+        X_initial: Initial particle positions
+        GlobalBestScore_collection: Collection to store global best scores
+        BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME: Path parameters
+        model_log_path, general_log_path: Logging paths
+        wrapped_model_evaluation: Function to evaluate the model
+        cal_parms: Calibration parameters
+        best_simulation_filename: File to save best simulation
+        n_evaluated: Number of evaluations already performed
+        
+    Returns:
+        X_initial_sorted, LocalBestScore, GlobalBest, GlobalBestScore, GlobalBestScore_collection
+    """
+    with Manager() as manager:
+        next_points = X_initial
+        processes = []
+        active_processes = []
+        message = f"{MODEL_NAME}:{NAME}:{VPUID} number of initial points: {n_initial}"
+        log_errors(general_log_path, message)
+        log_errors(model_log_path, message)
+        
+        # Create shared list for evaluation results
+        results_list = manager.list([None] * n_initial)
+        
+        # Start evaluation processes for each particle
+        for index, next_point in enumerate(next_points):
+            save_new_point_to_file(next_point, BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME)
+            process = Process(target=model_evaluation_wrapper, 
+                             args=(index, results_list, next_point, wrapped_model_evaluation))
+            process.start()
+            processes.append(process)
+            active_processes.append(process)
+            n_evaluated += 1
+            
+        # Wait for all processes to finish
+        for process in processes:
+            process.join()
+            
+        # Clean up any hanging processes
+        for process in active_processes:
+            if process.is_alive():
+                process.terminate()
+                process.join()
+                message = f"{MODEL_NAME}:{NAME}:{VPUID} Terminated a process"
+                log_errors(general_log_path, message)
+                log_errors(model_log_path, message)
+                logging.info(message)
+                
+        # Get evaluation results
+        # Each element in results_list should be a single score value, not a tuple
+        LocalBestScore = np.array(list(results_list))
+        
+        # Log individual scores for debugging
+        for i, score in enumerate(LocalBestScore):
+            logging.debug(f"Particle {i} initial score: {score}")
+            
+        # Save the scores and parameter values
+        save_local_best_parameters(BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME, 
+                                   cal_parms, LocalBestScore, next_points, type_write='w')
+        
+        # Log combined results
+        logging.info(f"Local Best Score: {LocalBestScore}")
+        message = f"{MODEL_NAME}:{NAME}:{VPUID} Local Best Score: {LocalBestScore}"
+        log_errors(general_log_path, message)
+        log_errors(model_log_path, message)
+        
+        # Handle any None or NaN values
+        LocalBestScore = np.where(LocalBestScore is None, np.inf, LocalBestScore)
+        LocalBestScore = np.where(np.isnan(LocalBestScore), np.inf, LocalBestScore)
+        
+        # Find global best
+        GlobalBestIndex = np.argmin(LocalBestScore)
+        GlobalBest = X_initial[GlobalBestIndex]
+        GlobalBestScore = LocalBestScore[GlobalBestIndex]
+        GlobalBestScore_collection.append(GlobalBestScore)
+        
+        message = f"{MODEL_NAME}:{NAME}:{VPUID} Global Best Score: {GlobalBestScore} for initial runs"
+        log_errors(general_log_path, message)
+        log_errors(model_log_path, message)
+        logging.info(message)
+        
+        # Save best parameters
+        best_params = GlobalBest
+        best_objective_value = GlobalBestScore
+        save_current_best(best_params, best_objective_value, cal_parms, 
+                          best_simulation_filename, model_log_path, 
+                          general_log_path, VPUID, NAME, MODEL_NAME)
+        
+        # Wait for CPU to cool down
+        while not is_cpu_usage_low():
+            time.sleep(10)
+            
+    # Sort particles by score for selection
+    sorted_indices = np.argsort(LocalBestScore)
+    X_initial_sorted = X_initial[sorted_indices]
+    LocalBestScore_sorted = LocalBestScore[sorted_indices]
+    
+    return X_initial_sorted, LocalBestScore_sorted, GlobalBest, GlobalBestScore, GlobalBestScore_collection
 
 def save_local_best_parameters(BASE_PATH, LEVEL,VPUID, NAME, MODEL_NAME, cal_parms, LocalBestScore, next_points, type_write='w'):
 		# if the file already exists, do not write the header
@@ -122,32 +150,61 @@ def update_velocity_by_role(i, X, V, LocalBest, GlobalBest, InertiaWeight, C1, C
 		return V[i]
 				
 def update_particle(i, X, V, LocalBest, GlobalBest, InertiaWeight, C1, C2, Vmax, MinB, MaxB, role, results_list, wrapped_model_evaluation):
-		
-		""" updating velocity and position of particles and evaluating the new position
-
-		"""
-
-		V[i] = update_velocity_by_role(i, X, V, LocalBest, GlobalBest, InertiaWeight, C1, C2, role)
-		
-		# Apply velocity limits
-		V[i] = np.clip(V[i], -Vmax, Vmax)
-		X[i] += V[i]
-		
-		# Enhanced velocity correction
-		for j in range(len(X[i])):
-				if X[i][j] < MinB[j]:
-						X[i][j] = MinB[j]
-						## randomly reverse the velocity or make it zero
-						V[i][j] = 0.5 * V[i][j] if np.random.randint(0,2)==1 else 0
-				elif X[i][j] > MaxB[j]:
-						X[i][j] = MaxB[j]
-						V[i][j] = 0.5 * V[i][j] if np.random.randint(0,2)==1 else 0
-
-		# Evaluate the new position
-		score = wrapped_model_evaluation(X[i])
-
-		results_list[i] = (X[i], V[i], score)
-		
+    """Update particle position and velocity, then evaluate the new position
+    
+    Args:
+        i: Particle index
+        X: Particle positions
+        V: Particle velocities
+        LocalBest: Local best positions
+        GlobalBest: Global best position
+        InertiaWeight: Current inertia weight
+        C1, C2: Cognitive and social parameters
+        Vmax: Maximum velocity
+        MinB, MaxB: Parameter bounds
+        role: Particle role (mentor, mentee, independent)
+        results_list: Shared list to store results
+        wrapped_model_evaluation: Function to evaluate the model
+        
+    Returns:
+        None: Updates shared variables and stores results in the shared list
+    """
+    try:
+        # Update velocity based on particle's role
+        V[i] = update_velocity_by_role(i, X, V, LocalBest, GlobalBest, InertiaWeight, C1, C2, role)
+        
+        # Apply velocity limits
+        V[i] = np.clip(V[i], -Vmax, Vmax)
+        
+        # Update position
+        new_X = X[i] + V[i]
+        
+        # Handle boundary violations
+        for j in range(len(new_X)):
+            if new_X[j] < MinB[j]:
+                new_X[j] = MinB[j]
+                # Randomly reverse velocity or zero it out
+                V[i][j] = 0.5 * V[i][j] if np.random.randint(0,2)==1 else 0
+            elif new_X[j] > MaxB[j]:
+                new_X[j] = MaxB[j]
+                V[i][j] = 0.5 * V[i][j] if np.random.randint(0,2)==1 else 0
+        
+        # Store the updated position
+        X[i] = new_X
+        
+        # Evaluate the new position
+        score = wrapped_model_evaluation(X[i])
+        
+        # Log the result
+        logging.debug(f"Particle {i} (role: {role}) evaluated with score: {score}")
+        
+        # Store result as tuple (position, velocity, score)
+        results_list[i] = (X[i], V[i], score)
+        
+    except Exception as e:
+        logging.error(f"Error updating particle {i}: {e}")
+        # In case of error, use current position with a high score
+        results_list[i] = (X[i], V[i], np.inf)
 
 class PSOOptimizer:
 		
@@ -344,6 +401,25 @@ def select_best_initial_positions(n_particles, n_initial, X_initial, scores):
 		return X_initial[:n_particles]
 
 def model_evaluation_wrapper(index, results_list, point, wrapped_model_evaluation):
-		result = wrapped_model_evaluation(point)
-		results_list[index] = result
+    """Wrapper function for model evaluation that properly stores results
+    
+    Args:
+        index: Index in the results list
+        results_list: Shared list to store results
+        point: Parameter values to evaluate
+        wrapped_model_evaluation: Function to evaluate the model
+        
+    Returns:
+        None: Stores the result in the shared list
+    """
+    try:
+        # Evaluate the model with the given point
+        result = wrapped_model_evaluation(point)
+        # Store just the score (for initial evaluation)
+        results_list[index] = result
+        logging.debug(f"Evaluated particle {index}, score: {result}")
+    except Exception as e:
+        logging.error(f"Error evaluating particle {index}: {e}")
+        # Use a high value for errors
+        results_list[index] = np.inf
 

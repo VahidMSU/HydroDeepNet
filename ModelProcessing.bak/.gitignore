@@ -1,4 +1,0 @@
-*.log
-.venv
-!requirements.txt
-TxtInOut
