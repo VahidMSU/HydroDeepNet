@@ -40,16 +40,32 @@ def parse_args():
 	return parser.parse_args()
 
 def main():
-	# Initialize the central application logger
+	args = parse_args()
+	
+	# First, prepare the configuration parameters
+	try:
+		# Auto-determine VPUID from name if not provided
+		vpuid = args.vpuid
+		if not vpuid and args.name:
+			from ModelProcessing.find_VPUID import find_VPUID
+			vpuid = find_VPUID(args.name)
+			print(f"Auto-determined VPUID: {vpuid}")
+	except Exception as e:
+		print(f"Error determining VPUID: {str(e)}")
+		vpuid = ""
+
+	# Initialize the central application logger with user-specific path parameters
 	logger = setup_logger(
 		name='ModelProcessing',
 		log_file='/data/SWATGenXApp/codes/ModelProcessing/logs/ModelProcessing.log',
-		level=logging.INFO
+		level=logging.INFO,
+		username=args.username,
+		vpuid=vpuid,
+		level_name=args.level,
+		station_name=args.name
 	)
 	
 	logger.info("Starting ModelProcessing application")
-	
-	args = parse_args()
 	
 	# Load configuration from file if provided
 	if args.config:
@@ -63,16 +79,7 @@ def main():
 			logger.error(f"Failed to load configuration from {args.config}: {str(e)}")
 			sys.exit(1)
 	else:
-		# Auto-determine VPUID from name if not provided
-		vpuid = args.vpuid
-		if not vpuid and args.name:
-			logger.info(f"VPUID not provided, determining from NAME: {args.name}")
-			# Use the station ID/name as the VPUID when it's not explicitly provided
-			from ModelProcessing.find_VPUID import find_VPUID
-			vpuid = find_VPUID(args.name)
-			logger.info(f"Auto-determined VPUID: {vpuid}")
-		
-		# Use command line arguments to create config
+			# Use command line arguments to create config
 		logger.info("Creating configuration from command line arguments")
 		config = ModelConfig(
 			username=args.username,

@@ -43,8 +43,14 @@ def wrapper_function_model_evaluation(params, config, stage, problem, param_file
 class ProcessingProgram:
     def __init__(self, config: ModelConfig):
         self.config = config
-        # Create a logger specific to this model/station
-        self.logger = get_logger(f"{config.MODEL_NAME}.{config.NAME}")
+        # Create a logger specific to this model/station with both central and user-specific log files
+        self.logger = get_logger(
+            f"{config.MODEL_NAME}.{config.NAME}",
+            username=config.username,
+            vpuid=config.VPUID,
+            level_name=config.LEVEL,
+            station_name=config.NAME
+        )
         self.logger.info(f"Initialized processing for {config.MODEL_NAME} - {config.NAME}")
         
         # Define original calibration file path (this is a constant not in ModelConfig)
@@ -82,38 +88,77 @@ class ProcessingProgram:
         self.logger.debug("Calibration file copied successfully")
                 
     def clean_up(self):
-        self.logger.info("Cleaning up previous runs and figures")
+        """
+        Clean up all previous runs, figures, and output files to ensure a clean state
+        before starting any analysis (sensitivity, calibration, or verification).
+        """
+        self.logger.info("Performing comprehensive cleanup of previous runs and outputs")
         
-        # Delete scenarios and figures
-        if self.config.verification_flag:
+        # Clean scenarios directory - this is common for all operations
+        if os.path.exists(self.config.scenarios_path):
             delete_previous_runs(self.config.scenarios_path)
-            recharge_path = os.path.dirname(self.config.ver_perf_path)    
-            if os.path.exists(recharge_path):
-                shutil.rmtree(recharge_path)
-                self.logger.debug(f"Removed recharge path: {recharge_path}")
-
-        if self.config.calibration_flag:
-            delete_previous_runs(self.config.scenarios_path)
-            delete_previous_figures(self.config.monthly_cal_figures_path)
-            delete_previous_figures(self.config.daily_cal_figures_path)
-            delete_previous_figures(self.config.calibration_figures_path)
-            self.logger.debug("Cleaned calibration figures and runs")
-
-        if self.config.sensitivity_flag:
-            delete_previous_runs(self.config.scenarios_path)
-            delete_previous_figures(self.config.monthly_sen_figures_path)
-            delete_previous_figures(self.config.daily_sen_figures_path)
-            sensitivity_files = ['initial_points', 'morris_Si', 'initial_values']
-            for file_name in sensitivity_files:
-                file_path = os.path.join(self.config.model_base, f'{file_name}_{self.config.MODEL_NAME}.csv')
-                try:
+            self.logger.debug(f"Cleaned previous run scenarios at {self.config.scenarios_path}")
+        
+        # Clean all figure directories
+        figure_paths = [
+            self.config.monthly_cal_figures_path,
+            self.config.daily_cal_figures_path, 
+            self.config.calibration_figures_path,
+            self.config.monthly_sen_figures_path,
+            self.config.daily_sen_figures_path
+        ]
+        
+        for path in figure_paths:
+            if os.path.exists(path):
+                delete_previous_figures(path)
+                self.logger.debug(f"Cleaned figures at {path}")
+        
+        # Clean all sensitivity analysis files
+        sensitivity_files = ['initial_points', 'morris_Si', 'initial_values']
+        for file_name in sensitivity_files:
+            file_path = os.path.join(self.config.model_base, f'{file_name}_{self.config.MODEL_NAME}.csv')
+            try:
+                if os.path.exists(file_path):
                     os.remove(file_path)
                     self.logger.debug(f"Removed file: {file_path}")
-                except FileNotFoundError:
-                    self.logger.debug(f'File not found: {file_path}')
-                except Exception as e:
-                    self.logger.error(f'Error removing {file_name}: {e}')
-                    
+            except Exception as e:
+                self.logger.error(f'Error removing {file_name}: {e}')
+        
+        # Clean verification output directory
+        recharge_path = os.path.join(self.config.model_base, f'recharg_output_{self.config.MODEL_NAME}')
+        if os.path.exists(recharge_path):
+            shutil.rmtree(recharge_path)
+            self.logger.debug(f"Removed recharge output path: {recharge_path}")
+        
+        # Clean best solution and local best solution files
+        solution_files = [
+            self.config.best_simulation_filename,
+            self.config.local_best_solutions_path
+        ]
+        for solution_file in solution_files:
+            if os.path.exists(solution_file):
+                os.remove(solution_file)
+                self.logger.debug(f"Removed solution file: {solution_file}")
+        
+        # Clean any model log files that might exist
+        if os.path.exists(self.config.model_log_path):
+            with open(self.config.model_log_path, 'w') as f:
+                f.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Starting new model run\n")
+            self.logger.debug(f"Reset model log file: {self.config.model_log_path}")
+        
+        # Clean any additional temporary files that might be in the model base directory
+        temp_files = [
+            f'initial_point_calibration_{self.config.MODEL_NAME}.txt',
+            f'verification_performance_{self.config.MODEL_NAME}.txt'
+        ]
+        for temp_file in temp_files:
+            temp_path = os.path.join(self.config.model_base, temp_file)
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                self.logger.debug(f"Removed temporary file: {temp_path}")
+        
+        self.logger.info("Cleanup completed - workspace is ready for a new analysis")
+                
     def remove_lake_parameters(self):
         if not os.path.exists(self.config.lake_path):
             message = 'res parameters will be removed'
