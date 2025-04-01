@@ -19,8 +19,8 @@ from ModelProcessing.logging_utils import get_logger, log_to_file
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
-def wrapper_function_model_evaluation(params, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, problem, param_files, operation_types, TxtInOut, SCENARIO): 
-    return simulate_and_evaluate_swat_model_wrapper(params, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, problem, param_files, operation_types, TxtInOut, SCENARIO)
+def wrapper_function_model_evaluation(params, username, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, problem, param_files, operation_types, TxtInOut, SCENARIO): 
+    return simulate_and_evaluate_swat_model_wrapper(params, username, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, problem, param_files, operation_types, TxtInOut, SCENARIO)
 
 class ProcessingProgram:
     def __init__(self, config):
@@ -50,7 +50,7 @@ class ProcessingProgram:
         self.cn = config['cn']
         self.no_value = config['no_value']
         self.verification_samples = config['verification_samples']
-        
+        self.username = config['username']  
         # Create a logger specific to this model/station
         self.logger = get_logger(f"{self.MODEL_NAME}.{self.NAME}")
         self.logger.info(f"Initialized processing for {self.MODEL_NAME} - {self.NAME}")
@@ -83,11 +83,12 @@ class ProcessingProgram:
         self.logger.info(f"Starting PSO optimization for {self.MODEL_NAME} - {self.NAME}")
 
         opt = PSOOptimizer(
-            self.problem, self.BASE_PATH, self.LEVEL, self.VPUID, self.NAME, self.MODEL_NAME,
+            self.problem, self.username, self.BASE_PATH, self.LEVEL, self.VPUID, self.NAME, self.MODEL_NAME,
             self.model_log_path, self.general_log_path, wrapped_model_evaluation,
             max_it = self.max_cal_iterations, n_particles = self.cal_pool_size, cal_parms = self.cal_parms, 
             best_simulation_filename = self.best_simulation_filename, termination_tolerance = self.termination_tolerance,
             epsilon = self.epsilon, 
+            
             
             C1F=0.5, C1I=1, C2I=0.5, C2F=1, Vmax = 0.1, InertiaMin=0.4, InertiaMax=1
         )
@@ -272,7 +273,8 @@ class ProcessingProgram:
             self.logger.info(f'Verification iteration {i+1}/{len(list_of_best_solutions)}: {SCENARIO}')
             
             wrapped_model_evaluation = partial(
-                wrapper_function_model_evaluation, 
+                wrapper_function_model_evaluation,
+                username=self.username,
                 nyskip=self.Ver_nyskip, 
                 START_YEAR=self.Ver_START_YEAR, 
                 END_YEAR=self.Ver_END_YEAR, 
@@ -329,7 +331,8 @@ class ProcessingProgram:
                 self.stage = 'sensitivity'
 
                 wrapped_model_evaluation = partial(
-                    wrapper_function_model_evaluation, 
+                    wrapper_function_model_evaluation,
+                    username=self.username,
                     nyskip=self.nyskip, 
                     START_YEAR=self.START_YEAR, 
                     END_YEAR=self.END_YEAR, 
@@ -375,7 +378,8 @@ class ProcessingProgram:
                 self.stage = 'calibration'
                 
                 wrapped_model_evaluation = partial(
-                    wrapper_function_model_evaluation, 
+                    wrapper_function_model_evaluation,
+                    username=self.username,
                     nyskip=self.nyskip, 
                     START_YEAR=self.START_YEAR, 
                     END_YEAR=self.END_YEAR, 

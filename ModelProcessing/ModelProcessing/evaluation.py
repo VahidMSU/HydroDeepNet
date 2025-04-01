@@ -22,8 +22,8 @@ except Exception:
 # Create a module-level logger
 logger = get_logger('ModelProcessing.evaluation')
 
-def simulate_and_evaluate_swat_model_wrapper(params, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, problem, param_files, operation_types, TxtInOut, SCENARIO):
-    evaluator = SwatModelEvaluator(BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, TxtInOut=TxtInOut, SCENARIO=SCENARIO)
+def simulate_and_evaluate_swat_model_wrapper(params,username, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, problem, param_files, operation_types, TxtInOut, SCENARIO):
+    evaluator = SwatModelEvaluator(username, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, TxtInOut=TxtInOut, SCENARIO=SCENARIO)
     return evaluator.simulate_and_evaluate_swat_model(params, problem, param_files, operation_types)
 
 class SwatModelEvaluator:
@@ -37,7 +37,7 @@ class SwatModelEvaluator:
     5. Writing performance scores 
     """
     
-    def __init__(self, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, TxtInOut=None, SCENARIO=None):
+    def __init__(self, username, BASE_PATH, VPUID, LEVEL, NAME, MODEL_NAME, START_YEAR, END_YEAR, nyskip, no_value, stage, TxtInOut=None, SCENARIO=None):
         self.execution_file = '/data/SWATGenXApp/codes/bin/swatplus'
         self.key = str(random_scenario_name_generator())
         self.SCENARIO = SCENARIO if SCENARIO is not None else "Scenario_" + self.key
@@ -56,7 +56,7 @@ class SwatModelEvaluator:
         self.fig_files_paths = os.path.join(self.BASE_PATH, f'SWATplus_by_VPUID/{VPUID}/{LEVEL}/{NAME}/figures_{MODEL_NAME}')
         self.streamflow_data_path = os.path.join(self.BASE_PATH, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{self.NAME}/streamflow_data/")
         self.model_log_path = os.path.join(BASE_PATH, f"SWATplus_by_VPUID/{VPUID}/{LEVEL}/{str(NAME)}/log.txt")
-        self.basin_yield_path = f"/data/MyDataBase/SWATplus_by_VPUID/{self.VPUID}/huc12/{self.NAME}/{self.MODEL_NAME}/Scenarios/{self.SCENARIO}/basin_crop_yld_yr.txt"
+        self.basin_yield_path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{self.VPUID}/huc12/{self.NAME}/{self.MODEL_NAME}/Scenarios/{self.SCENARIO}/basin_crop_yld_yr.txt"
         self.nyskip = nyskip
         self.no_value = no_value
         self.stage = "random" if stage is None else stage
