@@ -15,16 +15,24 @@ import sys
 # Create global logger dictionary to store loggers by name
 LOGGERS = {}
 
+# Constants for logging
+DEFAULT_LOG_FILE = '/data/SWATGenXApp/codes/ModelProcessing/logs/ModelProcessing.log'
+DEFAULT_LOG_LEVEL = logging.INFO
+DEFAULT_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+DEFAULT_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+DEFAULT_MAX_BYTES = 10485760  # 10MB
+DEFAULT_BACKUP_COUNT = 5
+
 def setup_logger(
     name='ModelProcessing',
-    log_file=None,
-    level=logging.INFO,
+    log_file=DEFAULT_LOG_FILE,
+    level=DEFAULT_LOG_LEVEL,
     console_output=True,
     file_output=True,
-    format_string='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    date_format='%Y-%m-%d %H:%M:%S',
-    max_bytes=10485760,  # 10MB
-    backup_count=5
+    format_string=DEFAULT_FORMAT,
+    date_format=DEFAULT_DATE_FORMAT,
+    max_bytes=DEFAULT_MAX_BYTES,
+    backup_count=DEFAULT_BACKUP_COUNT
 ):
     """
     Set up a logger with consistent formatting and handlers.
@@ -84,46 +92,59 @@ def setup_logger(
     
     return logger
 
-def get_logger(name='ModelProcessing'):
+def get_logger(name):
     """
-    Get a logger by name. If it doesn't exist, returns the root ModelProcessing logger.
+    Creates and returns a logger with the given name.
     
     Args:
-        name (str): Logger name
+        name: Name for the logger, typically __name__ of the calling module
         
     Returns:
-        logging.Logger: The requested logger
+        A configured logger instance
     """
-    if name in LOGGERS:
-        return LOGGERS[name]
+    logger = logging.getLogger(name)
     
-    # If the specific logger doesn't exist, create a child logger
-    parent_logger_name = 'ModelProcessing'
+    # Only configure if handlers haven't been added yet
+    if not logger.handlers:
+        # Set the log level
+        logger.setLevel(logging.INFO)
+        
+        # Create a formatter
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
+                                    datefmt='%Y-%m-%d %H:%M:%S')
+        
+        # Create console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+        
+        # Add handler to logger
+        logger.addHandler(console_handler)
+        
+        # Prevent propagation to the root logger to avoid duplicate messages
+        logger.propagate = False
     
-    # If parent logger doesn't exist, set it up
-    if parent_logger_name not in LOGGERS:
-        setup_logger(parent_logger_name)
-    
-    # Create a child logger
-    child_logger = logging.getLogger(f"{parent_logger_name}.{name}")
-    LOGGERS[name] = child_logger
-    
-    return child_logger
+    return logger
 
-def log_to_file(message, filepath, include_timestamp=True):
+def log_to_file(message, file_path):
     """
-    Append a message to a specific log file.
+    Write a log message directly to a specified file.
+    This is used for model-specific logs that need to be in specific locations.
     
     Args:
-        message (str): Message to log
-        filepath (str): Path to the log file
-        include_timestamp (bool): Whether to include timestamp
+        message (str): Message to write to the log file
+        file_path (str): Path to the log file
     """
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    
-    if include_timestamp:
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        message = f"{timestamp} - {message}"
-    
-    with open(filepath, 'a') as file:
-        file.write(f"{message}\n")
+    try:
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        # Format timestamp
+        timestamp = datetime.datetime.now().strftime(DEFAULT_DATE_FORMAT)
+        
+        # Open file in append mode
+        with open(file_path, 'a') as f:
+            f.write(f"{timestamp} - {message}\n")
+    except Exception as e:
+        # Log the error to the main logger
+        logger = get_logger()
+        logger.error(f"Failed to write log to {file_path}: {str(e)}")
