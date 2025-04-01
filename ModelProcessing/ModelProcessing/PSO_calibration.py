@@ -7,6 +7,7 @@ from ModelProcessing.utils import log_errors
 from ModelProcessing.utils import delete_previous_runs
 import os
 import logging
+from matplotlib import pyplot as plt
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 def run_initial_evaluation(n_initial, X_initial, GlobalBestScore_collection, BASE_PATH, LEVEL, VPUID, NAME, MODEL_NAME, model_log_path, general_log_path, wrapped_model_evaluation, cal_parms, best_simulation_filename, n_evaluated=0):
@@ -208,7 +209,7 @@ def update_particle(i, X, V, LocalBest, GlobalBest, InertiaWeight, C1, C2, Vmax,
 
 class PSOOptimizer:
 		
-		def __init__(self, problem, BASE_PATH, LEVEL,VPUID, NAME, MODEL_NAME, model_log_path, general_log_path, wrapped_model_evaluation, max_it, n_particles, cal_parms, best_simulation_filename, termination_tolerance, epsilon, C1F=0.5, C1I=1, C2I=0.5, C2F=1, Vmax=0.1, InertiaMin=0.4, InertiaMax=1):
+		def __init__(self, problem, username, BASE_PATH, LEVEL,VPUID, NAME, MODEL_NAME, model_log_path, general_log_path, wrapped_model_evaluation, max_it, n_particles, cal_parms, best_simulation_filename, termination_tolerance, epsilon, C1F=0.5, C1I=1, C2I=0.5, C2F=1, Vmax=0.1, InertiaMin=0.4, InertiaMax=1):
 				self.problem = problem
 				self.max_it = max_it
 				self.n_particles = n_particles
@@ -243,6 +244,7 @@ class PSOOptimizer:
 				self.LocalBestScore_collection = []
 				self.termination_tolerance = termination_tolerance
 				self.epsilon = epsilon
+				self.username = username
 
 		def tell(self, initial_values=None, initial_points=None):
 				
@@ -334,8 +336,8 @@ class PSOOptimizer:
 								plt.title('Global Best Improvement')
 								plt.grid(True, which="both", ls="--", c='gray', alpha=0.5)
 								# make sure the directory exists
-								os.makedirs(fr"/data/MyDataBase/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/figures_{self.MODEL_NAME}", exist_ok=True)
-								plt.savefig(fr"/data/MyDataBase/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/figures_{self.MODEL_NAME}/GlobalBestImprovement.png", dpi=300)
+								os.makedirs(fr"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/figures_{self.MODEL_NAME}", exist_ok=True)
+								plt.savefig(fr"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/figures_{self.MODEL_NAME}/GlobalBestImprovement.png", dpi=300)
 								plt.close()
 
 						save_final_results(self.GlobalBestScore, self.GlobalBest, self.cal_parms, self.best_simulation_filename, self.model_log_path)
@@ -346,7 +348,7 @@ class PSOOptimizer:
 				log_errors(self.general_log_path, message)
 				log_errors(self.model_log_path, message)
 				delete_previous_runs(
-						f"/data/MyDataBase/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios"
+						f"/data/SWATGenXApp/Users/{self.username}/SWATplus_by_VPUID/{self.VPUID}/{self.LEVEL}/{self.NAME}/{self.MODEL_NAME}/Scenarios"
 				)
 		
 		
