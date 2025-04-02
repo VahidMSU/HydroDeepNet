@@ -17,6 +17,8 @@ import {
   faSpinner,
   faListUl,
   faRuler,
+  faSyncAlt,
+  faRedoAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import EsriMap from '../EsriMap.js';
 import SearchForm from '../SearchForm';
@@ -55,19 +57,23 @@ import {
   FormInput,
 } from '../../styles/SWATGenX.tsx';
 
-// Modify the geometriesCache to be more persistent
+// Modify the geometriesCache to be more persistent and resilient
 const geometriesCache = {
   data: null,
   timestamp: null,
-  expirationTime: 30 * 60 * 1000,
+  expirationTime: 30 * 60 * 1000, // 30 minutes
   isLoading: false,
   error: null,
+  retryCount: 0,
+  maxRetries: 3,
+  retryDelay: 5000, // 5 seconds initially, will increase exponentially
 
   set: function (data) {
     this.data = data;
     this.timestamp = Date.now();
     this.isLoading = false;
     this.error = null;
+    this.retryCount = 0;
     try {
       sessionStorage.setItem(
         'stationGeometriesCache',
@@ -78,15 +84,18 @@ const geometriesCache = {
       );
     } catch (e) {
       console.warn('Failed to cache station geometries in sessionStorage:', e);
+      // Continue without caching - this is not a fatal error
     }
     console.log(`Station geometries cache updated with ${data.length} stations`);
   },
 
   get: function () {
+    // First check memory cache
     if (this.data && this.timestamp && Date.now() - this.timestamp <= this.expirationTime) {
       return this.data;
     }
 
+    // Then try session storage
     try {
       const cachedData = sessionStorage.getItem('stationGeometriesCache');
       if (cachedData) {
@@ -100,6 +109,7 @@ const geometriesCache = {
       }
     } catch (e) {
       console.warn('Failed to retrieve station geometries from sessionStorage:', e);
+      // Continue without using cache - this is not a fatal error
     }
 
     return null;
@@ -113,16 +123,35 @@ const geometriesCache = {
     this.data = null;
     this.timestamp = null;
     this.error = null;
-    sessionStorage.removeItem('stationGeometriesCache');
+    this.retryCount = 0;
+    try {
+      sessionStorage.removeItem('stationGeometriesCache');
+    } catch (e) {
+      console.warn('Failed to clear station geometries from sessionStorage:', e);
+    }
   },
 
   setLoading: function (status) {
     this.isLoading = status;
+    if (!status) {
+      // Reset retry count when loading completes
+      this.retryCount = 0;
+    }
   },
 
   setError: function (error) {
     this.error = error;
     this.isLoading = false;
+  },
+
+  shouldRetry: function () {
+    return this.retryCount < this.maxRetries;
+  },
+
+  incrementRetry: function () {
+    this.retryCount++;
+    // Exponential backoff for retries
+    return this.retryDelay * Math.pow(2, this.retryCount - 1);
   },
 };
 
@@ -146,59 +175,107 @@ const SWATGenXTemplate = () => {
   const [showStationPanel, setShowStationPanel] = useState(false);
   const [geometriesPreloaded, setGeometriesPreloaded] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
-  const [drawingMode, setDrawingMode] = useState(false);
   const previousStationDataRef = useRef(null);
 
-  // Define fetchStationGeometries using useCallback so it can be included in dependency arrays
-  const fetchStationGeometries = useCallback(async () => {
-    if (mapSelectionLoading || geometriesCache.isLoading) return;
+  // Add ref for map refresh function
+  const mapRefreshFunctionRef = useRef(null);
 
+  // Create a function to handle map refreshing
+  const handleMapRefresh = () => {
+    console.log('Manual map refresh requested');
     setMapSelectionLoading(true);
-    geometriesCache.setLoading(true);
 
-    try {
-      console.log('Fetching station geometries from server');
+    // If we have access to the map refresh function, use it
+    if (mapRefreshFunctionRef.current && typeof mapRefreshFunctionRef.current === 'function') {
+      const refreshResult = mapRefreshFunctionRef.current();
+      console.log('Map refresh result:', refreshResult);
 
-      const timestamp = new Date().getTime();
-      const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
-        },
-      });
+      // Ensure we update the loading state even if refresh fails
+      setTimeout(() => {
+        setMapSelectionLoading(false);
+      }, 1000);
+    } else {
+      console.warn('Map refresh function not available');
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch station geometries: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      const data = await response.json();
-
-      if (!data || !data.features) {
-        throw new Error('Invalid response format from server');
-      }
-
-      const features = data.features || [];
-      console.log(`Loaded ${features.length} station geometries`);
-
-      geometriesCache.set(features);
-      setStationPoints(features);
-
-      if (feedbackType === 'error' && feedbackMessage.includes('station')) {
-        setFeedbackMessage('');
-        setFeedbackType('');
-      }
-    } catch (error) {
-      console.error('Error fetching station geometries:', error);
-      geometriesCache.setError(error);
-      setFeedbackMessage('Failed to load stations on map: ' + error.message);
-      setFeedbackType('error');
-    } finally {
-      setMapSelectionLoading(false);
+      // Alternative approach: force refetch of station geometries
+      geometriesCache.clear();
+      setStationPoints([]);
+      fetchStationGeometries(true);
     }
-  }, [mapSelectionLoading, feedbackType, feedbackMessage]);
+  };
+
+  // Define fetchStationGeometries using useCallback so it can be included in dependency arrays
+  const fetchStationGeometries = useCallback(
+    async (forceRefresh = false) => {
+      if ((mapSelectionLoading || geometriesCache.isLoading) && !forceRefresh) return;
+
+      setMapSelectionLoading(true);
+      geometriesCache.setLoading(true);
+
+      try {
+        console.log('Fetching station geometries from server');
+
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
+          // Add a timeout to prevent hanging requests
+          signal: AbortSignal.timeout(30000), // 30 second timeout
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch station geometries: ${response.status} ${response.statusText}`,
+          );
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.features) {
+          throw new Error('Invalid response format from server');
+        }
+
+        const features = data.features || [];
+        console.log(`Loaded ${features.length} station geometries`);
+
+        if (features.length === 0) {
+          throw new Error('No station features returned from server');
+        }
+
+        geometriesCache.set(features);
+        setStationPoints(features);
+        setGeometriesPreloaded(true);
+
+        if (feedbackType === 'error' && feedbackMessage.includes('station')) {
+          setFeedbackMessage('');
+          setFeedbackType('');
+        }
+      } catch (error) {
+        console.error('Error fetching station geometries:', error);
+        geometriesCache.setError(error);
+        setFeedbackMessage('Failed to load stations on map: ' + error.message);
+        setFeedbackType('error');
+
+        // Implement retry logic
+        if (geometriesCache.shouldRetry()) {
+          const retryDelay = geometriesCache.incrementRetry();
+          console.log(
+            `Will retry station geometries fetch in ${retryDelay}ms (attempt ${geometriesCache.retryCount})`,
+          );
+
+          setTimeout(() => {
+            fetchStationGeometries(true);
+          }, retryDelay);
+        }
+      } finally {
+        setMapSelectionLoading(false);
+      }
+    },
+    [mapSelectionLoading, feedbackType, feedbackMessage],
+  );
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -473,8 +550,6 @@ const SWATGenXTemplate = () => {
             setStationData={setStationData}
             setLoading={setLoading}
             mapSelections={mapSelections}
-            setDrawingMode={setDrawingMode}
-            drawingMode={drawingMode}
             handleStationSelect={handleStationSelect}
           />
 
@@ -733,9 +808,16 @@ const SWATGenXTemplate = () => {
                 disabled={mapSelectionLoading}
               >
                 <FontAwesomeIcon
-                  icon={mapSelectionLoading ? faSpinner : 'fa-sync-alt'}
+                  icon={mapSelectionLoading ? faSpinner : faSyncAlt}
                   className={mapSelectionLoading ? 'fa-spin' : ''}
                 />
+              </MapControlButton>
+              <MapControlButton
+                title="Refresh map display"
+                onClick={handleMapRefresh}
+                disabled={mapSelectionLoading}
+              >
+                <FontAwesomeIcon icon={faRedoAlt} />
               </MapControlButton>
             </MapControlsContainer>
 
@@ -754,11 +836,9 @@ const SWATGenXTemplate = () => {
               lakesGeometries={stationData?.lakes_geometries || []}
               stationPoints={stationPoints}
               onStationSelect={handleStationSelectFromMap}
-              onMultipleStationsSelect={handleMultipleStationsSelect}
               showStations={true}
               selectedStationId={selectedStationOnMap?.SiteNumber}
-              drawingMode={drawingMode}
-              onDrawComplete={handleMultipleStationsSelect}
+              refreshMapRef={mapRefreshFunctionRef}
             />
           </MapInnerContainer>
         </MapContainer>
