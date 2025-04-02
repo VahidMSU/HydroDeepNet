@@ -1,3 +1,4 @@
+///data/SWATGenXApp/codes/web_application/frontend/src/components/EsriMap.js
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { loadModules } from 'esri-loader';
 import SessionService from '../services/SessionService';
@@ -952,7 +953,16 @@ const EsriMap = ({
 
   return (
     <>
-      <div ref={mapRef} style={{ height: '900px', width: '100%', position: 'relative' }} />
+      <div
+        ref={mapRef}
+        style={{
+          height: '100%',
+          width: '100%',
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      />
       <div
         id="coordinateInfo"
         style={{
