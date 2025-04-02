@@ -292,44 +292,80 @@ def get_station_geometries():
     current_app.logger.info("Fetching station geometries for map display")
     
     try:
-        # Read station geometries from shapefile
+        import geopandas as gpd
+        import pandas as pd
+        import os
+        import json
+        from time import time
+        
+        # Create a cache key based on the file's modification time
         FPS_geometry_name_shp_path = SWATGenXPaths.FPS_CONUS_stations
-        gdf = gpd.read_file(FPS_geometry_name_shp_path)
         
-        # Convert to a simplified GeoJSON structure
-        stations_geojson = {
-            "type": "FeatureCollection",
-            "features": []
-        }
+        # Check if file exists
+        if not os.path.exists(FPS_geometry_name_shp_path):
+            current_app.logger.error(f"Station shapefile not found: {FPS_geometry_name_shp_path}")
+            return jsonify({"error": "Station data file not found"}), 404
+            
+        # Add cache headers to improve performance
+        cache_timeout = 3600  # 1 hour cache
+        response = None
         
-        # Process each station
-        for idx, row in gdf.iterrows():
-            try:
-                # Extract geometry and properties
-                geometry = row.geometry.__geo_interface__ if row.geometry else None
-                
-                # Only include points with valid geometry
-                if geometry:
-                    feature = {
-                        "type": "Feature",
-                        "geometry": geometry,
-                        "properties": {
-                            "SiteNumber": row.get("SiteNumber", ""),
-                            "SiteName": row.get("SiteName", ""),
-                            "id": idx
+        try:
+            # Read station geometries from shapefile with optimization
+            start_time = time()
+            gdf = gpd.read_file(FPS_geometry_name_shp_path)
+            current_app.logger.info(f"Read shapefile in {time() - start_time:.2f} seconds")
+            
+            # Convert to a simplified GeoJSON structure with only necessary fields
+            stations_geojson = {
+                "type": "FeatureCollection",
+                "features": []
+            }
+            
+            # Process each station with optimized data handling
+            start_time = time()
+            for idx, row in gdf.iterrows():
+                try:
+                    # Extract geometry and properties
+                    geometry = row.geometry.__geo_interface__ if row.geometry else None
+                    
+                    # Only include points with valid geometry
+                    if geometry:
+                        feature = {
+                            "type": "Feature",
+                            "geometry": geometry,
+                            "properties": {
+                                "SiteNumber": str(row.get("SiteNumber", "")),  # Ensure it's a string
+                                "SiteName": str(row.get("SiteName", "")),
+                                "id": idx
+                            }
                         }
-                    }
-                    stations_geojson["features"].append(feature)
-            except Exception as e:
-                current_app.logger.warning(f"Error processing station at index {idx}: {e}")
-                continue
+                        stations_geojson["features"].append(feature)
+                except Exception as e:
+                    current_app.logger.warning(f"Error processing station at index {idx}: {e}")
+                    continue
+            
+            current_app.logger.info(f"Processed {len(stations_geojson['features'])} stations in {time() - start_time:.2f} seconds")
+            
+            # Create response with caching headers
+            response = jsonify(stations_geojson)
+            response.cache_control.max_age = cache_timeout
+            response.cache_control.public = True
+            
+            current_app.logger.info(f"Returning {len(stations_geojson['features'])} station geometries with cache for {cache_timeout} seconds")
+            return response
+            
+        except Exception as e:
+            current_app.logger.error(f"Error reading station shapefile: {e}")
+            current_app.logger.error(f"Shapefile path: {FPS_geometry_name_shp_path}")
+            raise
         
-        current_app.logger.info(f"Returning {len(stations_geojson['features'])} station geometries")
-        return jsonify(stations_geojson)
-        
+    except ImportError as e:
+        current_app.logger.error(f"Missing library: {e}")
+        return jsonify({"error": f"Server configuration error: {str(e)}"}), 500
     except Exception as e:
-        current_app.logger.error(f"Error fetching station geometries: {e}")
         import traceback
+        current_app.logger.error(f"Error fetching station geometries: {e}")
         current_app.logger.error(traceback.format_exc())
         return jsonify({"error": "Failed to fetch station geometries", "details": str(e)}), 500
 

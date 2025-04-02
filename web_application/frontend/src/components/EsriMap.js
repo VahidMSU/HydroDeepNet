@@ -3,6 +3,73 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { loadModules } from 'esri-loader';
 import SessionService from '../services/SessionService';
 
+// Fix for passive event listener issue with the wheel event
+// This needs to be defined BEFORE the ArcGIS JS API loads
+const fixWheelEvent = () => {
+  try {
+    // Save the original addEventListener
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+
+    // Override addEventListener to make wheel events non-passive for ArcGIS elements only
+    EventTarget.prototype.addEventListener = function (type, listener, options) {
+      // Check if this is a wheel event
+      if (type === 'wheel' || type === 'mousewheel') {
+        // For ArcGIS elements, we need to ensure passive is not forced to true
+        if (
+          this.className &&
+          typeof this.className === 'string' &&
+          (this.className.includes('esri-') || this.className.includes('esri'))
+        ) {
+          // If options is a boolean (useCapture), convert to object
+          if (typeof options === 'boolean') {
+            options = { capture: options, passive: false };
+          } else if (typeof options === 'object' && options !== null) {
+            options.passive = false;
+          } else {
+            options = { passive: false };
+          }
+        } else {
+          // For non-ArcGIS elements, keep passive for performance
+          if (typeof options === 'boolean') {
+            options = { capture: options, passive: true };
+          } else if (typeof options === 'object' && options !== null) {
+            options.passive = true;
+          } else {
+            options = { passive: true };
+          }
+        }
+      }
+
+      // Call the original addEventListener with our modified options
+      return originalAddEventListener.call(this, type, listener, options);
+    };
+
+    // Set up dojoConfig for ArcGIS
+    if (window.dojoConfig) {
+      // Update existing dojoConfig
+      window.dojoConfig.passiveEvents = false;
+      if (window.dojoConfig.has) {
+        window.dojoConfig.has['esri-passive-events'] = false;
+      } else {
+        window.dojoConfig.has = { 'esri-passive-events': false };
+      }
+    } else {
+      // Create new dojoConfig
+      window.dojoConfig = {
+        passiveEvents: false,
+        has: { 'esri-passive-events': false },
+      };
+    }
+
+    console.log('Wheel event listener fix applied');
+  } catch (e) {
+    console.error('Failed to apply wheel event fix:', e);
+  }
+};
+
+// Apply the fix immediately
+fixWheelEvent();
+
 // Debounce utility function to improve performance
 const debounce = (func, delay) => {
   let timeoutId;
@@ -13,44 +80,6 @@ const debounce = (func, delay) => {
     }, delay);
   };
 };
-
-// Configure passive event listeners for the entire application before map initialization
-const configurePassiveEventListeners = () => {
-  // Patch EventTarget.prototype.addEventListener to make wheel and touch events passive
-  const originalAddEventListener = EventTarget.prototype.addEventListener;
-  EventTarget.prototype.addEventListener = function (type, listener, options) {
-    // Force passive true for touch and wheel events
-    if (
-      type === 'touchstart' ||
-      type === 'touchmove' ||
-      type === 'wheel' ||
-      type === 'mousewheel'
-    ) {
-      // If options is a boolean (useCapture), convert to object
-      if (typeof options === 'boolean') {
-        options = {
-          capture: options,
-          passive: true,
-        };
-      } else if (typeof options === 'object') {
-        options.passive = true;
-      } else {
-        options = { passive: true };
-      }
-    }
-    return originalAddEventListener.call(this, type, listener, options);
-  };
-
-  // Setup global dojoConfig for ArcGIS
-  if (window.dojoConfig) {
-    window.dojoConfig.passiveEvents = true;
-  } else {
-    window.dojoConfig = { passiveEvents: true };
-  }
-};
-
-// Call the configuration function immediately
-configurePassiveEventListeners();
 
 const EsriMap = ({
   geometries = [],
@@ -70,17 +99,17 @@ const EsriMap = ({
   const highlightedFeatureRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoadingGeometries, setIsLoadingGeometries] = useState(false);
+  const [stationsLoaded, setStationsLoaded] = useState(false);
+  const prevStationPointsRef = useRef([]);
+  const visibilityRef = useRef(true);
 
-  // Create memoized functions with useCallback to prevent unnecessary recreations
   const handleStationSelect = useCallback(
     (clickedStation) => {
       if (onStationSelect && clickedStation) {
-        // Inform SessionService that a map interaction is happening
         SessionService.setMapInteractionState(true);
 
         onStationSelect(clickedStation);
 
-        // After a short delay, tell SessionService map interaction has ended
         setTimeout(() => {
           SessionService.setMapInteractionState(false);
         }, 500);
@@ -89,23 +118,149 @@ const EsriMap = ({
     [onStationSelect],
   );
 
-  // Initial map setup
   useEffect(() => {
-    let view;
-    let mapViewHandles = []; // Store event handles for cleanup
+    const handleVisibilityChange = () => {
+      const isVisible = !document.hidden;
+      console.log(`Document visibility changed to: ${isVisible ? 'visible' : 'hidden'}`);
+      visibilityRef.current = isVisible;
 
-    // Tell SessionService that map is loading (pause session checks)
+      if (isVisible && showStations && stationPoints.length > 0 && viewRef.current) {
+        const { stationLayer } = viewRef.current;
+        if (stationLayer && !stationLayer.destroyed && stationLayer.graphics.length === 0) {
+          console.log('Tab visible again, stations not displayed - forcing refresh');
+          setTimeout(renderStationPoints, 500);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [showStations, stationPoints]);
+
+  const renderStationPoints = useCallback(() => {
+    if (!viewRef.current || !isLoaded || !showStations || stationPoints.length === 0) {
+      return;
+    }
+
     SessionService.setMapInteractionState(true);
 
-    // Configure ArcGIS loader for version 4.25
+    const { stationLayer, Graphic, Point, view } = viewRef.current;
+
+    if (stationLayer && !stationLayer.destroyed) {
+      if (prevStationPointsRef.current === stationPoints && stationLayer.graphics.length > 0) {
+        console.log('Station points already rendered - skipping redraw');
+        SessionService.setMapInteractionState(false);
+        return;
+      }
+
+      console.log(`Clearing ${stationLayer.graphics.length} existing station graphics`);
+      stationLayer.removeAll();
+    } else {
+      console.warn('Station layer unavailable for rendering');
+      SessionService.setMapInteractionState(false);
+      return;
+    }
+
+    console.log(`Rendering ${stationPoints.length} station points on map`);
+
+    const stationGraphics = [];
+    let successfullyAdded = 0;
+
+    const batchSize = 100;
+    for (let i = 0; i < stationPoints.length; i += batchSize) {
+      const batch = stationPoints.slice(i, i + batchSize);
+
+      batch.forEach((station) => {
+        if (station.geometry && station.geometry.coordinates) {
+          const [longitude, latitude] = station.geometry.coordinates;
+          const point = new Point({
+            longitude,
+            latitude,
+            spatialReference: { wkid: 4326 },
+          });
+
+          const isSelected = selectedStationId === station.properties.SiteNumber;
+
+          const stationGraphic = new Graphic({
+            geometry: point,
+            symbol: {
+              type: 'simple-marker',
+              color: isSelected ? [255, 0, 0, 0.8] : [0, 114, 206, 0.7],
+              size: isSelected ? '12px' : '8px',
+              outline: {
+                color: [255, 255, 255],
+                width: 1,
+              },
+            },
+            attributes: {
+              SiteNumber: station.properties.SiteNumber,
+              SiteName: station.properties.SiteName,
+              id: station.properties.id,
+            },
+            popupTemplate: {
+              title: '{SiteName}',
+              content: 'Station ID: {SiteNumber}',
+            },
+          });
+
+          if (!stationLayer.destroyed) {
+            stationLayer.add(stationGraphic);
+            stationGraphics.push(stationGraphic);
+            successfullyAdded++;
+          }
+        }
+      });
+    }
+
+    prevStationPointsRef.current = stationPoints;
+
+    console.log(`Successfully added ${successfullyAdded} station graphics to map`);
+    setStationsLoaded(true);
+
+    if (stationGraphics.length > 0 && !selectedStationId && view && !view.destroyed) {
+      try {
+        view
+          .when(() => {
+            if (!view.destroyed) {
+              console.log('Zooming to station extents');
+              view
+                .goTo(stationGraphics, { animate: false })
+                .catch((error) => console.warn('Error during map navigation:', error))
+                .finally(() => {
+                  setTimeout(() => SessionService.setMapInteractionState(false), 500);
+                });
+            } else {
+              SessionService.setMapInteractionState(false);
+            }
+          })
+          .catch((e) => {
+            console.warn('Error during view.when():', e);
+            SessionService.setMapInteractionState(false);
+          });
+      } catch (e) {
+        console.error('Exception during view.goTo preparation:', e);
+        SessionService.setMapInteractionState(false);
+      }
+    } else {
+      setTimeout(() => SessionService.setMapInteractionState(false), 500);
+    }
+  }, [isLoaded, showStations, stationPoints, selectedStationId]);
+
+  useEffect(() => {
+    let view;
+    let mapViewHandles = [];
+
+    SessionService.setMapInteractionState(true);
+
     const options = {
       version: '4.25',
       css: true,
-      // Add dojoConfig option to use passive events
       dojoConfig: {
-        passiveEvents: true,
+        passiveEvents: false, // Set to false to allow preventDefault
         has: {
-          'esri-passive-events': true,
+          'esri-passive-events': false, // Set to false to allow preventDefault
         },
       },
     };
@@ -144,47 +299,54 @@ const EsriMap = ({
         ]) => {
           if (viewRef.current) return;
 
-          // Configure esri to use passive event listeners
+          // Explicitly disable passive events in esriConfig
           esriConfig.options = {
             ...esriConfig.options,
             events: {
-              // Enable passive events for better scrolling performance
-              add: { passive: true },
-              remove: { passive: true },
+              add: { passive: false },
+              remove: { passive: false },
             },
           };
 
-          // Enable passive events explicitly
           esriConfig.has = esriConfig.has || {};
-          esriConfig.has['esri-passive-events'] = true;
+          esriConfig.has['esri-passive-events'] = false;
 
-          // Create map instance
           const map = new Map({ basemap: 'topo-vector' });
 
-          // Configure view options for improved performance
           view = new MapView({
             container: mapRef.current,
             map: map,
             zoom: 4,
-            center: [-98, 39], // Center on CONUS (Continental US)
+            center: [-98, 39],
             constraints: {
-              snapToZoom: false, // Improves performance by disabling snap-to-zoom
+              snapToZoom: false,
             },
-            // Disable view animations for performance
             navigation: {
               mouseWheelZoomEnabled: true,
               browserTouchPanEnabled: true,
             },
           });
 
-          // Set navigation specific options for passive events
+          // Explicitly set wheel event options to non-passive
           if (view.navigation) {
-            view.navigation.mouseWheelEventOptions = { passive: true };
-            view.navigation.browserTouchPanEventOptions = { passive: true };
+            view.navigation.mouseWheelEventOptions = { passive: false };
+            view.navigation.browserTouchPanEventOptions = { passive: true }; // Keep touch panning passive
           }
 
-          // Optimize performance by reducing view quality during interaction
-          view.qualityProfile = 'medium';
+          // Add a direct wheel event handler to capture and handle events
+          mapRef.current.addEventListener(
+            'wheel',
+            (e) => {
+              // Only when the map is the active element, prevent default zooming
+              if (
+                document.activeElement === mapRef.current ||
+                mapRef.current.contains(document.activeElement)
+              ) {
+                e.preventDefault();
+              }
+            },
+            { passive: false },
+          );
 
           const polygonLayer = new GraphicsLayer();
           const streamLayer = new GraphicsLayer();
@@ -194,7 +356,6 @@ const EsriMap = ({
 
           map.addMany([polygonLayer, streamLayer, lakeLayer, stationLayer, drawLayer]);
 
-          // Create sketch widget for drawing
           const sketch = new Sketch({
             view: view,
             layer: drawLayer,
@@ -217,12 +378,10 @@ const EsriMap = ({
             },
           });
 
-          // Add the sketch widget to the top-right of the view
           view.ui.add(sketch, 'top-right');
-          sketch.visible = false; // Hide by default
+          sketch.visible = false;
           sketchRef.current = sketch;
 
-          // Inform SessionService that map interaction is starting when user interacts with map
           const handleMapInteractionStart = () => {
             SessionService.setMapInteractionState(true);
           };
@@ -231,27 +390,22 @@ const EsriMap = ({
             SessionService.setMapInteractionState(false);
           }, 1000);
 
-          // Add handlers for map interactions
           const interactionEvents = ['mouse-wheel', 'key-down', 'drag', 'double-click', 'click'];
           interactionEvents.forEach((eventName) => {
             const handle = view.on(eventName, handleMapInteractionStart);
             mapViewHandles.push(handle);
           });
 
-          // Add a handler for when interactions end
           const dragEndHandle = view.on('drag-end', handleMapInteractionEnd);
           const keyUpHandle = view.on('key-up', handleMapInteractionEnd);
           const clickHandle = view.on('click', handleMapInteractionEnd);
           mapViewHandles.push(dragEndHandle, keyUpHandle, clickHandle);
 
-          // Handle polygon creation complete
           const sketchCreateHandle = sketch.on('create', (event) => {
-            // Inform SessionService that a sketch interaction is happening
             SessionService.setMapInteractionState(true);
 
             if (event.state === 'complete' && onDrawComplete) {
               const polygon = event.graphic.geometry;
-              // Highlight the created polygon
               const highlightGraphic = new Graphic({
                 geometry: polygon,
                 symbol: {
@@ -262,7 +416,6 @@ const EsriMap = ({
               });
               drawLayer.add(highlightGraphic);
 
-              // Find all stations within the polygon
               if (stationPoints.length > 0) {
                 const stationsWithin = stationPoints.filter((station) => {
                   if (!station.geometry || !station.geometry.coordinates) return false;
@@ -272,18 +425,15 @@ const EsriMap = ({
                     latitude,
                     spatialReference: { wkid: 4326 },
                   });
-                  // Check if point is within polygon
                   return geometryEngine.contains(polygon, point);
                 });
 
                 if (stationsWithin.length > 0) {
-                  // Convert to format expected by the selection handler
                   const selectedStations = stationsWithin.map((station) => ({
                     SiteNumber: station.properties.SiteNumber,
                     SiteName: station.properties.SiteName,
                   }));
 
-                  // Highlight selected stations
                   stationsWithin.forEach((station) => {
                     const [longitude, latitude] = station.geometry.coordinates;
                     const highlightPoint = new Point({
@@ -305,9 +455,7 @@ const EsriMap = ({
 
                   onDrawComplete(selectedStations);
                 } else {
-                  // No stations found in the selection
                   if (drawLayer && !drawLayer.destroyed) {
-                    // Add a temporary message graphic
                     const center = geometryEngine.centroid(polygon);
                     const textGraphic = new Graphic({
                       geometry: center,
@@ -323,7 +471,6 @@ const EsriMap = ({
                     });
                     drawLayer.add(textGraphic);
 
-                    // Remove the message after 3 seconds
                     setTimeout(() => {
                       if (drawLayer && !drawLayer.destroyed) {
                         drawLayer.remove(textGraphic);
@@ -334,18 +481,15 @@ const EsriMap = ({
               }
             }
 
-            // Tell SessionService map interaction has ended
             setTimeout(() => {
               SessionService.setMapInteractionState(false);
             }, 500);
           });
           mapViewHandles.push(sketchCreateHandle);
 
-          // Find closest station - optimized version
           const findClosestStation = (clickPoint, thresholdDegrees) => {
             if (!stationPoints || stationPoints.length === 0) return;
 
-            // Convert to geographic coordinates if needed
             const geographic = webMercatorUtils.webMercatorToGeographic(clickPoint);
             const clickLat = geographic ? geographic.latitude : clickPoint.latitude;
             const clickLon = geographic ? geographic.longitude : clickPoint.longitude;
@@ -353,8 +497,7 @@ const EsriMap = ({
             let closestStation = null;
             let minDistance = Number.MAX_VALUE;
 
-            // Find closest station with early termination for performance
-            const maxCheckStations = Math.min(500, stationPoints.length); // Limit the number of stations to check for performance
+            const maxCheckStations = Math.min(500, stationPoints.length);
             let checkedCount = 0;
 
             for (const station of stationPoints) {
@@ -363,7 +506,6 @@ const EsriMap = ({
               if (station.geometry && station.geometry.coordinates) {
                 const [stationLon, stationLat] = station.geometry.coordinates;
 
-                // Quick filter to avoid unnecessary calculations
                 if (
                   Math.abs(clickLat - stationLat) > thresholdDegrees ||
                   Math.abs(clickLon - stationLon) > thresholdDegrees
@@ -371,7 +513,6 @@ const EsriMap = ({
                   continue;
                 }
 
-                // Simple distance calculation (not accounting for Earth's curvature)
                 const distance = Math.sqrt(
                   Math.pow(clickLat - stationLat, 2) + Math.pow(clickLon - stationLon, 2),
                 );
@@ -401,7 +542,6 @@ const EsriMap = ({
             stationLayer,
             drawLayer,
             sketch,
-            // Store references to these classes for later use
             Graphic,
             Polygon,
             Polyline,
@@ -410,7 +550,6 @@ const EsriMap = ({
             geometryEngine,
           };
 
-          // Add coordinate display - debounced for performance
           const updateCoordinates = debounce((event) => {
             const point = view.toMap(event);
             if (point) {
@@ -420,19 +559,15 @@ const EsriMap = ({
                 coordDiv.innerText = `Lat: ${geographic.latitude.toFixed(6)}, Lon: ${geographic.longitude.toFixed(6)}`;
               }
             }
-          }, 50); // Update every 50ms at most
+          }, 50);
 
           const pointerMoveHandle = view.on('pointer-move', updateCoordinates);
           mapViewHandles.push(pointerMoveHandle);
 
-          // Add debounced click handler for station selection
           if (onStationSelect) {
-            // Use debounce to prevent multiple rapid clicks and improve performance
             const debouncedClickHandler = debounce((event) => {
-              // Inform SessionService that a click interaction is happening
               SessionService.setMapInteractionState(true);
 
-              // Only handle clicks if we're showing stations and not in drawing mode
               if (!showStations || drawingMode) {
                 console.log(
                   'Click ignored: showStations:',
@@ -441,7 +576,6 @@ const EsriMap = ({
                   drawingMode,
                 );
 
-                // Even though we ignored the click, end the interaction flag
                 setTimeout(() => {
                   SessionService.setMapInteractionState(false);
                 }, 200);
@@ -455,16 +589,14 @@ const EsriMap = ({
                 y: event.y,
               };
 
-              // Use hitTest with specific options to better detect station points
               view
                 .hitTest(screenPoint, {
                   include: [stationLayer],
-                  tolerance: 10, // Increase hit tolerance to make selection easier
+                  tolerance: 10,
                 })
                 .then((response) => {
                   console.log('Hit test results:', response.results?.length || 0);
 
-                  // Filter for graphics from the station layer
                   const stationGraphics = response.results?.filter(
                     (result) => result.graphic?.layer === stationLayer,
                   );
@@ -480,11 +612,9 @@ const EsriMap = ({
                     console.log('Station selected:', clickedStation);
                     handleStationSelect(clickedStation);
                   } else {
-                    // If no direct hit, try finding the closest station within a threshold
-                    findClosestStation(event.mapPoint, 0.05); // ~5km at equator
+                    findClosestStation(event.mapPoint, 0.05);
                   }
 
-                  // End the interaction flag
                   setTimeout(() => {
                     SessionService.setMapInteractionState(false);
                   }, 500);
@@ -492,18 +622,16 @@ const EsriMap = ({
                 .catch((error) => {
                   console.error('Error during hit test:', error);
 
-                  // Still end the interaction flag on error
                   setTimeout(() => {
                     SessionService.setMapInteractionState(false);
                   }, 200);
                 });
-            }, 250); // 250ms debounce delay
+            }, 250);
 
             const clickHandle = view.on('click', debouncedClickHandler);
             mapViewHandles.push(clickHandle);
           }
 
-          // Allow SessionService to check sessions again after map is loaded
           setTimeout(() => {
             SessionService.setMapInteractionState(false);
           }, 2000);
@@ -514,15 +642,12 @@ const EsriMap = ({
       .catch((error) => {
         console.error('Error loading ArcGIS modules:', error);
 
-        // Allow SessionService to check sessions again if module loading fails
         SessionService.setMapInteractionState(false);
       });
 
     return () => {
-      // Allow SessionService to check sessions during cleanup
       SessionService.setMapInteractionState(false);
 
-      // Properly clean up event handlers to prevent memory leaks
       if (mapViewHandles.length > 0) {
         mapViewHandles.forEach((handle) => {
           if (handle && typeof handle.remove === 'function') {
@@ -535,7 +660,6 @@ const EsriMap = ({
         });
       }
 
-      // Clean up highlight if it exists
       if (highlightedFeatureRef.current) {
         try {
           highlightedFeatureRef.current.remove();
@@ -553,6 +677,8 @@ const EsriMap = ({
         }
         viewRef.current = null;
       }
+
+      console.log('EsriMap component unmounted, view and layers cleaned up');
     };
   }, [
     onStationSelect,
@@ -563,7 +689,80 @@ const EsriMap = ({
     handleStationSelect,
   ]);
 
-  // Toggle drawing mode
+  useEffect(() => {
+    if (!viewRef.current || !isLoaded) {
+      return;
+    }
+
+    if (showStations) {
+      console.log(`Station points changed: ${stationPoints.length} points, show: ${showStations}`);
+      renderStationPoints();
+    } else if (viewRef.current.stationLayer && !viewRef.current.stationLayer.destroyed) {
+      viewRef.current.stationLayer.removeAll();
+      prevStationPointsRef.current = [];
+    }
+
+    const watchInterval = setInterval(() => {
+      if (
+        showStations &&
+        stationPoints.length > 0 &&
+        viewRef.current &&
+        viewRef.current.stationLayer &&
+        !viewRef.current.stationLayer.destroyed &&
+        viewRef.current.stationLayer.graphics.length === 0 &&
+        visibilityRef.current
+      ) {
+        console.log(
+          "Station visibility check: stations should be visible but aren't - forcing refresh",
+        );
+        renderStationPoints();
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(watchInterval);
+    };
+  }, [stationPoints, showStations, isLoaded, renderStationPoints]);
+
+  useEffect(() => {
+    if (!viewRef.current || !isLoaded || !showStations || stationPoints.length === 0) {
+      return;
+    }
+
+    const { stationLayer } = viewRef.current;
+
+    if (!stationLayer || stationLayer.destroyed) {
+      return;
+    }
+
+    if (selectedStationId && prevStationPointsRef.current === stationPoints && stationsLoaded) {
+      console.log(`Updating selection for station: ${selectedStationId}`);
+
+      const graphics = stationLayer.graphics.toArray();
+
+      graphics.forEach((graphic) => {
+        if (!graphic.symbol) return;
+
+        const isSelected = graphic.attributes.SiteNumber === selectedStationId;
+
+        if (
+          (isSelected && graphic.symbol.color[0] !== 255) ||
+          (!isSelected && graphic.symbol.color[0] === 255)
+        ) {
+          graphic.symbol = {
+            type: 'simple-marker',
+            color: isSelected ? [255, 0, 0, 0.8] : [0, 114, 206, 0.7],
+            size: isSelected ? '12px' : '8px',
+            outline: {
+              color: [255, 255, 255],
+              width: 1,
+            },
+          };
+        }
+      });
+    }
+  }, [selectedStationId, stationPoints, showStations, isLoaded, stationsLoaded]);
+
   useEffect(() => {
     if (!viewRef.current || !isLoaded) return;
     const { sketch, drawLayer } = viewRef.current;
@@ -571,17 +770,15 @@ const EsriMap = ({
     if (sketch) {
       sketch.visible = drawingMode;
       if (drawingMode) {
-        // Inform SessionService that drawing is starting
         SessionService.setMapInteractionState(true);
 
-        sketch.create('polygon'); // Start with polygon drawing tool
+        sketch.create('polygon');
       } else {
-        sketch.cancel(); // Cancel any active drawing
+        sketch.cancel();
         if (drawLayer && !drawLayer.destroyed) {
-          drawLayer.removeAll(); // Clear drawn polygons
+          drawLayer.removeAll();
         }
 
-        // Allow SessionService to check sessions again
         setTimeout(() => {
           SessionService.setMapInteractionState(false);
         }, 500);
@@ -589,21 +786,17 @@ const EsriMap = ({
     }
   }, [drawingMode, isLoaded]);
 
-  // Handle watershed geometries (existing functionality)
   useEffect(() => {
     if (!viewRef.current || !isLoaded) {
       return;
     }
 
-    // Set loading state to true when starting to load geometries
     setIsLoadingGeometries(true);
 
-    // Inform SessionService that map is updating
     SessionService.setMapInteractionState(true);
 
     const { view, polygonLayer, streamLayer, lakeLayer } = viewRef.current;
 
-    // Check for destroyed layers before clearing
     if (polygonLayer && !polygonLayer.destroyed) polygonLayer.removeAll();
     if (streamLayer && !streamLayer.destroyed) streamLayer.removeAll();
     if (lakeLayer && !lakeLayer.destroyed) lakeLayer.removeAll();
@@ -614,11 +807,10 @@ const EsriMap = ({
       .then(([Graphic, Polygon, Polyline]) => {
         const allGraphics = [];
 
-        // Process geometries in chunks for better performance
         const processGeometries = (geometries, layer, options) => {
           if (!layer || layer.destroyed) return;
 
-          const chunkSize = 50; // Process in chunks of 50
+          const chunkSize = 50;
           for (let i = 0; i < geometries.length; i += chunkSize) {
             const chunk = geometries.slice(i, i + chunkSize);
             chunk.forEach((geom) => {
@@ -654,7 +846,6 @@ const EsriMap = ({
           }
         };
 
-        // Process each geometry type
         if (geometries.length > 0) {
           processGeometries(geometries, polygonLayer, {
             type: 'polygon',
@@ -694,14 +885,11 @@ const EsriMap = ({
               view
                 .goTo(allGraphics, { duration: 500 })
                 .catch((e) => {
-                  // Silently catch errors during animation
                   console.warn('Error during map navigation:', e);
                 })
                 .finally(() => {
-                  // Set loading state to false after geometries are loaded
                   setIsLoadingGeometries(false);
 
-                  // Allow SessionService to check sessions again
                   setTimeout(() => {
                     SessionService.setMapInteractionState(false);
                   }, 500);
@@ -713,10 +901,8 @@ const EsriMap = ({
               SessionService.setMapInteractionState(false);
             });
         } else {
-          // If no graphics to load, still set loading to false
           setIsLoadingGeometries(false);
 
-          // Allow SessionService to check sessions again
           setTimeout(() => {
             SessionService.setMapInteractionState(false);
           }, 500);
@@ -726,230 +912,9 @@ const EsriMap = ({
         console.error('Error loading modules:', error);
         setIsLoadingGeometries(false);
 
-        // Allow SessionService to check sessions again on error
         SessionService.setMapInteractionState(false);
       });
   }, [geometries, streamsGeometries, lakesGeometries, isLoaded]);
-
-  // Handle station points rendering
-  useEffect(() => {
-    if (!viewRef.current || !isLoaded || !showStations) {
-      return;
-    }
-
-    // Inform SessionService that map is updating
-    SessionService.setMapInteractionState(true);
-
-    const { stationLayer, Graphic, Point, view } = viewRef.current;
-
-    // Safe check before removing all - prevent null reference errors
-    if (stationLayer && !stationLayer.destroyed) {
-      stationLayer.removeAll();
-    } else {
-      // End map interaction state if stationLayer is unavailable
-      SessionService.setMapInteractionState(false);
-      return; // Exit if layer is destroyed
-    }
-
-    // Only render stations if we're in station selection mode
-    if (showStations && stationPoints.length > 0) {
-      console.log(`Rendering ${stationPoints.length} station points on map`);
-
-      const stationGraphics = [];
-
-      // Process stations in batches for better performance
-      const batchSize = 100;
-      for (let i = 0; i < stationPoints.length; i += batchSize) {
-        const batch = stationPoints.slice(i, i + batchSize);
-
-        batch.forEach((station) => {
-          if (station.geometry && station.geometry.coordinates) {
-            const [longitude, latitude] = station.geometry.coordinates;
-            const point = new Point({
-              longitude,
-              latitude,
-              spatialReference: { wkid: 4326 },
-            });
-
-            // Determine if this station is selected
-            const isSelected = selectedStationId === station.properties.SiteNumber;
-
-            const stationGraphic = new Graphic({
-              geometry: point,
-              symbol: {
-                type: 'simple-marker',
-                color: isSelected ? [255, 0, 0, 0.8] : [0, 114, 206, 0.7],
-                size: isSelected ? '12px' : '8px',
-                outline: {
-                  color: [255, 255, 255],
-                  width: 1,
-                },
-              },
-              attributes: {
-                SiteNumber: station.properties.SiteNumber,
-                SiteName: station.properties.SiteName,
-                id: station.properties.id,
-              },
-              popupTemplate: {
-                title: '{SiteName}',
-                content: 'Station ID: {SiteNumber}',
-              },
-            });
-
-            if (!stationLayer.destroyed) {
-              stationLayer.add(stationGraphic);
-              stationGraphics.push(stationGraphic);
-            }
-          }
-        });
-      }
-
-      // Zoom to all stations if there's no selection
-      if (stationGraphics.length > 0 && !selectedStationId && view && !view.destroyed) {
-        view
-          .when(() => {
-            view
-              .goTo(stationGraphics, { animate: false })
-              .catch((error) => {
-                console.warn('Error during map navigation:', error);
-              })
-              .finally(() => {
-                // Allow SessionService to check sessions again after zooming
-                setTimeout(() => {
-                  SessionService.setMapInteractionState(false);
-                }, 500);
-              });
-          })
-          .catch((e) => {
-            console.warn('Error during view.when():', e);
-            SessionService.setMapInteractionState(false);
-          });
-      } else {
-        // Allow SessionService to check sessions even if not zooming
-        setTimeout(() => {
-          SessionService.setMapInteractionState(false);
-        }, 500);
-      }
-
-      // Add custom pointer cursor when hovering over stations
-      if (view && stationLayer && !view.destroyed && !stationLayer.destroyed) {
-        view
-          .whenLayerView(stationLayer)
-          .then((layerView) => {
-            // Clear any existing highlight
-            if (highlightedFeatureRef.current) {
-              try {
-                highlightedFeatureRef.current.remove();
-              } catch (e) {
-                // Silent catch - the highlight might already be removed
-              }
-              highlightedFeatureRef.current = null;
-            }
-
-            // Debounce the pointer move for better performance
-            const debouncedPointerMove = debounce((event) => {
-              // We're moving the pointer, so let SessionService know
-              SessionService.setMapInteractionState(true);
-
-              if (view.destroyed) {
-                SessionService.setMapInteractionState(false);
-                return;
-              }
-
-              view
-                .hitTest(event)
-                .then((response) => {
-                  // Remove any existing highlight
-                  if (highlightedFeatureRef.current) {
-                    try {
-                      highlightedFeatureRef.current.remove();
-                    } catch (e) {
-                      // Silent catch
-                    }
-                    highlightedFeatureRef.current = null;
-
-                    if (view.container) {
-                      view.container.style.cursor = 'default';
-                    }
-                  }
-
-                  const stationHits = response.results?.filter(
-                    (result) => result.graphic?.layer === stationLayer,
-                  );
-
-                  if (stationHits && stationHits.length > 0 && view.container) {
-                    // Change cursor to pointer when over a station
-                    view.container.style.cursor = 'pointer';
-
-                    // Optionally highlight the station
-                    try {
-                      highlightedFeatureRef.current = layerView.highlight(stationHits[0].graphic);
-                    } catch (e) {
-                      console.warn('Error highlighting feature:', e);
-                    }
-                  }
-
-                  // End the interaction state after processing
-                  setTimeout(() => {
-                    SessionService.setMapInteractionState(false);
-                  }, 200);
-                })
-                .catch((error) => {
-                  console.warn('Hit test error:', error);
-                  SessionService.setMapInteractionState(false);
-                });
-            }, 50); // 50ms debounce
-
-            // Watch for pointer move over the layer
-            const pointerMoveHandle = view.on('pointer-move', debouncedPointerMove);
-
-            // Store the handle for cleanup
-            const currentHandles = viewRef.current.pointerMoveHandles || [];
-            viewRef.current.pointerMoveHandles = [...currentHandles, pointerMoveHandle];
-          })
-          .catch((error) => {
-            console.warn('Error creating layer view:', error);
-            // Still end the interaction state on error
-            SessionService.setMapInteractionState(false);
-          });
-      } else {
-        // End the interaction state if view or layer is not available
-        SessionService.setMapInteractionState(false);
-      }
-    } else {
-      // End the interaction state if not showing stations
-      SessionService.setMapInteractionState(false);
-    }
-
-    // Cleanup function for this effect
-    return () => {
-      // End the map interaction state during cleanup
-      SessionService.setMapInteractionState(false);
-
-      if (viewRef.current && viewRef.current.pointerMoveHandles) {
-        viewRef.current.pointerMoveHandles.forEach((handle) => {
-          if (handle && typeof handle.remove === 'function') {
-            try {
-              handle.remove();
-            } catch (e) {
-              console.warn('Error removing pointer move handle:', e);
-            }
-          }
-        });
-        viewRef.current.pointerMoveHandles = [];
-      }
-
-      // Clear any existing highlight
-      if (highlightedFeatureRef.current) {
-        try {
-          highlightedFeatureRef.current.remove();
-        } catch (e) {
-          // Silent catch
-        }
-        highlightedFeatureRef.current = null;
-      }
-    };
-  }, [stationPoints, showStations, selectedStationId, isLoaded]);
 
   return (
     <>
@@ -976,7 +941,6 @@ const EsriMap = ({
           pointerEvents: 'none',
         }}
       />
-      {/* Loading spinner overlay */}
       {isLoadingGeometries && (
         <div
           style={{
