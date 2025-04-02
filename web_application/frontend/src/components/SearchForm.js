@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faDrawPolygon, faTimes } from '@fortawesome/free-solid-svg-icons';
+import {
+  faSearch,
+  faDrawPolygon,
+  faTimes,
+  faExclamationTriangle,
+  faMousePointer,
+} from '@fortawesome/free-solid-svg-icons';
 import {
   SearchForm as StyledSearchForm,
   SearchInputGroup,
@@ -9,6 +15,8 @@ import {
   SearchButton,
   SearchResults,
   SearchResultItem,
+  FeedbackMessage,
+  FeedbackIcon,
 } from '../styles/SWATGenX.tsx';
 
 function SearchForm({
@@ -22,6 +30,7 @@ function SearchForm({
   const [searchInput, setSearchInput] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [mapMode, setMapMode] = useState(!!setDrawingMode); // True if map mode is enabled
+  const [searchError, setSearchError] = useState('');
 
   // Update search results when map selections change
   useEffect(() => {
@@ -36,6 +45,7 @@ function SearchForm({
       return;
     }
     setLoading(true);
+    setSearchError('');
 
     try {
       const response = await fetch(`/api/search_site?search_term=${searchInput}`);
@@ -43,11 +53,29 @@ function SearchForm({
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
-      setSearchResults(data.error ? [] : data);
+
+      if (data.error) {
+        setSearchResults([]);
+        setSearchError('No stations found matching your search term');
+      } else {
+        setSearchResults(data);
+        if (data.length === 0) {
+          setSearchError('No stations found matching your search term');
+        }
+      }
     } catch (error) {
       console.error('Error fetching search results:', error);
+      setSearchError(`Error searching for stations: ${error.message}`);
+      setSearchResults([]);
     }
     setLoading(false);
+  };
+
+  // Handle Enter key press in search input
+  const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   // Handle station selection - use provided handler if available
@@ -68,6 +96,7 @@ function SearchForm({
       setStationData(data);
     } catch (error) {
       console.error('Error fetching station details:', error);
+      setSearchError(`Error fetching station details: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -83,17 +112,22 @@ function SearchForm({
   return (
     <StyledSearchForm>
       <SearchInputGroup>
-        <label>Search Site Name:</label>
-        <SearchInputWrapper>
-          <FormInput
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Enter site name"
-          />
-          <SearchButton onClick={handleSearch}>
-            <FontAwesomeIcon icon={faSearch} />
-          </SearchButton>
+        <label>Search or Select Station:</label>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '5px 10px',
+              backgroundColor: '#f0f8ff',
+              borderRadius: '5px',
+              marginRight: '10px',
+            }}
+          >
+            <FontAwesomeIcon icon={faMousePointer} style={{ marginRight: '5px' }} />
+            <span style={{ fontSize: '14px' }}>Click directly on map to select a station</span>
+          </div>
+
           {setDrawingMode && (
             <SearchButton
               onClick={toggleDrawingMode}
@@ -101,13 +135,38 @@ function SearchForm({
                 marginLeft: '5px',
                 backgroundColor: drawingMode ? '#f14668' : '#3273dc',
               }}
-              title={drawingMode ? 'Cancel drawing' : 'Draw polygon to select stations'}
+              title={drawingMode ? 'Cancel drawing' : 'Draw polygon to select multiple stations'}
             >
               <FontAwesomeIcon icon={drawingMode ? faTimes : faDrawPolygon} />
+              <span style={{ marginLeft: '5px', display: 'inline-block' }}>
+                {drawingMode ? 'Cancel' : 'Draw Selection'}
+              </span>
             </SearchButton>
           )}
+        </div>
+
+        <SearchInputWrapper>
+          <FormInput
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyPress={handleSearchKeyPress}
+            placeholder="Enter station name or number"
+          />
+          <SearchButton onClick={handleSearch}>
+            <FontAwesomeIcon icon={faSearch} />
+          </SearchButton>
         </SearchInputWrapper>
       </SearchInputGroup>
+
+      {searchError && (
+        <FeedbackMessage type="error" style={{ margin: '10px 0' }}>
+          <FeedbackIcon>
+            <FontAwesomeIcon icon={faExclamationTriangle} />
+          </FeedbackIcon>
+          <span>{searchError}</span>
+        </FeedbackMessage>
+      )}
 
       {searchResults.length > 0 && (
         <SearchResults>
@@ -115,7 +174,7 @@ function SearchForm({
             {mapMode && drawingMode
               ? 'Drawing mode active. Draw a polygon to select stations.'
               : mapMode
-                ? `${searchResults.length} stations selected. Click one to view details.`
+                ? `${searchResults.length} station${searchResults.length > 1 ? 's' : ''} selected. Click one to view details.`
                 : 'Search results:'}
           </div>
           {searchResults.map((site) => (
@@ -124,15 +183,20 @@ function SearchForm({
               onClick={() => onStationSelect(site.SiteNumber)}
             >
               <strong>{site.SiteName}</strong>
-              <span>(Number: {site.SiteNumber})</span>
+              <span>(ID: {site.SiteNumber})</span>
             </SearchResultItem>
           ))}
         </SearchResults>
       )}
 
-      {mapMode && !searchResults.length && !drawingMode && (
+      {mapMode && !searchResults.length && !drawingMode && !searchError && (
         <div style={{ margin: '15px 0', fontSize: '14px', color: '#666' }}>
-          Use the draw tool to select stations on the map, or search by name above.
+          <p>Select a station by:</p>
+          <ul style={{ paddingLeft: '20px', marginTop: '5px' }}>
+            <li>Clicking directly on the map</li>
+            <li>Using the search box above</li>
+            <li>Using the draw tool to select multiple stations</li>
+          </ul>
         </div>
       )}
     </StyledSearchForm>
