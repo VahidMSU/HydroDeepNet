@@ -17,7 +17,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
 
     # User verification field
-    is_verified = db.Column(db.Boolean, default=True)  # Keep default as True for existing users
+    is_verified = db.Column(db.Boolean, default=False)  # Set default to False to require verification
     verification_code = db.Column(db.String(8), nullable=True)
     
     # Define a class-level flag to track if we have enhanced columns
@@ -114,8 +114,10 @@ class User(db.Model, UserMixin):
 
     def get_verification_token(self, expires_sec=3600):
         """Generate a secure token for email verification."""
-        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-        return s.dumps({'user_id': self.id}, salt='email-verification')
+        # Generate and store a verification code
+        self.verification_code = self.generate_random_code(8)
+        db.session.commit()
+        return self.verification_code
 
     def get_reset_token(self, expires_sec=1800):
         """Generate a secure token for password reset."""
@@ -125,6 +127,13 @@ class User(db.Model, UserMixin):
     @staticmethod
     def verify_token(token, expires_sec=3600, salt='email-verification'):
         """Verify a token and return the user."""
+        # First check if it's a verification code (8 characters)
+        if token and len(token) == 8:
+            user = User.query.filter_by(verification_code=token).first()
+            if user:
+                return user
+                
+        # Fall back to token-based verification for backward compatibility
         s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token, salt=salt, max_age=expires_sec)

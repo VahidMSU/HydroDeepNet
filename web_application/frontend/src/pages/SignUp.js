@@ -28,6 +28,7 @@ const SignUp = () => {
   const [errors, setErrors] = useState({});
   const [flashMessages, setFlashMessages] = useState([]);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const [showUsernameRequirements, setShowUsernameRequirements] = useState(false);
 
   // Password requirements validation
   const passwordRequirements = [
@@ -57,6 +58,18 @@ const SignUp = () => {
     },
   ];
 
+  // Username requirements validation
+  const usernameRequirements = [
+    {
+      label: 'Contains only letters and numbers',
+      valid: /^[a-zA-Z0-9]*$/.test(formData.username),
+    },
+    {
+      label: 'Username is not empty',
+      valid: formData.username.length > 0,
+    },
+  ];
+
   const handleChange = ({ target: { name, value } }) => {
     setFormData((prev) => ({
       ...prev,
@@ -67,6 +80,11 @@ const SignUp = () => {
     if (name === 'password' && !showPasswordRequirements) {
       setShowPasswordRequirements(true);
     }
+
+    // Show username requirements when user starts typing in username field
+    if (name === 'username' && !showUsernameRequirements) {
+      setShowUsernameRequirements(true);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -74,9 +92,14 @@ const SignUp = () => {
     setErrors({});
 
     const newErrors = {};
+
+    // Validate username
     if (!formData.username) {
       newErrors.username = 'Username is required';
+    } else if (!/^[a-zA-Z0-9]+$/.test(formData.username)) {
+      newErrors.username = 'Username must contain only letters and numbers';
     }
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     }
@@ -166,7 +189,8 @@ const SignUp = () => {
               value={formData.username}
               onChange={handleChange}
               error={Boolean(errors.username)}
-              helperText={errors.username}
+              helperText={errors.username || 'Username can only contain letters and numbers'}
+              onFocus={() => setShowUsernameRequirements(true)}
               sx={{
                 bgcolor: 'white',
                 borderRadius: 1,
@@ -182,6 +206,49 @@ const SignUp = () => {
                 },
               }}
             />
+
+            {showUsernameRequirements && (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1,
+                  mt: 1,
+                  mb: 2,
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 1,
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ color: 'white', mb: 1 }}>
+                  Username requirements:
+                </Typography>
+                <List dense disablePadding>
+                  {usernameRequirements.map((requirement, index) => (
+                    <ListItem key={index} dense disablePadding sx={{ py: 0.5 }}>
+                      <ListItemIcon sx={{ minWidth: 30 }}>
+                        {requirement.valid ? (
+                          <CheckCircleOutlineIcon color="success" fontSize="small" />
+                        ) : (
+                          <CancelOutlinedIcon color="error" fontSize="small" />
+                        )}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: requirement.valid ? '#4caf50' : '#f44336',
+                            }}
+                          >
+                            {requirement.label}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            )}
+
             <TextField
               fullWidth
               label="Email"
