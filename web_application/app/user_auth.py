@@ -4,7 +4,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from app.models import ContactMessage, User
 from app.extensions import db, csrf
 from app.decorators import conditional_login_required, conditional_verified_required
-from app.utils import send_verification_email
+from app.comm_utils import send_verification_email
 from app.sftp_manager import create_sftp_user, delete_sftp_user
 import os
 import tempfile
@@ -64,33 +64,46 @@ def logout():
     return jsonify({"status": "success", "message": "Logged out successfully"})
 
 @user_auth_bp.route('/api/signup', methods=['POST'])
+@csrf.exempt
 def signup():
     """Signup route."""
     current_app.logger.info("Signup attempt received")
     try:
         data = request.get_json()
+        if not data:
+            current_app.logger.warning("Signup failed: no data provided")
+            return jsonify({"status": "error", "message": "No data provided"}), 400
+            
         username = data.get('username', '').strip()
         email = data.get('email', '').strip()
+        password = data.get('password')
         
         # Don't log or store password in variables
-        if not username or not email or 'password' not in data:
+        if not username or not email or not password:
             current_app.logger.warning("Signup failed: missing required fields")
-            return jsonify({"status": "error", "message": "All fields are required"}), 400
+            return jsonify({"status": "error", "message": "Username, email and password are required"}), 400
+            
+        # Validate username format - only allow letters and numbers
+        import re
+        if not re.match(r'^[a-zA-Z0-9]+$', username):
+            current_app.logger.warning(f"Signup failed: invalid username format: {username}")
+            return jsonify({"status": "error", "message": "Username must contain only letters and numbers"}), 400
             
         # Check if username or email already exists
         if User.query.filter_by(username=username).first():
             current_app.logger.warning(f"Signup failed: username '{username}' already exists")
-            return jsonify({"status": "error", "message": "Username already exists"}), 400
+            return jsonify({"status": "error", "message": f"Username '{username}' is already taken"}), 400
             
         if User.query.filter_by(email=email).first():
             current_app.logger.warning(f"Signup failed: email '{email}' already exists")
-            return jsonify({"status": "error", "message": "Email already exists"}), 400
+            return jsonify({"status": "error", "message": f"Email '{email}' is already registered"}), 400
         
         # Create new user directly with password from request data
         user = User(username=username, email=email)
-        user.set_password(data.get('password', ''))
+        user.set_password(password)
         
         # Clear password from memory immediately
+        password = None
         data['password'] = None
         
         # Generate verification token
@@ -118,7 +131,7 @@ def signup():
         if sftp_result.get('success'):
             current_app.logger.info(f"SFTP account created for user '{username}'")
         else:
-            current_app.logger.warning(f"Failed to create SFTP account: {sftp_result.get('message')}")
+            current_app.logger.warning(f"Failed to create SFTP account for user '{username}': {sftp_result.get('message')}")
         
         return jsonify({
             "status": "success", 
@@ -137,17 +150,32 @@ def verify():
     try:
         data = request.get_json()
         token = data.get('token', '')
+        verification_code = data.get('verification_code', '')
+        email = data.get('email', '')
         
-        if not token:
-            current_app.logger.warning("Verification failed: missing token")
-            return jsonify({"status": "error", "message": "Verification token is required"}), 400
+        if not token and not verification_code:
+            current_app.logger.warning("Verification failed: no token or code provided")
+            return jsonify({"status": "error", "message": "Verification token or code is required"}), 400
         
-        user = User.verify_token(token)
+        # First try to find a user by verification code if provided
+        user = None
+        if verification_code:
+            user = User.query.filter_by(verification_code=verification_code).first()
+            if email:
+                # If email is provided, make sure it matches
+                if user and user.email != email:
+                    user = None
+                    
+        # Fall back to token verification if no user found by code
+        if not user and token:
+            user = User.verify_token(token)
+        
         if not user:
-            current_app.logger.warning(f"Verification failed: invalid token '{token[:10]}...'")
-            return jsonify({"status": "error", "message": "Invalid or expired verification token"}), 400
+            current_app.logger.warning("Verification failed: invalid or expired token/code")
+            return jsonify({"status": "error", "message": "Invalid or expired verification token/code"}), 400
         
         user.is_verified = True
+        user.verification_code = None  # Clear the verification code after use
         db.session.commit()
         current_app.logger.info(f"User '{user.username}' verified successfully")
         

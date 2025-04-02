@@ -10,13 +10,13 @@ from flask import current_app
 logger = logging.getLogger(__name__)
 
 # Email functionality (from emailex.py)
-def send_verification_email(user, verification_token):
+def send_verification_email(user, verification_code):
     """
-    Sends a verification email with a unique token to the specified user.
+    Sends a verification email with a verification code to the specified user.
 
     Args:
         user: User object containing email and username
-        verification_token: The token for email verification
+        verification_code: The code for email verification
 
     Returns:
         bool: True if email sent successfully, False otherwise
@@ -29,14 +29,16 @@ def send_verification_email(user, verification_token):
         # Create the email content
         subject = "Verify Your Account - SWATGenX Application"
         
-        # Create a more professional verification email
+        # Create a more professional verification email with code
         body = f"""
 Hello {user.username},
 
 Thank you for registering an account with SWATGenX Application. 
-Please verify your email address by clicking on the link below:
+To verify your email address, please use the following verification code:
 
-{current_app.config.get('SITE_URL', 'http://localhost:3000')}/verify?token={verification_token}
+{verification_code}
+
+Enter this code on the verification page to complete your registration.
 
 If you did not register for this account, please ignore this email.
 
