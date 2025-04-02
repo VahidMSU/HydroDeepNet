@@ -15,7 +15,6 @@ import {
   faMousePointer,
   faSpinner,
   faListUl,
-  faStream,
 } from '@fortawesome/free-solid-svg-icons';
 import ModelSettingsForm from '../forms/SWATGenX.js';
 import EsriMap from '../EsriMap.js';
@@ -45,149 +44,45 @@ import {
   StepCircle,
   StepText,
   StepConnector,
+  MapControlsContainer,
+  MapControlButton,
+  LoadingOverlay,
+  LoadingIcon,
 } from '../../styles/SWATGenX.tsx';
 
-// New styled components for improved map selection UI
-import styled from 'styled-components';
+// Create a caching function for station geometries
+const geometriesCache = {
+  data: null,
+  timestamp: null,
+  // Cache expiration in milliseconds (30 minutes)
+  expirationTime: 30 * 60 * 1000,
 
-const MapControlsContainer = styled.div`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
+  set: function (data) {
+    this.data = data;
+    this.timestamp = Date.now();
+  },
 
-const MapControlButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
+  get: function () {
+    if (!this.data || !this.timestamp) return null;
 
-  &:hover {
-    background: #f0f0f0;
-  }
-
-  &.active {
-    background: #007bff;
-    color: white;
-  }
-`;
-
-const StationSelectionPanel = styled.div`
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  z-index: 10;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  width: 300px;
-  max-height: 300px;
-  overflow: hidden;
-  display: ${(props) => (props.visible ? 'flex' : 'none')};
-  flex-direction: column;
-`;
-
-const StationSelectionHeader = styled.div`
-  padding: 12px 16px;
-  background: #f5f5f5;
-  border-bottom: 1px solid #ddd;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const StationList = styled.div`
-  overflow-y: auto;
-  max-height: 250px;
-  padding: 0;
-`;
-
-const StationItem = styled.div`
-  padding: 10px 16px;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  &:hover {
-    background: #f8f9fa;
-  }
-
-  &.selected {
-    background: #e6f3ff;
-  }
-`;
-
-const StationName = styled.span`
-  font-size: 14px;
-  flex: 1;
-`;
-
-const StationId = styled.span`
-  font-size: 12px;
-  color: #666;
-  margin-left: 8px;
-`;
-
-const SelectButton = styled.button`
-  margin-left: 8px;
-  padding: 4px 8px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-
-  &:hover {
-    background: #0069d9;
-  }
-`;
-
-const LoadingOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.7);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  font-size: 16px;
-  color: #333;
-`;
-
-const LoadingIcon = styled.div`
-  margin-bottom: 12px;
-  font-size: 24px;
-  animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
+    // Check if the cache is expired
+    if (Date.now() - this.timestamp > this.expirationTime) {
+      console.log('Station geometries cache expired');
+      return null;
     }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
+
+    return this.data;
+  },
+
+  isValid: function () {
+    return this.get() !== null;
+  },
+
+  clear: function () {
+    this.data = null;
+    this.timestamp = null;
+  },
+};
 
 const SWATGenXTemplate = () => {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
@@ -203,8 +98,6 @@ const SWATGenXTemplate = () => {
   const [loading, setLoading] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackType, setFeedbackType] = useState(''); // 'success' | 'error'
-
-  // Map-based selection state
   const [selectionTab, setSelectionTab] = useState('search'); // 'search' | 'map'
   const [stationPoints, setStationPoints] = useState([]);
   const [mapSelectionLoading, setMapSelectionLoading] = useState(false);
@@ -222,7 +115,14 @@ const SWATGenXTemplate = () => {
   // Fetch station geometries for map-based selection
   useEffect(() => {
     if (selectionTab === 'map' && stationPoints.length === 0 && !mapSelectionLoading) {
-      fetchStationGeometries();
+      // Check if we have valid cached data first
+      if (geometriesCache.isValid()) {
+        console.log('Using cached station geometries');
+        setStationPoints(geometriesCache.get());
+      } else {
+        // If no valid cache, fetch from server
+        fetchStationGeometries();
+      }
     }
   }, [selectionTab, stationPoints.length, mapSelectionLoading]);
 
@@ -236,12 +136,19 @@ const SWATGenXTemplate = () => {
   const fetchStationGeometries = async () => {
     setMapSelectionLoading(true);
     try {
+      console.log('Fetching station geometries from server');
       const response = await fetch('/api/get_station_geometries');
       if (!response.ok) {
         throw new Error('Failed to fetch station geometries');
       }
       const data = await response.json();
-      setStationPoints(data.features || []);
+      const features = data.features || [];
+
+      // Store in cache
+      geometriesCache.set(features);
+
+      // Update state
+      setStationPoints(features);
     } catch (error) {
       console.error('Error fetching station geometries:', error);
       setFeedbackMessage('Failed to load stations on map: ' + error.message);
@@ -374,18 +281,20 @@ const SWATGenXTemplate = () => {
     }
   };
 
-  // Select a specific station from the station panel
-  const selectStationFromPanel = (station) => {
-    handleStationSelect(station.SiteNumber);
-    setSelectedStationOnMap({
-      SiteNumber: station.SiteNumber,
-      SiteName: station.SiteName,
-    });
-  };
 
   // Toggle station selection panel visibility
   const toggleStationPanel = () => {
     setShowStationPanel(!showStationPanel);
+  };
+
+  // Force refresh of station geometries
+  const refreshStationGeometries = () => {
+    // Clear the cache
+    geometriesCache.clear();
+    // Reset the current points to trigger a fresh fetch
+    setStationPoints([]);
+    // Fetch new data
+    fetchStationGeometries();
   };
 
   return (
@@ -536,36 +445,18 @@ const SWATGenXTemplate = () => {
                   >
                     <FontAwesomeIcon icon={faListUl} />
                   </MapControlButton>
+                  {/* Add a refresh button to force reload station geometries */}
+                  <MapControlButton
+                    title="Refresh station data"
+                    onClick={refreshStationGeometries}
+                    disabled={mapSelectionLoading}
+                  >
+                    <FontAwesomeIcon
+                      icon={mapSelectionLoading ? faSpinner : 'fa-sync-alt'}
+                      className={mapSelectionLoading ? 'fa-spin' : ''}
+                    />
+                  </MapControlButton>
                 </MapControlsContainer>
-
-                {/* Station selection panel */}
-                <StationSelectionPanel
-                  visible={showStationPanel && mapSelections.length > 0 ? 'true' : undefined}
-                >
-                  <StationSelectionHeader>
-                    <span>
-                      <FontAwesomeIcon icon={faStream} /> Stream Gauge Station
-                    </span>
-                    <span>{mapSelections.length > 0 ? 'Selected' : 'None'}</span>
-                  </StationSelectionHeader>
-                  <StationList>
-                    {mapSelections.map((station, index) => (
-                      <StationItem
-                        key={station.SiteNumber}
-                        className={
-                          selectedStationOnMap?.SiteNumber === station.SiteNumber ? 'selected' : ''
-                        }
-                      >
-                        <StationName>{station.SiteName || `Station ${index + 1}`}</StationName>
-                        <StationId>{station.SiteNumber}</StationId>
-                        <SelectButton onClick={() => selectStationFromPanel(station)}>
-                          Select
-                        </SelectButton>
-                      </StationItem>
-                    ))}
-                  </StationList>
-                </StationSelectionPanel>
-
                 {/* Loading overlay for stations */}
                 {mapSelectionLoading && (
                   <LoadingOverlay>

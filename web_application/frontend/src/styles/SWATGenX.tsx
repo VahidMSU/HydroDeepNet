@@ -2,8 +2,99 @@
 import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
 
+
+
+export const MapControlsContainer = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const MapControlButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  &:hover {
+    background: #f0f0f0;
+  }
+
+  &.active {
+    background: #007bff;
+    color: white;
+  }
+`;
+
+
+
+export const StationId = styled.span`
+  font-size: 12px;
+  color: #666;
+  margin-left: 8px;
+`;
+
+export const SelectButton = styled.button`
+  margin-left: 8px;
+  padding: 4px 8px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: #0069d9;
+  }
+`;
+
+export const LoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  font-size: 16px;
+  color: #333;
+`;
+
+export const LoadingIcon = styled.div`
+  margin-bottom: 12px;
+  font-size: 24px;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+
 // Animations
-const fadeIn = keyframes`
+export const fadeIn = keyframes`
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -14,7 +105,7 @@ const fadeIn = keyframes`
   }
 `;
 
-const slideDown = keyframes`
+export const slideDown = keyframes`
   from {
     opacity: 0;
     transform: translateY(-10px);
@@ -27,7 +118,7 @@ const slideDown = keyframes`
   }
 `;
 
-const spin = keyframes`
+export const spin = keyframes`
   0% {
     transform: rotate(0deg);
   }
