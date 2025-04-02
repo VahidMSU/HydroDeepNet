@@ -40,13 +40,13 @@ class ModelConfig:
     range_reduction_flag: bool = False
     
     # Sensitivity analysis parameters
-    sen_total_evaluations: int = 100
-    sen_pool_size: int = 10
+    sen_total_evaluations: int = 1000
+    sen_pool_size: int = 100
     num_levels: int = 4
     
     # Calibration parameters
     cal_pool_size: int = 24
-    max_cal_iterations: int = 10
+    max_cal_iterations: int = 100
     termination_tolerance: int = 10
     epsilon: float = 0.01
     verification_samples: int = 5

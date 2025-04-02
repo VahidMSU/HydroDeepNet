@@ -77,8 +77,8 @@ class SensitivityAnalysis:
                     process = Process(target=self.model_evaluation_wrapper, args=(results, point))
                     process.start()
                     active_processes.append(process)
-                    while not is_cpu_usage_low():
-                        time.sleep(1)
+           #        while not is_cpu_usage_low():
+            #            time.sleep(1)
                     n_evaluated += 1
                     message = f'{self.config.MODEL_NAME}:{self.config.NAME}:{self.config.VPUID} Sensitivity iteration, number of evaluations {n_evaluated}'
                     logger.error(message)
