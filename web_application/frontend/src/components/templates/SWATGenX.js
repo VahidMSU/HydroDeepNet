@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faGears,
@@ -10,16 +10,18 @@ import {
   faExclamationTriangle,
   faMapMarkedAlt,
   faLayerGroup,
-  faSearch,
-  faLocationDot,
+  faArrowRight,
+  faArrowLeft,
+  faPlay,
   faMousePointer,
   faSpinner,
   faListUl,
+  faRuler,
 } from '@fortawesome/free-solid-svg-icons';
-import ModelSettingsForm from '../forms/SWATGenX.js';
 import EsriMap from '../EsriMap.js';
 import SearchForm from '../SearchForm';
 import MapLoadingDebugger from '../debug/MapLoadingDebugger';
+import StationDetails from '../StationDetails';
 import {
   Container,
   Header,
@@ -38,9 +40,6 @@ import {
   MapInnerContainer,
   FeedbackMessage,
   FeedbackIcon,
-  TabContainer,
-  TabButton,
-  TabIcon,
   StepIndicator,
   StepCircle,
   StepText,
@@ -49,17 +48,19 @@ import {
   MapControlButton,
   LoadingOverlay,
   LoadingIcon,
+  NavigationButtons,
+  SubmitButton,
+  ButtonIcon,
+  LoadingSpinner,
+  FormInput,
 } from '../../styles/SWATGenX.tsx';
 
 // Modify the geometriesCache to be more persistent
 const geometriesCache = {
   data: null,
   timestamp: null,
-  // Cache expiration in milliseconds (30 minutes)
   expirationTime: 30 * 60 * 1000,
-  // Track loading state
   isLoading: false,
-  // Add error tracking
   error: null,
 
   set: function (data) {
@@ -67,7 +68,6 @@ const geometriesCache = {
     this.timestamp = Date.now();
     this.isLoading = false;
     this.error = null;
-    // Store in sessionStorage for persistence across page navigations
     try {
       sessionStorage.setItem(
         'stationGeometriesCache',
@@ -83,18 +83,15 @@ const geometriesCache = {
   },
 
   get: function () {
-    // First check local variable
     if (this.data && this.timestamp && Date.now() - this.timestamp <= this.expirationTime) {
       return this.data;
     }
 
-    // If not in local variable, try sessionStorage
     try {
       const cachedData = sessionStorage.getItem('stationGeometriesCache');
       if (cachedData) {
         const parsed = JSON.parse(cachedData);
         if (parsed.timestamp && Date.now() - parsed.timestamp <= this.expirationTime) {
-          // Update local state
           this.data = parsed.data;
           this.timestamp = parsed.timestamp;
           console.log(`Using ${parsed.data.length} station geometries from sessionStorage`);
@@ -132,7 +129,6 @@ const geometriesCache = {
 const SWATGenXTemplate = () => {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1); // Step 1: Station Selection, Step 2: Resolution & Analysis
-  const [stationList] = useState([]);
   const [stationInput, setStationInput] = useState('');
   const [stationData, setStationData] = useState(null);
   const [lsResolution, setLsResolution] = useState('250');
@@ -143,7 +139,6 @@ const SWATGenXTemplate = () => {
   const [loading, setLoading] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackType, setFeedbackType] = useState(''); // 'success' | 'error'
-  const [selectionTab, setSelectionTab] = useState('search'); // 'search' | 'map'
   const [stationPoints, setStationPoints] = useState([]);
   const [mapSelectionLoading, setMapSelectionLoading] = useState(false);
   const [selectedStationOnMap, setSelectedStationOnMap] = useState(null);
@@ -151,118 +146,11 @@ const SWATGenXTemplate = () => {
   const [showStationPanel, setShowStationPanel] = useState(false);
   const [geometriesPreloaded, setGeometriesPreloaded] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
-  const [stationTabHistory, setStationTabHistory] = useState('search');
+  const [drawingMode, setDrawingMode] = useState(false);
   const previousStationDataRef = useRef(null);
 
-  // Add keyboard shortcut to toggle the debugger (Ctrl+Shift+D)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-        e.preventDefault();
-        setShowDebugger((prev) => !prev);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  // Initialize from cache on first load
-  useEffect(() => {
-    // Try to load station geometries from cache on component mount
-    const cachedGeometries = geometriesCache.get();
-    if (cachedGeometries) {
-      console.log('Initialized station geometries from persistent cache');
-      setGeometriesPreloaded(true);
-
-      // Only set station points if we're on map tab
-      if (selectionTab === 'map') {
-        setStationPoints(cachedGeometries);
-      }
-    } else {
-      // If no cache, preload
-      console.log('No cached geometries found, will preload');
-    }
-  }, []);
-
-  // Preload station geometries on component mount regardless of tab
-  useEffect(() => {
-    const preloadStationGeometries = async () => {
-      if (geometriesCache.isValid() || geometriesCache.isLoading) {
-        if (geometriesCache.isValid()) {
-          console.log('Using preloaded cached station geometries');
-          setGeometriesPreloaded(true);
-        }
-        return;
-      }
-
-      geometriesCache.setLoading(true);
-      try {
-        console.log('Preloading station geometries from server');
-        setMapSelectionLoading(true);
-
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
-          headers: {
-            'Cache-Control': 'no-cache',
-            Pragma: 'no-cache',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch station geometries: ${response.status} ${response.statusText}`,
-          );
-        }
-
-        const data = await response.json();
-        const features = data.features || [];
-
-        console.log(`Successfully preloaded ${features.length} station geometries`);
-
-        geometriesCache.set(features);
-        setGeometriesPreloaded(true);
-
-        if (selectionTab === 'map') {
-          setStationPoints(features);
-        }
-      } catch (error) {
-        console.error('Error preloading station geometries:', error);
-        geometriesCache.setError(error);
-        if (selectionTab === 'map') {
-          setFeedbackMessage('Failed to load stations on map: ' + error.message);
-          setFeedbackType('error');
-        }
-      } finally {
-        setMapSelectionLoading(false);
-      }
-    };
-
-    preloadStationGeometries();
-  }, []);
-
-  useEffect(() => {
-    if (selectionTab === 'map' && stationPoints.length === 0) {
-      if (geometriesCache.isValid()) {
-        console.log('Using cached station geometries for map tab');
-        setStationPoints(geometriesCache.get());
-      } else if (!mapSelectionLoading && !geometriesCache.isLoading) {
-        fetchStationGeometries();
-      }
-    }
-  }, [selectionTab, stationPoints.length, mapSelectionLoading, geometriesPreloaded]);
-
-  // Preserve station data between tab switches
-  useEffect(() => {
-    if (stationData) {
-      previousStationDataRef.current = stationData;
-    }
-  }, [stationData]);
-
-  const fetchStationGeometries = async () => {
+  // Define fetchStationGeometries using useCallback so it can be included in dependency arrays
+  const fetchStationGeometries = useCallback(async () => {
     if (mapSelectionLoading || geometriesCache.isLoading) return;
 
     setMapSelectionLoading(true);
@@ -310,7 +198,95 @@ const SWATGenXTemplate = () => {
     } finally {
       setMapSelectionLoading(false);
     }
-  };
+  }, [mapSelectionLoading, feedbackType, feedbackMessage]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        setShowDebugger((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    const cachedGeometries = geometriesCache.get();
+    if (cachedGeometries) {
+      console.log('Initialized station geometries from persistent cache');
+      setGeometriesPreloaded(true);
+      setStationPoints(cachedGeometries);
+    } else {
+      console.log('No cached geometries found, will preload');
+    }
+  }, []);
+
+  useEffect(() => {
+    const preloadStationGeometries = async () => {
+      if (geometriesCache.isValid() || geometriesCache.isLoading) {
+        if (geometriesCache.isValid()) {
+          console.log('Using preloaded cached station geometries');
+          setGeometriesPreloaded(true);
+        }
+        return;
+      }
+
+      geometriesCache.setLoading(true);
+      try {
+        console.log('Preloading station geometries from server');
+        setMapSelectionLoading(true);
+
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch station geometries: ${response.status} ${response.statusText}`,
+          );
+        }
+
+        const data = await response.json();
+        const features = data.features || [];
+
+        console.log(`Successfully preloaded ${features.length} station geometries`);
+
+        geometriesCache.set(features);
+        setGeometriesPreloaded(true);
+        setStationPoints(features);
+      } catch (error) {
+        console.error('Error preloading station geometries:', error);
+        geometriesCache.setError(error);
+        setFeedbackMessage('Failed to load stations on map: ' + error.message);
+        setFeedbackType('error');
+      } finally {
+        setMapSelectionLoading(false);
+      }
+    };
+
+    preloadStationGeometries();
+  }, []);
+
+  useEffect(() => {
+    if (stationPoints.length === 0 && !mapSelectionLoading && !geometriesCache.isLoading) {
+      fetchStationGeometries();
+    }
+  }, [stationPoints.length, mapSelectionLoading, geometriesPreloaded, fetchStationGeometries]);
+
+  useEffect(() => {
+    if (stationData) {
+      previousStationDataRef.current = stationData;
+    }
+  }, [stationData]);
 
   const handleNextStep = () => {
     if (!stationInput.trim() && !stationData) {
@@ -346,15 +322,12 @@ const SWATGenXTemplate = () => {
     await handleStationSelect(stationAttributes.SiteNumber);
   };
 
-  // Enhanced version of handleStationSelect to better handle caching and reselection
   const handleStationSelect = async (stationNumber) => {
-    // If we're selecting the same station that's already loaded, don't reload
     if (stationData && stationData.SiteNumber === stationNumber && stationData.geometries) {
       console.log(`Station ${stationNumber} already loaded, skipping fetch`);
       return;
     }
 
-    // Same for previously loaded station if switching back from map view
     if (
       previousStationDataRef.current &&
       previousStationDataRef.current.SiteNumber === stationNumber
@@ -439,35 +412,6 @@ const SWATGenXTemplate = () => {
     }
   };
 
-  // Modified handleTabChange to avoid clearing station selection when switching tabs
-  const handleTabChange = (tab) => {
-    console.log(`Changing tab from ${selectionTab} to ${tab}`);
-
-    // Keep track of tab history
-    setStationTabHistory(selectionTab);
-
-    // If switching to map tab, prepare the data
-    if (tab === 'map' && selectionTab !== 'map') {
-      if (geometriesCache.isValid()) {
-        console.log('Using cached geometries for tab change');
-        setStationPoints(geometriesCache.get());
-      } else if (!mapSelectionLoading) {
-        console.log('Need to fetch geometries for tab change');
-      }
-    }
-
-    setSelectionTab(tab);
-
-    // Don't reset selection when going back to search
-    if (tab === 'search') {
-      // Only hide the station panel, but keep the selection
-      setShowStationPanel(false);
-
-      // Don't clear mapSelections anymore
-      // setMapSelections([]);
-    }
-  };
-
   const toggleStationPanel = () => {
     setShowStationPanel(!showStationPanel);
   };
@@ -479,7 +423,14 @@ const SWATGenXTemplate = () => {
     fetchStationGeometries();
   };
 
-  // Fix for issue #1: Add a reset function for when we want to select a new station
+  const handleMultipleStationsSelect = (stations) => {
+    console.log('Multiple stations selected:', stations);
+    if (stations && stations.length > 0) {
+      setMapSelections(stations);
+      handleStationSelect(stations[0].SiteNumber);
+    }
+  };
+
   const resetStationSelection = () => {
     console.log('Resetting station selection to allow selecting a new station');
     setSelectedStationOnMap(null);
@@ -490,7 +441,6 @@ const SWATGenXTemplate = () => {
     previousStationDataRef.current = null;
   };
 
-  // Add a reset button to the UI
   const renderResetButton = () => {
     if (stationData || selectedStationOnMap) {
       return (
@@ -513,6 +463,174 @@ const SWATGenXTemplate = () => {
       );
     }
     return null;
+  };
+
+  const renderModelSettingsContent = () => {
+    if (currentStep === 1) {
+      return (
+        <>
+          <SearchForm
+            setStationData={setStationData}
+            setLoading={setLoading}
+            mapSelections={mapSelections}
+            setDrawingMode={setDrawingMode}
+            drawingMode={drawingMode}
+            handleStationSelect={handleStationSelect}
+          />
+
+          {renderResetButton()}
+
+          {stationData && <StationDetails stationData={stationData} />}
+
+          <NavigationButtons>
+            <SubmitButton
+              type="button"
+              onClick={handleNextStep}
+              isLoading={loading}
+              disabled={loading || (!stationData && !stationInput)}
+            >
+              <ButtonIcon>
+                <FontAwesomeIcon icon={faArrowRight} />
+              </ButtonIcon>
+              Next: Configure Model
+            </SubmitButton>
+          </NavigationButtons>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <div style={{ margin: '10px 0 20px 0', fontSize: '15px' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Selected Station:</div>
+            <div style={{ padding: '5px 10px', backgroundColor: '#f0f8ff', borderRadius: '5px' }}>
+              {stationData ? (
+                <>
+                  <div>
+                    <strong>{stationData.SiteName}</strong>
+                  </div>
+                  <div>Station ID: {stationData.SiteNumber}</div>
+                </>
+              ) : (
+                <div>Station ID: {stationInput}</div>
+              )}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+              <FontAwesomeIcon icon={faRuler} style={{ marginRight: '8px' }} />
+              Resolution Settings
+            </div>
+
+            <div style={{ margin: '10px 0' }}>
+              <label htmlFor="ls-resolution" style={{ display: 'block', marginBottom: '5px' }}>
+                Landuse/Soil Resolution:
+              </label>
+              <FormInput
+                id="ls-resolution"
+                type="text"
+                value={lsResolution}
+                onChange={(e) => setLsResolution(e.target.value)}
+                placeholder="Enter resolution (e.g., 250)"
+              />
+            </div>
+
+            <div style={{ margin: '10px 0' }}>
+              <label htmlFor="dem-resolution" style={{ display: 'block', marginBottom: '5px' }}>
+                DEM Resolution:
+              </label>
+              <FormInput
+                id="dem-resolution"
+                type="text"
+                value={demResolution}
+                onChange={(e) => setDemResolution(e.target.value)}
+                placeholder="Enter resolution (e.g., 30)"
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+              <FontAwesomeIcon icon={faLayerGroup} style={{ marginRight: '8px' }} />
+              Analysis Options
+            </div>
+
+            <div style={{ margin: '10px 0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={calibrationFlag}
+                  onChange={(e) => setCalibrationFlag(e.target.checked)}
+                  style={{ marginRight: '8px' }}
+                />
+                Calibration
+              </label>
+            </div>
+
+            <div style={{ margin: '10px 0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={sensitivityFlag}
+                  onChange={(e) => setSensitivityFlag(e.target.checked)}
+                  style={{ marginRight: '8px' }}
+                />
+                Sensitivity Analysis
+              </label>
+            </div>
+
+            <div style={{ margin: '10px 0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={validationFlag}
+                  onChange={(e) => setValidationFlag(e.target.checked)}
+                  style={{ marginRight: '8px' }}
+                />
+                Validation
+              </label>
+            </div>
+          </div>
+
+          <NavigationButtons style={{ marginBottom: '30px', paddingBottom: '20px' }}>
+            <SubmitButton
+              type="button"
+              onClick={handlePreviousStep}
+              isLoading={false}
+              secondary
+              style={{ maxWidth: '48%' }}
+            >
+              <ButtonIcon>
+                <FontAwesomeIcon icon={faArrowLeft} />
+              </ButtonIcon>
+              Back
+            </SubmitButton>
+
+            <SubmitButton
+              type="button"
+              onClick={handleSubmit}
+              isLoading={loading}
+              disabled={loading}
+              style={{ maxWidth: '48%' }}
+            >
+              {loading ? (
+                <>
+                  <LoadingSpinner />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <ButtonIcon>
+                    <FontAwesomeIcon icon={faPlay} />
+                  </ButtonIcon>
+                  Run Model
+                </>
+              )}
+            </SubmitButton>
+          </NavigationButtons>
+        </>
+      );
+    }
   };
 
   return (
@@ -568,76 +686,19 @@ const SWATGenXTemplate = () => {
             </PanelHeader>
 
             <ConfigPanelContent>
-              {currentStep === 1 && (
-                <>
-                  <TabContainer>
-                    <TabButton
-                      active={selectionTab === 'search'}
-                      onClick={() => handleTabChange('search')}
-                    >
-                      <TabIcon>
-                        <FontAwesomeIcon icon={faSearch} />
-                      </TabIcon>
-                      Search
-                    </TabButton>
-                    <TabButton
-                      active={selectionTab === 'map'}
-                      onClick={() => handleTabChange('map')}
-                    >
-                      <TabIcon>
-                        <FontAwesomeIcon icon={faLocationDot} />
-                      </TabIcon>
-                      Map Select
-                    </TabButton>
-                  </TabContainer>
-
-                  {/* Add the reset button here */}
-                  {renderResetButton()}
-                </>
-              )}
-
               <StepIndicator>
                 <StepCircle active={currentStep === 1} completed={currentStep > 1}>
                   <FontAwesomeIcon icon={faMapMarkedAlt} />
                 </StepCircle>
+                <StepText>Select Station</StepText>
                 <StepConnector completed={currentStep > 1} />
                 <StepCircle active={currentStep === 2} completed={currentStep > 2}>
                   <FontAwesomeIcon icon={faLayerGroup} />
                 </StepCircle>
+                <StepText>Configure Model</StepText>
               </StepIndicator>
 
-              {currentStep === 1 && selectionTab === 'map' ? (
-                <SearchForm
-                  setStationData={setStationData}
-                  setLoading={setLoading}
-                  mapSelections={mapSelections}
-                  handleStationSelect={handleStationSelect}
-                />
-              ) : (
-                <ModelSettingsForm
-                  currentStep={currentStep}
-                  stationList={stationList}
-                  stationInput={stationInput}
-                  setStationInput={setStationInput}
-                  stationData={stationData}
-                  setStationData={setStationData}
-                  lsResolution={lsResolution}
-                  setLsResolution={setLsResolution}
-                  demResolution={demResolution}
-                  setDemResolution={setDemResolution}
-                  calibrationFlag={calibrationFlag}
-                  setCalibrationFlag={setCalibrationFlag}
-                  sensitivityFlag={sensitivityFlag}
-                  setSensitivityFlag={setSensitivityFlag}
-                  validationFlag={validationFlag}
-                  setValidationFlag={setValidationFlag}
-                  handleNextStep={handleNextStep}
-                  handlePreviousStep={handlePreviousStep}
-                  handleSubmit={handleSubmit}
-                  loading={loading}
-                  setLoading={setLoading}
-                />
-              )}
+              {renderModelSettingsContent()}
 
               {feedbackMessage && (
                 <FeedbackMessage type={feedbackType}>
@@ -655,39 +716,36 @@ const SWATGenXTemplate = () => {
 
         <MapContainer>
           <MapInnerContainer>
-            {selectionTab === 'map' && (
-              <>
-                <MapControlsContainer>
-                  <MapControlButton title="Station selection tool" className="active">
-                    <FontAwesomeIcon icon={faMousePointer} />
-                  </MapControlButton>
-                  <MapControlButton
-                    title={showStationPanel ? 'Hide station list' : 'Show station list'}
-                    onClick={toggleStationPanel}
-                    className={showStationPanel ? 'active' : ''}
-                  >
-                    <FontAwesomeIcon icon={faListUl} />
-                  </MapControlButton>
-                  <MapControlButton
-                    title="Refresh station data"
-                    onClick={refreshStationGeometries}
-                    disabled={mapSelectionLoading}
-                  >
-                    <FontAwesomeIcon
-                      icon={mapSelectionLoading ? faSpinner : 'fa-sync-alt'}
-                      className={mapSelectionLoading ? 'fa-spin' : ''}
-                    />
-                  </MapControlButton>
-                </MapControlsContainer>
-                {mapSelectionLoading && (
-                  <LoadingOverlay>
-                    <LoadingIcon>
-                      <FontAwesomeIcon icon={faSpinner} />
-                    </LoadingIcon>
-                    <span>Loading stream gauge stations...</span>
-                  </LoadingOverlay>
-                )}
-              </>
+            <MapControlsContainer>
+              <MapControlButton title="Station selection tool" className="active">
+                <FontAwesomeIcon icon={faMousePointer} />
+              </MapControlButton>
+              <MapControlButton
+                title={showStationPanel ? 'Hide station list' : 'Show station list'}
+                onClick={toggleStationPanel}
+                className={showStationPanel ? 'active' : ''}
+              >
+                <FontAwesomeIcon icon={faListUl} />
+              </MapControlButton>
+              <MapControlButton
+                title="Refresh station data"
+                onClick={refreshStationGeometries}
+                disabled={mapSelectionLoading}
+              >
+                <FontAwesomeIcon
+                  icon={mapSelectionLoading ? faSpinner : 'fa-sync-alt'}
+                  className={mapSelectionLoading ? 'fa-spin' : ''}
+                />
+              </MapControlButton>
+            </MapControlsContainer>
+
+            {mapSelectionLoading && (
+              <LoadingOverlay>
+                <LoadingIcon>
+                  <FontAwesomeIcon icon={faSpinner} />
+                </LoadingIcon>
+                <span>Loading stream gauge stations...</span>
+              </LoadingOverlay>
             )}
 
             <EsriMap
@@ -696,9 +754,11 @@ const SWATGenXTemplate = () => {
               lakesGeometries={stationData?.lakes_geometries || []}
               stationPoints={stationPoints}
               onStationSelect={handleStationSelectFromMap}
-              showStations={selectionTab === 'map'}
+              onMultipleStationsSelect={handleMultipleStationsSelect}
+              showStations={true}
               selectedStationId={selectedStationOnMap?.SiteNumber}
-              key={`map-${selectionTab}`}
+              drawingMode={drawingMode}
+              onDrawComplete={handleMultipleStationsSelect}
             />
           </MapInnerContainer>
         </MapContainer>

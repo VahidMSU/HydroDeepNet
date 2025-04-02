@@ -498,7 +498,12 @@ export const SubmitButton = styled.button<{ isLoading: boolean, secondary?: bool
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.95rem;
-  flex: ${props => props.secondary ? '0 0 auto' : '1'};
+  flex: ${props => props.secondary ? '1' : '1'}; /* Give equal flex to both buttons */
+  min-width: ${props => props.secondary ? '180px' : '180px'}; /* Ensure minimum width for buttons */
+  max-width: ${props => props.secondary ? '45%' : '45%'}; /* Limit maximum width */
+  white-space: nowrap; /* Prevent text from wrapping inside button */
+  overflow: hidden;
+  text-overflow: ellipsis;
   
   &:hover {
     background-color: ${props => {
@@ -524,10 +529,23 @@ export const SubmitButton = styled.button<{ isLoading: boolean, secondary?: bool
       return '0 2px 4px rgba(255, 133, 0, 0.3)';
     }};
   }
+
+  /* Media query for mobile devices */
+  @media (max-width: 768px) {
+    min-width: 0; /* Remove min-width on small screens */
+    max-width: none; /* Allow full width when needed */
+    flex: ${props => props.secondary ? '1 1 100%' : '1 1 100%'}; /* Stack buttons on small screens */
+    margin-bottom: 8px;
+  }
 `;
 
+// Button icon
 export const ButtonIcon = styled.span`
-  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  font-size: 1rem;
 `;
 
 // Feedback messages
@@ -795,7 +813,10 @@ export const NavigationButtons = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
+  margin-bottom: 20px;
   gap: 12px;
+  flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+  width: 100%;
 `;
 
 

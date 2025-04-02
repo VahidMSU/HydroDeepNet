@@ -14,11 +14,17 @@ const fixWheelEvent = () => {
     EventTarget.prototype.addEventListener = function (type, listener, options) {
       // Check if this is a wheel event
       if (type === 'wheel' || type === 'mousewheel') {
-        // For ArcGIS elements, we need to ensure passive is not forced to true
+        // For ArcGIS map elements, we need to ensure passive is not forced to true
+        // This allows proper zoom behavior using the mouse wheel
         if (
-          this.className &&
-          typeof this.className === 'string' &&
-          (this.className.includes('esri-') || this.className.includes('esri'))
+          (this.className &&
+            typeof this.className === 'string' &&
+            (this.className.includes('esri-') || this.className.includes('esri'))) ||
+          (this.id && this.id === 'esri-map-container') ||
+          (this.parentElement &&
+            this.parentElement.className &&
+            typeof this.parentElement.className === 'string' &&
+            this.parentElement.className.includes('esri'))
         ) {
           // If options is a boolean (useCapture), convert to object
           if (typeof options === 'boolean') {
