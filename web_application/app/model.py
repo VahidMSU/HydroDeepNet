@@ -297,6 +297,7 @@ def get_station_geometries():
         import os
         import json
         from time import time
+        import sys
         
         # Create a cache key based on the file's modification time
         FPS_geometry_name_shp_path = SWATGenXPaths.FPS_CONUS_stations
@@ -311,10 +312,22 @@ def get_station_geometries():
         response = None
         
         try:
-            # Read station geometries from shapefile with optimization
+            # Read station geometries from shapefile with optimization and memory management
             start_time = time()
-            gdf = gpd.read_file(FPS_geometry_name_shp_path)
-            current_app.logger.info(f"Read shapefile in {time() - start_time:.2f} seconds")
+            # Set low_memory=False to avoid mixed type warnings
+            gpd.options.io_engine = "pyogrio"  # Use faster engine if available
+            
+            # Try to limit memory usage by only reading necessary columns
+            try:
+                gdf = gpd.read_file(
+                    FPS_geometry_name_shp_path, 
+                    columns=["SiteNumber", "SiteName", "geometry"]
+                )
+            except Exception as col_error:
+                current_app.logger.warning(f"Couldn't read with column filter, falling back to full read: {col_error}")
+                gdf = gpd.read_file(FPS_geometry_name_shp_path)
+                
+            current_app.logger.info(f"Read shapefile in {time() - start_time:.2f} seconds, found {len(gdf)} stations")
             
             # Convert to a simplified GeoJSON structure with only necessary fields
             stations_geojson = {
@@ -324,6 +337,9 @@ def get_station_geometries():
             
             # Process each station with optimized data handling
             start_time = time()
+            feature_count = 0
+            error_count = 0
+            
             for idx, row in gdf.iterrows():
                 try:
                     # Extract geometry and properties
@@ -337,27 +353,47 @@ def get_station_geometries():
                             "properties": {
                                 "SiteNumber": str(row.get("SiteNumber", "")),  # Ensure it's a string
                                 "SiteName": str(row.get("SiteName", "")),
-                                "id": idx
+                                "id": int(idx)
                             }
                         }
                         stations_geojson["features"].append(feature)
+                        feature_count += 1
                 except Exception as e:
-                    current_app.logger.warning(f"Error processing station at index {idx}: {e}")
-                    continue
+                    error_count += 1
+                    if error_count < 10:  # Only log first few errors to avoid filling logs
+                        current_app.logger.warning(f"Error processing station at index {idx}: {e}")
+                    
+                # Periodically force garbage collection to avoid memory issues
+                if idx % 5000 == 0 and idx > 0:
+                    import gc
+                    gc.collect()
             
-            current_app.logger.info(f"Processed {len(stations_geojson['features'])} stations in {time() - start_time:.2f} seconds")
+            current_app.logger.info(
+                f"Processed {feature_count} stations in {time() - start_time:.2f} seconds "
+                f"with {error_count} errors"
+            )
+            
+            # Verify we have features to return
+            if len(stations_geojson["features"]) == 0:
+                current_app.logger.error("No valid station features found in the shapefile")
+                return jsonify({"error": "No valid station features found"}), 500
             
             # Create response with caching headers
             response = jsonify(stations_geojson)
             response.cache_control.max_age = cache_timeout
             response.cache_control.public = True
             
-            current_app.logger.info(f"Returning {len(stations_geojson['features'])} station geometries with cache for {cache_timeout} seconds")
+            current_app.logger.info(
+                f"Returning {len(stations_geojson['features'])} station geometries "
+                f"with cache for {cache_timeout} seconds"
+            )
             return response
             
         except Exception as e:
-            current_app.logger.error(f"Error reading station shapefile: {e}")
+            current_app.logger.error(f"Error processing station shapefile: {e}")
             current_app.logger.error(f"Shapefile path: {FPS_geometry_name_shp_path}")
+            import traceback
+            current_app.logger.error(traceback.format_exc())
             raise
         
     except ImportError as e:

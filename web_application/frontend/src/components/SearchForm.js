@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSearch,
-  faDrawPolygon,
   faTimes,
   faExclamationTriangle,
   faMousePointer,
@@ -23,13 +22,11 @@ function SearchForm({
   setStationData,
   setLoading,
   mapSelections = [],
-  setDrawingMode = null,
-  drawingMode = false,
   handleStationSelect = null, // Receive the handler from parent
 }) {
   const [searchInput, setSearchInput] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [mapMode, setMapMode] = useState(!!setDrawingMode); // True if map mode is enabled
+  const [mapMode, setMapMode] = useState(true); // True if map mode is enabled
   const [searchError, setSearchError] = useState('');
 
   // Update search results when map selections change
@@ -102,13 +99,6 @@ function SearchForm({
     }
   };
 
-  // Toggle drawing mode
-  const toggleDrawingMode = () => {
-    if (setDrawingMode) {
-      setDrawingMode(!drawingMode);
-    }
-  };
-
   return (
     <StyledSearchForm>
       <SearchInputGroup>
@@ -127,22 +117,6 @@ function SearchForm({
             <FontAwesomeIcon icon={faMousePointer} style={{ marginRight: '5px' }} />
             <span style={{ fontSize: '14px' }}>Click directly on map to select a station</span>
           </div>
-
-          {setDrawingMode && (
-            <SearchButton
-              onClick={toggleDrawingMode}
-              style={{
-                marginLeft: '5px',
-                backgroundColor: drawingMode ? '#f14668' : '#3273dc',
-              }}
-              title={drawingMode ? 'Cancel drawing' : 'Draw polygon to select multiple stations'}
-            >
-              <FontAwesomeIcon icon={drawingMode ? faTimes : faDrawPolygon} />
-              <span style={{ marginLeft: '5px', display: 'inline-block' }}>
-                {drawingMode ? 'Cancel' : 'Draw Selection'}
-              </span>
-            </SearchButton>
-          )}
         </div>
 
         <SearchInputWrapper>
@@ -171,11 +145,9 @@ function SearchForm({
       {searchResults.length > 0 && (
         <SearchResults>
           <div style={{ marginBottom: '8px', fontSize: '14px' }}>
-            {mapMode && drawingMode
-              ? 'Drawing mode active. Draw a polygon to select stations.'
-              : mapMode
-                ? `${searchResults.length} station${searchResults.length > 1 ? 's' : ''} selected. Click one to view details.`
-                : 'Search results:'}
+            {mapMode
+              ? `${searchResults.length} station${searchResults.length > 1 ? 's' : ''} selected. Click one to view details.`
+              : 'Search results:'}
           </div>
           {searchResults.map((site) => (
             <SearchResultItem
@@ -189,13 +161,12 @@ function SearchForm({
         </SearchResults>
       )}
 
-      {mapMode && !searchResults.length && !drawingMode && !searchError && (
+      {mapMode && !searchResults.length && !searchError && (
         <div style={{ margin: '15px 0', fontSize: '14px', color: '#666' }}>
           <p>Select a station by:</p>
           <ul style={{ paddingLeft: '20px', marginTop: '5px' }}>
             <li>Clicking directly on the map</li>
             <li>Using the search box above</li>
-            <li>Using the draw tool to select multiple stations</li>
           </ul>
         </div>
       )}

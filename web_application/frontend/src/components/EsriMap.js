@@ -1,4 +1,3 @@
-///data/SWATGenXApp/codes/web_application/frontend/src/components/EsriMap.js
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { loadModules } from 'esri-loader';
 import SessionService from '../services/SessionService';
@@ -93,15 +92,12 @@ const EsriMap = ({
   lakesGeometries = [],
   stationPoints = [],
   onStationSelect = null,
-  onMultipleStationsSelect = null,
   showStations = false,
   selectedStationId = null,
-  drawingMode = false,
-  onDrawComplete = null,
+  refreshMapRef = null, // Add new prop to expose refresh functionality
 }) => {
   const mapRef = useRef(null);
   const viewRef = useRef(null);
-  const sketchRef = useRef(null);
   const highlightedFeatureRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoadingGeometries, setIsLoadingGeometries] = useState(false);
@@ -147,6 +143,12 @@ const EsriMap = ({
 
   const renderStationPoints = useCallback(() => {
     if (!viewRef.current || !isLoaded || !showStations || stationPoints.length === 0) {
+      console.log('Cannot render station points - prerequisites not met:', {
+        viewExists: !!viewRef.current,
+        isLoaded,
+        showStations,
+        stationPointsCount: stationPoints.length,
+      });
       return;
     }
 
@@ -156,7 +158,9 @@ const EsriMap = ({
 
     if (stationLayer && !stationLayer.destroyed) {
       if (prevStationPointsRef.current === stationPoints && stationLayer.graphics.length > 0) {
-        console.log('Station points already rendered - skipping redraw');
+        console.log(
+          `Station points already rendered (${stationLayer.graphics.length}) - skipping redraw`,
+        );
         SessionService.setMapInteractionState(false);
         return;
       }
@@ -171,80 +175,111 @@ const EsriMap = ({
 
     console.log(`Rendering ${stationPoints.length} station points on map`);
 
+    // Track metrics for debugging
+    const startTime = performance.now();
     const stationGraphics = [];
     let successfullyAdded = 0;
+    let failedToAdd = 0;
 
-    const batchSize = 100;
+    // Larger batch size for production
+    const batchSize = 200;
+
+    // Use a more efficient approach with a single array push then addMany
     for (let i = 0; i < stationPoints.length; i += batchSize) {
       const batch = stationPoints.slice(i, i + batchSize);
+      const batchGraphics = [];
 
       batch.forEach((station) => {
         if (station.geometry && station.geometry.coordinates) {
-          const [longitude, latitude] = station.geometry.coordinates;
-          const point = new Point({
-            longitude,
-            latitude,
-            spatialReference: { wkid: 4326 },
-          });
+          try {
+            const [longitude, latitude] = station.geometry.coordinates;
+            const point = new Point({
+              longitude,
+              latitude,
+              spatialReference: { wkid: 4326 },
+            });
 
-          const isSelected = selectedStationId === station.properties.SiteNumber;
+            const isSelected = selectedStationId === station.properties.SiteNumber;
 
-          const stationGraphic = new Graphic({
-            geometry: point,
-            symbol: {
-              type: 'simple-marker',
-              color: isSelected ? [255, 0, 0, 0.8] : [0, 114, 206, 0.7],
-              size: isSelected ? '12px' : '8px',
-              outline: {
-                color: [255, 255, 255],
-                width: 1,
+            const stationGraphic = new Graphic({
+              geometry: point,
+              symbol: {
+                type: 'simple-marker',
+                color: isSelected ? [255, 0, 0, 0.8] : [0, 114, 206, 0.7],
+                size: isSelected ? '12px' : '8px',
+                outline: {
+                  color: [255, 255, 255],
+                  width: 1,
+                },
               },
-            },
-            attributes: {
-              SiteNumber: station.properties.SiteNumber,
-              SiteName: station.properties.SiteName,
-              id: station.properties.id,
-            },
-            popupTemplate: {
-              title: '{SiteName}',
-              content: 'Station ID: {SiteNumber}',
-            },
-          });
+              attributes: {
+                SiteNumber: station.properties.SiteNumber,
+                SiteName: station.properties.SiteName,
+                id: station.properties.id,
+              },
+              popupTemplate: {
+                title: '{SiteName}',
+                content: 'Station ID: {SiteNumber}',
+              },
+            });
 
-          if (!stationLayer.destroyed) {
-            stationLayer.add(stationGraphic);
+            batchGraphics.push(stationGraphic);
             stationGraphics.push(stationGraphic);
             successfullyAdded++;
+          } catch (err) {
+            failedToAdd++;
+            console.warn('Error creating station graphic:', err);
           }
+        } else {
+          failedToAdd++;
         }
       });
+
+      // Add all graphics in the batch at once
+      if (!stationLayer.destroyed && batchGraphics.length > 0) {
+        try {
+          stationLayer.addMany(batchGraphics);
+        } catch (err) {
+          console.error('Error adding batch graphics to layer:', err);
+          // Fallback to adding one by one if batch fails
+          batchGraphics.forEach((graphic) => {
+            try {
+              stationLayer.add(graphic);
+            } catch (innerErr) {
+              failedToAdd++;
+              successfullyAdded--;
+            }
+          });
+        }
+      }
     }
+
+    const endTime = performance.now();
+    console.log(
+      `Station points rendering: Added ${successfullyAdded}, Failed ${failedToAdd}, Time: ${(endTime - startTime).toFixed(1)}ms`,
+    );
 
     prevStationPointsRef.current = stationPoints;
 
-    console.log(`Successfully added ${successfullyAdded} station graphics to map`);
     setStationsLoaded(true);
 
+    // Zoom to stations if needed
     if (stationGraphics.length > 0 && !selectedStationId && view && !view.destroyed) {
       try {
-        view
-          .when(() => {
-            if (!view.destroyed) {
-              console.log('Zooming to station extents');
-              view
-                .goTo(stationGraphics, { animate: false })
-                .catch((error) => console.warn('Error during map navigation:', error))
-                .finally(() => {
-                  setTimeout(() => SessionService.setMapInteractionState(false), 500);
-                });
-            } else {
-              SessionService.setMapInteractionState(false);
-            }
-          })
-          .catch((e) => {
-            console.warn('Error during view.when():', e);
+        // Delay the zoom slightly to allow map to stabilize
+        setTimeout(() => {
+          if (!view.destroyed) {
+            console.log('Zooming to station extents');
+            view
+              .goTo(stationGraphics, { animate: false })
+              .catch((error) => console.warn('Error during map navigation:', error))
+              .finally(() => {
+                setTimeout(() => SessionService.setMapInteractionState(false), 500);
+              });
+          } else {
             SessionService.setMapInteractionState(false);
-          });
+          }
+        }, 200);
       } catch (e) {
         console.error('Exception during view.goTo preparation:', e);
         SessionService.setMapInteractionState(false);
@@ -258,19 +293,35 @@ const EsriMap = ({
     let view;
     let mapViewHandles = [];
 
+    // Track loading state properly with promises instead of timeouts
+    const loadingStates = {
+      viewReady: false,
+      modulesLoaded: false,
+      stationsProcessing: false,
+      renderComplete: false,
+    };
+
+    // Signal that the map is in an interactive state during initialization
     SessionService.setMapInteractionState(true);
 
     const options = {
       version: '4.25',
       css: true,
       dojoConfig: {
-        passiveEvents: false, // Set to false to allow preventDefault
+        passiveEvents: true, // Set to true for better performance
         has: {
-          'esri-passive-events': false, // Set to false to allow preventDefault
+          'esri-passive-events': true,
         },
       },
     };
 
+    // Create a promise that resolves when map rendering is complete
+    let resolveRenderComplete;
+    const renderCompletePromise = new Promise((resolve) => {
+      resolveRenderComplete = resolve;
+    });
+
+    // Load ESRI modules using Promise-based pattern
     loadModules(
       [
         'esri/Map',
@@ -305,19 +356,26 @@ const EsriMap = ({
         ]) => {
           if (viewRef.current) return;
 
-          // Explicitly disable passive events in esriConfig
+          loadingStates.modulesLoaded = true;
+          console.log('ESRI modules loaded successfully');
+
+          // Configure ESRI for better performance
+          esriConfig.has = esriConfig.has || {};
+          esriConfig.has['esri-passive-events'] = true;
+
+          // Add passive event support to avoid browser warnings
           esriConfig.options = {
             ...esriConfig.options,
             events: {
-              add: { passive: false },
-              remove: { passive: false },
+              add: { passive: true },
+              remove: { passive: true },
             },
           };
 
-          esriConfig.has = esriConfig.has || {};
-          esriConfig.has['esri-passive-events'] = false;
-
-          const map = new Map({ basemap: 'topo-vector' });
+          const map = new Map({
+            basemap: 'topo-vector',
+            qualityProfile: 'high', // Use high quality for better rendering
+          });
 
           view = new MapView({
             container: mapRef.current,
@@ -331,223 +389,220 @@ const EsriMap = ({
               mouseWheelZoomEnabled: true,
               browserTouchPanEnabled: true,
             },
+            // Optimize performance with better loading
+            loadingOptimization: true,
+            // Disable popup to improve performance
+            popup: {
+              dockEnabled: false,
+              dockOptions: {
+                // Disable dock completely to improve performance
+                buttonEnabled: false,
+                breakpoint: false,
+              },
+            },
           });
 
-          // Explicitly set wheel event options to non-passive
+          // Set wheel and touch events as passive for better performance
           if (view.navigation) {
-            view.navigation.mouseWheelEventOptions = { passive: false };
-            view.navigation.browserTouchPanEventOptions = { passive: true }; // Keep touch panning passive
+            view.navigation.mouseWheelEventOptions = { passive: true };
+            view.navigation.browserTouchPanEventOptions = { passive: true };
           }
 
-          // Add a direct wheel event handler to capture and handle events
-          mapRef.current.addEventListener(
-            'wheel',
-            (e) => {
-              // Only when the map is the active element, prevent default zooming
-              if (
-                document.activeElement === mapRef.current ||
-                mapRef.current.contains(document.activeElement)
-              ) {
-                e.preventDefault();
-              }
-            },
-            { passive: false },
-          );
-
-          const polygonLayer = new GraphicsLayer();
-          const streamLayer = new GraphicsLayer();
-          const lakeLayer = new GraphicsLayer();
-          const stationLayer = new GraphicsLayer();
-          const drawLayer = new GraphicsLayer();
-
-          map.addMany([polygonLayer, streamLayer, lakeLayer, stationLayer, drawLayer]);
-
-          const sketch = new Sketch({
-            view: view,
-            layer: drawLayer,
-            creationMode: 'update',
-            availableCreateTools: ['polygon'],
-            visibleElements: {
-              createTools: {
-                point: false,
-                polyline: false,
-                rectangle: true,
-                polygon: true,
-                circle: true,
-              },
-              selectionTools: {
-                'lasso-selection': false,
-                'rectangle-selection': false,
-              },
-              settingsMenu: false,
-              undoRedoMenu: true,
-            },
+          // Create layers for map
+          const polygonLayer = new GraphicsLayer({ elevationInfo: { mode: 'on-the-ground' } });
+          const streamLayer = new GraphicsLayer({ elevationInfo: { mode: 'on-the-ground' } });
+          const lakeLayer = new GraphicsLayer({ elevationInfo: { mode: 'on-the-ground' } });
+          const stationLayer = new GraphicsLayer({
+            elevationInfo: { mode: 'on-the-ground' },
+            title: 'Stream Gauge Stations',
           });
 
-          view.ui.add(sketch, 'top-right');
-          sketch.visible = false;
-          sketchRef.current = sketch;
+          map.addMany([polygonLayer, streamLayer, lakeLayer, stationLayer]);
 
+          // Wait for the view to be ready before setting up interactions
+          view.when(() => {
+            loadingStates.viewReady = true;
+            console.log('Map view is ready');
+
+            // Instead of timeouts, we use the view's ready state
+            if (showStations && stationPoints.length > 0) {
+              renderStationPointsWithBatching(stationLayer, Graphic, Point);
+            }
+
+            // Add click event handler for station selection
+            if (onStationSelect) {
+              // Add hover effect to improve usability
+              const pointerMoveHandler = view.on(
+                'pointer-move',
+                debounce((event) => {
+                  // Skip if not showing stations or during processing
+                  if (!showStations || loadingStates.stationsProcessing) {
+                    return;
+                  }
+
+                  const screenPoint = {
+                    x: event.x,
+                    y: event.y,
+                  };
+
+                  // Hit test with minimal processing
+                  view
+                    .hitTest(screenPoint, {
+                      include: [stationLayer],
+                    })
+                    .then((response) => {
+                      // Find if we're hovering over a station
+                      const stationGraphic = response.results?.find(
+                        (result) => result.graphic?.layer === stationLayer,
+                      )?.graphic;
+
+                      // Get all graphics to reset those not being hovered
+                      const graphics = stationLayer.graphics.toArray();
+
+                      graphics.forEach((graphic) => {
+                        if (!graphic.symbol) return;
+
+                        const isSelected = graphic.attributes.SiteNumber === selectedStationId;
+                        const isHovered = stationGraphic && graphic === stationGraphic;
+
+                        // Only update if state changed to avoid unnecessary redraws
+                        if (isHovered && graphic.symbol.size !== '10px' && !isSelected) {
+                          // Hovering - make bigger with outline
+                          graphic.symbol = {
+                            type: 'simple-marker',
+                            color: [0, 114, 206, 0.9],
+                            size: '10px',
+                            outline: {
+                              color: [255, 255, 255],
+                              width: 2,
+                            },
+                          };
+
+                          // Change cursor to pointer to indicate clickable
+                          mapRef.current.style.cursor = 'pointer';
+                        } else if (!isHovered && !isSelected && graphic.symbol.size !== '8px') {
+                          // Reset to normal state
+                          graphic.symbol = {
+                            type: 'simple-marker',
+                            color: [0, 114, 206, 0.7],
+                            size: '8px',
+                            outline: {
+                              color: [255, 255, 255],
+                              width: 1,
+                            },
+                          };
+                        }
+                      });
+
+                      // If not hovering over a station, reset cursor
+                      if (!stationGraphic) {
+                        mapRef.current.style.cursor = 'default';
+                      }
+                    })
+                    .catch((err) => {
+                      // Silent catch - no need to handle errors for hover effects
+                    });
+                }, 50),
+              ); // Short debounce for responsive hover
+
+              mapViewHandles.push(pointerMoveHandler);
+
+              // Click handler for selecting stations
+              const clickHandler = view.on('click', (event) => {
+                // Prevent default behavior and propagation
+                event.stopPropagation();
+
+                // Skip if not showing stations or loading
+                if (!showStations || loadingStates.stationsProcessing) {
+                  console.log('Click ignored: not ready for station selection');
+                  return;
+                }
+
+                SessionService.setMapInteractionState(true);
+                console.log('Map clicked, checking for stations...');
+
+                // Create the screen point from the event
+                const screenPoint = {
+                  x: event.x,
+                  y: event.y,
+                };
+
+                // Hit test to find graphics at the clicked location
+                view
+                  .hitTest(screenPoint, {
+                    include: [stationLayer],
+                  })
+                  .then((response) => {
+                    console.log('Hit test results:', response.results?.length || 0);
+
+                    // Find station graphics in the results
+                    const stationGraphics = response.results?.filter(
+                      (result) => result.graphic?.layer === stationLayer,
+                    );
+
+                    console.log('Station graphics found:', stationGraphics?.length || 0);
+
+                    // If we found a station, call the selection handler
+                    if (
+                      stationGraphics &&
+                      stationGraphics.length > 0 &&
+                      stationGraphics[0].graphic?.attributes
+                    ) {
+                      const clickedStation = stationGraphics[0].graphic.attributes;
+                      console.log('Station selected:', clickedStation);
+                      handleStationSelect(clickedStation);
+                    } else {
+                      console.log('No station found at click location');
+                      // No station found at this location
+                    }
+
+                    // Release interaction state
+                    setTimeout(() => {
+                      SessionService.setMapInteractionState(false);
+                    }, 500);
+                  })
+                  .catch((error) => {
+                    console.error('Error during hit test:', error);
+                    SessionService.setMapInteractionState(false);
+                  });
+              });
+
+              // Add to handles for cleanup
+              mapViewHandles.push(clickHandler);
+            }
+          });
+
+          // Define map interaction event handlers
           const handleMapInteractionStart = () => {
             SessionService.setMapInteractionState(true);
           };
 
           const handleMapInteractionEnd = debounce(() => {
-            SessionService.setMapInteractionState(false);
+            if (!loadingStates.stationsProcessing) {
+              SessionService.setMapInteractionState(false);
+            }
           }, 1000);
 
+          // Add event listeners for map interactions
           const interactionEvents = ['mouse-wheel', 'key-down', 'drag', 'double-click', 'click'];
           interactionEvents.forEach((eventName) => {
             const handle = view.on(eventName, handleMapInteractionStart);
             mapViewHandles.push(handle);
           });
 
+          // Add event listeners for interaction completion
           const dragEndHandle = view.on('drag-end', handleMapInteractionEnd);
           const keyUpHandle = view.on('key-up', handleMapInteractionEnd);
           const clickHandle = view.on('click', handleMapInteractionEnd);
           mapViewHandles.push(dragEndHandle, keyUpHandle, clickHandle);
 
-          const sketchCreateHandle = sketch.on('create', (event) => {
-            SessionService.setMapInteractionState(true);
-
-            if (event.state === 'complete' && onDrawComplete) {
-              const polygon = event.graphic.geometry;
-              const highlightGraphic = new Graphic({
-                geometry: polygon,
-                symbol: {
-                  type: 'simple-fill',
-                  color: [0, 255, 255, 0.2],
-                  outline: { color: [0, 255, 255, 0.8], width: 2 },
-                },
-              });
-              drawLayer.add(highlightGraphic);
-
-              if (stationPoints.length > 0) {
-                const stationsWithin = stationPoints.filter((station) => {
-                  if (!station.geometry || !station.geometry.coordinates) return false;
-                  const [longitude, latitude] = station.geometry.coordinates;
-                  const point = new Point({
-                    longitude,
-                    latitude,
-                    spatialReference: { wkid: 4326 },
-                  });
-                  return geometryEngine.contains(polygon, point);
-                });
-
-                if (stationsWithin.length > 0) {
-                  const selectedStations = stationsWithin.map((station) => ({
-                    SiteNumber: station.properties.SiteNumber,
-                    SiteName: station.properties.SiteName,
-                  }));
-
-                  stationsWithin.forEach((station) => {
-                    const [longitude, latitude] = station.geometry.coordinates;
-                    const highlightPoint = new Point({
-                      longitude,
-                      latitude,
-                      spatialReference: { wkid: 4326 },
-                    });
-                    const highlightGraphic = new Graphic({
-                      geometry: highlightPoint,
-                      symbol: {
-                        type: 'simple-marker',
-                        color: [255, 165, 0, 0.8],
-                        size: '12px',
-                        outline: { color: [255, 255, 255], width: 2 },
-                      },
-                    });
-                    drawLayer.add(highlightGraphic);
-                  });
-
-                  onDrawComplete(selectedStations);
-                } else {
-                  if (drawLayer && !drawLayer.destroyed) {
-                    const center = geometryEngine.centroid(polygon);
-                    const textGraphic = new Graphic({
-                      geometry: center,
-                      symbol: {
-                        type: 'text',
-                        color: 'red',
-                        haloColor: 'white',
-                        haloSize: '1px',
-                        text: 'No stations found in selection',
-                        yoffset: 0,
-                        font: { size: 12, weight: 'bold' },
-                      },
-                    });
-                    drawLayer.add(textGraphic);
-
-                    setTimeout(() => {
-                      if (drawLayer && !drawLayer.destroyed) {
-                        drawLayer.remove(textGraphic);
-                      }
-                    }, 3000);
-                  }
-                }
-              }
-            }
-
-            setTimeout(() => {
-              SessionService.setMapInteractionState(false);
-            }, 500);
-          });
-          mapViewHandles.push(sketchCreateHandle);
-
-          const findClosestStation = (clickPoint, thresholdDegrees) => {
-            if (!stationPoints || stationPoints.length === 0) return;
-
-            const geographic = webMercatorUtils.webMercatorToGeographic(clickPoint);
-            const clickLat = geographic ? geographic.latitude : clickPoint.latitude;
-            const clickLon = geographic ? geographic.longitude : clickPoint.longitude;
-
-            let closestStation = null;
-            let minDistance = Number.MAX_VALUE;
-
-            const maxCheckStations = Math.min(500, stationPoints.length);
-            let checkedCount = 0;
-
-            for (const station of stationPoints) {
-              if (checkedCount++ > maxCheckStations) break;
-
-              if (station.geometry && station.geometry.coordinates) {
-                const [stationLon, stationLat] = station.geometry.coordinates;
-
-                if (
-                  Math.abs(clickLat - stationLat) > thresholdDegrees ||
-                  Math.abs(clickLon - stationLon) > thresholdDegrees
-                ) {
-                  continue;
-                }
-
-                const distance = Math.sqrt(
-                  Math.pow(clickLat - stationLat, 2) + Math.pow(clickLon - stationLon, 2),
-                );
-
-                if (distance < minDistance && distance < thresholdDegrees) {
-                  minDistance = distance;
-                  closestStation = {
-                    SiteNumber: station.properties.SiteNumber,
-                    SiteName: station.properties.SiteName,
-                    id: station.properties.id,
-                  };
-                }
-              }
-            }
-
-            if (closestStation) {
-              console.log('Closest station found:', closestStation);
-              handleStationSelect(closestStation);
-            }
-          };
-
+          // Store view information in ref for later use
           viewRef.current = {
             view,
             polygonLayer,
             streamLayer,
             lakeLayer,
             stationLayer,
-            drawLayer,
-            sketch,
             Graphic,
             Polygon,
             Polyline,
@@ -556,104 +611,145 @@ const EsriMap = ({
             geometryEngine,
           };
 
-          const updateCoordinates = debounce((event) => {
-            const point = view.toMap(event);
-            if (point) {
-              const geographic = webMercatorUtils.webMercatorToGeographic(point);
-              const coordDiv = document.getElementById('coordinateInfo');
-              if (coordDiv) {
-                coordDiv.innerText = `Lat: ${geographic.latitude.toFixed(6)}, Lon: ${geographic.longitude.toFixed(6)}`;
-              }
+          // A more efficient station point rendering function that uses batching
+          // and avoids timeouts by using the view's ready state
+          const renderStationPointsWithBatching = (stationLayer, Graphic, Point) => {
+            if (!stationPoints.length) return;
+
+            loadingStates.stationsProcessing = true;
+            console.log(`Rendering ${stationPoints.length} station points using batching`);
+
+            // Clear any existing graphics
+            stationLayer.removeAll();
+
+            // Efficient batch processing with Web Workers if supported
+            const useWebWorker = window.Worker && stationPoints.length > 1000;
+
+            if (useWebWorker) {
+              processStationPointsWithWorker(stationPoints, stationLayer, Graphic, Point);
+            } else {
+              processStationPointsDirectly(stationPoints, stationLayer, Graphic, Point);
             }
-          }, 50);
+          };
 
-          const pointerMoveHandle = view.on('pointer-move', updateCoordinates);
-          mapViewHandles.push(pointerMoveHandle);
+          // Store the render function with a better name
+          viewRef.current.renderStations = renderStationPointsWithBatching;
 
-          if (onStationSelect) {
-            const debouncedClickHandler = debounce((event) => {
-              SessionService.setMapInteractionState(true);
-
-              if (!showStations || drawingMode) {
-                console.log(
-                  'Click ignored: showStations:',
-                  showStations,
-                  'drawingMode:',
-                  drawingMode,
-                );
-
-                setTimeout(() => {
-                  SessionService.setMapInteractionState(false);
-                }, 200);
-
-                return;
-              }
-
-              console.log('Map clicked, checking for stations...');
-              const screenPoint = {
-                x: event.x,
-                y: event.y,
-              };
-
-              view
-                .hitTest(screenPoint, {
-                  include: [stationLayer],
-                  tolerance: 10,
-                })
-                .then((response) => {
-                  console.log('Hit test results:', response.results?.length || 0);
-
-                  const stationGraphics = response.results?.filter(
-                    (result) => result.graphic?.layer === stationLayer,
-                  );
-
-                  console.log('Station graphics found:', stationGraphics?.length || 0);
-
-                  if (
-                    stationGraphics &&
-                    stationGraphics.length > 0 &&
-                    stationGraphics[0].graphic?.attributes
-                  ) {
-                    const clickedStation = stationGraphics[0].graphic.attributes;
-                    console.log('Station selected:', clickedStation);
-                    handleStationSelect(clickedStation);
-                  } else {
-                    findClosestStation(event.mapPoint, 0.05);
-                  }
-
-                  setTimeout(() => {
-                    SessionService.setMapInteractionState(false);
-                  }, 500);
-                })
-                .catch((error) => {
-                  console.error('Error during hit test:', error);
-
-                  setTimeout(() => {
-                    SessionService.setMapInteractionState(false);
-                  }, 200);
-                });
-            }, 250);
-
-            const clickHandle = view.on('click', debouncedClickHandler);
-            mapViewHandles.push(clickHandle);
-          }
-
-          setTimeout(() => {
-            SessionService.setMapInteractionState(false);
-          }, 2000);
-
+          // Trigger initial data loading
           setIsLoaded(true);
+
+          // Signal rendering is ready to start
+          resolveRenderComplete();
         },
       )
       .catch((error) => {
         console.error('Error loading ArcGIS modules:', error);
-
         SessionService.setMapInteractionState(false);
       });
 
+    // Efficient direct processing of station points
+    const processStationPointsDirectly = (stationPoints, stationLayer, Graphic, Point) => {
+      const batchSize = 200; // Process in manageable chunks
+      let processedCount = 0;
+      let failedCount = 0;
+
+      // Use requestAnimationFrame to avoid blocking the UI thread
+      const processBatch = (startIdx) => {
+        const endIdx = Math.min(startIdx + batchSize, stationPoints.length);
+        const batchGraphics = [];
+
+        // Process batch
+        for (let i = startIdx; i < endIdx; i++) {
+          const station = stationPoints[i];
+          if (station.geometry && station.geometry.coordinates) {
+            try {
+              const [longitude, latitude] = station.geometry.coordinates;
+              const point = new Point({
+                longitude,
+                latitude,
+                spatialReference: { wkid: 4326 },
+              });
+
+              const isSelected = selectedStationId === station.properties.SiteNumber;
+
+              const stationGraphic = new Graphic({
+                geometry: point,
+                symbol: {
+                  type: 'simple-marker',
+                  color: isSelected ? [255, 0, 0, 0.8] : [0, 114, 206, 0.7],
+                  size: isSelected ? '12px' : '8px',
+                  outline: {
+                    color: [255, 255, 255],
+                    width: 1,
+                  },
+                },
+                attributes: {
+                  SiteNumber: station.properties.SiteNumber,
+                  SiteName: station.properties.SiteName,
+                  id: station.properties.id,
+                },
+              });
+
+              batchGraphics.push(stationGraphic);
+              processedCount++;
+            } catch (err) {
+              failedCount++;
+            }
+          } else {
+            failedCount++;
+          }
+        }
+
+        // Add batch to layer
+        if (batchGraphics.length > 0 && !stationLayer.destroyed) {
+          try {
+            stationLayer.addMany(batchGraphics);
+          } catch (error) {
+            console.warn('Error adding batch graphics:', error);
+            failedCount += batchGraphics.length;
+            processedCount -= batchGraphics.length;
+          }
+        }
+
+        // Continue with next batch or complete
+        if (endIdx < stationPoints.length) {
+          // Use requestAnimationFrame for smoother UI
+          requestAnimationFrame(() => processBatch(endIdx));
+        } else {
+          // All batches processed
+          console.log(
+            `Station points rendering complete: Added ${processedCount}, Failed ${failedCount}`,
+          );
+          prevStationPointsRef.current = stationPoints;
+          setStationsLoaded(true);
+          loadingStates.stationsProcessing = false;
+          loadingStates.renderComplete = true;
+
+          // Allow map interactions again
+          SessionService.setMapInteractionState(false);
+        }
+      };
+
+      // Start processing first batch
+      processBatch(0);
+    };
+
+    // Use Web Workers for heavy processing (would need to be implemented in a real application)
+    // This is a placeholder that simulates what a web worker would do
+    const processStationPointsWithWorker = (stationPoints, stationLayer, Graphic, Point) => {
+      console.log('Would use Web Worker for large station set, falling back to direct processing');
+      processStationPointsDirectly(stationPoints, stationLayer, Graphic, Point);
+    };
+
+    // When component unmounts
     return () => {
+      // Immediately cancel any ongoing processing
+      loadingStates.stationsProcessing = false;
+
+      // Ensure we're not in an interactive state
       SessionService.setMapInteractionState(false);
 
+      // Clean up event handlers
       if (mapViewHandles.length > 0) {
         mapViewHandles.forEach((handle) => {
           if (handle && typeof handle.remove === 'function') {
@@ -666,6 +762,7 @@ const EsriMap = ({
         });
       }
 
+      // Clean up highlight feature
       if (highlightedFeatureRef.current) {
         try {
           highlightedFeatureRef.current.remove();
@@ -675,6 +772,7 @@ const EsriMap = ({
         highlightedFeatureRef.current = null;
       }
 
+      // Properly destroy the view
       if (view) {
         try {
           view.destroy();
@@ -686,14 +784,7 @@ const EsriMap = ({
 
       console.log('EsriMap component unmounted, view and layers cleaned up');
     };
-  }, [
-    onStationSelect,
-    showStations,
-    onDrawComplete,
-    drawingMode,
-    stationPoints,
-    handleStationSelect,
-  ]);
+  }, [onStationSelect, showStations, stationPoints, selectedStationId, handleStationSelect]);
 
   useEffect(() => {
     if (!viewRef.current || !isLoaded) {
@@ -729,6 +820,71 @@ const EsriMap = ({
       clearInterval(watchInterval);
     };
   }, [stationPoints, showStations, isLoaded, renderStationPoints]);
+
+  // New function to force a refresh of the map and stations
+  const refreshMap = useCallback(() => {
+    console.log('Forcing map refresh...');
+    if (!viewRef.current || !isLoaded) {
+      console.log('Map not ready for refresh');
+      return false;
+    }
+
+    // Clear current graphics
+    if (viewRef.current.stationLayer && !viewRef.current.stationLayer.destroyed) {
+      viewRef.current.stationLayer.removeAll();
+      console.log('Cleared station graphics');
+    }
+
+    // Reset the previous points reference to force redraw
+    prevStationPointsRef.current = [];
+
+    // Re-render station points
+    if (showStations && stationPoints.length > 0) {
+      console.log('Re-rendering station points');
+      setTimeout(() => {
+        renderStationPoints();
+
+        // Additional check to ensure points are rendered
+        setTimeout(() => {
+          if (viewRef.current?.stationLayer?.graphics.length === 0) {
+            console.log('Second attempt to render station points');
+            renderStationPoints();
+          }
+        }, 1000);
+      }, 100);
+    }
+
+    // If we have a view, try to reset its extent to improve visibility
+    if (viewRef.current.view && !viewRef.current.view.destroyed) {
+      try {
+        console.log('Resetting map view extent');
+        const initialExtent = {
+          center: [-98, 39],
+          zoom: 4,
+        };
+
+        viewRef.current.view
+          .goTo(initialExtent, {
+            duration: 500,
+            easing: 'ease-in-out',
+          })
+          .catch((err) => {
+            console.warn('Error resetting map extent:', err);
+          });
+      } catch (e) {
+        console.error('Error during map extent reset:', e);
+      }
+    }
+
+    return true;
+  }, [isLoaded, showStations, stationPoints, renderStationPoints]);
+
+  // Expose the refresh function via the ref
+  useEffect(() => {
+    if (refreshMapRef && typeof refreshMapRef === 'object') {
+      refreshMapRef.current = refreshMap;
+    }
+  }, [refreshMap, refreshMapRef]);
 
   useEffect(() => {
     if (!viewRef.current || !isLoaded || !showStations || stationPoints.length === 0) {
@@ -768,29 +924,6 @@ const EsriMap = ({
       });
     }
   }, [selectedStationId, stationPoints, showStations, isLoaded, stationsLoaded]);
-
-  useEffect(() => {
-    if (!viewRef.current || !isLoaded) return;
-    const { sketch, drawLayer } = viewRef.current;
-
-    if (sketch) {
-      sketch.visible = drawingMode;
-      if (drawingMode) {
-        SessionService.setMapInteractionState(true);
-
-        sketch.create('polygon');
-      } else {
-        sketch.cancel();
-        if (drawLayer && !drawLayer.destroyed) {
-          drawLayer.removeAll();
-        }
-
-        setTimeout(() => {
-          SessionService.setMapInteractionState(false);
-        }, 500);
-      }
-    }
-  }, [drawingMode, isLoaded]);
 
   useEffect(() => {
     if (!viewRef.current || !isLoaded) {
