@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faGears,
@@ -19,6 +19,7 @@ import {
 import ModelSettingsForm from '../forms/SWATGenX.js';
 import EsriMap from '../EsriMap.js';
 import SearchForm from '../SearchForm';
+import MapLoadingDebugger from '../debug/MapLoadingDebugger';
 import {
   Container,
   Header,
@@ -50,28 +51,61 @@ import {
   LoadingIcon,
 } from '../../styles/SWATGenX.tsx';
 
-// Create a caching function for station geometries
+// Modify the geometriesCache to be more persistent
 const geometriesCache = {
   data: null,
   timestamp: null,
   // Cache expiration in milliseconds (30 minutes)
   expirationTime: 30 * 60 * 1000,
+  // Track loading state
+  isLoading: false,
+  // Add error tracking
+  error: null,
 
   set: function (data) {
     this.data = data;
     this.timestamp = Date.now();
+    this.isLoading = false;
+    this.error = null;
+    // Store in sessionStorage for persistence across page navigations
+    try {
+      sessionStorage.setItem(
+        'stationGeometriesCache',
+        JSON.stringify({
+          data: data,
+          timestamp: Date.now(),
+        }),
+      );
+    } catch (e) {
+      console.warn('Failed to cache station geometries in sessionStorage:', e);
+    }
+    console.log(`Station geometries cache updated with ${data.length} stations`);
   },
 
   get: function () {
-    if (!this.data || !this.timestamp) return null;
-
-    // Check if the cache is expired
-    if (Date.now() - this.timestamp > this.expirationTime) {
-      console.log('Station geometries cache expired');
-      return null;
+    // First check local variable
+    if (this.data && this.timestamp && Date.now() - this.timestamp <= this.expirationTime) {
+      return this.data;
     }
 
-    return this.data;
+    // If not in local variable, try sessionStorage
+    try {
+      const cachedData = sessionStorage.getItem('stationGeometriesCache');
+      if (cachedData) {
+        const parsed = JSON.parse(cachedData);
+        if (parsed.timestamp && Date.now() - parsed.timestamp <= this.expirationTime) {
+          // Update local state
+          this.data = parsed.data;
+          this.timestamp = parsed.timestamp;
+          console.log(`Using ${parsed.data.length} station geometries from sessionStorage`);
+          return parsed.data;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to retrieve station geometries from sessionStorage:', e);
+    }
+
+    return null;
   },
 
   isValid: function () {
@@ -81,6 +115,17 @@ const geometriesCache = {
   clear: function () {
     this.data = null;
     this.timestamp = null;
+    this.error = null;
+    sessionStorage.removeItem('stationGeometriesCache');
+  },
+
+  setLoading: function (status) {
+    this.isLoading = status;
+  },
+
+  setError: function (error) {
+    this.error = error;
+    this.isLoading = false;
   },
 };
 
@@ -104,53 +149,162 @@ const SWATGenXTemplate = () => {
   const [selectedStationOnMap, setSelectedStationOnMap] = useState(null);
   const [mapSelections, setMapSelections] = useState([]);
   const [showStationPanel, setShowStationPanel] = useState(false);
+  const [geometriesPreloaded, setGeometriesPreloaded] = useState(false);
+  const [showDebugger, setShowDebugger] = useState(false);
+  const [stationTabHistory, setStationTabHistory] = useState('search');
+  const previousStationDataRef = useRef(null);
 
-  // Fetch station data effect
+  // Add keyboard shortcut to toggle the debugger (Ctrl+Shift+D)
   useEffect(() => {
-    if (stationData) {
-      console.log('Station details:', stationData);
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        setShowDebugger((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // Initialize from cache on first load
+  useEffect(() => {
+    // Try to load station geometries from cache on component mount
+    const cachedGeometries = geometriesCache.get();
+    if (cachedGeometries) {
+      console.log('Initialized station geometries from persistent cache');
+      setGeometriesPreloaded(true);
+
+      // Only set station points if we're on map tab
+      if (selectionTab === 'map') {
+        setStationPoints(cachedGeometries);
+      }
+    } else {
+      // If no cache, preload
+      console.log('No cached geometries found, will preload');
     }
-  }, [stationData]);
+  }, []);
 
-  // Fetch station geometries for map-based selection
+  // Preload station geometries on component mount regardless of tab
   useEffect(() => {
-    if (selectionTab === 'map' && stationPoints.length === 0 && !mapSelectionLoading) {
-      // Check if we have valid cached data first
+    const preloadStationGeometries = async () => {
+      if (geometriesCache.isValid() || geometriesCache.isLoading) {
+        if (geometriesCache.isValid()) {
+          console.log('Using preloaded cached station geometries');
+          setGeometriesPreloaded(true);
+        }
+        return;
+      }
+
+      geometriesCache.setLoading(true);
+      try {
+        console.log('Preloading station geometries from server');
+        setMapSelectionLoading(true);
+
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch station geometries: ${response.status} ${response.statusText}`,
+          );
+        }
+
+        const data = await response.json();
+        const features = data.features || [];
+
+        console.log(`Successfully preloaded ${features.length} station geometries`);
+
+        geometriesCache.set(features);
+        setGeometriesPreloaded(true);
+
+        if (selectionTab === 'map') {
+          setStationPoints(features);
+        }
+      } catch (error) {
+        console.error('Error preloading station geometries:', error);
+        geometriesCache.setError(error);
+        if (selectionTab === 'map') {
+          setFeedbackMessage('Failed to load stations on map: ' + error.message);
+          setFeedbackType('error');
+        }
+      } finally {
+        setMapSelectionLoading(false);
+      }
+    };
+
+    preloadStationGeometries();
+  }, []);
+
+  useEffect(() => {
+    if (selectionTab === 'map' && stationPoints.length === 0) {
       if (geometriesCache.isValid()) {
-        console.log('Using cached station geometries');
+        console.log('Using cached station geometries for map tab');
         setStationPoints(geometriesCache.get());
-      } else {
-        // If no valid cache, fetch from server
+      } else if (!mapSelectionLoading && !geometriesCache.isLoading) {
         fetchStationGeometries();
       }
     }
-  }, [selectionTab, stationPoints.length, mapSelectionLoading]);
+  }, [selectionTab, stationPoints.length, mapSelectionLoading, geometriesPreloaded]);
 
-  // Show station panel when selections are made
+  // Preserve station data between tab switches
   useEffect(() => {
-    if (mapSelections.length > 0) {
-      setShowStationPanel(true);
+    if (stationData) {
+      previousStationDataRef.current = stationData;
     }
-  }, [mapSelections]);
+  }, [stationData]);
 
   const fetchStationGeometries = async () => {
+    if (mapSelectionLoading || geometriesCache.isLoading) return;
+
     setMapSelectionLoading(true);
+    geometriesCache.setLoading(true);
+
     try {
       console.log('Fetching station geometries from server');
-      const response = await fetch('/api/get_station_geometries');
+
+      const timestamp = new Date().getTime();
+      const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to fetch station geometries');
+        throw new Error(
+          `Failed to fetch station geometries: ${response.status} ${response.statusText}`,
+        );
       }
+
       const data = await response.json();
+
+      if (!data || !data.features) {
+        throw new Error('Invalid response format from server');
+      }
+
       const features = data.features || [];
+      console.log(`Loaded ${features.length} station geometries`);
 
-      // Store in cache
       geometriesCache.set(features);
-
-      // Update state
       setStationPoints(features);
+
+      if (feedbackType === 'error' && feedbackMessage.includes('station')) {
+        setFeedbackMessage('');
+        setFeedbackType('');
+      }
     } catch (error) {
       console.error('Error fetching station geometries:', error);
+      geometriesCache.setError(error);
       setFeedbackMessage('Failed to load stations on map: ' + error.message);
       setFeedbackType('error');
     } finally {
@@ -183,28 +337,48 @@ const SWATGenXTemplate = () => {
     }
 
     setSelectedStationOnMap(stationAttributes);
-    // Set the selected station as the only item in map selections
     setMapSelections([
       {
         SiteNumber: stationAttributes.SiteNumber,
         SiteName: stationAttributes.SiteName,
       },
     ]);
-    // Fetch station details just like we would do from search
     await handleStationSelect(stationAttributes.SiteNumber);
   };
 
+  // Enhanced version of handleStationSelect to better handle caching and reselection
   const handleStationSelect = async (stationNumber) => {
+    // If we're selecting the same station that's already loaded, don't reload
+    if (stationData && stationData.SiteNumber === stationNumber && stationData.geometries) {
+      console.log(`Station ${stationNumber} already loaded, skipping fetch`);
+      return;
+    }
+
+    // Same for previously loaded station if switching back from map view
+    if (
+      previousStationDataRef.current &&
+      previousStationDataRef.current.SiteNumber === stationNumber
+    ) {
+      console.log(`Using previously loaded data for station ${stationNumber}`);
+      setStationData(previousStationDataRef.current);
+      setStationInput(stationNumber);
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await fetch(`/api/get_station_characteristics?station=${stationNumber}`);
+      console.log(`Fetching details for station ${stationNumber}`);
+      const timestamp = new Date().getTime();
+      const response = await fetch(
+        `/api/get_station_characteristics?station=${stationNumber}&_=${timestamp}`,
+      );
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
       setStationData(data);
+      previousStationDataRef.current = data;
       setStationInput(stationNumber);
-      // Clear any previous feedback
       setFeedbackMessage('');
       setFeedbackType('');
     } catch (error) {
@@ -265,36 +439,80 @@ const SWATGenXTemplate = () => {
     }
   };
 
-  // Switch between search and map tabs
+  // Modified handleTabChange to avoid clearing station selection when switching tabs
   const handleTabChange = (tab) => {
     console.log(`Changing tab from ${selectionTab} to ${tab}`);
-    setSelectionTab(tab);
 
-    // Reset selection state when switching tabs
-    if (tab === 'search' && selectedStationOnMap) {
-      setSelectedStationOnMap(null);
+    // Keep track of tab history
+    setStationTabHistory(selectionTab);
+
+    // If switching to map tab, prepare the data
+    if (tab === 'map' && selectionTab !== 'map') {
+      if (geometriesCache.isValid()) {
+        console.log('Using cached geometries for tab change');
+        setStationPoints(geometriesCache.get());
+      } else if (!mapSelectionLoading) {
+        console.log('Need to fetch geometries for tab change');
+      }
     }
 
-    // Hide station panel when switching to search
+    setSelectionTab(tab);
+
+    // Don't reset selection when going back to search
     if (tab === 'search') {
+      // Only hide the station panel, but keep the selection
       setShowStationPanel(false);
+
+      // Don't clear mapSelections anymore
+      // setMapSelections([]);
     }
   };
 
-
-  // Toggle station selection panel visibility
   const toggleStationPanel = () => {
     setShowStationPanel(!showStationPanel);
   };
 
-  // Force refresh of station geometries
   const refreshStationGeometries = () => {
-    // Clear the cache
     geometriesCache.clear();
-    // Reset the current points to trigger a fresh fetch
     setStationPoints([]);
-    // Fetch new data
+    setGeometriesPreloaded(false);
     fetchStationGeometries();
+  };
+
+  // Fix for issue #1: Add a reset function for when we want to select a new station
+  const resetStationSelection = () => {
+    console.log('Resetting station selection to allow selecting a new station');
+    setSelectedStationOnMap(null);
+    setMapSelections([]);
+    setStationData(null);
+    setStationInput('');
+    setShowStationPanel(false);
+    previousStationDataRef.current = null;
+  };
+
+  // Add a reset button to the UI
+  const renderResetButton = () => {
+    if (stationData || selectedStationOnMap) {
+      return (
+        <div style={{ marginTop: '10px', textAlign: 'center' }}>
+          <button
+            onClick={resetStationSelection}
+            style={{
+              padding: '5px 10px',
+              background: '#f44336',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+            }}
+          >
+            Clear Station & Select New
+          </button>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -351,35 +569,41 @@ const SWATGenXTemplate = () => {
 
             <ConfigPanelContent>
               {currentStep === 1 && (
-                <TabContainer>
-                  <TabButton
-                    active={selectionTab === 'search'}
-                    onClick={() => handleTabChange('search')}
-                  >
-                    <TabIcon>
-                      <FontAwesomeIcon icon={faSearch} />
-                    </TabIcon>
-                    Search
-                  </TabButton>
-                  <TabButton active={selectionTab === 'map'} onClick={() => handleTabChange('map')}>
-                    <TabIcon>
-                      <FontAwesomeIcon icon={faLocationDot} />
-                    </TabIcon>
-                    Map Select
-                  </TabButton>
-                </TabContainer>
+                <>
+                  <TabContainer>
+                    <TabButton
+                      active={selectionTab === 'search'}
+                      onClick={() => handleTabChange('search')}
+                    >
+                      <TabIcon>
+                        <FontAwesomeIcon icon={faSearch} />
+                      </TabIcon>
+                      Search
+                    </TabButton>
+                    <TabButton
+                      active={selectionTab === 'map'}
+                      onClick={() => handleTabChange('map')}
+                    >
+                      <TabIcon>
+                        <FontAwesomeIcon icon={faLocationDot} />
+                      </TabIcon>
+                      Map Select
+                    </TabButton>
+                  </TabContainer>
+
+                  {/* Add the reset button here */}
+                  {renderResetButton()}
+                </>
               )}
 
               <StepIndicator>
                 <StepCircle active={currentStep === 1} completed={currentStep > 1}>
                   <FontAwesomeIcon icon={faMapMarkedAlt} />
                 </StepCircle>
-                <StepText active={currentStep === 1}>Station Selection</StepText>
                 <StepConnector completed={currentStep > 1} />
                 <StepCircle active={currentStep === 2} completed={currentStep > 2}>
                   <FontAwesomeIcon icon={faLayerGroup} />
                 </StepCircle>
-                <StepText active={currentStep === 2}>Model Settings</StepText>
               </StepIndicator>
 
               {currentStep === 1 && selectionTab === 'map' ? (
@@ -431,7 +655,6 @@ const SWATGenXTemplate = () => {
 
         <MapContainer>
           <MapInnerContainer>
-            {/* Map interaction controls when in map selection mode */}
             {selectionTab === 'map' && (
               <>
                 <MapControlsContainer>
@@ -445,7 +668,6 @@ const SWATGenXTemplate = () => {
                   >
                     <FontAwesomeIcon icon={faListUl} />
                   </MapControlButton>
-                  {/* Add a refresh button to force reload station geometries */}
                   <MapControlButton
                     title="Refresh station data"
                     onClick={refreshStationGeometries}
@@ -457,7 +679,6 @@ const SWATGenXTemplate = () => {
                     />
                   </MapControlButton>
                 </MapControlsContainer>
-                {/* Loading overlay for stations */}
                 {mapSelectionLoading && (
                   <LoadingOverlay>
                     <LoadingIcon>
@@ -482,6 +703,8 @@ const SWATGenXTemplate = () => {
           </MapInnerContainer>
         </MapContainer>
       </Content>
+
+      {showDebugger && <MapLoadingDebugger />}
     </Container>
   );
 };

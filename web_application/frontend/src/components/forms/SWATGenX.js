@@ -46,7 +46,6 @@ const StationSelectionStep = ({
         <SectionIcon>
           <FontAwesomeIcon icon={faMapMarkedAlt} />
         </SectionIcon>
-        Station Selection
       </SectionTitle>
 
       <SearchForm setStationData={setStationData} setLoading={setLoading} />

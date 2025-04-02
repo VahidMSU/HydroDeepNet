@@ -14,6 +14,12 @@ class SessionService {
     this.productionHost = 'ciwre-bae.campusad.msu.edu'; // Your production host
     this.serverUnavailable = false; // Flag to track server availability
     this.serverUnavailableRetryTime = 300000; // 5 minutes before retrying after server unavailable
+    this.mapInteracting = false;
+    this.mapInteractionTimeout = null;
+    this.debugMode = false;
+
+    // Register global event listeners for visibility changes
+    this.setupVisibilityHandler();
   }
 
   /**
@@ -119,6 +125,14 @@ class SessionService {
           }
         });
       }
+
+      // When page becomes visible again, check if we're stuck in interaction state
+      if (this.mapInteracting) {
+        console.log('Page became visible again, resetting any stuck map interaction state');
+        setTimeout(() => {
+          this.setMapInteractionState(false);
+        }, 1000);
+      }
     }
   };
 
@@ -155,6 +169,71 @@ class SessionService {
         }, 2000);
       }
     }
+  }
+
+  /**
+   * Set map interaction state to track when map operations are in progress
+   * This helps prevent interrupting operations like zooming, panning, or data loading
+   * @param {boolean} status - Whether map interaction is active
+   */
+  setMapInteractionState(status) {
+    // Clear any pending timeout
+    if (this.mapInteractionTimeout) {
+      clearTimeout(this.mapInteractionTimeout);
+      this.mapInteractionTimeout = null;
+    }
+
+    this.mapInteracting = status;
+
+    // Always ensure map interaction state is released after a timeout
+    // This prevents the UI from getting permanently stuck in an interacting state
+    if (status) {
+      this.mapInteractionTimeout = setTimeout(() => {
+        console.log('Map interaction timeout reached, forcing state to false');
+        this.mapInteracting = false;
+        this.mapInteractionTimeout = null;
+      }, 10000); // 10 second safety timeout
+    }
+
+    if (this.debugMode) {
+      console.log(`Map interaction state: ${status ? 'active' : 'inactive'}`);
+    }
+  }
+
+  /**
+   * Check if map is currently in an interactive state
+   * @returns {boolean} Current map interaction state
+   */
+  isMapInteracting() {
+    return this.mapInteracting;
+  }
+
+  /**
+   * Setup handler for document visibility changes to improve state management
+   * when user switches tabs or the page is hidden/shown
+   */
+  setupVisibilityHandler() {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          // When page becomes visible again, check if we're stuck in interaction state
+          if (this.mapInteracting) {
+            console.log('Page became visible again, resetting any stuck map interaction state');
+            setTimeout(() => {
+              this.setMapInteractionState(false);
+            }, 1000);
+          }
+        }
+      });
+    }
+  }
+
+  /**
+   * Enable or disable debug mode
+   * @param {boolean} enabled - Whether debug mode should be enabled
+   */
+  setDebugMode(enabled) {
+    this.debugMode = enabled;
   }
 
   /**
