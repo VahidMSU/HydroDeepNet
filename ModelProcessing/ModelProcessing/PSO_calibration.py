@@ -364,7 +364,7 @@ def save_current_best(best_params, best_objective_value, cal_parms, best_simulat
         f.write(f"Best objective value: {best_objective_value}\n")
     
     message = f"{config.MODEL_NAME}:{config.NAME}:{config.VPUID} New best found: {best_objective_value}"
-    logger.error(message)
+    logger.info(message)
 
 
 def save_final_results(best_score, best_position, cal_parms, best_simulation_filename, model_log_path):
@@ -375,7 +375,7 @@ def save_final_results(best_score, best_position, cal_parms, best_simulation_fil
         for x, y in zip(cal_parms.name.values, best_params):
             f.write(f"{x}, {y:.2f}\n")
         f.write(f"Final best objective value: {best_objective_value}\n")
-    logger.error(f"Final calibration completed with best objective value {best_objective_value}")
+    logger.info(f"Final calibration completed with best objective value {best_objective_value}")
         
 def define_role(LocalBestScore, i):
     """Define the role of particle based on its performance"""
