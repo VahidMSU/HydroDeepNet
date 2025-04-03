@@ -5,6 +5,9 @@ import json
 import threading
 import zipfile
 import tempfile
+import sys 
+
+from AI_agent.report_generator import run_report_generation
 from datetime import datetime
 from app.decorators import conditional_login_required, conditional_verified_required
 
@@ -223,7 +226,7 @@ def generate_report():
         def generate_report_task():
             try:
                 # Import the report generator function
-                from AI_agent.report_generator import run_report_generation
+                
                 
                 reports = run_report_generation(report_type, config, output_dir, parallel=True)
                 # Save report metadata to database or file for later retrieval

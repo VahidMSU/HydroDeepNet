@@ -13,14 +13,16 @@ import matplotlib.pyplot as plt
 import logging
 from pathlib import Path
 import calendar
-from config import AgentConfig
+
 try:
+    from config import AgentConfig
     from prism_utilities import (
         extract_prism_data, get_prism_spatial_means, create_period_labels,
         plot_climate_timeseries, create_climate_spatial_plot, create_climate_seasonal_plot,
         export_climate_data_to_csv, calculate_climate_trends, PRISM_VARIABLES
     )
 except ImportError:
+    from AI_agent.config import AgentConfig
     from .prism_utilities import (
         extract_prism_data, get_prism_spatial_means, create_period_labels,
         plot_climate_timeseries, create_climate_spatial_plot, create_climate_seasonal_plot,

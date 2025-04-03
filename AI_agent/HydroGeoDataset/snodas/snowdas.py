@@ -5,10 +5,9 @@ import time
 import os
 import logging
 try:
-    from HydroGeoDataset.config import AgentConfig
-except ImportError:
     from config import AgentConfig
-
+except ImportError:
+    from AI_agent.config import AgentConfig
 class SNODAS_Dataset:
     def __init__(self, config):
         self.config = config

@@ -7,8 +7,13 @@ import pandas as pd
 from scipy.spatial import cKDTree
 
 from matplotlib import animation, pyplot as plt
-from config import AgentConfig
-from utils.Logger import LoggerSetup
+
+try:
+    from config import AgentConfig
+    from utils.Logger import LoggerSetup
+except ImportError:
+    from AI_agent.config import AgentConfig
+    from AI_agent.utils.Logger import LoggerSetup
     
 
 

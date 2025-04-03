@@ -15,9 +15,10 @@ import logging
 from pathlib import Path
 import calendar
 import geopandas as gpd
-from config import AgentConfig
-from utils.plot_utils import safe_figure, save_figure
-
+try:
+    from utils.plot_utils import safe_figure, save_figure
+except ImportError:
+    from AI_agent.utils.plot_utils import safe_figure, save_figure
 try:
     from HydroGeoDataset.nsrdb.nsrdb_utilities import (
         extract_nsrdb_data, extract_nsrdb_multiyear, get_coordinates_from_bbox,
@@ -35,20 +36,36 @@ try:
         simulate_pv_output, plot_pv_simulation
     )
 except ImportError:
-    from HydroGeoDataset.nsrdb.nsrdb_utilities import (
-        extract_nsrdb_data, extract_nsrdb_multiyear, get_coordinates_from_bbox,
-        create_interpolated_grid, create_nsrdb_timeseries, create_nsrdb_map,
-        aggregate_nsrdb_daily, extract_for_swat, calculate_statistics,
-        calculate_monthly_averages, export_data_to_csv, NSRDB_VARIABLES,
-        save_as_raster
-    )
-    from HydroGeoDataset.nsrdb.nsrdb_solar_analysis import (
-        calculate_heat_wave_statistics, calculate_solar_energy_potential,
-        plot_heat_wave_analysis, plot_solar_energy_potential,
-        calculate_radiation_extremes, analyze_climate_correlations,
-        plot_climate_correlations, calculate_pv_performance_metrics,
-        simulate_pv_output, plot_pv_simulation
-    )
+    try:
+        from HydroGeoDataset.nsrdb.nsrdb_utilities import (
+            extract_nsrdb_data, extract_nsrdb_multiyear, get_coordinates_from_bbox,
+            create_interpolated_grid, create_nsrdb_timeseries, create_nsrdb_map,
+            aggregate_nsrdb_daily, extract_for_swat, calculate_statistics,
+            calculate_monthly_averages, export_data_to_csv, NSRDB_VARIABLES,
+            save_as_raster
+        )
+        from HydroGeoDataset.nsrdb.nsrdb_solar_analysis import (
+            calculate_heat_wave_statistics, calculate_solar_energy_potential,
+            plot_heat_wave_analysis, plot_solar_energy_potential,
+            calculate_radiation_extremes, analyze_climate_correlations,
+            plot_climate_correlations, calculate_pv_performance_metrics,
+            simulate_pv_output, plot_pv_simulation
+        )
+    except ImportError:
+        from AI_agent.HydroGeoDataset.nsrdb.nsrdb_utilities import (
+            extract_nsrdb_data, extract_nsrdb_multiyear, get_coordinates_from_bbox,
+            create_interpolated_grid, create_nsrdb_timeseries, create_nsrdb_map,
+            aggregate_nsrdb_daily, extract_for_swat, calculate_statistics,
+            calculate_monthly_averages, export_data_to_csv, NSRDB_VARIABLES,
+            save_as_raster
+        )
+        from AI_agent.HydroGeoDataset.nsrdb.nsrdb_solar_analysis import (
+            calculate_heat_wave_statistics, calculate_solar_energy_potential,
+            plot_heat_wave_analysis, plot_solar_energy_potential,
+            calculate_radiation_extremes, analyze_climate_correlations,
+            plot_climate_correlations, calculate_pv_performance_metrics,
+            simulate_pv_output, plot_pv_simulation
+        )
 
 # Configure logger
 logger = logging.getLogger(__name__)

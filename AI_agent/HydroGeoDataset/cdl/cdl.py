@@ -12,21 +12,24 @@ import logging
 from typing import Dict, List, Tuple, Optional, Union, Any
 from functools import lru_cache
 import matplotlib.pyplot as plt
-
 try:
-    from HydroGeoDataset.config import AgentConfig
-    from HydroGeoDataset.cdl_utilities import (plot_cdl_trends, calculate_crop_changes, 
+    from config import AgentConfig
+
+    from cdl.cdl_utilities import (plot_cdl_trends, calculate_crop_changes, 
                                       export_cdl_data, create_crop_change_plot,
                                       create_crop_composition_pie, generate_cdl_report)
 except ImportError:
-    from config import AgentConfig
     try:
-        from cdl_utilities import (plot_cdl_trends, calculate_crop_changes, 
+        from AI_agent.config import AgentConfig
+
+        from HydroGeoDataset.cdl.cdl_utilities import (plot_cdl_trends, calculate_crop_changes, 
                                 export_cdl_data, create_crop_change_plot,
                                 create_crop_composition_pie, generate_cdl_report)
-    except ImportError:
-        logging.warning("CDL utilities module not found. Visualization functions will not be available.")
-
+    except:
+        from AI_agent.HydroGeoDataset.cdl.cdl_utilities import (plot_cdl_trends, calculate_crop_changes, 
+                                export_cdl_data, create_crop_change_plot,
+                                create_crop_composition_pie, generate_cdl_report)
+        
 # Configure logging
 logging.basicConfig(level=logging.INFO, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

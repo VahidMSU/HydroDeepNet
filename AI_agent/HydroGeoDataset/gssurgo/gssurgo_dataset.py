@@ -9,17 +9,10 @@ from typing import Tuple, Optional, List, Dict, Any
 import fiona
 from shapely.geometry import box, mapping
 import matplotlib.pyplot as plt
-
 try:
-    from HydroGeoDataset.config import AgentConfig
+    from config import AgentConfig
 except ImportError:
-    try:
-        from config import AgentConfig
-    except ImportError:
-        # Create a basic config class if we can't import
-        class AgentConfig:
-            HydroGeoDataset_ML_250_path = "/data/SWATGenXApp/HydroGeoDataset_ML_250.h5"
-
+    from AI_agent.config import AgentConfig
 # Configure logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -139,8 +132,6 @@ def extract_gssurgo_data(bounding_box, output_dir=None):
 # Example usage when run directly
 if __name__ == "__main__":
     bounding_box= [-85.444332, 43.158148, -84.239256, 44.164683]
-    
-
     # Extract GSSURGO data for the specified bounding box
     results = extract_gssurgo_data(bounding_box, output_dir="gssurgo_output")
     print(results.keys())

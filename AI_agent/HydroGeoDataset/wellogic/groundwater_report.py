@@ -13,8 +13,9 @@ import logging
 from pathlib import Path
 import itertools
 import matplotlib.pyplot as plt
-from config import AgentConfig
 try:
+    from config import AgentConfig
+
     from wellogic.groundwater_utilities import (
         GROUNDWATER_VARIABLES, extract_groundwater_data, get_groundwater_spatial_stats,
         create_groundwater_maps, create_groundwater_error_maps, create_groundwater_histograms,
@@ -22,13 +23,24 @@ try:
         export_groundwater_data_to_csv
     )
 except ImportError:
-    
-    from HydroGeoDataset.wellogic.groundwater_utilities import (
-        GROUNDWATER_VARIABLES, extract_groundwater_data, get_groundwater_spatial_stats,
-        create_groundwater_maps, create_groundwater_error_maps, create_groundwater_histograms,
-        create_groundwater_correlation_matrix, compare_groundwater_variables,
-        export_groundwater_data_to_csv
-    )
+    try:
+        from config import AgentConfig
+
+        from HydroGeoDataset.wellogic.groundwater_utilities import (
+            GROUNDWATER_VARIABLES, extract_groundwater_data, get_groundwater_spatial_stats,
+            create_groundwater_maps, create_groundwater_error_maps, create_groundwater_histograms,
+            create_groundwater_correlation_matrix, compare_groundwater_variables,
+            export_groundwater_data_to_csv
+        )
+    except ImportError:
+        from AI_agent.config import AgentConfig
+
+        from AI_agent.HydroGeoDataset.wellogic.groundwater_utilities import (
+            GROUNDWATER_VARIABLES, extract_groundwater_data, get_groundwater_spatial_stats,
+            create_groundwater_maps, create_groundwater_error_maps, create_groundwater_histograms,
+            create_groundwater_correlation_matrix, compare_groundwater_variables,
+            export_groundwater_data_to_csv
+        )
 
 # Configure logger
 logger = logging.getLogger(__name__)

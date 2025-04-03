@@ -15,9 +15,13 @@ import concurrent.futures
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple, Callable
 # Add import for HTML conversion
-from utils.html_report_converter import convert_markdown_to_html, create_report_index
-# Add import for plot utilities
-from utils.plot_utils import close_all_figures
+try:
+    from utils.html_report_converter import convert_markdown_to_html, create_report_index
+    # Add import for plot utilities
+    from utils.plot_utils import close_all_figures
+except ImportError:
+    from AI_agent.utils.html_report_converter import convert_markdown_to_html, create_report_index
+    from AI_agent.utils.plot_utils import close_all_figures
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -32,15 +36,34 @@ if str(parent_dir) not in sys.path:
     sys.path.append(str(parent_dir))
 
 # Try importing with direct module path
-from config import AgentConfig
-from HydroGeoDataset.loca2.climate_change_analysis import ClimateChangeAnalysis
-from HydroGeoDataset.usgs.governmental_units_report import analyze_governmental_units
-from HydroGeoDataset.prism.prism_report import batch_process_prism
-from HydroGeoDataset.modis.modis_report import run_comprehensive_report
-from HydroGeoDataset.cdl.cdl_report import analyze_cdl_data
-from HydroGeoDataset.nsrdb.nsrdb_report import batch_process_nsrdb
-from HydroGeoDataset.gssurgo.gssurgo_report import process_soil_data
-from HydroGeoDataset.wellogic.groundwater_report import GroundwaterAnalyzer
+
+try:
+    from config import AgentConfig
+    from HydroGeoDataset.loca2.climate_change_analysis import ClimateChangeAnalysis
+    from HydroGeoDataset.usgs.governmental_units_report import analyze_governmental_units
+    from HydroGeoDataset.prism.prism_report import batch_process_prism
+    from HydroGeoDataset.modis.modis_report import run_comprehensive_report
+    from HydroGeoDataset.cdl.cdl_report import analyze_cdl_data
+    from HydroGeoDataset.nsrdb.nsrdb_report import batch_process_nsrdb
+    from HydroGeoDataset.gssurgo.gssurgo_report import process_soil_data
+    from HydroGeoDataset.wellogic.groundwater_report import GroundwaterAnalyzer
+    from HydroGeoDataset.snodas.snowdas_report import batch_process_snodas
+except ImportError as e:
+    from AI_agent.config import AgentConfig
+    from AI_agent.HydroGeoDataset.loca2.climate_change_analysis import ClimateChangeAnalysis
+    from AI_agent.HydroGeoDataset.usgs.governmental_units_report import analyze_governmental_units
+    from AI_agent.HydroGeoDataset.prism.prism_report import batch_process_prism
+    from AI_agent.HydroGeoDataset.modis.modis_report import run_comprehensive_report
+    from AI_agent.HydroGeoDataset.cdl.cdl_report import analyze_cdl_data
+    from AI_agent.HydroGeoDataset.nsrdb.nsrdb_report import batch_process_nsrdb
+    from AI_agent.HydroGeoDataset.gssurgo.gssurgo_report import process_soil_data
+    from AI_agent.HydroGeoDataset.wellogic.groundwater_report import GroundwaterAnalyzer
+    from AI_agent.HydroGeoDataset.snodas.snowdas_report import batch_process_snodas
+    
+
+
+
+
 
 def generate_prism_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
     """
@@ -55,9 +78,6 @@ def generate_prism_report(config: Dict[str, Any], output_dir: str) -> Optional[s
     """
     try:
         logger.info("Generating PRISM climate report...")
-        
-
-
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         
@@ -118,10 +138,7 @@ def generate_cdl_report(config: Dict[str, Any], output_dir: str) -> Optional[str
         Path to the generated report or None if generation failed
     """
     try:
-        logger.info("Generating CDL report...")
-        
-
-        
+        logger.info("Generating CDL report...")    
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         
@@ -191,11 +208,7 @@ def generate_governmental_units_report(config: Dict[str, Any], output_dir: str) 
     """
     try:
         logger.info("Generating governmental units report...")
-        
-
-
         os.makedirs(output_dir, exist_ok=True)
-        
         # Extract parameters from config
         gdb_path = config.get('gdb_path', AgentConfig.USGS_governmental_path)
         bbox = config.get('bounding_box')
@@ -400,8 +413,36 @@ def generate_gssurgo_report(config: Dict[str, Any], output_dir: str) -> Optional
         logger.error(f"Error generating gSSURGO soil report: {e}", exc_info=True)
         return None
 
-
-
+def generate_snodas_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
+    """
+    Generate a SNODAS snow data report.
+    
+    Args:
+        config: Configuration dictionary with processing parameters
+        output_dir: Directory to save report files
+        
+    Returns:
+        Path to the generated report or None if generation failed
+    """
+    try:
+        logger.info("Generating SNODAS snow data report...")
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Process SNODAS data and generate report
+        report_path = batch_process_snodas(config, output_dir)
+        
+        if report_path:
+            logger.info(f"SNODAS report generated: {report_path}")
+            return report_path
+        else:
+            logger.error("Failed to generate SNODAS report")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error generating SNODAS report: {e}", exc_info=True)
+        return None
 
 def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, parallel: bool = True) -> List[str]:
     """
@@ -457,7 +498,11 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
             'name': 'gssurgo',
             'dir': os.path.join(output_dir, "gssurgo"),
             'func': generate_gssurgo_report,
-
+        },
+        {
+            'name': 'snodas',
+            'dir': os.path.join(output_dir, "snodas"),
+            'func': generate_snodas_report,
         }
     ]
     
@@ -614,7 +659,8 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
                 'groundwater': generate_groundwater_report,
                 'gov_units': generate_governmental_units_report,
                 'gssurgo': generate_gssurgo_report,
-                'climate_change': generate_climate_change_report
+                'climate_change': generate_climate_change_report,
+                'snodas': generate_snodas_report
             }
             
             if report_type in report_funcs:
@@ -656,8 +702,8 @@ def generate_reports():
     """Parse command line arguments and generate reports."""
     parser = argparse.ArgumentParser(description='Generate reports from various data sources')
     
-    parser.add_argument('--type', choices=['prism', 'nsrdb', 'modis', 'cdl', 'groundwater', 'gov_units', 'gssurgo', 'climate_change', 'all'],
-
+    parser.add_argument('--type', choices=['prism', 'nsrdb', 'modis', 'cdl', 'groundwater', 
+                                          'gov_units', 'gssurgo', 'climate_change', 'snodas', 'all'],
                         default='all', help='Type of report to generate')
     parser.add_argument('--output', type=str, default='reports',
                        help='Output directory for reports')

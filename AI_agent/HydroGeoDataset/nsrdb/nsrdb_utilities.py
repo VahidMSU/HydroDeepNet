@@ -20,7 +20,10 @@ import matplotlib.gridspec as gridspec
 from scipy.interpolate import griddata
 import rasterio
 from rasterio.transform import from_origin
-from utils.plot_utils import safe_figure, save_figure
+try:
+    from utils.plot_utils import safe_figure, save_figure
+except ImportError:
+    from AI_agent.utils.plot_utils import safe_figure, save_figure
 # Configure logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

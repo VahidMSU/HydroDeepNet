@@ -10,11 +10,13 @@ import numpy as np
 import pandas as pd
 import logging
 import argparse
-from config import AgentConfig
 try:
     from cdl.cdl import CDL_dataset
 except ImportError:
-    from HydroGeoDataset.cdl.cdl import CDL_dataset
+    try:
+        from HydroGeoDataset.cdl.cdl import CDL_dataset
+    except ImportError:
+        from AI_agent.HydroGeoDataset.cdl.cdl import CDL_dataset
 try:
     from modis.modis import MODIS_dataset
     from modis.modis_analysis import (
@@ -27,15 +29,24 @@ try:
 
     
 except ImportError:
-    from HydroGeoDataset.modis.modis import MODIS_dataset
-    from HydroGeoDataset.modis.modis_analysis import (
-        generate_modis_report,
-        generate_comprehensive_modis_report,
-        analyze_modis_environmental_indicators,
-        create_integrated_landcover_report,
-        create_modis_climate_comparison
-    )
-
+    try:
+        from HydroGeoDataset.modis.modis import MODIS_dataset
+        from HydroGeoDataset.modis.modis_analysis import (
+            generate_modis_report,
+            generate_comprehensive_modis_report,
+            analyze_modis_environmental_indicators,
+            create_integrated_landcover_report,
+            create_modis_climate_comparison
+        )
+    except ImportError:
+        from AI_agent.HydroGeoDataset.modis.modis import MODIS_dataset
+        from AI_agent.HydroGeoDataset.modis.modis_analysis import (
+            generate_modis_report,
+            generate_comprehensive_modis_report,
+            analyze_modis_environmental_indicators,
+            create_integrated_landcover_report,
+            create_modis_climate_comparison
+        )
 
 
 # Configure logger

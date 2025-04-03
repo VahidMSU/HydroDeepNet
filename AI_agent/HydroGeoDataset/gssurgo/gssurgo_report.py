@@ -18,10 +18,9 @@ import seaborn as sns
 
 # Add parent directory to path to help with imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
 try:
-    from HydroGeoDataset.config import AgentConfig
-    from HydroGeoDataset.gssurgo_utilities import (
+    
+    from gssurgo.gssurgo_utilities import (
         calculate_soil_statistics, plot_soil_parameter_distribution,
         create_soil_correlation_matrix, classify_soil_texture,
         create_soil_texture_pie_chart, create_soil_parameter_maps,
@@ -29,11 +28,10 @@ try:
         export_soil_data_as_csv, analyze_soil_limitations,
         SOIL_PARAMETERS
     )
-    from HydroGeoDataset.gssurgo_dataset import extract_gssurgo_data
+    from gssurgo.gssurgo_dataset import extract_gssurgo_data
 except ImportError:
     try:
-        from config import AgentConfig
-        from gssurgo_utilities import (
+        from HydroGeoDataset.gssurgo.gssurgo_utilities import (
             calculate_soil_statistics, plot_soil_parameter_distribution,
             create_soil_correlation_matrix, classify_soil_texture,
             create_soil_texture_pie_chart, create_soil_parameter_maps,
@@ -41,19 +39,9 @@ except ImportError:
             export_soil_data_as_csv, analyze_soil_limitations,
             SOIL_PARAMETERS
         )
-        from gssurgo_dataset import extract_gssurgo_data
-    except ImportError:
-        # If we're in the same directory as the files
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        sys.path.append(current_dir)
-        try:
-            from config import AgentConfig
-        except ImportError:
-            # Create a basic config if we can't import
-            class AgentConfig:
-                HydroGeoDataset_ML_250_path = "/data/SWATGenXApp/HydroGeoDataset_ML_250.h5"
-        
-        from gssurgo_utilities import (
+        from HydroGeoDataset.gssurgo.gssurgo_dataset import extract_gssurgo_data
+    except:
+        from AI_agent.HydroGeoDataset.gssurgo.gssurgo_utilities import (
             calculate_soil_statistics, plot_soil_parameter_distribution,
             create_soil_correlation_matrix, classify_soil_texture,
             create_soil_texture_pie_chart, create_soil_parameter_maps,
@@ -61,8 +49,7 @@ except ImportError:
             export_soil_data_as_csv, analyze_soil_limitations,
             SOIL_PARAMETERS
         )
-        from gssurgo_dataset import extract_gssurgo_data
-
+        from AI_agent.HydroGeoDataset.gssurgo.gssurgo_dataset import extract_gssurgo_data
 # Configure logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

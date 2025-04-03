@@ -6,13 +6,12 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import contextily as ctx
 from shapely.geometry import box
+from config import AgentConfig
 
 try:
-    from HydroGeoDataset.config import AgentConfig
-    from HydroGeoDataset.governmental_units_report import analyze_governmental_units
+    from usgs.governmental_units_report import analyze_governmental_units
 except ImportError:
-    from config import AgentConfig
-    from governmental_units_report import analyze_governmental_units
+    from HydroGeoDataset.usgs.governmental_units_report import analyze_governmental_units
 
 # Available layers in the governmental units database
 AVAILABLE_LAYERS = [

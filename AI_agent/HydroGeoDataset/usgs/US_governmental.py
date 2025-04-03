@@ -1,9 +1,6 @@
 import geopandas as gpd
+from config import AgentConfig
 
-try:
-    from HydroGeoDataset.config import AgentConfig
-except ImportError:
-    from config import AgentConfig
 
 config = { 
     "RESOLUTION": 250,
