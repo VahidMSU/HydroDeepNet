@@ -21,11 +21,25 @@ try:
     )
     from loca2_dataset import DataImporter
 except ImportError:
-    from .loca2_multi_period_multi_scenario import (
-        full_climate_change_data,
-        analyze_climate_changes,
-    )
-    from .loca2_dataset import DataImporter
+    try:
+        from loca2.loca2_multi_period_multi_scenario import (
+            full_climate_change_data,
+            analyze_climate_changes,
+        )
+        from loca2.loca2_dataset import DataImporter
+    except:
+        try:
+            from HydroGeoDataset.loca2.loca2_multi_period_multi_scenario import (
+                full_climate_change_data,
+                analyze_climate_changes,
+            )
+            from HydroGeoDataset.loca2.loca2_dataset import DataImporter
+        except:
+            from AI_agent.HydroGeoDataset.loca2.loca2_multi_period_multi_scenario import (
+                full_climate_change_data,
+                analyze_climate_changes,
+            )
+            from AI_agent.HydroGeoDataset.loca2.loca2_dataset import DataImporter
     
 # Configure logger
 logger = logging.getLogger(__name__)

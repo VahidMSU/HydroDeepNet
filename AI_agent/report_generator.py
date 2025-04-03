@@ -521,7 +521,14 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                 # Process one report type at a time to prevent figure conflicts
                 for report_config in report_configs:
-                    future = executor.submit(report_config['func'], config, report_config['dir'])
+                    # Extract report-specific config if available
+                    report_name = report_config['name']
+                    report_specific_config = config.get(f"{report_name}_config", {})
+                    
+                    # Merge with global config, with report-specific values taking precedence
+                    merged_config = {**config, **report_specific_config}
+                    
+                    future = executor.submit(report_config['func'], merged_config, report_config['dir'])
                     try:
                         report_path = future.result()
                         if report_path:
@@ -547,7 +554,14 @@ def generate_comprehensive_report(config: Dict[str, Any], output_dir: str, paral
         else:
             # Generate reports sequentially
             for report_config in report_configs:
-                report_path = report_config['func'](config, report_config['dir'])
+                # Extract report-specific config if available
+                report_name = report_config['name']
+                report_specific_config = config.get(f"{report_name}_config", {})
+                
+                # Merge with global config, with report-specific values taking precedence
+                merged_config = {**config, **report_specific_config}
+                
+                report_path = report_config['func'](merged_config, report_config['dir'])
                 if report_path:
                     reports.append(report_path)
                     
@@ -664,7 +678,13 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
             }
             
             if report_type in report_funcs:
-                report_path = report_funcs[report_type](config, report_dir)
+                # Extract report-specific config if available
+                report_specific_config = config.get(f"{report_type}_config", {})
+                
+                # Merge with global config, with report-specific values taking precedence
+                merged_config = {**config, **report_specific_config}
+                
+                report_path = report_funcs[report_type](merged_config, report_dir)
                 if report_path:
                     reports.append(report_path)
             else:
@@ -698,10 +718,58 @@ def run_report_generation(report_type: str, config: Dict[str, Any], output_dir: 
     
     return reports
 
+# Define report-specific argument definitions
+REPORT_SPECIFIC_ARGS = {
+    'prism': [
+        ('--prism-dataset', {'type': str, 'help': 'PRISM dataset type (daily, monthly, etc.)'}),
+        ('--prism-variables', {'type': str, 'help': 'Comma-separated list of PRISM variables to include'}),
+        ('--prism-fill-gaps', {'action': 'store_true', 'help': 'Fill gaps in PRISM data'})
+    ],
+    'nsrdb': [
+        ('--nsrdb-extract-for-swat', {'action': 'store_true', 'help': 'Extract NSRDB data in SWAT format'}),
+        ('--nsrdb-variables', {'type': str, 'help': 'Comma-separated list of NSRDB variables to include'})
+    ],
+    'modis': [
+        ('--modis-product', {'type': str, 'help': 'MODIS product to use (MOD13Q1, etc.)'}),
+        ('--modis-indices', {'type': str, 'help': 'Comma-separated list of MODIS indices to include'}),
+        ('--modis-backend', {'type': str, 'choices': ['gdal', 'xarray'], 'help': 'Backend to use for processing'})
+    ],
+    'cdl': [
+        ('--cdl-recode-crops', {'action': 'store_true', 'help': 'Recode crops into major categories'}),
+        ('--cdl-top-n-crops', {'type': int, 'help': 'Number of top crops to analyze separately'})
+    ],
+    'groundwater': [
+        ('--groundwater-max-depth', {'type': float, 'help': 'Maximum depth to include in analysis'}),
+        ('--groundwater-min-samples', {'type': int, 'help': 'Minimum number of samples required for analysis'})
+    ],
+    'gov_units': [
+        ('--gov-units-db-path', {'type': str, 'help': 'Path to governmental units database'}),
+        ('--gov-units-layers', {'type': str, 'help': 'Comma-separated list of layers to include'})
+    ],
+    'gssurgo': [
+        ('--gssurgo-properties', {'type': str, 'help': 'Comma-separated list of soil properties to analyze'}),
+        ('--gssurgo-depth-range', {'type': str, 'help': 'Depth range to analyze (e.g., "0-30,30-100")'})
+    ],
+    'climate_change': [
+        ('--hist-start-year', {'type': int, 'default': 2000, 'help': 'Start year for historical climate period'}),
+        ('--hist-end-year', {'type': int, 'default': 2014, 'help': 'End year for historical climate period'}),
+        ('--fut-start-year', {'type': int, 'default': 2045, 'help': 'Start year for future climate period'}),
+        ('--fut-end-year', {'type': int, 'default': 2060, 'help': 'End year for future climate period'}),
+        ('--cc-model', {'type': str, 'default': 'ACCESS-CM2', 'help': 'Climate model for climate change analysis'}),
+        ('--cc-ensemble', {'type': str, 'default': 'r1i1p1f1', 'help': 'Ensemble member for climate change analysis'}),
+        ('--cc-scenario', {'type': str, 'default': 'ssp245', 'help': 'Climate scenario for future projections'})
+    ],
+    'snodas': [
+        ('--snodas-variables', {'type': str, 'help': 'Comma-separated list of SNODAS variables to include'}),
+        ('--snodas-snow-season', {'type': str, 'help': 'Months to consider for snow season (e.g., "11,12,1,2,3,4")'})
+    ]
+}
+
 def generate_reports():
     """Parse command line arguments and generate reports."""
     parser = argparse.ArgumentParser(description='Generate reports from various data sources')
     
+    # Common arguments
     parser.add_argument('--type', choices=['prism', 'nsrdb', 'modis', 'cdl', 'groundwater', 
                                           'gov_units', 'gssurgo', 'climate_change', 'snodas', 'all'],
                         default='all', help='Type of report to generate')
@@ -725,21 +793,16 @@ def generate_reports():
                        choices=['daily', 'monthly', 'seasonal', 'annual'],
                        help='Temporal aggregation for climate data')
     
-    # Climate change specific arguments
-    parser.add_argument('--hist-start-year', type=int, default=2000,
-                       help='Start year for historical climate period')
-    parser.add_argument('--hist-end-year', type=int, default=2014,
-                       help='End year for historical climate period')
-    parser.add_argument('--fut-start-year', type=int, default=2045,
-                       help='Start year for future climate period')
-    parser.add_argument('--fut-end-year', type=int, default=2060,
-                       help='End year for future climate period')
-    parser.add_argument('--cc-model', type=str, default='ACCESS-CM2',
-                       help='Climate model for climate change analysis')
-    parser.add_argument('--cc-ensemble', type=str, default='r1i1p1f1',
-                       help='Ensemble member for climate change analysis')
-    parser.add_argument('--cc-scenario', type=str, default='ssp245',
-                       help='Climate scenario for future projections')
+    # Add report-specific argument groups
+    report_groups = {}
+    for report_type, args_list in REPORT_SPECIFIC_ARGS.items():
+        group = parser.add_argument_group(f'{report_type} report arguments')
+        report_groups[report_type] = group
+        
+        for arg_name, arg_kwargs in args_list:
+            group.add_argument(arg_name, **arg_kwargs)
+    
+    # Common arguments for climate data fallback
     parser.add_argument('--use-synthetic', action='store_true',
                        help='Use synthetic data if actual data not available')
     
@@ -749,7 +812,7 @@ def generate_reports():
     
     args = parser.parse_args()
     
-    # Create basic configuration
+    # Create basic configuration with common arguments
     config = {
         'RESOLUTION': args.resolution,
         'resolution': args.resolution,
@@ -757,17 +820,47 @@ def generate_reports():
         'end_year': args.end_year,
         'bounding_box': [args.min_lon, args.min_lat, args.max_lon, args.max_lat],
         'aggregation': args.aggregation,
-        # Climate change specific config
-        'hist_start_year': args.hist_start_year,
-        'hist_end_year': args.hist_end_year,
-        'fut_start_year': args.fut_start_year,
-        'fut_end_year': args.fut_end_year,
-        'cc_model': args.cc_model,
-        'cc_ensemble': args.cc_ensemble,
-        'cc_scenario': args.cc_scenario,
         'use_synthetic_data_fallback': args.use_synthetic,
         'include_climate_change': args.type in ['climate_change', 'all']
     }
+    
+    # Process report-specific arguments and create dedicated config sections
+    for report_type, args_list in REPORT_SPECIFIC_ARGS.items():
+        report_config = {}
+        
+        for arg_name, _ in args_list:
+            # Convert arg_name (e.g., --prism-dataset) to attribute name (prism_dataset)
+            arg_attr = arg_name.lstrip('-').replace('-', '_')
+            if hasattr(args, arg_attr) and getattr(args, arg_attr) is not None:
+                value = getattr(args, arg_attr)
+                # Handle comma-separated values
+                if isinstance(value, str) and ',' in value:
+                    if arg_attr.endswith('_variables') or arg_attr.endswith('_indices') or arg_attr.endswith('_layers'):
+                        value = [v.strip() for v in value.split(',')]
+                report_config[arg_attr.split('_', 1)[1]] = value
+        
+        # Only add the config section if it has values
+        if report_config:
+            config[f"{report_type}_config"] = report_config
+            
+    # Add climate change config as a special case since it has many parameters
+    # that have both general and specific uses
+    if 'climate_change' in config:
+        cc_config = config.get('climate_change_config', {})
+        cc_config.update({
+            'hist_start_year': args.hist_start_year,
+            'hist_end_year': args.hist_end_year,
+            'fut_start_year': args.fut_start_year,
+            'fut_end_year': args.fut_end_year,
+            'cc_model': args.cc_model,
+            'cc_ensemble': args.cc_ensemble,
+            'cc_scenario': args.cc_scenario
+        })
+        config['climate_change_config'] = cc_config
+        
+        # Also add to main config for backward compatibility
+        if args.type == 'climate_change':
+            config.update(cc_config)
     
     # Determine if we should use parallel processing
     use_parallel = not args.sequential
