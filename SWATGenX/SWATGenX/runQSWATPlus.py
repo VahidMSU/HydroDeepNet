@@ -78,3 +78,13 @@ def runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths):
     finally:
         #os.remove(new_runQSWATPlus_path)
         print(f"Removed script: {new_runQSWATPlus_path}")
+
+## test
+if __name__ == "__main__":
+    from SWATGenXConfigPars import SWATGenXPaths
+    VPUID = "0408"
+    LEVEL = "huc12"
+    NAME = "04141000"
+    MODEL_NAME = "SWAT_MODEL_Web_Application"
+    SWATGenXPaths = SWATGenXPaths(username = "admin")
+    runQSWATPlus(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths)

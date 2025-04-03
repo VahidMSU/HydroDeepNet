@@ -2,6 +2,20 @@ import sys
 import os
 import sqlite3
 
+# Add a function to initialize the database
+def initialize_database(project_db):
+    try:
+        conn = sqlite3.connect(project_db)
+        cursor = conn.cursor()
+        # Example initialization query (replace with actual initialization logic if needed)
+        cursor.execute("PRAGMA foreign_keys = ON;")
+        conn.commit()
+        conn.close()
+        print("Database initialized successfully")
+    except sqlite3.Error as e:
+        print(f"Error initializing database: {e}")
+        raise
+
 def run_swatplus_editor(SWATGenXPaths, vpuid: str, level: str, name: str, model_name: str) -> None:
     """Run the SWAT+ Editor for the specified model."""
     sys.path.append(SWATGenXPaths.SWATPlusEditor_path)
@@ -31,6 +45,13 @@ def run_swatplus_editor(SWATGenXPaths, vpuid: str, level: str, name: str, model_
         print(f"Error connecting to database: {e}")
         return
 
+    # Initialize the database
+    try:
+        initialize_database(project_db)
+    except Exception as e:
+        print(f"Error during database initialization: {e}")
+        return
+
     # Use automatic_updates with proper error handling
     try:
         automatic_updates(project_db=project_db)
@@ -44,7 +65,7 @@ def run_swatplus_editor(SWATGenXPaths, vpuid: str, level: str, name: str, model_
 
         RunAll(
             project_db=project_db,
-            editor_version="2.3.3",
+            editor_version="3.0.8",
             swat_exe=SWATGenXPaths.swat_exe,
             weather_dir=os.path.join(base_model, "PRISM"),
             weather_save_dir=input_files_dir,
@@ -87,10 +108,11 @@ def run_swatplus_editor(SWATGenXPaths, vpuid: str, level: str, name: str, model_
 
 
 if __name__ == '__main__':
-
+    from runQSWATPlus import runQSWATPlus
     from SWATGenXConfigPars import SWATGenXPaths
-    SWATGenXPaths = SWATGenXPaths(username = "vahidr32" )
+    SWATGenXPaths = SWATGenXPaths(username = "admin" )
     SWATGenXPaths.exe_start_year = 2000
-    SWATGenXPaths.exe_end_year = 2021
+    SWATGenXPaths.exe_end_year = 2001
     print(f" self.swatgenx_outlet_path: {SWATGenXPaths.swatgenx_outlet_path}")
-    run_swatplus_editor(SWATGenXPaths, "0712", "huc12", "05536265", "SWAT_MODEL")
+    runQSWATPlus("0408", "huc12", "04141000", "SWAT_MODEL",SWATGenXPaths)
+    run_swatplus_editor(SWATGenXPaths, "0408", "huc12", "04141000", "SWAT_MODEL")

@@ -179,7 +179,7 @@ class PRISMExtractor:
         else:
             extracted_grid = prism_vpuid_grid
 
-        years = np.arange(1990, 2023)
+        years = np.arange(2000, 2021)
 
         # Replace nested Process execution with direct function calls to avoid daemon issues
         # Load precipitation data
