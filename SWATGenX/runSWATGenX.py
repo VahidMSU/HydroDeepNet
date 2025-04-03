@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     LEVEL = "huc12"
 
-    MODEL_NAME = "SWAT_MODEL"
+    MODEL_NAME = "SWAT_MODEL_Web_Application"
 
     if LEVEL == "huc12":
 
