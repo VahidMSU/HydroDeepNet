@@ -15,7 +15,10 @@ import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.gridspec as gridspec
 import logging
-from utils.plot_utils import safe_figure, save_figure
+try:
+    from utils.plot_utils import safe_figure, save_figure
+except ImportError:
+    from AI_agent.utils.plot_utils import safe_figure, save_figure
 import os 
 
 # Configure logger

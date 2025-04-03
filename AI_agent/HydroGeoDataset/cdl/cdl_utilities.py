@@ -14,10 +14,9 @@ import logging
 from pathlib import Path
 import seaborn as sns
 try:
-    from HydroGeoDataset.plot_utils import safe_figure, save_figure, close_all_figures
-except ImportError:
     from utils.plot_utils import safe_figure, save_figure, close_all_figures
-
+except ImportError:
+    from AI_agent.utils.plot_utils import safe_figure, save_figure, close_all_figures
 # Configure logger
 logger = logging.getLogger(__name__)
 

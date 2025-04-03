@@ -7,22 +7,37 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import logging
-from config import AgentConfig
 try:
-    
+    from config import AgentConfig
+
     from modis.modis_utilities import (
         get_modis_dates, plot_modis_timeseries, create_modis_spatial_plot, 
         create_modis_seasonal_plot, MODIS_PRODUCTS, create_modis_anomaly_plot,
         calculate_modis_statistics, create_modis_comparison_plot,
         create_modis_spatial_animation
     )
+    from modis.modis_utilities import extract_modis_data
+
 except ImportError:
-    from HydroGeoDataset.modis.modis_utilities import (
-        get_modis_dates, plot_modis_timeseries, create_modis_spatial_plot, 
-        create_modis_seasonal_plot, MODIS_PRODUCTS, create_modis_anomaly_plot,
-        calculate_modis_statistics, create_modis_comparison_plot,
-        create_modis_spatial_animation
-    )
+    try:
+        from config import AgentConfig
+
+        from HydroGeoDataset.modis.modis_utilities import (
+            get_modis_dates, plot_modis_timeseries, create_modis_spatial_plot, 
+            create_modis_seasonal_plot, MODIS_PRODUCTS, create_modis_anomaly_plot,
+            calculate_modis_statistics, create_modis_comparison_plot,
+            create_modis_spatial_animation
+        )
+        from HydroGeoDataset.modis.modis_utilities import extract_modis_data
+    except ImportError:
+        from AI_agent.config import AgentConfig
+
+        from AI_agent.HydroGeoDataset.modis.modis_utilities import (    
+            get_modis_dates, plot_modis_timeseries, create_modis_spatial_plot,
+            create_modis_seasonal_plot, MODIS_PRODUCTS, create_modis_anomaly_plot,
+            calculate_modis_statistics, create_modis_comparison_plot,
+            create_modis_spatial_animation
+        )
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -344,8 +359,7 @@ def batch_process_modis(config: Dict[str, Any], output_dir: str) -> List[str]:
     Returns:
         List of paths to generated reports
     """
-    from HydroGeoDataset.modis_utilities import extract_modis_data
-    
+
     reports = []
     
     try:

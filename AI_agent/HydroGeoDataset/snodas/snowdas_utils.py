@@ -17,8 +17,10 @@ import seaborn as sns
 import calendar
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.gridspec as gridspec
-from utils.plot_utils import safe_figure, save_figure
-
+try:
+    from utils.plot_utils import safe_figure, save_figure
+except ImportError:
+    from AI_agent.utils.plot_utils import safe_figure, save_figure
 
 # Configure logger
 logger = logging.getLogger(__name__)

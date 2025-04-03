@@ -1,11 +1,18 @@
 import h5py
 import numpy as np
-from config import AgentConfig
 try:
+    from config import AgentConfig
+
     from modis.modis_utilities import (extract_modis_data, MODIS_PRODUCTS)
 except ImportError:
-    from HydroGeoDataset.modis.modis_utilities import (extract_modis_data, MODIS_PRODUCTS)
+    try:
+        from config import AgentConfig
 
+        from HydroGeoDataset.modis.modis_utilities import (extract_modis_data, MODIS_PRODUCTS)
+    except ImportError:
+        from AI_agent.config import AgentConfig
+
+        from AI_agent.HydroGeoDataset.modis.modis_utilities import (extract_modis_data, MODIS_PRODUCTS)
 class MODIS_dataset:
     def __init__(self, config):
         self.config = config

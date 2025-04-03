@@ -14,8 +14,10 @@ from typing import Dict, List, Tuple, Optional, Union, Any
 import logging
 import numpy as np
 from pathlib import Path
-from config import AgentConfig
-
+try:
+    from config import AgentConfig
+except ImportError:
+    from AI_agent.config import AgentConfig
 # Configure logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

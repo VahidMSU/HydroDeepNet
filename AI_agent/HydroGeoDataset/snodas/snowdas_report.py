@@ -13,9 +13,10 @@ import matplotlib.pyplot as plt
 import logging
 from pathlib import Path
 import calendar
-from config import AgentConfig
 
 try:
+    from config import AgentConfig
+
     from snodas.snowdas_utils import (
         get_snodas_spatial_means, create_period_labels,
         plot_snow_timeseries, create_snow_spatial_plot, create_snow_seasonal_plot,
@@ -23,18 +24,32 @@ try:
         create_snow_monthly_analysis_plot
     )
 except ImportError:
-    from HydroGeoDataset.snodas.snowdas_utils import (
-        get_snodas_spatial_means, create_period_labels,
-        plot_snow_timeseries, create_snow_spatial_plot, create_snow_seasonal_plot,
-        export_snow_data_to_csv, calculate_snow_trends, SNODAS_VARIABLES,
-        create_snow_monthly_analysis_plot
-    )
+    try:
+        from config import AgentConfig
+
+        from HydroGeoDataset.snodas.snowdas_utils import (
+            get_snodas_spatial_means, create_period_labels,
+            plot_snow_timeseries, create_snow_spatial_plot, create_snow_seasonal_plot,
+            export_snow_data_to_csv, calculate_snow_trends, SNODAS_VARIABLES,
+            create_snow_monthly_analysis_plot
+        )
+    except ImportError:
+        from AI_agent.config import AgentConfig
+
+        from AI_agent.HydroGeoDataset.snodas.snowdas_utils import (
+            get_snodas_spatial_means, create_period_labels,
+            plot_snow_timeseries, create_snow_spatial_plot, create_snow_seasonal_plot,
+            export_snow_data_to_csv, calculate_snow_trends, SNODAS_VARIABLES,
+            create_snow_monthly_analysis_plot
+        )
 
 try:
     from snodas.snowdas import SNODAS_Dataset
 except ImportError:
-    from HydroGeoDataset.snodas.snowdas import SNODAS_Dataset
-
+    try:
+        from HydroGeoDataset.snodas.snowdas import SNODAS_Dataset
+    except ImportError:
+        from AI_agent.HydroGeoDataset.snodas.snowdas import SNODAS_Dataset
 
 # Configure logger
 logger = logging.getLogger(__name__)

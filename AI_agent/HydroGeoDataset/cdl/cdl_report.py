@@ -16,42 +16,28 @@ from pathlib import Path
 
 # Add parent directory to path to help with imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
 try:
-    from HydroGeoDataset.config import AgentConfig
-    from HydroGeoDataset.cdl import CDL_dataset
-    from HydroGeoDataset.cdl_utilities import (
+    from cdl.cdl import CDL_dataset
+    from cdl.cdl_utilities import (
         plot_cdl_trends, calculate_crop_changes, create_crop_change_plot,
         create_crop_composition_pie, create_crop_diversity_plot, create_crop_rotation_heatmap,
         export_cdl_data, calculate_agricultural_intensity, get_crop_categories
     )
 except ImportError:
     try:
-        from config import AgentConfig
-        from cdl import CDL_dataset
-        from cdl_utilities import (
+        from HydroGeoDataset.cdl.cdl import CDL_dataset
+        from HydroGeoDataset.cdl.cdl_utilities import (
             plot_cdl_trends, calculate_crop_changes, create_crop_change_plot,
             create_crop_composition_pie, create_crop_diversity_plot, create_crop_rotation_heatmap,
             export_cdl_data, calculate_agricultural_intensity, get_crop_categories
         )
     except ImportError:
-        # If we're in the same directory as the files
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        sys.path.append(current_dir)
-        try:
-            from config import AgentConfig
-        except ImportError:
-            # Create a basic config if we can't import
-            class AgentConfig:
-                HydroGeoDataset_ML_250_path = "/data/SWATGenXApp/HydroGeoDataset_ML_250.h5"
-                CDL_CODES_path = "/data/SWATGenXApp/cdl_classes.csv"
-        
-        from cdl_utilities import (
+        from AI_agent.HydroGeoDataset.cdl.cdl import CDL_dataset
+        from AI_agent.HydroGeoDataset.cdl.cdl_utilities import (
             plot_cdl_trends, calculate_crop_changes, create_crop_change_plot,
             create_crop_composition_pie, create_crop_diversity_plot, create_crop_rotation_heatmap,
             export_cdl_data, calculate_agricultural_intensity, get_crop_categories
         )
-        from cdl import CDL_dataset
 
 # Configure logger
 logger = logging.getLogger(__name__)
