@@ -33,14 +33,14 @@ if str(parent_dir) not in sys.path:
 
 # Try importing with direct module path
 from config import AgentConfig
-from datasets.loca2.climate_change_analysis import ClimateChangeAnalysis
-from datasets.usgs.governmental_units_report import analyze_governmental_units
-from datasets.prism.prism_report import batch_process_prism
-from datasets.modis.modis_report import run_comprehensive_report
-from datasets.cdl.cdl_report import analyze_cdl_data
-from datasets.nsrdb.nsrdb_report import batch_process_nsrdb
-from datasets.gssurgo.gssurgo_report import process_soil_data
-from datasets.wellogic.groundwater_report import GroundwaterAnalyzer
+from HydroGeoDataset.loca2.climate_change_analysis import ClimateChangeAnalysis
+from HydroGeoDataset.usgs.governmental_units_report import analyze_governmental_units
+from HydroGeoDataset.prism.prism_report import batch_process_prism
+from HydroGeoDataset.modis.modis_report import run_comprehensive_report
+from HydroGeoDataset.cdl.cdl_report import analyze_cdl_data
+from HydroGeoDataset.nsrdb.nsrdb_report import batch_process_nsrdb
+from HydroGeoDataset.gssurgo.gssurgo_report import process_soil_data
+from HydroGeoDataset.wellogic.groundwater_report import GroundwaterAnalyzer
 
 def generate_prism_report(config: Dict[str, Any], output_dir: str) -> Optional[str]:
     """
