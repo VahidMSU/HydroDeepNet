@@ -40,6 +40,7 @@ class SWATGenXPaths:
     USGS_CONUS_stations_path: str = f"{base_path}USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.csv"
     USGS_CONUS_stations_shape_path: str = f"{base_path}USGS/streamflow_stations/CONUS/streamflow_stations_CONUS.shp"
     available_sites_path: str = f"{base_path}USGS/all_VPUIDs.csv"
+    NSRDB_path = f"{base_path}NSRDB/"
     NSRDB_PRISM_path: str = f"{base_path}NSRDB/PRISM_NSRDB_CONUS.pkl"
     gSSURGO_CONUS_gdb_path: str = f"{base_path}Soil/gSSURGO_CONUS/gSSURGO_CONUS.gdb"
     

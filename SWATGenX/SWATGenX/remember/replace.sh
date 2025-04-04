@@ -1,0 +1,1 @@
+cp -rf /data/SWATGenXApp/codes/SWATGenX/SWATGenX/remember/import_weather.py /usr/local/share/SWATPlusEditor/swatplus-editor/src/api/actions/import_weather.py 

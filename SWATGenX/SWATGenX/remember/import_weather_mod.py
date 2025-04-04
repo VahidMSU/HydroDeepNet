@@ -306,128 +306,77 @@ class WeatherImport(ExecutableApi):
 		end_date = None
 		starts = []
 		ends = []
+
 		if os.path.exists(source_file):
-			self.emit_progress(prog, "Inserting {type} files and coordinates...".format(type=weather_type))
-			self.emit_progress(prog + 5, "source_file: {file}".format(file=source_file))
+			self.emit_progress(prog, f"Inserting {weather_type} files and coordinates...")
 			weather_files = []
 			dir = os.path.dirname(source_file)
+
 			try:
 				with open(source_file, "r") as source_data:
-					self.emit_progress(prog + 10, "Reading {type} files...".format(type=weather_type))
-					i = 0
-					for line in source_data:
-						self.emit_progress(prog + 15, "Reading {type} files...".format(type=weather_type))
+					for i, line in enumerate(source_data):
 						if self.__abort:
 							break
-	
-						if i > 1:
-							station_name = line.strip('\n')
-							station_file = os.path.join(dir, station_name)
-							self.emit_progress(prog + 15, f"Processing station file: {station_file}")
-							
-							if not os.path.exists(station_file):
-								self.emit_progress(prog + 20, "File {file} not found. Weather data import aborted.".format(file=station_file))
-								raise IOError("File {file} not found. Weather data import aborted.".format(file=station_file))
-	
+						if i <= 1:
+							continue
+
+						station_name = line.strip()
+						station_file = os.path.join(dir, station_name)
+						if not os.path.exists(station_file):
+							raise IOError(f"File {station_file} not found. Weather data import aborted.")
+
+						try:
+							Weather_file.get((Weather_file.filename == station_name) & (Weather_file.type == weather_type))
+						except Weather_file.DoesNotExist:
 							try:
-								existing = Weather_file.get((Weather_file.filename == station_name) & (Weather_file.type == weather_type))
-								self.emit_progress(prog + 15, f"Station {station_name} already exists, skipping")
-							except Weather_file.DoesNotExist:
-								try:
-									# First, check if file is empty or too small
-									file_size = os.path.getsize(station_file)
-									if file_size == 0:
-										self.emit_progress(prog + 20, f"File {station_file} is empty. Skipping.")
+								with open(station_file, "r") as f:
+									lines = [l.strip() for l in f if l.strip()]
+
+								if len(lines) < 4:
+									continue  # skip malformed or too-short files
+
+								# line index 2 → lat/lon
+								station_info = lines[2].split()
+								if len(station_info) < 4:
+									raise ValueError(f"Invalid value at line 3 of {station_file}. Expected nbyr, tstep, lat, lon, elev.")
+
+								lat = float(station_info[2])
+								lon = float(station_info[3])
+								weather_files.append({
+									"filename": station_name,
+									"type": weather_type,
+									"lat": lat,
+									"lon": lon
+								})
+
+								# line index 3 → start date
+								begin_data = lines[3].split()
+								if len(begin_data) < 2:
+									raise ValueError(f"Invalid value at line 4 of {station_file}. Expected year and julian day.")
+
+								start_dt = datetime.datetime(int(begin_data[0]), 1, 1) + datetime.timedelta(days=int(begin_data[1]) - 1)
+								starts.append(start_dt)
+
+								# last line → end date
+								last_parts = lines[-1].split()
+								if len(last_parts) >= 2:
+									try:
+										end_dt = datetime.datetime(int(last_parts[0]), 1, 1) + datetime.timedelta(days=int(last_parts[1]) - 1)
+										ends.append(end_dt)
+									except (ValueError, IndexError):
 										continue
-										
-									self.emit_progress(prog + 15, f"Processing {station_file} (size: {file_size} bytes)")
-									
-									with open(station_file, "r") as station_data:
-										j = 0
-										for sline in station_data:
-											if j == 2:
-												station_info = sline.strip().split()
-												self.emit_progress(prog + 15, f"Line {j+1} data: {sline.strip()}")
-												
-												if len(station_info) < 4:
-													self.emit_progress(prog + 20, "Invalid value at line {ln} of {file}. Expecting nbyr, tstep, lat, long, elev values separated by a space.".format(ln=str(j + 1), file=station_file))
-													raise ValueError("Invalid value at line {ln} of {file}. Expecting nbyr, tstep, lat, long, elev values separated by a space.".format(ln=str(j + 1), file=station_file))
-	
-												lat = float(station_info[2])
-												lon = float(station_info[3])
-	
-												file = {
-													"filename": station_name,
-													"type": weather_type,
-													"lat": lat,
-													"lon": lon
-												}
-												weather_files.append(file)
-											elif j == 3:
-												begin_data = sline.strip().split()
-												self.emit_progress(prog + 15, f"Start date line data: {sline.strip()}")
-												
-												if len(begin_data) < 3:
-													self.emit_progress(prog + 20, "Invalid value at line {ln} of {file}. Expecting year, julian day, and weather value separated by a space.".format(ln=str(j + 1), file=station_file))
-													raise ValueError("Invalid value at line {ln} of {file}. Expecting year, julian day, and weather value separated by a space.".format(ln=str(j + 1), file=station_file))
-	
-												date = datetime.datetime(int(begin_data[0]), 1, 1)
-												current_start_date = date + datetime.timedelta(days=int(begin_data[1])-1)
-												starts.append(current_start_date)
-											elif j > 3:
-												break
-	
-											j += 1
-									
-									# Reopen the file to read the end date
-									# This handles the issue where file pointer would be at the end
-									with open(station_file, "r") as station_data:
-										# Read all non-empty lines
-										non_empty_lines = [line for line in station_data if line.strip()]
-										line_count = len(non_empty_lines)
-										
-										self.emit_progress(prog + 15, f"File has {line_count} non-empty lines")
-										
-										if line_count < 4:
-											self.emit_progress(prog + 20, f"File {station_file} has insufficient data ({line_count} lines). Skipping end date calculation.")
-											continue
-										
-										# Get the last line safely
-										last_line = non_empty_lines[-1].strip()
-										self.emit_progress(prog + 15, f"Last line data: {last_line}")
-										
-										last_parts = last_line.split()
-										if len(last_parts) < 2:
-											self.emit_progress(prog + 20, f"Invalid last line format in {station_file}: {last_line}")
-											continue
-										
-										try:
-											date = datetime.datetime(int(last_parts[0]), 1, 1)
-											current_end_date = date + datetime.timedelta(days=int(last_parts[1])-1)
-											ends.append(current_end_date)
-											self.emit_progress(prog + 15, f"End date calculated: {current_end_date}")
-										except (ValueError, IndexError) as e:
-											self.emit_progress(prog + 20, f"Error calculating end date: {str(e)}, Last line: {last_line}")
-											continue
-								except UnicodeDecodeError:
-									error_msg = f'Non-unicode character detected in {station_file}. Please check the file and remove any characters that are not UTF-8 encoding.'
-									self.emit_progress(prog + 20, error_msg)
-									sys.exit(error_msg)
-	
-						i += 1
+							except UnicodeDecodeError:
+								sys.exit(f'Non-unicode character detected in {station_file}. Please remove any non-UTF-8 characters.')
 			except UnicodeDecodeError:
-				error_msg = f'Non-unicode character detected in {source_file}. Please check your station names and remove any accents or other characters that are not UTF-8 encoding.'
-				self.emit_progress(prog + 20, error_msg)
-				sys.exit(error_msg)
-	
-			self.emit_progress(prog + 25, f"Inserting {len(weather_files)} {weather_type} files into database")
+				sys.exit(f'Non-unicode character detected in {source_file}. Please remove any non-UTF-8 characters.')
+
+			self.emit_progress(prog + 5, f"Finalizing {weather_type} files import...")
 			db_lib.bulk_insert(project_base.db, Weather_file, weather_files)
-			
-			self.emit_progress(prog + 30, f"Processed {len(starts)} start dates and {len(ends)} end dates")
-			if len(starts) > 0 and len(ends) > 0:
+
+			if starts and ends:
 				start_date = max(starts)
 				end_date = min(ends)
-				self.emit_progress(prog + 35, f"Final date range: {start_date} to {end_date}")
+
 		return start_date, end_date
 
 
