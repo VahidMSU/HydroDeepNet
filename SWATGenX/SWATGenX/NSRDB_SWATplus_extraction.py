@@ -186,8 +186,7 @@ class NSRDB_contructor:
                 index=False, 
                 sep='\t',
                 float_format='%.2f',
-                columns=['year', 'day', 'value'],
-                lineterminator='\n'
+                columns=['year', 'day', 'value']
             )
 
         except Exception as e:
@@ -257,8 +256,7 @@ class NSRDB_contructor:
                     index=False,
                     sep='\t',
                     float_format='%.2f',
-                    columns=['year', 'day', 'value'],
-                    lineterminator='\n'
+                    columns=['year', 'day', 'value']
                 )
                 
         except Exception as e:

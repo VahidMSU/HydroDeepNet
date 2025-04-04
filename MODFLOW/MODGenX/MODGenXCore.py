@@ -128,7 +128,8 @@ class MODGenXCore:
 		Subbasin = gpd.read_file(self.subbasin_path)
 		basin = Subbasin.dissolve().reset_index(drop=True)
 		buffered = Subbasin.buffer(100)
-		basin['geometry'] = buffered.unary_union
+		basin['geometry'] = buffered.geometry.union_all()
+		
 		basin = basin.set_geometry('geometry').copy()
 		basin['Active'] = 1
 

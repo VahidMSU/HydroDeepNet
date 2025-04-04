@@ -30,6 +30,8 @@ ${INSTALL_DIR}/installforall.sh
 echo "Setting permissions..."
 chown -R www-data:www-data /usr/local/share/SWATPlus
 chown -R www-data:www-data /usr/share/qgis/python/plugins/QSWATPlusLinux3_64
+sudo mkdir -p /var/www/.local
+sudo chown -R www-data:www-data /var/www/.local
 
 # Download SWAT+ Editor
 echo "Downloading SWAT+ Editor..."

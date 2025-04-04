@@ -99,7 +99,7 @@ def create_app(config_class=Config):  # Update function signature
     @login_manager.user_loader
     def load_user(user_id):
         logger.info(f"Loading user: {user_id}")
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
 
     # Ensure database tables exist
     with app.app_context():
