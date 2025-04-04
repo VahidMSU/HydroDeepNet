@@ -404,7 +404,6 @@ const SWATGenXTemplate = () => {
       console.log(`Station ${stationNumber} already loaded, skipping fetch`);
       return;
     }
-
     if (
       previousStationDataRef.current &&
       previousStationDataRef.current.SiteNumber === stationNumber
@@ -414,7 +413,6 @@ const SWATGenXTemplate = () => {
       setStationInput(stationNumber);
       return;
     }
-
     setLoading(true);
     try {
       console.log(`Fetching details for station ${stationNumber}`);
@@ -423,9 +421,16 @@ const SWATGenXTemplate = () => {
         `/api/get_station_characteristics?station=${stationNumber}&_=${timestamp}`,
       );
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        if (response.status === 404) {
+          throw new Error('Station not found. Please verify the station number and try again.');
+        }
+        const errorText = await response.text();
+        throw new Error(`Server error (${response.status}): ${errorText || 'Unknown error'}`);
       }
       const data = await response.json();
+      if (!data) {
+        throw new Error('No data received from server');
+      }
       setStationData(data);
       previousStationDataRef.current = data;
       setStationInput(stationNumber);
@@ -433,8 +438,13 @@ const SWATGenXTemplate = () => {
       setFeedbackType('');
     } catch (error) {
       console.error('Error fetching station details:', error);
-      setFeedbackMessage('Failed to fetch station details: ' + error.message);
+      setStationData(null);
+      previousStationDataRef.current = null;
+      setFeedbackMessage(error.message || 'Failed to fetch station details');
       setFeedbackType('error');
+      // Reset selection state when there's an error
+      setSelectedStationOnMap(null);
+      setMapSelections([]);
     } finally {
       setLoading(false);
     }

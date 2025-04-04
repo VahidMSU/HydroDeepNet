@@ -99,6 +99,9 @@ class PRISMExtractor:
         with open(filename, 'w') as f:
             f.write(f"PRISM 4km grid for VPUID {self.VPUID}, r{row}, c{col}\n")
             f.write("nbyr\ttstep\tlat\tlon\telev\n")
+            ### lat and lon rounded to 2 decimal places
+            lat = round(lat, 2)
+            lon = round(lon, 2)
             f.write(f"{nbyr} 0 {lat} {lon} {elev}\n")
             for _, d in date_df.iterrows():
                 f.write(f"{d.YEAR}\t{d.DAY:03}\t{d.ppt:.2f}\n")
@@ -141,6 +144,9 @@ class PRISMExtractor:
         with open(filename, 'w') as f:
             f.write(f"PRISM 4km grid for VPUID {self.VPUID}, r{row}, c{col}\n")
             f.write("nbyr\ttstep\tlat\tlon\telev\n")
+            ### lat and lon rounded to 2 decimal places
+            lat = round(lat, 2)
+            lon = round(lon, 2)
             f.write(f"{nbyr} 0 {lat} {lon} {elev}\n")
             for _, d in date_df.iterrows():
                 f.write(f"{d.YEAR}\t{d.DAY:03}\t{d.tmax:.2f}\t{d.tmin:.2f}\n")

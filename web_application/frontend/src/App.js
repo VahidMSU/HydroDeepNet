@@ -23,7 +23,7 @@ const Terms = lazy(() => import('./pages/Terms'));
 const SignUp = lazy(() => import('./pages/SignUp'));
 const Verify = lazy(() => import('./pages/Verify'));
 const Logout = lazy(() => import('./pages/Logout'));
-const FTPSServer = lazy(() => import('./components/templates/FTPS_server'));
+const FTPSServer = lazy(() => import('./pages/FTPSServer'));
 
 // Loading fallback component
 const LoadingFallback = () => (
