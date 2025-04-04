@@ -123,13 +123,13 @@ class SWATGenXCore:
 
 	def extract_prism_data(self):
 		"""Extracts PRISM data for the watershed."""
-		extract_PRISM_parallel(self.paths, self.VPUID, self.LEVEL, self.NAME, self.list_of_huc12s)
+		extract_PRISM_parallel(self.paths, self.VPUID, self.LEVEL, self.NAME, self.list_of_huc12s, overwrite=False)
 		#plot_annual_precipitation(self.VPUID, self.LEVEL, self.NAME)
 		writing_swatplus_cli_files(self.paths, self.VPUID, self.LEVEL, self.NAME)
 		self.logger.info(f"Model extraction completed for {self.NAME}")
 
 	def extract_nsrdb_data(self):
-		NSRDB_extract(self.paths, self.VPUID, self.LEVEL, self.NAME)
+		NSRDB_extract(self.paths, self.VPUID, self.LEVEL, self.NAME, overwrite=False)
 		self.logger.info(f"NSRDB extraction completed for {self.NAME}")
 
 	def write_meta_file(self):
@@ -263,6 +263,12 @@ class SWATGenXCore:
 
 		self.logger.info(f"QSWAT+ processes are completed for {self.NAME}, {self.VPUID}")
 		self.extract_metereological_data()
+		try:
+			from SWATGenX.check_weather_data import check_weather_station_files
+			check_weather_station_files(self.paths.extracted_swat_prism_path)
+		except Exception as e:
+			self.logger.error(f"Error in checking weather station files for {self.NAME}: {e}")
+			return None
 		self.logger.info(f"Extracted metereological data for {self.NAME}")
 		try:
 			run_swatplus_editor(self.paths, self.VPUID, self.LEVEL, self.NAME, self.MODEL_NAME)
