@@ -107,8 +107,7 @@ const Layout = ({ children }) => {
                 { text: 'Michigan', icon: <PlaceIcon />, path: '/michigan' },
                 { text: 'Vision System', icon: <VisibilityIcon />, path: '/vision_system' },
                 { text: 'HydroGeoDataset', icon: <StorageIcon />, path: '/hydro_geo_dataset' },
-                { text: 'FTPS Server', icon: <CloudDownloadIcon />, path: '/ftps_server' },
-                { text: 'Files & Data', icon: <FolderIcon />, path: '/user_dashboard' },
+                { text: 'Dashboard', icon: <FolderIcon />, path: '/user_dashboard' },
                 { text: 'Contact', icon: <EmailIcon />, path: '/contact' },
                 { text: 'About', icon: <InfoIcon />, path: '/about' },
               ].map((item) => (
@@ -161,6 +160,13 @@ const Layout = ({ children }) => {
               |
               <Link to="/terms" style={{ textDecoration: 'none', color: 'inherit', marginLeft: 8 }}>
                 Terms of Service
+              </Link>{' '}
+              |
+              <Link
+                to="/ftps_server"
+                style={{ textDecoration: 'none', color: 'inherit', marginLeft: 8 }}
+              >
+                FTPS Server
               </Link>
             </Typography>
           </Box>

@@ -72,7 +72,7 @@ if __name__ == "__main__":
         "landuse_epoch": "2021",
         "ls_resolution": "250",
         "dem_resolution": "30",
-        "station_name": ['04141000'],
+        "station_name": ['04127200'],
         "MODEL_NAME": MODEL_NAME,
         "MAX_AREA": 1500,
         "MIN_AREA": 500,
