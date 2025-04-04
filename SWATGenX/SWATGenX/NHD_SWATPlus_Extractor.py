@@ -673,8 +673,14 @@ def writing_swatplus_cli_files(SWATGenXPaths, VPUID, LEVEL, NAME):
     SWAT_MODEL_PRISM_path = f'{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/'
     ## get the name of files
     files = os.listdir(SWAT_MODEL_PRISM_path)
-    tmp_files = [file for file in files if 'tmp' in file]
-    pcp_files = [file for file in files if 'pcp' in file]
+    tmp_files = [file for file in files if file.endswith('.tmp')]
+    pcp_files = [file for file in files if file.endswith('.pcp')]
+    ## remove tmp.cli and pcp.cli
+    if os.path.exists(os.path.join(SWAT_MODEL_PRISM_path, 'tmp.cli')):
+        os.remove(os.path.join(SWAT_MODEL_PRISM_path, 'tmp.cli'))
+    if os.path.exists(os.path.join(SWAT_MODEL_PRISM_path, 'pcp.cli')):
+        os.remove(os.path.join(SWAT_MODEL_PRISM_path, 'pcp.cli'))
+    ## write the cli files
     with open(os.path.join(SWAT_MODEL_PRISM_path, 'tmp.cli'), 'w') as f:
         write_cli_files(
             f, NAME, ' pcp files\n', tmp_files
