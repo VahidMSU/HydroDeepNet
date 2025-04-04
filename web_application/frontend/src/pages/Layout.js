@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import SessionChecker from '../components/SessionChecker';
 import UserInfo from '../components/UserInfo';
@@ -12,6 +12,7 @@ import {
   Box,
   Typography,
   Divider,
+  IconButton,
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -23,13 +24,15 @@ import FolderIcon from '@mui/icons-material/Folder';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import EmailIcon from '@mui/icons-material/Email';
 import InfoIcon from '@mui/icons-material/Info';
-import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 
 const drawerWidth = 250;
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -63,16 +66,34 @@ const Layout = ({ children }) => {
         display: 'flex',
         bgcolor: '#2b2b2c',
         minHeight: '100vh',
-        width: '100vw',
+        width: '100%',
+        maxWidth: '100%',
+        overflowX: 'hidden',
         color: 'white',
+        position: 'relative',
       }}
     >
       {/* Add SessionChecker component */}
       {localStorage.getItem('authToken') && <SessionChecker />}
 
-      {localStorage.getItem('authToken') && (
+      {/* Toggle Sidebar Button */}
+      <IconButton
+        onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+        sx={{
+          position: 'absolute',
+          top: 16,
+          left: 16,
+          zIndex: 1201,
+          color: 'white',
+        }}
+      >
+        {isSidebarVisible ? <CloseIcon /> : <MenuIcon />}
+      </IconButton>
+
+      {localStorage.getItem('authToken') && isSidebarVisible && (
         <Drawer
-          variant="permanent"
+          variant="persistent"
+          open={isSidebarVisible}
           sx={{
             width: drawerWidth,
             flexShrink: 0,
@@ -174,7 +195,16 @@ const Layout = ({ children }) => {
       )}
 
       {/* Main Content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3, minHeight: '100vh' }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          minHeight: '100vh',
+          maxWidth: '100%',
+          overflowX: 'hidden',
+        }}
+      >
         <Toolbar />
         {children}
       </Box>

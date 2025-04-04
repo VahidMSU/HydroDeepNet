@@ -28,6 +28,7 @@ function SearchForm({
   const [searchResults, setSearchResults] = useState([]);
   const [mapMode, setMapMode] = useState(true); // True if map mode is enabled
   const [searchError, setSearchError] = useState('');
+  const [siteNumberInput, setSiteNumberInput] = useState(''); // New state for site number input
 
   // Update search results when map selections change
   useEffect(() => {
@@ -99,6 +100,13 @@ function SearchForm({
     }
   };
 
+  // Handle direct site number input
+  const handleSiteNumberSubmit = () => {
+    if (siteNumberInput.trim()) {
+      onStationSelect(siteNumberInput.trim());
+    }
+  };
+
   return (
     <StyledSearchForm>
       <SearchInputGroup>
@@ -128,6 +136,19 @@ function SearchForm({
             placeholder="Enter station name or number"
           />
           <SearchButton onClick={handleSearch}>
+            <FontAwesomeIcon icon={faSearch} />
+          </SearchButton>
+        </SearchInputWrapper>
+
+        {/* New field for direct site number input */}
+        <SearchInputWrapper style={{ marginTop: '10px' }}>
+          <FormInput
+            type="text"
+            value={siteNumberInput}
+            onChange={(e) => setSiteNumberInput(e.target.value)}
+            placeholder="Enter site number directly"
+          />
+          <SearchButton onClick={handleSiteNumberSubmit}>
             <FontAwesomeIcon icon={faSearch} />
           </SearchButton>
         </SearchInputWrapper>
