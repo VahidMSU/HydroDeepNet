@@ -19,6 +19,7 @@ import {
   faRuler,
   faSyncAlt,
   faRedoAlt,
+  faLock,
 } from '@fortawesome/free-solid-svg-icons';
 import EsriMap from '../EsriMap.js';
 import SearchForm from '../SearchForm';
@@ -55,6 +56,9 @@ import {
   ButtonIcon,
   LoadingSpinner,
   FormInput,
+  FormSelect,
+  InputGroup,
+  InputLabel,
 } from '../../styles/SWATGenX.tsx';
 
 // Modify the geometriesCache to be more persistent and resilient
@@ -161,7 +165,7 @@ const SWATGenXTemplate = () => {
   const [stationInput, setStationInput] = useState('');
   const [stationData, setStationData] = useState(null);
   const [lsResolution, setLsResolution] = useState('250');
-  const [demResolution, setDemResolution] = useState('30');
+  const [demResolution] = useState('30'); // Fixed to 30, removed setter function
   const [calibrationFlag, setCalibrationFlag] = useState(false);
   const [sensitivityFlag, setSensitivityFlag] = useState(false);
   const [validationFlag, setValidationFlag] = useState(false);
@@ -179,6 +183,9 @@ const SWATGenXTemplate = () => {
 
   // Add ref for map refresh function
   const mapRefreshFunctionRef = useRef(null);
+
+  // Define the available resolution options
+  const lsResolutionOptions = ['30', '100', '250', '500', '1000'];
 
   // Create a function to handle map refreshing
   const handleMapRefresh = () => {
@@ -468,7 +475,6 @@ const SWATGenXTemplate = () => {
     };
 
     console.log('Submitting model settings:', formData);
-
     setLoading(true);
     setFeedbackMessage('');
     setFeedbackType('');
@@ -480,14 +486,22 @@ const SWATGenXTemplate = () => {
         body: JSON.stringify(formData),
       });
 
+      // Get the response data
+      const data = await response.json();
+
+      // Handle different response statuses
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Unknown error occurred.');
+        // Specifically handle 429 TOO MANY REQUESTS error
+        if (response.status === 429) {
+          throw new Error(
+            data.message ||
+              'You have reached the maximum concurrent model limit. Please wait for existing tasks to complete.',
+          );
+        }
+        throw new Error(data.message || data.error || 'Unknown error occurred.');
       }
 
-      const data = await response.json();
       console.log('Model creation response:', data);
-
       setFeedbackMessage('Model creation started successfully!');
       setFeedbackType('success');
     } catch (error) {
@@ -577,7 +591,7 @@ const SWATGenXTemplate = () => {
               <ButtonIcon>
                 <FontAwesomeIcon icon={faArrowRight} />
               </ButtonIcon>
-              Next: Configure Model
+              <span style={{ fontSize: '14px', whiteSpace: 'nowrap' }}>Next</span>
             </SubmitButton>
           </NavigationButtons>
         </>
@@ -607,31 +621,48 @@ const SWATGenXTemplate = () => {
               Resolution Settings
             </div>
 
-            <div style={{ margin: '10px 0' }}>
-              <label htmlFor="ls-resolution" style={{ display: 'block', marginBottom: '5px' }}>
-                Landuse/Soil Resolution:
-              </label>
-              <FormInput
+            <InputGroup>
+              <InputLabel htmlFor="ls-resolution">Landuse/Soil Resolution:</InputLabel>
+              <FormSelect
                 id="ls-resolution"
-                type="text"
                 value={lsResolution}
                 onChange={(e) => setLsResolution(e.target.value)}
-                placeholder="Enter resolution (e.g., 250)"
-              />
-            </div>
+              >
+                {lsResolutionOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </FormSelect>
+            </InputGroup>
 
-            <div style={{ margin: '10px 0' }}>
-              <label htmlFor="dem-resolution" style={{ display: 'block', marginBottom: '5px' }}>
+            <InputGroup>
+              <InputLabel htmlFor="dem-resolution">
                 DEM Resolution:
-              </label>
-              <FormInput
-                id="dem-resolution"
-                type="text"
-                value={demResolution}
-                onChange={(e) => setDemResolution(e.target.value)}
-                placeholder="Enter resolution (e.g., 30)"
-              />
-            </div>
+                <FontAwesomeIcon
+                  icon={faLock}
+                  style={{ marginLeft: '8px', fontSize: '12px', color: '#ff8500' }}
+                  title="Fixed at 30m resolution"
+                />
+              </InputLabel>
+              <div
+                style={{
+                  padding: '10px 14px',
+                  backgroundColor: '#3a3a3c',
+                  borderRadius: '6px',
+                  border: '1px solid #505050',
+                  color: '#bbbbbb',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <span>{demResolution} m</span>
+                <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#999' }}>
+                  Fixed Value
+                </span>
+              </div>
+            </InputGroup>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -688,7 +719,7 @@ const SWATGenXTemplate = () => {
               <ButtonIcon>
                 <FontAwesomeIcon icon={faArrowLeft} />
               </ButtonIcon>
-              Back
+              <span style={{ fontSize: '14px' }}>Back</span>
             </SubmitButton>
 
             <SubmitButton
@@ -701,14 +732,14 @@ const SWATGenXTemplate = () => {
               {loading ? (
                 <>
                   <LoadingSpinner />
-                  Processing...
+                  <span style={{ fontSize: '14px' }}>Processing...</span>
                 </>
               ) : (
                 <>
                   <ButtonIcon>
                     <FontAwesomeIcon icon={faPlay} />
                   </ButtonIcon>
-                  Run Model
+                  <span style={{ fontSize: '14px' }}>Run Model</span>
                 </>
               )}
             </SubmitButton>
@@ -775,12 +806,10 @@ const SWATGenXTemplate = () => {
                 <StepCircle active={currentStep === 1} completed={currentStep > 1}>
                   <FontAwesomeIcon icon={faMapMarkedAlt} />
                 </StepCircle>
-                <StepText>Select Station</StepText>
                 <StepConnector completed={currentStep > 1} />
                 <StepCircle active={currentStep === 2} completed={currentStep > 2}>
                   <FontAwesomeIcon icon={faLayerGroup} />
                 </StepCircle>
-                <StepText>Configure Model</StepText>
               </StepIndicator>
 
               {renderModelSettingsContent()}
