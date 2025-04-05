@@ -11,7 +11,7 @@ from .Logger import Logger
 # This avoids permission errors during import
 
 #### indicate the version of the package
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "Vahid Rafiei"
 __email__ = "rafieiva@msu.edu"
 __license__ = "GPL-2.0"
