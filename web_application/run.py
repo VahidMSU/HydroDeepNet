@@ -11,6 +11,18 @@ os.makedirs(os.environ['MPLCONFIGDIR'], exist_ok=True)
 os.environ['FLASK_ENV'] = 'production'
 os.environ['FLASK_APP'] = 'run.py'
 
+# Run database migration to add OAuth columns if needed
+try:
+    from migrations.add_oauth_columns import run_migration
+    migration_result = run_migration()
+    if migration_result:
+        print("Successfully applied database migrations for OAuth columns")
+    else:
+        print("Warning: Failed to apply database migrations")
+except Exception as e:
+    print(f"Error running database migrations: {e}")
+    print("Continuing anyway...")
+
 # Initialize the Flask app
 app = create_app()
 

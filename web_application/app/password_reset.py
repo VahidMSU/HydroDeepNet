@@ -31,15 +31,18 @@ def send_reset_password_email(user, reset_token):
         # Create the email content
         subject = "Password Reset - SWATGenX Application"
         
+        # Get the site URL from application config - this will be set based on environment
+        site_url = current_app.config.get('SITE_URL')
+        logger.info(f"Using site URL for password reset: {site_url}")
+        
         # Create a professional reset email with the correct URL format
-        # Make sure the URL matches the React Router path in App.js
         body = f"""
 Hello {user.username},
 
 We received a request to reset your password for your SWATGenX Application account.
 To reset your password, please click on the link below:
 
-{current_app.config.get('SITE_URL', 'http://localhost:3000')}/reset-password?token={reset_token}
+{site_url}/reset-password?token={reset_token}
 
 This link will expire in 30 minutes for security reasons.
 
@@ -60,7 +63,7 @@ This is an automated message, please do not reply.
         # Send the email
         with smtplib.SMTP(smtp_server, smtp_port) as server:
             server.sendmail(sender, [recipient], msg.as_string())
-        logger.info(f"Password reset email sent to {recipient}")
+        logger.info(f"Password reset email sent to {recipient} with site URL: {site_url}")
         return True
     except Exception as e:
         logger.error(f"Failed to send password reset email: {e}")

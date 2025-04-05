@@ -6,6 +6,7 @@ from app.extensions import db, csrf
 from app.decorators import conditional_login_required, conditional_verified_required
 from app.comm_utils import send_verification_email
 from app.sftp_manager import create_sftp_user, delete_sftp_user
+from app.oauth_utils import get_google_auth_url, process_google_callback, login_oauth_user
 import os
 import tempfile
 from werkzeug.utils import secure_filename
@@ -419,6 +420,127 @@ def michigan():
         "title": "Michigan",
         "message": "Michigan page"
     })
+
+# Google OAuth routes
+@user_auth_bp.route('/api/login/google', methods=['GET'])
+@csrf.exempt
+def login_google():
+    """Initiate Google OAuth flow"""
+    current_app.logger.info("Google login initiated")
+    
+    # Check if user is already logged in
+    if current_user.is_authenticated:
+        return redirect('/')
+        
+    # Get Google authorization URL
+    google_auth_url = get_google_auth_url()
+    if not google_auth_url:
+        current_app.logger.error("Failed to generate Google authorization URL")
+        return jsonify({"status": "error", "message": "Unable to connect to Google authentication service"}), 500
+        
+    return redirect(google_auth_url)
+
+@user_auth_bp.route('/api/login/google/callback', methods=['GET'])
+@csrf.exempt
+def google_callback():
+    """Handle the Google OAuth callback"""
+    current_app.logger.info("Google callback received")
+    
+    # Check if user is already logged in
+    if current_user.is_authenticated:
+        current_app.logger.info(f"User already authenticated as {current_user.username}, redirecting to home")
+        return redirect('/')
+    
+    # Get error from request if any
+    error = request.args.get('error')
+    if error:
+        current_app.logger.error(f"Google OAuth error: {error}")
+        return redirect('/login?error=google_oauth_error')
+        
+    # Process callback and get user info
+    user_data = process_google_callback()
+    if not user_data:
+        current_app.logger.error("Google authentication failed - could not get user data")
+        return redirect('/login?error=google_auth_failed')
+    
+    # Log the user data we received (except sensitive info)
+    current_app.logger.info(f"Received Google user data for: {user_data.get('email')}")
+        
+    # Find or create user and log them in
+    try:
+        user = login_oauth_user(user_data)
+        if not user:
+            current_app.logger.error(f"Failed to login/create user with Google OAuth: {user_data.get('email')}")
+            return redirect('/login?error=user_creation_failed')
+        
+        # Set a success flag in the session
+        session['oauth_login_success'] = True
+        session['oauth_provider'] = 'google'
+        session['oauth_email'] = user_data.get('email')
+        
+        # Log the user in with Flask-Login
+        login_user(user, remember=True)
+        current_app.logger.info(f"User {user.username} logged in with Google OAuth")
+        
+        # Create SFTP user if it doesn't exist
+        if not os.path.exists(f"/data/SWATGenXApp/Users/{user.username}"):
+            try:
+                # Create user directory structure
+                user_dir = os.path.join('/data/SWATGenXApp/Users', user.username)
+                os.makedirs(user_dir, exist_ok=True)
+                os.makedirs(os.path.join(user_dir, 'SWATplus_by_VPUID'), exist_ok=True)
+                os.makedirs(os.path.join(user_dir, 'Reports'), exist_ok=True)
+                current_app.logger.info(f"Created directory structure for OAuth user '{user.username}'")
+                
+                # Create SFTP account
+                sftp_result = create_sftp_user(user.username)
+                if sftp_result.get('success'):
+                    current_app.logger.info(f"SFTP account created for OAuth user '{user.username}'")
+                else:
+                    current_app.logger.warning(f"Failed to create SFTP account for OAuth user '{user.username}': {sftp_result.get('message')}")
+            except Exception as e:
+                current_app.logger.error(f"Error setting up user directory for OAuth user: {e}")
+                # Continue anyway since this shouldn't block login
+        
+        # Get the frontend URL from config or use a default
+        frontend_url = current_app.config.get('SITE_URL', 'http://localhost:3000')
+        redirect_url = f"{frontend_url}/?google_login=success&username={user.username}"
+        current_app.logger.info(f"Redirecting OAuth user to: {redirect_url}")
+        
+        # Redirect to the home page with success parameter
+        return redirect(redirect_url)
+        
+    except Exception as e:
+        current_app.logger.error(f"Unexpected error in Google OAuth callback: {str(e)}")
+        return redirect('/login?error=internal_error')
+
+# Add a new route to check Google OAuth login status
+@user_auth_bp.route('/api/check-oauth-login', methods=['GET'])
+def check_oauth_login():
+    """Check if a user has logged in with OAuth"""
+    if current_user.is_authenticated:
+        # Check if this was an OAuth login
+        oauth_success = session.get('oauth_login_success', False)
+        provider = session.get('oauth_provider', '')
+        
+        return jsonify({
+            "status": "success",
+            "authenticated": True,
+            "oauth_login": oauth_success,
+            "provider": provider,
+            "user": {
+                "id": current_user.id,
+                "username": current_user.username,
+                "email": current_user.email,
+                "is_verified": current_user.is_verified
+            }
+        })
+    else:
+        return jsonify({
+            "status": "success",
+            "authenticated": False,
+            "oauth_login": False
+        })
 
 # SFTP Routes (from sftp_routes.py)
 @user_auth_bp.route("/api/sftp/create", methods=["POST"])

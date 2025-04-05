@@ -6,6 +6,9 @@ import datetime
 import inspect
 import json
 from app.extensions import csrf
+from flask_login import current_user
+import traceback
+import time
 
 # Combined diagnostic and debug blueprint
 debug_bp = Blueprint('debug', __name__, url_prefix='/api/debug')
@@ -415,10 +418,293 @@ def debug_report_contents(report_id):
         "files": file_list
     })
 
+@debug_bp.route('/system-info', methods=['GET'])
+def system_info():
+    """Return system information for debugging"""
+    info = {
+        "time": datetime.datetime.now().isoformat(),
+        "python_version": sys.version,
+        "platform": sys.platform,
+        "current_directory": os.getcwd(),
+        "environment": {
+            "FLASK_ENV": os.environ.get('FLASK_ENV', 'Not set'),
+            "FLASK_APP": os.environ.get('FLASK_APP', 'Not set'),
+            "PYTHONPATH": os.environ.get('PYTHONPATH', 'Not set'),
+            "PATH": os.environ.get('PATH', 'Not set')[:100] + '...',  # Truncate for readability
+        },
+        "user": {
+            "authenticated": current_user.is_authenticated,
+            "username": current_user.username if current_user.is_authenticated else None
+        }
+    }
+    return jsonify(info)
+
+@debug_bp.route('/celery-config', methods=['GET'])
+def celery_config():
+    """Return Celery configuration for debugging"""
+    try:
+        # Import Celery instance
+        from celery_app import celery
+        
+        # Get important configuration settings
+        config = {
+            "broker_url": celery.conf.broker_url,
+            "result_backend": celery.conf.result_backend,
+            "broker_connection_retry": celery.conf.broker_connection_retry,
+            "broker_connection_retry_on_startup": celery.conf.broker_connection_retry_on_startup,
+            "worker_prefetch_multiplier": celery.conf.worker_prefetch_multiplier,
+            "task_default_rate_limit": celery.conf.task_default_rate_limit,
+            "worker_disable_rate_limits": celery.conf.worker_disable_rate_limits,
+            "task_time_limit": celery.conf.task_time_limit,
+            "task_soft_time_limit": celery.conf.task_soft_time_limit,
+            "worker_max_tasks_per_child": celery.conf.worker_max_tasks_per_child,
+            "worker_max_memory_per_child": celery.conf.worker_max_memory_per_child,
+        }
+        
+        # Get environment variables related to Celery
+        celery_env_vars = {}
+        for key, value in os.environ.items():
+            if key.startswith('CELERY_'):
+                celery_env_vars[key] = value
+        
+        return jsonify({
+            "status": "success",
+            "celery_config": config,
+            "celery_environment_variables": celery_env_vars
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error accessing Celery configuration: {str(e)}",
+            "traceback": traceback.format_exc()
+        }), 500
+
+@debug_bp.route('/redis-check', methods=['GET'])
+def redis_check():
+    """Test Redis connection and report status"""
+    try:
+        from redis import Redis
+        
+        redis_url = current_app.config.get('REDIS_URL', 'redis://localhost:6379/0')
+        redis_client = Redis.from_url(redis_url, socket_timeout=3)
+        
+        # Test ping
+        start_time = time.time()
+        ping_result = redis_client.ping()
+        ping_time = time.time() - start_time
+        
+        # Test set/get
+        test_key = f"debug_test_{time.time()}"
+        start_time = time.time()
+        redis_client.set(test_key, "test_value", ex=60)
+        get_result = redis_client.get(test_key)
+        operation_time = time.time() - start_time
+        
+        # Clean up
+        redis_client.delete(test_key)
+        
+        return jsonify({
+            "status": "success",
+            "redis_url": redis_url,
+            "ping_success": ping_result,
+            "ping_time_ms": round(ping_time * 1000, 2),
+            "get_set_success": get_result == b"test_value",
+            "get_set_time_ms": round(operation_time * 1000, 2),
+            "message": "Redis is working correctly"
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Redis connection error: {str(e)}",
+            "traceback": traceback.format_exc()
+        }), 500
+
+@debug_bp.route('/test-task', methods=['POST'])
+def test_task():
+    """Launch a test task to verify Celery configuration"""
+    try:
+        # Import task directly from swatgenx_tasks
+        from app.swatgenx_tasks import create_model_task
+        
+        # Get parameters or use defaults
+        data = request.get_json() or {}
+        username = data.get('username', current_user.username if current_user.is_authenticated else 'test_user')
+        site_no = data.get('site_no', '06853800')  # Default to a known test site
+        ls_resolution = data.get('ls_resolution', 250)
+        dem_resolution = data.get('dem_resolution', 30)
+        
+        # Launch task with apply_async to test rate limiting
+        task = create_model_task.apply_async(
+            args=[username, site_no, ls_resolution, dem_resolution],
+            queue='model_creation'
+        )
+        
+        return jsonify({
+            "status": "success",
+            "message": "Test task launched successfully",
+            "task_id": task.id,
+            "parameters": {
+                "username": username,
+                "site_no": site_no,
+                "ls_resolution": ls_resolution,
+                "dem_resolution": dem_resolution
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error launching test task: {str(e)}",
+            "traceback": traceback.format_exc()
+        }), 500
+
+@debug_bp.route('/workers', methods=['GET'])
+def get_workers():
+    """Get active Celery workers and their status"""
+    try:
+        from celery_app import celery
+        
+        # Get active workers using Celery's inspect API
+        inspect = celery.control.inspect()
+        
+        # Get stats for each worker
+        stats = inspect.stats() or {}
+        active = inspect.active() or {}
+        registered = inspect.registered() or {}
+        
+        # Create structured response
+        workers_info = {}
+        for worker_name in set(list(stats.keys()) + list(active.keys()) + list(registered.keys())):
+            workers_info[worker_name] = {
+                "status": "online" if worker_name in stats else "offline",
+                "stats": stats.get(worker_name, {}),
+                "active_tasks": len(active.get(worker_name, [])),
+                "registered_tasks": len(registered.get(worker_name, []))
+            }
+        
+        return jsonify({
+            "status": "success",
+            "active_workers_count": len(stats),
+            "workers": workers_info
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Error getting worker information: {str(e)}",
+            "traceback": traceback.format_exc()
+        }), 500
+
+@debug_bp.route('/api/debug/email-check', methods=['GET'])
+def email_check():
+    """Check email configuration"""
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        
+        # Define SMTP settings
+        smtp_server = "express.mail.msu.edu"
+        smtp_port = 25
+        
+        # Test connection only (no sending)
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
+            # Try an EHLO command to check connection
+            ehlo_response = server.ehlo()
+            
+            # Get server features
+            smtp_features = {}
+            if hasattr(server, 'esmtp_features'):
+                smtp_features = server.esmtp_features
+                
+            return jsonify({
+                "status": "success",
+                "message": "Successfully connected to SMTP server",
+                "smtp_server": smtp_server,
+                "smtp_port": smtp_port,
+                "ehlo_response": str(ehlo_response),
+                "smtp_features": {k.decode() if isinstance(k, bytes) else k: 
+                                 v.decode() if isinstance(v, bytes) else v 
+                                 for k, v in smtp_features.items()}
+            })
+    except Exception as e:
+        current_app.logger.error(f"Email configuration error: {e}")
+        import traceback
+        return jsonify({
+            "status": "error",
+            "message": f"Email configuration error: {str(e)}",
+            "traceback": traceback.format_exc()
+        }), 500
+
+@debug_bp.route('/api/debug/email-logs', methods=['GET'])
+def email_logs():
+    """Check recent email logs"""
+    try:
+        # Try to read the last few lines of the mail log
+        log_file = "/var/log/mail.log"
+        mail_log_content = []
+        
+        if os.path.exists(log_file):
+            try:
+                # Get last 50 lines
+                with open(log_file, 'r') as f:
+                    lines = f.readlines()
+                    mail_log_content = lines[-50:] if len(lines) > 50 else lines
+            except Exception as e:
+                mail_log_content = [f"Error reading mail.log: {str(e)}"]
+        else:
+            mail_log_content = ["Mail log file not found"]
+            
+        # Try alternative location if first wasn't found
+        if not os.path.exists(log_file):
+            alternative_logs = ["/var/log/maillog", "/var/log/exim4/mainlog"]
+            for alt_log in alternative_logs:
+                if os.path.exists(alt_log):
+                    try:
+                        with open(alt_log, 'r') as f:
+                            lines = f.readlines()
+                            mail_log_content = lines[-50:] if len(lines) > 50 else lines
+                        log_file = alt_log
+                        break
+                    except Exception as e:
+                        mail_log_content.append(f"Error reading {alt_log}: {str(e)}")
+        
+        # Try application email logs
+        app_email_log = "/data/SWATGenXApp/codes/web_application/logs/email.log"
+        app_email_content = []
+        if os.path.exists(app_email_log):
+            try:
+                with open(app_email_log, 'r') as f:
+                    lines = f.readlines()
+                    app_email_content = lines[-50:] if len(lines) > 50 else lines
+            except Exception as e:
+                app_email_content = [f"Error reading app email log: {str(e)}"]
+        
+        return jsonify({
+            "status": "success",
+            "message": "Email logs retrieved",
+            "system_mail_log": {
+                "path": log_file,
+                "exists": os.path.exists(log_file),
+                "content": mail_log_content
+            },
+            "app_email_log": {
+                "path": app_email_log,
+                "exists": os.path.exists(app_email_log),
+                "content": app_email_content
+            }
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error checking email logs: {e}")
+        import traceback
+        return jsonify({
+            "status": "error",
+            "message": f"Error checking email logs: {str(e)}",
+            "traceback": traceback.format_exc()
+        }), 500
+
 def register_debug_routes(app):
     """Register the debug routes with the Flask app"""
-    if os.environ.get('FLASK_ENV') == 'development' or os.environ.get('DEBUG') == '1':
+    debug_enabled = os.environ.get('FLASK_ENV') != 'production'
+    if debug_enabled:
         app.register_blueprint(debug_bp)
-        app.logger.info("Debug routes registered")
+        app.logger.info("Debug routes enabled")
     else:
-        app.logger.info("Debug routes not registered (not in development mode)")
+        app.logger.info("Debug routes disabled in production")

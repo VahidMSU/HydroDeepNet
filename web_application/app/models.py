@@ -6,7 +6,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask import current_app
 import secrets
 import string
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 class User(db.Model, UserMixin):
     """ User Model for storing user related details """
@@ -20,8 +20,15 @@ class User(db.Model, UserMixin):
     is_verified = db.Column(db.Boolean, default=False)  # Set default to False to require verification
     verification_code = db.Column(db.String(8), nullable=True)
     
+    # OAuth related fields
+    oauth_provider = db.Column(db.String(20), nullable=True)  # 'google', 'microsoft', etc.
+    oauth_id = db.Column(db.String(100), nullable=True)  # The unique ID from the provider
+    oauth_name = db.Column(db.String(100), nullable=True)  # Full name from the provider
+    oauth_picture = db.Column(db.String(255), nullable=True)  # Profile picture URL
+    
     # Define a class-level flag to track if we have enhanced columns
     _has_enhanced_security = None
+    _has_oauth_columns = None
 
     @property
     def password(self):
@@ -112,6 +119,20 @@ class User(db.Model, UserMixin):
             current_app.logger.warning(f"Error checking for enhanced security columns: {e}")
             return False
 
+    @classmethod
+    def _check_oauth_columns(cls):
+        """Check if the OAuth columns exist in the database"""
+        try:
+            # Try to query for OAuth columns
+            db.session.query(User.id, User.oauth_provider).limit(1).all()
+            return True
+        except OperationalError:
+            current_app.logger.warning("OAuth columns not found in database. OAuth login will not work.")
+            return False
+        except Exception as e:
+            current_app.logger.warning(f"Error checking for OAuth columns: {e}")
+            return False
+
     def get_verification_token(self, expires_sec=3600):
         """Generate a secure token for email verification."""
         # Generate and store a verification code
@@ -149,6 +170,107 @@ class User(db.Model, UserMixin):
         """Generate a random verification code."""
         characters = string.ascii_letters + string.digits
         return ''.join(secrets.choice(characters) for _ in range(length))
+
+    @staticmethod
+    def find_or_create_oauth_user(email, provider, provider_id, name=None, picture=None):
+        """
+        Find an existing user by OAuth ID or email, or create a new one if not found.
+        
+        Args:
+            email: User's email from OAuth provider
+            provider: OAuth provider name (e.g., 'google')
+            provider_id: Unique user ID from the provider
+            name: User's full name from the provider
+            picture: URL to user's profile picture
+            
+        Returns:
+            User: The found or created user object
+        """
+        # Check if OAuth columns exist in the database
+        if User._has_oauth_columns is None:
+            User._has_oauth_columns = User._check_oauth_columns()
+            
+        if not User._has_oauth_columns:
+            # If OAuth columns don't exist, just find user by email or create a new one
+            try:
+                user = User.query.filter_by(email=email).first()
+                
+                # Create a new user if not found
+                if not user:
+                    # Generate a unique username based on the email
+                    base_username = email.split('@')[0]
+                    username = base_username
+                    counter = 1
+                    
+                    # Ensure username is unique
+                    while User.query.filter_by(username=username).first():
+                        username = f"{base_username}{counter}"
+                        counter += 1
+                        
+                    # Create the new user
+                    user = User(
+                        username=username,
+                        email=email,
+                        is_verified=True  # OAuth users are automatically verified
+                    )
+                    db.session.add(user)
+                    db.session.commit()
+                
+                return user
+            except Exception as e:
+                current_app.logger.error(f"Error finding/creating user by email: {e}")
+                raise
+        
+        # Normal OAuth flow if columns exist
+        try:
+            # Try to find by OAuth provider and ID first
+            user = User.query.filter_by(oauth_provider=provider, oauth_id=provider_id).first()
+            
+            # If not found, try to find by email
+            if not user:
+                user = User.query.filter_by(email=email).first()
+                
+            # Create a new user if still not found
+            if not user:
+                # Generate a unique username based on the email
+                base_username = email.split('@')[0]
+                username = base_username
+                counter = 1
+                
+                # Ensure username is unique
+                while User.query.filter_by(username=username).first():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                    
+                # Create the new user
+                user = User(
+                    username=username,
+                    email=email,
+                    oauth_provider=provider,
+                    oauth_id=provider_id,
+                    oauth_name=name,
+                    oauth_picture=picture,
+                    is_verified=True  # OAuth users are automatically verified
+                )
+                db.session.add(user)
+                db.session.commit()
+            
+            # Update OAuth details for existing users that might be logging in with OAuth for the first time
+            if user and (user.oauth_provider != provider or user.oauth_id != provider_id):
+                user.oauth_provider = provider
+                user.oauth_id = provider_id
+                user.oauth_name = name or user.oauth_name
+                user.oauth_picture = picture or user.oauth_picture
+                user.is_verified = True  # Ensure OAuth users are verified
+                db.session.commit()
+                
+            return user
+        except SQLAlchemyError as e:
+            current_app.logger.error(f"Database error in find_or_create_oauth_user: {e}")
+            raise
+        except Exception as e:
+            current_app.logger.error(f"Unexpected error in find_or_create_oauth_user: {e}")
+            raise
 
 
 class ContactMessage(db.Model):
