@@ -16,6 +16,7 @@ import logging
 from shapely.geometry import mapping
 from scipy.spatial import cKDTree
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+import traceback
 
 
 def check_existing_models(station_name,config):
@@ -386,7 +387,8 @@ def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolut
         model_path = commander.execute()
         logger.info(f"CommandX: Model created successfully: {model_path}") 
     except Exception as e:
-        logger.error(f"CommandX: Model creation failed: {e}")
+        logger.error(f"Error in single_swatplus_model_creation: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         # Set a default path or failure indicator
         expected_path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/huc12/{site_no}/SWAT_MODEL_Web_Application"
         logger.error(f"Model would have been created at: {expected_path}")

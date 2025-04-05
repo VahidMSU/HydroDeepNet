@@ -1,0 +1,169 @@
+#!/bin/bash
+# SWATGenX Celery Management Tools - Unified Interface
+# This script provides a central command for all Celery management functions
+
+CELERY_DIR="/data/SWATGenXApp/codes/scripts/celery-services"
+UTILS_DIR="${CELERY_DIR}/utils"
+SERVICES_DIR="${CELERY_DIR}/services"
+PYTHON_ENV="/data/SWATGenXApp/codes/.venv/bin/python"
+
+# Define colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Print help information
+show_help() {
+    echo -e "${CYAN}SWATGenX Celery Management Tools${NC}"
+    echo -e "${CYAN}================================${NC}"
+    echo
+    echo -e "${GREEN}Usage:${NC} celery-tools COMMAND [OPTIONS]"
+    echo
+    echo -e "${GREEN}Commands:${NC}"
+    echo -e "  ${YELLOW}monitor${NC}              Monitor Celery workers, queues, and tasks"
+    echo -e "  ${YELLOW}inspect${NC}              Inspect tasks in queues"
+    echo -e "  ${YELLOW}fix-redis${NC}            Fix WRONGTYPE errors in Redis"
+    echo -e "  ${YELLOW}fix-redis-batch${NC}      Fix WRONGTYPE errors using batch processing (for large datasets)"
+    echo -e "  ${YELLOW}cleanup${NC}              Clean up corrupted task messages"
+    echo -e "  ${YELLOW}restart${NC}              Restart Celery workers and fix corrupted state"
+    echo -e "  ${YELLOW}restart-tasks${NC}        Restart stalled tasks"
+    echo -e "  ${YELLOW}clear-stuck${NC}          Clear stuck tasks"
+    echo -e "  ${YELLOW}reset${NC}                Perform emergency reset of Celery and Redis"
+    echo -e "  ${YELLOW}help${NC}                 Show this help information"
+    echo
+    echo -e "${GREEN}Examples:${NC}"
+    echo -e "  celery-tools monitor --workers"
+    echo -e "  celery-tools inspect --queue celery --full"
+    echo -e "  celery-tools fix-redis"
+    echo -e "  celery-tools restart"
+    echo
+    echo -e "${GREEN}For more detailed help on a specific command:${NC}"
+    echo -e "  celery-tools COMMAND --help"
+    echo
+}
+
+# Check if we need sudo for certain commands
+check_sudo() {
+    if [[ $EUID -ne 0 && "$1" = true ]]; then
+        echo -e "${RED}Error: This command requires root privileges${NC}"
+        echo -e "Please run with sudo: ${YELLOW}sudo celery-tools $COMMAND $*${NC}"
+        exit 1
+    fi
+}
+
+# Handle the monitoring command
+cmd_monitor() {
+    # No sudo needed for monitoring
+    ${PYTHON_ENV} ${UTILS_DIR}/monitor_celery_status.py "$@"
+}
+
+# Handle the inspection command
+cmd_inspect() {
+    # No sudo needed for inspection
+    ${PYTHON_ENV} ${UTILS_DIR}/manage_celery_queues.py "$@"
+}
+
+# Handle the fix-redis command
+cmd_fix_redis() {
+    # Sudo required
+    check_sudo true
+    ${SERVICES_DIR}/fix_redis_wrongtype_batch_wrapper.sh "$@"
+}
+
+# Handle the fix-redis-batch command
+cmd_fix_redis_batch() {
+    # Sudo required
+    check_sudo true
+    ${SERVICES_DIR}/fix_redis_wrongtype_batch_wrapper.sh "$@"
+}
+
+# Handle the cleanup command
+cmd_cleanup() {
+    # Sudo required
+    check_sudo true
+    ${SERVICES_DIR}/cleanup_corrupted_tasks_wrapper.sh "$@"
+}
+
+# Handle the restart command
+cmd_restart() {
+    # Sudo required
+    check_sudo true
+    ${SERVICES_DIR}/restart_corrupted_celery.sh "$@"
+}
+
+# Handle the restart-tasks command
+cmd_restart_tasks() {
+    # Sudo required for task restarting
+    check_sudo true
+    ${PYTHON_ENV} ${UTILS_DIR}/restart_stalled_tasks.py "$@"
+}
+
+# Handle the clear-stuck command
+cmd_clear_stuck() {
+    # Sudo required for clearing stuck tasks
+    check_sudo true
+    ${PYTHON_ENV} ${UTILS_DIR}/fix_stuck_tasks.py "$@"
+}
+
+# Handle the reset command
+cmd_reset() {
+    # Sudo required for reset
+    check_sudo true
+    ${PYTHON_ENV} ${UTILS_DIR}/cleanup_redis_celery.py --emergency-reset "$@"
+}
+
+# Main function
+main() {
+    if [[ $# -lt 1 ]]; then
+        show_help
+        exit 1
+    fi
+
+    COMMAND="$1"
+    shift
+
+    case "$COMMAND" in
+        monitor)
+            cmd_monitor "$@"
+            ;;
+        inspect)
+            cmd_inspect "$@"
+            ;;
+        fix-redis)
+            cmd_fix_redis "$@"
+            ;;
+        fix-redis-batch)
+            cmd_fix_redis_batch "$@"
+            ;;
+        cleanup)
+            cmd_cleanup "$@"
+            ;;
+        restart)
+            cmd_restart "$@"
+            ;;
+        restart-tasks)
+            cmd_restart_tasks "$@"
+            ;;
+        clear-stuck)
+            cmd_clear_stuck "$@"
+            ;;
+        reset)
+            cmd_reset "$@"
+            ;;
+        help|--help|-h)
+            show_help
+            ;;
+        *)
+            echo -e "${RED}Error: Unknown command '$COMMAND'${NC}"
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+# Run the main function
+main "$@"

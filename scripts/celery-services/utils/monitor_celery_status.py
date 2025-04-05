@@ -553,6 +553,138 @@ def check_system_resources():
         status_msg = f"Error checking system resources: {str(e)}"
         print(f"{RED}{status_msg}{ENDC}" if USE_COLORS else status_msg)
 
+def send_alert_email(subject, message, recipient):
+    """Send an email alert"""
+    try:
+        import smtplib
+        from email.message import EmailMessage
+        
+        msg = EmailMessage()
+        msg.set_content(message)
+        msg['Subject'] = subject
+        msg['From'] = 'swatgenx-monitor@example.com'
+        msg['To'] = recipient
+        
+        # Connect to the server - configure with your SMTP settings
+        s = smtplib.SMTP('localhost')
+        s.send_message(msg)
+        s.quit()
+        
+        print(f"{GREEN}Alert email sent to {recipient}{ENDC}" if USE_COLORS else f"Alert email sent to {recipient}")
+        return True
+    except Exception as e:
+        status_msg = f"Failed to send alert email: {str(e)}"
+        print(f"{RED}{status_msg}{ENDC}" if USE_COLORS else status_msg)
+        return False
+
+def check_alert_conditions(worker_count, queue_info, threshold):
+    """Check if alert conditions are met"""
+    if worker_count == 0:
+        return True, "No active Celery workers found!"
+        
+    if queue_info:
+        waiting_tasks = sum(v for v in queue_info.values() if isinstance(v, int))
+        if waiting_tasks > threshold:
+            return True, f"Queue backlog exceeds threshold: {waiting_tasks} tasks waiting (threshold: {threshold})"
+    
+    return False, ""
+
+def implement_watch_mode(args):
+    """Implement the watch mode functionality"""
+    if not args.watch:
+        return
+        
+    print(f"Watch mode enabled. Running every {args.watch} seconds. Press Ctrl+C to stop.")
+    try:
+        while True:
+            # Clear screen between runs
+            os.system('clear')
+            
+            # Run main monitoring code
+            run_monitoring(args)
+            
+            # Wait for next iteration
+            time.sleep(args.watch)
+    except KeyboardInterrupt:
+        print("Watch mode stopped.")
+
+def run_monitoring(args):
+    """Run the monitoring checks based on command line args"""
+    # Run all checks if no specific ones are requested
+    run_all = not (args.workers or args.queues or args.tasks or args.resources)
+    
+    worker_count = None
+    queue_info = None
+    user_tasks = None
+    
+    if run_all or args.resources:
+        check_system_resources()
+    
+    if run_all or args.workers:
+        worker_count = get_celery_workers_status()
+    
+    if run_all or args.queues:
+        queue_info = get_redis_queue_status()
+    
+    if run_all or args.tasks:
+        user_tasks = analyze_user_tasks()
+        
+    # Display summary if running all checks
+    if run_all:
+        print_header("SUMMARY")
+        print(f"Report generated at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"Celery workers active: {worker_count if worker_count is not None else 'Error'}")
+        
+        if queue_info:
+            waiting_tasks = sum(v for v in queue_info.values() if isinstance(v, int))
+            print(f"Tasks waiting in queues: {waiting_tasks}")
+            
+        if user_tasks:
+            print(f"Total users with models: {len(user_tasks)}")
+            
+            # Get list of users with active tasks - using more efficient approach
+            active_statuses = ['PENDING', 'STARTED', 'RECEIVED', 'RETRY']
+            users_with_active = 0
+            
+            try:
+                r = redis.Redis.from_url('redis://localhost:6379/0', socket_connect_timeout=2)
+                for username, task_ids in user_tasks.items():
+                    has_active = False
+                    for task_id in task_ids[:5]:
+                        try:
+                            task_json = r.get(f"task:{task_id}")
+                            if task_json:
+                                task = json.loads(task_json)
+                                if task.get('status') in active_statuses:
+                                    has_active = True
+                                    break
+                        except:
+                            pass
+                    
+                    if has_active:
+                        users_with_active += 1
+            except Exception as e:
+                status_msg = f"Error checking active users: {str(e)}"
+                print(f"{YELLOW}{status_msg}{ENDC}" if USE_COLORS else status_msg)
+            
+            print(f"Users with active models: {users_with_active}")
+    
+    # Check if we need to send an alert
+    if args.alert_threshold and args.email:
+        should_alert, alert_message = check_alert_conditions(worker_count, queue_info, args.alert_threshold)
+        if should_alert:
+            subject = f"SWATGenX Alert: {alert_message}"
+            body = f"""
+SWATGenX Monitoring Alert
+
+Time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Issue: {alert_message}
+
+This is an automated alert from the SWATGenX monitoring system.
+Please check the system status as soon as possible.
+"""
+            send_alert_email(subject, body, args.email)
+
 def main():
     """Main function to run the monitoring script"""
     parser = argparse.ArgumentParser(description='Monitor Celery, Redis, and task status')
@@ -564,18 +696,20 @@ def main():
     parser.add_argument('--clean', action='store_true', help='Disable colors and use simpler output')
     parser.add_argument('--timeout', type=int, default=COMMAND_TIMEOUT, 
                        help=f'Command timeout in seconds (default: {COMMAND_TIMEOUT})')
+    parser.add_argument('--watch', '-w', type=int, help='Watch mode: run every N seconds')
+    parser.add_argument('--failures', '-f', action='store_true', help='Show only failed tasks')
+    parser.add_argument('--alert-threshold', type=int, help='Send alert if queue size exceeds this value')
+    parser.add_argument('--email', type=str, help='Email address to send alerts to')
     args = parser.parse_args()
     
     # Configure global settings
     global USE_COLORS
     USE_COLORS = not args.clean and args.output is None
     
-    # Update timeout without using global
-    if args.timeout != COMMAND_TIMEOUT:
-        # We'll pass the new timeout directly to functions that need it
-        timeout = args.timeout
-    else:
-        timeout = COMMAND_TIMEOUT
+    # If we're in watch mode, handle that separately
+    if args.watch:
+        implement_watch_mode(args)
+        return
     
     # Store original stdout for later restoration
     original_stdout = sys.stdout
@@ -590,63 +724,7 @@ def main():
             return
     
     try:
-        # Run all checks if no specific ones are requested
-        run_all = not (args.workers or args.queues or args.tasks or args.resources)
-        
-        if run_all or args.resources:
-            check_system_resources()
-        
-        if run_all or args.workers:
-            worker_count = get_celery_workers_status()
-        
-        if run_all or args.queues:
-            queue_info = get_redis_queue_status()
-        
-        if run_all or args.tasks:
-            user_tasks = analyze_user_tasks()
-            
-        # Display summary if running all checks
-        if run_all:
-            print_header("SUMMARY")
-            print(f"Report generated at: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            print(f"Celery workers active: {worker_count if worker_count is not None else 'Error'}")
-            
-            if queue_info:
-                waiting_tasks = sum(v for v in queue_info.values() if isinstance(v, int))
-                print(f"Tasks waiting in queues: {waiting_tasks}")
-                
-            if user_tasks:
-                print(f"Total users with models: {len(user_tasks)}")
-                
-                # Get list of users with active tasks - using more efficient approach
-                active_statuses = ['PENDING', 'STARTED', 'RECEIVED', 'RETRY']
-                users_with_active = 0
-                
-                # Connect to Redis once instead of for each task
-                try:
-                    r = redis.Redis.from_url('redis://localhost:6379/0', socket_connect_timeout=2)
-                    # Check a sample of tasks for each user (max 5 per user) to improve performance
-                    for username, task_ids in user_tasks.items():
-                        has_active = False
-                        for task_id in task_ids[:5]:  # Check only first 5 tasks per user
-                            try:
-                                task_json = r.get(f"task:{task_id}")
-                                if task_json:
-                                    task = json.loads(task_json)
-                                    if task.get('status') in active_statuses:
-                                        has_active = True
-                                        break
-                            except:
-                                pass
-                        
-                        if has_active:
-                            users_with_active += 1
-                except Exception as e:
-                    status_msg = f"Error checking active users: {str(e)}"
-                    print(f"{YELLOW}{status_msg}{ENDC}" if USE_COLORS else status_msg)
-                
-                print(f"Users with active models: {users_with_active}")
-            
+        run_monitoring(args)
     except Exception as e:
         status_msg = f"Unexpected error: {str(e)}"
         print(f"{RED}{status_msg}{ENDC}" if USE_COLORS else status_msg)
@@ -658,14 +736,11 @@ def main():
             sys.stdout = original_stdout
             print(f"Report written to {output_file}")
             
-            # If we're also writing to a file but still want colors in terminal,
-            # we need to convert the file to strip ANSI codes
             if not args.clean:
                 try:
                     with open(output_file, 'r') as f:
                         content = f.read()
                     
-                    # Strip ANSI color codes for the file output
                     with open(output_file, 'w') as f:
                         f.write(strip_ansi_codes(content))
                 except Exception as e:
