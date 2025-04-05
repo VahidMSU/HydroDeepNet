@@ -209,62 +209,145 @@ This is an automated message, please do not reply.
 # Redis utilities (from redis_utils.py)
 def check_redis_health():
     """
-    Check if Redis is available and healthy.
-    Returns a dict with status information.
+    Comprehensive Redis health check with detailed diagnostics.
+    
+    Returns:
+        dict: Health check results with keys:
+            - healthy (bool): Whether Redis is working
+            - message (str): Descriptive message
+            - url (str): Working Redis URL if healthy
+            - details (dict): Additional diagnostic information
     """
+    import os
+    import time
+    import socket
+    from redis import Redis, ConnectionError
+    from flask import current_app
+    
+    start_time = time.time()
+    details = {
+        "checks_performed": [],
+        "errors": [],
+        "warnings": []
+    }
+    
+    # URLs to test in order of preference
     redis_urls = [
-        current_app.config.get('REDIS_URL', 'redis://localhost:6379/0'),
-        'redis://127.0.0.1:6379/0',  # Try explicit IP
-        'redis://localhost:6379/0'   # Try explicit hostname
+        os.environ.get('REDIS_URL', ''),
+        'redis://127.0.0.1:6379/0',
+        'redis://localhost:6379/0',
+        'redis://redis:6379/0'
     ]
     
-    # Try each URL until one works, with special handling for loading state
+    # Filter out empty URLs
+    redis_urls = [url for url in redis_urls if url]
+    if not redis_urls:
+        redis_urls = ['redis://localhost:6379/0']
+    
+    details["urls_tested"] = redis_urls
+    
+    # Test each URL
     for url in redis_urls:
         try:
-            logger.info(f"Testing Redis health: {url}")
+            current_app.logger.info(f"Testing Redis health at {url}")
+            details["checks_performed"].append(f"Connection to {url}")
+            
             client = Redis.from_url(
-                url, 
-                socket_timeout=2,
-                socket_connect_timeout=2
+                url,
+                socket_timeout=3,
+                socket_connect_timeout=3,
+                health_check_interval=30
             )
             
-            # Special handling for Redis loading state
-            max_loading_retries = 3
-            for loading_attempt in range(max_loading_retries):
-                try:
-                    response = client.ping()
-                    if response:
-                        logger.info(f"Redis health check successful: {url}")
-                        return {
-                            'healthy': True,
-                            'message': f'Redis is available at {url}',
-                            'working_url': url
-                        }
-                except exceptions.BusyLoadingError:
-                    logger.warning(f"Redis at {url} is loading dataset (attempt {loading_attempt+1}/{max_loading_retries})")
-                    if loading_attempt < max_loading_retries - 1:
-                        # Wait for Redis to finish loading, increasing delay each time
-                        time.sleep(2 * (loading_attempt + 1))
-                    else:
-                        # Last attempt failed
-                        return {
-                            'healthy': False,
-                            'message': 'Redis is still loading the dataset. Please try again later.',
-                            'temporary': True
-                        }
+            # Basic ping test
+            ping_start = time.time()
+            ping_result = client.ping()
+            ping_time = time.time() - ping_start
+            details["checks_performed"].append(f"Ping to {url}")
+            
+            if not ping_result:
+                details["warnings"].append(f"Redis at {url} ping returned {ping_result} instead of True")
+            
+            # Try to set and get a value
+            test_key = f"redis_health_check_{time.time()}"
+            set_start = time.time()
+            client.set(test_key, "1", ex=60)
+            set_time = time.time() - set_start
+            
+            get_start = time.time()
+            test_value = client.get(test_key)
+            get_time = time.time() - get_start
+            
+            client.delete(test_key)
+            details["checks_performed"].append(f"Set/get test on {url}")
+            
+            if test_value != b"1":
+                details["warnings"].append(f"Redis at {url} returned {test_value} instead of b'1'")
                 
+            # Check server info
+            info_start = time.time()
+            info = client.info()
+            info_time = time.time() - info_start
+            details["checks_performed"].append(f"Info command on {url}")
+            
+            # Record performance metrics
+            details["performance"] = {
+                "ping_time_ms": round(ping_time * 1000, 2),
+                "set_time_ms": round(set_time * 1000, 2),
+                "get_time_ms": round(get_time * 1000, 2),
+                "info_time_ms": round(info_time * 1000, 2),
+                "total_time_ms": round((time.time() - start_time) * 1000, 2)
+            }
+            
+            # Record server diagnostics
+            details["server_info"] = {
+                "redis_version": info.get("redis_version", "unknown"),
+                "uptime_seconds": info.get("uptime_in_seconds", 0),
+                "connected_clients": info.get("connected_clients", 0),
+                "used_memory_human": info.get("used_memory_human", "unknown"),
+                "total_connections_received": info.get("total_connections_received", 0)
+            }
+            
+            # If we got here, Redis is working
+            current_app.logger.info(f"Redis at {url} is healthy (ping: {ping_time*1000:.2f}ms)")
+            
+            # Update the environment variable to use this URL
+            if url != os.environ.get('REDIS_URL'):
+                os.environ['REDIS_URL'] = url
+                current_app.logger.info(f"Updated REDIS_URL to {url}")
+                
+            return {
+                "healthy": True,
+                "message": f"Redis is working properly at {url}",
+                "url": url,
+                "details": details
+            }
+            
         except ConnectionError as e:
-            logger.warning(f"Redis connection error at {url}: {e}")
-        except socket.error as e:
-            logger.warning(f"Socket error connecting to Redis at {url}: {e}")
+            details["errors"].append(f"Connection error to {url}: {str(e)}")
+            current_app.logger.warning(f"Redis connection error at {url}: {e}")
+            continue
+            
+        except socket.timeout as e:
+            details["errors"].append(f"Socket timeout to {url}: {str(e)}")
+            current_app.logger.warning(f"Redis socket timeout at {url}: {e}")
+            continue
+            
         except Exception as e:
-            logger.exception(f"Unexpected error checking Redis at {url}: {e}")
+            details["errors"].append(f"Unexpected error with {url}: {str(e)}")
+            current_app.logger.error(f"Unexpected Redis error at {url}: {e}")
+            import traceback
+            details["last_exception_traceback"] = traceback.format_exc()
+            continue
     
-    # None of the URLs worked
-    logger.error("All Redis connection attempts failed")
+    # If we get here, all URLs failed
+    current_app.logger.error("All Redis URLs failed health check")
+    
     return {
-        'healthy': False,
-        'message': 'Could not connect to Redis server. The service may be down or unreachable.'
+        "healthy": False,
+        "message": "Redis is not available on any tested URL",
+        "url": None,
+        "details": details
     }
 
 def get_working_redis_connection():
