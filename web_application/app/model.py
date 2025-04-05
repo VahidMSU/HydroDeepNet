@@ -177,22 +177,16 @@ def model_settings():
                 "message": "Model creation service configuration issue",
                 "details": "Required modules not available"
             }), 500
-            
-        # Check active tasks for this user, limit to 5 concurrent tasks
+        
+        # Get active tasks for this user for reporting purposes only - no limit enforced
+        active_tasks_count = 0
         try:
             from app.task_tracker import task_tracker
             user_tasks = task_tracker.get_user_tasks(current_user.username)
             active_tasks = [t for t in user_tasks if t.get('status') not in 
                            [task_tracker.STATUS_SUCCESS, task_tracker.STATUS_FAILURE, task_tracker.STATUS_REVOKED]]
-            
-            if len(active_tasks) >= 5:
-                current_app.logger.warning(f"User {current_user.username} has {len(active_tasks)} active tasks, limit is 5")
-                return jsonify({
-                    "status": "error",
-                    "message": "You have reached the maximum limit of 5 concurrent model creation tasks. Please wait for some of your existing tasks to complete."
-                }), 429
-            
-            current_app.logger.info(f"User {current_user.username} has {len(active_tasks)} active tasks (under limit)")
+            active_tasks_count = len(active_tasks)
+            current_app.logger.info(f"User {current_user.username} has {active_tasks_count} active tasks (no limit enforced)")
         except Exception as e:
             current_app.logger.error(f"Error checking active tasks: {e}")
             # Continue processing - we don't want to block model creation if task tracking fails
@@ -274,7 +268,7 @@ def model_settings():
                     "status": "success", 
                     "message": "Model creation started",
                     "task_id": task.id,
-                    "queue_position": len(active_tasks) + 1
+                    "active_tasks": active_tasks_count + 1
                 })
                 current_app.logger.info(f"Returning JSON response: {response.data}")
                 return response

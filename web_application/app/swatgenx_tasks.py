@@ -86,10 +86,11 @@ except Exception as e:
              retry_kwargs={'max_retries': 3},
              queue='model_creation',
              acks_late=True,    # Acknowledge task after it's completed to prevent loss of tasks
-             reject_on_worker_lost=True)  # Requeue task if worker unexpectedly dies
+             reject_on_worker_lost=True,  # Requeue task if worker unexpectedly dies
+             rate_limit=None)  # Remove any rate limiting
 def create_model_task(self, username, site_no, ls_resolution, dem_resolution):
     """
-    Task to create a SWAT model
+    Task to create a SWAT model with no concurrency limitations
     """
     # Import the task tracker within the task to ensure it's available in the Celery worker context
     from app.task_tracker import task_tracker
@@ -98,7 +99,9 @@ def create_model_task(self, username, site_no, ls_resolution, dem_resolution):
     task_metadata = {
         "ls_resolution": ls_resolution,
         "dem_resolution": dem_resolution,
-        "start_time": time.time()
+        "start_time": time.time(),
+        "worker_hostname": self.request.hostname,
+        "delivery_info": str(self.request.delivery_info)
     }
     task_tracker.register_task(self.request.id, username, site_no, task_metadata)
     
