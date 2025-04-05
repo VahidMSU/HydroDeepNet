@@ -29,11 +29,13 @@ function SearchForm({
   const [mapMode, setMapMode] = useState(true); // True if map mode is enabled
   const [searchError, setSearchError] = useState('');
   const [siteNumberInput, setSiteNumberInput] = useState(''); // New state for site number input
+  const [resultsFromSearch, setResultsFromSearch] = useState(false); // Track if results are from search
 
   // Update search results when map selections change
   useEffect(() => {
     if (mapSelections.length > 0) {
       setSearchResults(mapSelections);
+      setResultsFromSearch(false); // Results from map, not search
     }
   }, [mapSelections]);
 
@@ -57,6 +59,7 @@ function SearchForm({
         setSearchError('No stations found matching your search term');
       } else {
         setSearchResults(data);
+        setResultsFromSearch(true); // Results came from search
         if (data.length === 0) {
           setSearchError('No stations found matching your search term');
         }
@@ -118,7 +121,7 @@ function SearchForm({
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyDown={handleSearchKeyDown}
-            placeholder="Enter station name or number"
+            placeholder="Find station by searching a name"
           />
           <SearchButton onClick={handleSearch}>
             <FontAwesomeIcon icon={faSearch} />
@@ -148,13 +151,9 @@ function SearchForm({
         </FeedbackMessage>
       )}
 
-      {searchResults.length > 0 && (
+      {/* Only show search results if they came from a search operation, not from map selection */}
+      {searchResults.length > 0 && resultsFromSearch && (
         <SearchResults>
-          <div style={{ marginBottom: '8px', fontSize: '14px' }}>
-            {mapMode
-              ? `${searchResults.length} station${searchResults.length > 1 ? 's' : ''} selected. Click one to view details.`
-              : 'Search results:'}
-          </div>
           {searchResults.map((site) => (
             <SearchResultItem
               key={site.SiteNumber}

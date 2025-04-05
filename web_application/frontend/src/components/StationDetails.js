@@ -89,12 +89,16 @@ const StationDetails = React.memo(({ stationData }) => {
   };
 
   return (
-    <StationDetailsContainer>
+    <StationDetailsContainer style={{ backgroundColor: '#222222' }}>
       <StationName onClick={toggleExpand} style={{ cursor: 'pointer' }}>
         <StationIcon>
           <FontAwesomeIcon icon={faMapMarkedAlt} />
         </StationIcon>
-        {stationData.SiteName || 'Station Details'}
+        {stationData.SiteName &&
+        stationData.SiteName.trim() !== '' &&
+        stationData.SiteName.trim() !== '---'
+          ? stationData.SiteName
+          : stationData.SiteNumber}
         <StationToggleIcon>
           <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
         </StationToggleIcon>
