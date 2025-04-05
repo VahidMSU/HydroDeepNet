@@ -578,9 +578,9 @@ const SWATGenXTemplate = () => {
             <div
               style={{
                 padding: '5px 10px',
-                backgroundColor: '#f0f8ff',
+                backgroundColor: '#222222', // changed to dark gray
                 borderRadius: '5px',
-                color: 'black', // Explicitly set the text color to black
+                color: 'white', // updated for contrast
               }}
             >
               {stationData ? (
@@ -839,7 +839,7 @@ const SWATGenXTemplate = () => {
           <TitleIcon>
             <FontAwesomeIcon icon={faMap} />
           </TitleIcon>
-          <span style={{ marginLeft: '500px' }}>
+          <span style={{ marginLeft: '500px', color: 'white' }}>
             SWATGenX: Automated Watershed Modeling Platform
           </span>
         </HeaderTitle>

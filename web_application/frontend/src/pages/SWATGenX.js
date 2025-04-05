@@ -44,7 +44,7 @@ const SWATGenX = () => {
         left: '60px', // Adjusted position to avoid overlap
         zIndex: 1001,
         padding: '8px 15px',
-        background: '#ff8500',
+        background: '#222222', // changed to dark gray (#222222)
         color: 'white',
         border: 'none',
         borderRadius: '4px',
