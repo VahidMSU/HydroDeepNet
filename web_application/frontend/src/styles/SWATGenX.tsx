@@ -127,29 +127,35 @@ export const spin = keyframes`
   }
 `;
 
-// Main Container
+// Main Container - Modified to prevent vertical scrolling
 export const Container = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow: hidden; /* Changed from overflow-x: hidden to prevent all scrolling */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #1c1c1e;
   color: #ffd380;
+  position: fixed; /* Added fixed position */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 `;
 
-// Header
+// Header - Adjusted to be more compact
 export const Header = styled.header`
   background: linear-gradient(to right, #1e1e1f, #2d2d30);
   color: #ffd380;
-  padding: 12px 20px;
+  padding: 8px 20px; /* Reduced padding */
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   z-index: 100;
   width: 100%;
   box-sizing: border-box;
   border-bottom: 1px solid #ff8500;
+  flex: 0 0 auto; /* Prevent flexbox from stretching this element */
 `;
 
 export const HeaderTitle = styled.h1`
@@ -171,20 +177,21 @@ export const TitleIcon = styled.span`
   color: #ff8500;
 `;
 
-// Content Layout
+// Content Layout - Fixed height calculation
 export const Content = styled.div`
   display: flex;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 50px); /* Adjust to match header height */
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
+  flex: 1 1 auto; /* Allow it to grow/shrink as needed */
   
   @media (max-width: 768px) {
     flex-direction: column;
   }
 `;
 
-// Sidebar
+// Sidebar - Modified to ensure sidebar fits within the available space
 export const Sidebar = styled.div`
   width: 360px;
   min-width: 300px;
@@ -218,15 +225,16 @@ export const InfoPanel = styled.div`
   flex: 0 0 auto;
 `;
 
+// ConfigPanel - Modified to ensure proper sizing with fixed container
 export const ConfigPanel = styled.div`
   width: 100%;
+  height: calc(100% - 45px); /* Subtract the InfoPanel height */
   box-sizing: border-box;
   overflow: hidden;
   border-bottom: 1px solid #3a3a3c;
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  overflow: hidden;
 `;
 
 // Panel header
@@ -296,12 +304,37 @@ export const PanelContent = styled.div`
   }
 `;
 
+// ConfigPanelContent - Modified to enable scrolling within the panel content while keeping container fixed
 export const ConfigPanelContent = styled(PanelContent)`
   flex: 1;
+  max-height: calc(100vh - 180px); /* Calculate max height to prevent overflow */
   overflow-y: auto;
+  
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #1e1e1f;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #3a3a3c;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #505050;
+    }
+  }
+  
+  /* Ensure scrollbar appears in Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3c #1e1e1f;
 `;
 
-// Map Container
+// Map Container - Modified to ensure map fits within available space
 export const MapContainer = styled.div`
   flex: 1;
   overflow: hidden;
@@ -582,15 +615,16 @@ export const ButtonIcon = styled.span`
   font-size: 1rem;
 `;
 
-// Feedback messages
+// Feedback messages - Make feedback messages more compact
 export const FeedbackMessage = styled.div<{ type: 'success' | 'error' }>`
-  margin-top: 16px;
-  padding: 12px 14px;
+  margin-top: 10px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-weight: 500;
   animation: ${fadeIn} 0.3s ease-in-out;
   display: flex;
   align-items: center;
+  font-size: 0.9rem;
   
   ${props => props.type === 'success' && css`
     background-color: rgba(76, 175, 80, 0.15);
@@ -727,17 +761,32 @@ export const SearchButton = styled.button<{ disabled?: boolean }>`
   }
 `;
 
-// Search results
+// Search results - Adjust search results to fit within fixed container
 export const SearchResults = styled.div`
-  max-height: 250px;
+  max-height: 150px; /* Reduced height to prevent overflow */
   overflow-y: auto;
   margin-top: 12px;
   border: 1px solid #505050;
   border-radius: 8px;
   background-color: #2b2b2c;
   animation: ${slideDown} 0.3s ease-out;
+  
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #1e1e1f;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #3a3a3c;
+    border-radius: 3px;
+  }
 `;
 
+// Add the missing SearchResultItem component
 export const SearchResultItem = styled.div`
   padding: 12px 14px;
   border-bottom: 1px solid #3a3a3c;
@@ -865,14 +914,14 @@ export const StepContainer = styled.div`
   width: 100%;
 `;
 
-// Navigation buttons
+// Navigation buttons - Make button margin more compact
 export const NavigationButtons = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 12px;
+  margin-bottom: 12px;
   gap: 12px;
-  flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+  flex-wrap: wrap;
   width: 100%;
 `;
 

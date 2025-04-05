@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faGears,
@@ -61,104 +61,6 @@ import {
   InputLabel,
 } from '../../styles/SWATGenX.tsx';
 
-// Modify the geometriesCache to be more persistent and resilient
-const geometriesCache = {
-  data: null,
-  timestamp: null,
-  expirationTime: 30 * 60 * 1000, // 30 minutes
-  isLoading: false,
-  error: null,
-  retryCount: 0,
-  maxRetries: 3,
-  retryDelay: 5000, // 5 seconds initially, will increase exponentially
-
-  set: function (data) {
-    this.data = data;
-    this.timestamp = Date.now();
-    this.isLoading = false;
-    this.error = null;
-    this.retryCount = 0;
-    try {
-      sessionStorage.setItem(
-        'stationGeometriesCache',
-        JSON.stringify({
-          data: data,
-          timestamp: Date.now(),
-        }),
-      );
-    } catch (e) {
-      console.warn('Failed to cache station geometries in sessionStorage:', e);
-      // Continue without caching - this is not a fatal error
-    }
-    console.log(`Station geometries cache updated with ${data.length} stations`);
-  },
-
-  get: function () {
-    // First check memory cache
-    if (this.data && this.timestamp && Date.now() - this.timestamp <= this.expirationTime) {
-      return this.data;
-    }
-
-    // Then try session storage
-    try {
-      const cachedData = sessionStorage.getItem('stationGeometriesCache');
-      if (cachedData) {
-        const parsed = JSON.parse(cachedData);
-        if (parsed.timestamp && Date.now() - parsed.timestamp <= this.expirationTime) {
-          this.data = parsed.data;
-          this.timestamp = parsed.timestamp;
-          console.log(`Using ${parsed.data.length} station geometries from sessionStorage`);
-          return parsed.data;
-        }
-      }
-    } catch (e) {
-      console.warn('Failed to retrieve station geometries from sessionStorage:', e);
-      // Continue without using cache - this is not a fatal error
-    }
-
-    return null;
-  },
-
-  isValid: function () {
-    return this.get() !== null;
-  },
-
-  clear: function () {
-    this.data = null;
-    this.timestamp = null;
-    this.error = null;
-    this.retryCount = 0;
-    try {
-      sessionStorage.removeItem('stationGeometriesCache');
-    } catch (e) {
-      console.warn('Failed to clear station geometries from sessionStorage:', e);
-    }
-  },
-
-  setLoading: function (status) {
-    this.isLoading = status;
-    if (!status) {
-      // Reset retry count when loading completes
-      this.retryCount = 0;
-    }
-  },
-
-  setError: function (error) {
-    this.error = error;
-    this.isLoading = false;
-  },
-
-  shouldRetry: function () {
-    return this.retryCount < this.maxRetries;
-  },
-
-  incrementRetry: function () {
-    this.retryCount++;
-    // Exponential backoff for retries
-    return this.retryDelay * Math.pow(2, this.retryCount - 1);
-  },
-};
-
 const SWATGenXTemplate = () => {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1); // Step 1: Station Selection, Step 2: Resolution & Analysis
@@ -180,58 +82,152 @@ const SWATGenXTemplate = () => {
   const [geometriesPreloaded, setGeometriesPreloaded] = useState(false);
   const [showDebugger, setShowDebugger] = useState(false);
   const previousStationDataRef = useRef(null);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [basemapType, setBasemapType] = useState('streets');
+  const [showWatershed, setShowWatershed] = useState(true);
+  const [showStreams, setShowStreams] = useState(true);
+  const [showLakes, setShowLakes] = useState(true);
 
-  // Add ref for map refresh function
   const mapRefreshFunctionRef = useRef(null);
 
-  // Define the available resolution options
   const lsResolutionOptions = ['30', '100', '250', '500', '1000'];
 
-  // Create a function to handle map refreshing
-  const handleMapRefresh = () => {
-    console.log('Manual map refresh requested');
-    setMapSelectionLoading(true);
+  const geometriesCache = {
+    data: null,
+    timestamp: null,
+    expirationTime: 7 * 24 * 60 * 60 * 1000, // 7 days - even longer expiration
+    isLoading: false,
+    error: null,
 
-    // If we have access to the map refresh function, use it
-    if (mapRefreshFunctionRef.current && typeof mapRefreshFunctionRef.current === 'function') {
-      const refreshResult = mapRefreshFunctionRef.current();
-      console.log('Map refresh result:', refreshResult);
+    STORAGE_KEY: 'stationGeometriesPermanentCache',
+    STATIC_FILE_PATH: '/static/stations.geojson',
 
-      // Ensure we update the loading state even if refresh fails
-      setTimeout(() => {
-        setMapSelectionLoading(false);
-      }, 1000);
-    } else {
-      console.warn('Map refresh function not available');
+    set: function (data) {
+      this.data = data;
+      this.timestamp = Date.now();
+      this.isLoading = false;
+      this.error = null;
 
-      // Alternative approach: force refetch of station geometries
-      geometriesCache.clear();
-      setStationPoints([]);
-      fetchStationGeometries(true);
-    }
+      try {
+        const cacheData = {
+          data: data,
+          timestamp: Date.now(),
+        };
+
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cacheData));
+        sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(cacheData));
+
+        console.log(
+          `Station geometries cache updated with ${data.length} stations (persistent storage)`,
+        );
+      } catch (e) {
+        console.warn('Failed to cache station geometries in storage:', e);
+      }
+    },
+
+    get: function () {
+      if (this.data && this.timestamp && Date.now() - this.timestamp <= this.expirationTime) {
+        return this.data;
+      }
+
+      try {
+        let cachedData = localStorage.getItem(this.STORAGE_KEY);
+
+        if (!cachedData) {
+          cachedData = sessionStorage.getItem(this.STORAGE_KEY);
+        }
+
+        if (cachedData) {
+          const parsed = JSON.parse(cachedData);
+          if (parsed.timestamp && Date.now() - parsed.timestamp <= this.expirationTime) {
+            this.data = parsed.data;
+            this.timestamp = parsed.timestamp;
+            console.log(`Using ${parsed.data.length} station geometries from persistent storage`);
+            return parsed.data;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to retrieve station geometries from storage:', e);
+      }
+
+      return null;
+    },
+
+    isValid: function () {
+      return this.get() !== null;
+    },
+
+    clear: function () {
+      this.data = null;
+      this.timestamp = null;
+      this.error = null;
+      try {
+        sessionStorage.removeItem(this.STORAGE_KEY);
+        localStorage.removeItem(this.STORAGE_KEY);
+      } catch (e) {
+        console.warn('Failed to clear station geometries from storage:', e);
+      }
+    },
+
+    setLoading: function (status) {
+      this.isLoading = status;
+    },
+
+    setError: function (error) {
+      this.error = error;
+      this.isLoading = false;
+    },
   };
 
-  // Define fetchStationGeometries using useCallback so it can be included in dependency arrays
+  // Memoize station points to prevent unnecessary re-renders
+  const memoizedStationPoints = useMemo(() => {
+    console.log(`Memoizing ${stationPoints.length} station points`);
+    // Only keep essential properties to reduce memory usage
+    if (stationPoints.length > 0) {
+      return stationPoints.map((point) => ({
+        type: point.type,
+        geometry: point.geometry,
+        properties: {
+          SiteNumber: point.properties.SiteNumber,
+          SiteName: point.properties.SiteName,
+          id: point.properties.id,
+        },
+      }));
+    }
+    return [];
+  }, [stationPoints]);
+
+  // Optimize fetch function with better error handling and fewer side effects
   const fetchStationGeometries = useCallback(
     async (forceRefresh = false) => {
       if ((mapSelectionLoading || geometriesCache.isLoading) && !forceRefresh) return;
+
+      if (geometriesCache.isValid() && !forceRefresh) {
+        const cachedData = geometriesCache.get();
+        setStationPoints(cachedData);
+        setGeometriesPreloaded(true);
+        console.log('Using cached station geometries, skipping fetch');
+        return;
+      }
 
       setMapSelectionLoading(true);
       geometriesCache.setLoading(true);
 
       try {
-        console.log('Fetching station geometries from server');
+        console.log('Loading station geometries from static file');
+        // Use AbortController to handle timeouts
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
+        const response = await fetch(geometriesCache.STATIC_FILE_PATH, {
           headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Cache-Control': 'no-cache',
             Pragma: 'no-cache',
-            Expires: '0',
           },
-          // Add a timeout to prevent hanging requests
-          signal: AbortSignal.timeout(30000), // 30 second timeout
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           throw new Error(
@@ -242,42 +238,58 @@ const SWATGenXTemplate = () => {
         const data = await response.json();
 
         if (!data || !data.features) {
-          throw new Error('Invalid response format from server');
+          throw new Error('Invalid GeoJSON format in static file');
         }
 
+        // Process features in chunks to avoid blocking the main thread
         const features = data.features || [];
-        console.log(`Loaded ${features.length} station geometries`);
+        const processFeatures = (startIdx, chunkSize) => {
+          const endIdx = Math.min(startIdx + chunkSize, features.length);
+          const chunk = features.slice(startIdx, endIdx);
 
-        if (features.length === 0) {
-          throw new Error('No station features returned from server');
-        }
+          // Only keep essential properties to reduce memory footprint
+          const processedChunk = chunk.map((feature) => ({
+            type: feature.type,
+            geometry: feature.geometry,
+            properties: {
+              SiteNumber: feature.properties.SiteNumber,
+              SiteName: feature.properties.SiteName,
+              id: feature.properties.id,
+            },
+          }));
 
-        geometriesCache.set(features);
-        setStationPoints(features);
-        setGeometriesPreloaded(true);
+          // Update state with processed features so far
+          setStationPoints((prev) => [...prev, ...processedChunk]);
+
+          // Continue processing if there are more features
+          if (endIdx < features.length) {
+            // Use setTimeout to yield to the browser for rendering
+            setTimeout(() => processFeatures(endIdx, chunkSize), 0);
+          } else {
+            // All features processed
+            geometriesCache.set(features);
+            setGeometriesPreloaded(true);
+            setInitialLoadComplete(true);
+            setMapSelectionLoading(false);
+          }
+        };
+
+        // Clear existing points before starting to add new ones
+        setStationPoints([]);
+        // Start processing in chunks of 1000 features
+        processFeatures(0, 1000);
+
+        console.log(`Processing ${features.length} station geometries in chunks`);
 
         if (feedbackType === 'error' && feedbackMessage.includes('station')) {
           setFeedbackMessage('');
           setFeedbackType('');
         }
       } catch (error) {
-        console.error('Error fetching station geometries:', error);
+        console.error('Error loading station geometries from static file:', error);
         geometriesCache.setError(error);
         setFeedbackMessage('Failed to load stations on map: ' + error.message);
         setFeedbackType('error');
-
-        // Implement retry logic
-        if (geometriesCache.shouldRetry()) {
-          const retryDelay = geometriesCache.incrementRetry();
-          console.log(
-            `Will retry station geometries fetch in ${retryDelay}ms (attempt ${geometriesCache.retryCount})`,
-          );
-
-          setTimeout(() => {
-            fetchStationGeometries(true);
-          }, retryDelay);
-        }
-      } finally {
         setMapSelectionLoading(false);
       }
     },
@@ -285,92 +297,59 @@ const SWATGenXTemplate = () => {
   );
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-        e.preventDefault();
-        setShowDebugger((prev) => !prev);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  useEffect(() => {
+    // If cached geometries exist, use them; if not, fetch once.
     const cachedGeometries = geometriesCache.get();
     if (cachedGeometries) {
-      console.log('Initialized station geometries from persistent cache');
-      setGeometriesPreloaded(true);
+      console.log('Initializing station geometries from cache');
       setStationPoints(cachedGeometries);
-    } else {
-      console.log('No cached geometries found, will preload');
+      setGeometriesPreloaded(true);
+      setInitialLoadComplete(true);
+    } else if (!initialLoadComplete && !geometriesCache.isLoading) {
+      // Fetch once if not previously loaded
+      fetchStationGeometries(false);
     }
-  }, []);
-
-  useEffect(() => {
-    const preloadStationGeometries = async () => {
-      if (geometriesCache.isValid() || geometriesCache.isLoading) {
-        if (geometriesCache.isValid()) {
-          console.log('Using preloaded cached station geometries');
-          setGeometriesPreloaded(true);
-        }
-        return;
-      }
-
-      geometriesCache.setLoading(true);
-      try {
-        console.log('Preloading station geometries from server');
-        setMapSelectionLoading(true);
-
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
-          headers: {
-            'Cache-Control': 'no-cache',
-            Pragma: 'no-cache',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch station geometries: ${response.status} ${response.statusText}`,
-          );
-        }
-
-        const data = await response.json();
-        const features = data.features || [];
-
-        console.log(`Successfully preloaded ${features.length} station geometries`);
-
-        geometriesCache.set(features);
-        setGeometriesPreloaded(true);
-        setStationPoints(features);
-      } catch (error) {
-        console.error('Error preloading station geometries:', error);
-        geometriesCache.setError(error);
-        setFeedbackMessage('Failed to load stations on map: ' + error.message);
-        setFeedbackType('error');
-      } finally {
-        setMapSelectionLoading(false);
-      }
-    };
-
-    preloadStationGeometries();
-  }, []);
-
-  useEffect(() => {
-    if (stationPoints.length === 0 && !mapSelectionLoading && !geometriesCache.isLoading) {
-      fetchStationGeometries();
-    }
-  }, [stationPoints.length, mapSelectionLoading, geometriesPreloaded, fetchStationGeometries]);
+  }, [initialLoadComplete, fetchStationGeometries]);
 
   useEffect(() => {
     if (stationData) {
       previousStationDataRef.current = stationData;
     }
   }, [stationData]);
+
+  const handleMapRefresh = () => {
+    console.log('Manual map refresh requested');
+    setMapSelectionLoading(true);
+
+    if (mapRefreshFunctionRef.current && typeof mapRefreshFunctionRef.current === 'function') {
+      const refreshResult = mapRefreshFunctionRef.current();
+      console.log('Map refresh result:', refreshResult);
+
+      setTimeout(() => {
+        setMapSelectionLoading(false);
+      }, 1000);
+    } else {
+      console.warn('Map refresh function not available');
+
+      const existingGeometries = geometriesCache.get();
+      if (existingGeometries) {
+        setStationPoints([]);
+        setTimeout(() => {
+          setStationPoints(existingGeometries);
+          setMapSelectionLoading(false);
+        }, 500);
+      } else {
+        fetchStationGeometries(false);
+      }
+    }
+  };
+
+  const refreshStationGeometries = () => {
+    console.log('User requested explicit refresh of station geometries');
+    geometriesCache.clear();
+    setStationPoints([]);
+    setGeometriesPreloaded(false);
+    fetchStationGeometries(true);
+  };
 
   const handleNextStep = () => {
     if (!stationInput.trim() && !stationData) {
@@ -449,7 +428,6 @@ const SWATGenXTemplate = () => {
       previousStationDataRef.current = null;
       setFeedbackMessage(error.message || 'Failed to fetch station details');
       setFeedbackType('error');
-      // Reset selection state when there's an error
       setSelectedStationOnMap(null);
       setMapSelections([]);
     } finally {
@@ -486,12 +464,9 @@ const SWATGenXTemplate = () => {
         body: JSON.stringify(formData),
       });
 
-      // Get the response data
       const data = await response.json();
 
-      // Handle different response statuses
       if (!response.ok) {
-        // Specifically handle 429 TOO MANY REQUESTS error
         if (response.status === 429) {
           throw new Error(
             data.message ||
@@ -517,11 +492,8 @@ const SWATGenXTemplate = () => {
     setShowStationPanel(!showStationPanel);
   };
 
-  const refreshStationGeometries = () => {
-    geometriesCache.clear();
-    setStationPoints([]);
-    setGeometriesPreloaded(false);
-    fetchStationGeometries();
+  const toggleBasemap = () => {
+    setBasemapType((prev) => (prev === 'streets' ? 'google' : 'streets'));
   };
 
   const handleMultipleStationsSelect = (stations) => {
@@ -540,6 +512,8 @@ const SWATGenXTemplate = () => {
     setStationInput('');
     setShowStationPanel(false);
     previousStationDataRef.current = null;
+    setGeometriesPreloaded(false); // Reset geometries preloaded flag
+    setStationPoints([]); // Clear station points
   };
 
   const renderResetButton = () => {
@@ -601,7 +575,14 @@ const SWATGenXTemplate = () => {
         <>
           <div style={{ margin: '10px 0 20px 0', fontSize: '15px' }}>
             <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Selected Station:</div>
-            <div style={{ padding: '5px 10px', backgroundColor: '#f0f8ff', borderRadius: '5px' }}>
+            <div
+              style={{
+                padding: '5px 10px',
+                backgroundColor: '#f0f8ff',
+                borderRadius: '5px',
+                color: 'black', // Explicitly set the text color to black
+              }}
+            >
               {stationData ? (
                 <>
                   <div>
@@ -749,6 +730,108 @@ const SWATGenXTemplate = () => {
     }
   };
 
+  const LayerControls = () => {
+    // Only show when geometries are loaded - check each type more explicitly
+    const hasWatershed = stationData?.geometries && stationData.geometries.length > 0;
+    const hasStreams = stationData?.streams_geometries && stationData.streams_geometries.length > 0;
+    const hasLakes = stationData?.lakes_geometries && stationData.lakes_geometries.length > 0;
+
+    // Only show controls if at least one of the geometry types exists
+    if (!stationData || (!hasWatershed && !hasStreams && !hasLakes)) {
+      return null;
+    }
+
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          left: '10px',
+          bottom: '10px',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          padding: '10px',
+          borderRadius: '4px',
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+          zIndex: 1000,
+          color: 'black',
+        }}
+      >
+        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: 'black' }}>
+          <FontAwesomeIcon icon={faLayerGroup} style={{ marginRight: '5px' }} />
+          Layer Visibility
+        </div>
+
+        {/* Only show the watershed checkbox if watershed geometries exist */}
+        {hasWatershed && (
+          <div style={{ marginBottom: '8px' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '14px',
+                cursor: 'pointer',
+                color: 'black',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showWatershed}
+                onChange={(e) => setShowWatershed(e.target.checked)}
+                style={{ marginRight: '8px' }}
+              />
+              Watershed
+            </label>
+          </div>
+        )}
+
+        {/* Only show the streams checkbox if stream geometries exist */}
+        {hasStreams && (
+          <div style={{ marginBottom: '8px' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '14px',
+                cursor: 'pointer',
+                color: 'black',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showStreams}
+                onChange={(e) => setShowStreams(e.target.checked)}
+                style={{ marginRight: '8px' }}
+              />
+              Streams
+            </label>
+          </div>
+        )}
+
+        {/* Only show the lakes checkbox if lake geometries exist */}
+        {hasLakes && (
+          <div>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '14px',
+                cursor: 'pointer',
+                color: 'black',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showLakes}
+                onChange={(e) => setShowLakes(e.target.checked)}
+                style={{ marginRight: '8px' }}
+              />
+              Lakes
+            </label>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Container>
       <Header>
@@ -756,7 +839,9 @@ const SWATGenXTemplate = () => {
           <TitleIcon>
             <FontAwesomeIcon icon={faMap} />
           </TitleIcon>
-          <span>SWATGenX – SWAT+ Model Creation Tool</span>
+          <span style={{ marginLeft: '500px' }}>
+            SWATGenX: Automated Watershed Modeling Platform
+          </span>
         </HeaderTitle>
       </Header>
 
@@ -858,6 +943,12 @@ const SWATGenXTemplate = () => {
               >
                 <FontAwesomeIcon icon={faRedoAlt} />
               </MapControlButton>
+              <MapControlButton
+                title={`Switch to ${basemapType === 'streets' ? 'Google Aerial' : 'Streets'} Basemap`}
+                onClick={toggleBasemap}
+              >
+                <FontAwesomeIcon icon={faGears} />
+              </MapControlButton>
             </MapControlsContainer>
 
             {mapSelectionLoading && (
@@ -869,15 +960,24 @@ const SWATGenXTemplate = () => {
               </LoadingOverlay>
             )}
 
+            <LayerControls />
+
             <EsriMap
               geometries={stationData?.geometries || []}
               streamsGeometries={stationData?.streams_geometries || []}
               lakesGeometries={stationData?.lakes_geometries || []}
-              stationPoints={stationPoints}
+              stationPoints={memoizedStationPoints}
               onStationSelect={handleStationSelectFromMap}
               showStations={true}
               selectedStationId={selectedStationOnMap?.SiteNumber}
               refreshMapRef={mapRefreshFunctionRef}
+              enableClustering={true}
+              maxVisibleStations={5000}
+              updateInterval={60}
+              basemapType={basemapType}
+              showWatershed={showWatershed}
+              showStreams={showStreams}
+              showLakes={showLakes}
             />
           </MapInnerContainer>
         </MapContainer>
@@ -888,4 +988,5 @@ const SWATGenXTemplate = () => {
   );
 };
 
-export default SWATGenXTemplate;
+// Use React.memo to prevent unnecessary re-renders of the entire component
+export default React.memo(SWATGenXTemplate);

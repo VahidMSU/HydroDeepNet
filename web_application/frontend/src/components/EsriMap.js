@@ -2,79 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { loadModules } from 'esri-loader';
 import SessionService from '../services/SessionService';
 
-// Fix for passive event listener issue with the wheel event
-// This needs to be defined BEFORE the ArcGIS JS API loads
-const fixWheelEvent = () => {
-  try {
-    // Save the original addEventListener
-    const originalAddEventListener = EventTarget.prototype.addEventListener;
-
-    // Override addEventListener to make wheel events non-passive for ArcGIS elements only
-    EventTarget.prototype.addEventListener = function (type, listener, options) {
-      // Check if this is a wheel event
-      if (type === 'wheel' || type === 'mousewheel') {
-        // For ArcGIS map elements, we need to ensure passive is not forced to true
-        // This allows proper zoom behavior using the mouse wheel
-        if (
-          (this.className &&
-            typeof this.className === 'string' &&
-            (this.className.includes('esri-') || this.className.includes('esri'))) ||
-          (this.id && this.id === 'esri-map-container') ||
-          (this.parentElement &&
-            this.parentElement.className &&
-            typeof this.parentElement.className === 'string' &&
-            this.parentElement.className.includes('esri'))
-        ) {
-          // If options is a boolean (useCapture), convert to object
-          if (typeof options === 'boolean') {
-            options = { capture: options, passive: false };
-          } else if (typeof options === 'object' && options !== null) {
-            options.passive = false;
-          } else {
-            options = { passive: false };
-          }
-        } else {
-          // For non-ArcGIS elements, keep passive for performance
-          if (typeof options === 'boolean') {
-            options = { capture: options, passive: true };
-          } else if (typeof options === 'object' && options !== null) {
-            options.passive = true;
-          } else {
-            options = { passive: true };
-          }
-        }
-      }
-
-      // Call the original addEventListener with our modified options
-      return originalAddEventListener.call(this, type, listener, options);
-    };
-
-    // Set up dojoConfig for ArcGIS
-    if (window.dojoConfig) {
-      // Update existing dojoConfig
-      window.dojoConfig.passiveEvents = false;
-      if (window.dojoConfig.has) {
-        window.dojoConfig.has['esri-passive-events'] = false;
-      } else {
-        window.dojoConfig.has = { 'esri-passive-events': false };
-      }
-    } else {
-      // Create new dojoConfig
-      window.dojoConfig = {
-        passiveEvents: false,
-        has: { 'esri-passive-events': false },
-      };
-    }
-
-    console.log('Wheel event listener fix applied');
-  } catch (e) {
-    console.error('Failed to apply wheel event fix:', e);
-  }
-};
-
-// Apply the fix immediately
-fixWheelEvent();
-
 // Debounce utility function to improve performance
 const debounce = (func, delay) => {
   let timeoutId;
@@ -95,15 +22,21 @@ const EsriMap = ({
   showStations = false,
   selectedStationId = null,
   refreshMapRef = null, // Add new prop to expose refresh functionality
+  basemapType = 'streets', // This prop will control which basemap to display
+  showWatershed = true, // New prop to control watershed visibility
+  showStreams = true, // New prop to control streams visibility
+  showLakes = true, // New prop to control lakes visibility
 }) => {
   const mapRef = useRef(null);
   const viewRef = useRef(null);
   const highlightedFeatureRef = useRef(null);
+  const touchStartRef = useRef(null); // Add this ref to track touch positions
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoadingGeometries, setIsLoadingGeometries] = useState(false);
   const [stationsLoaded, setStationsLoaded] = useState(false);
   const prevStationPointsRef = useRef([]);
   const visibilityRef = useRef(true);
+  const [currentBasemap, setCurrentBasemap] = useState(basemapType);
 
   const handleStationSelect = useCallback(
     (clickedStation) => {
@@ -123,13 +56,11 @@ const EsriMap = ({
   useEffect(() => {
     const handleVisibilityChange = () => {
       const isVisible = !document.hidden;
-      console.log(`Document visibility changed to: ${isVisible ? 'visible' : 'hidden'}`);
       visibilityRef.current = isVisible;
 
       if (isVisible && showStations && stationPoints.length > 0 && viewRef.current) {
         const { stationLayer } = viewRef.current;
         if (stationLayer && !stationLayer.destroyed && stationLayer.graphics.length === 0) {
-          console.log('Tab visible again, stations not displayed - forcing refresh');
           setTimeout(renderStationPoints, 500);
         }
       }
@@ -141,14 +72,71 @@ const EsriMap = ({
     };
   }, [showStations, stationPoints]);
 
+  const handleTouchStart = (event) => {
+    if (event.touches && event.touches.length > 0) {
+      touchStartRef.current = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY,
+        time: Date.now(),
+      };
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    if (touchStartRef.current && event.touches && event.touches.length > 0) {
+      const deltaX = event.touches[0].clientX - touchStartRef.current.x;
+      const deltaY = event.touches[0].clientY - touchStartRef.current.y;
+
+      if (viewRef.current && viewRef.current.view) {
+        // Example: could update UI elements based on touch movement
+      }
+    }
+  };
+
+  const handleTouchEnd = (event) => {
+    if (touchStartRef.current) {
+      const touchEndTime = Date.now();
+      const touchDuration = touchEndTime - touchStartRef.current.time;
+
+      touchStartRef.current = null;
+
+      if (touchDuration < 300) {
+        // This could be a tap/click equivalent
+      }
+    }
+  };
+
+  const addTouchListeners = () => {
+    if (viewRef.current && viewRef.current.view && viewRef.current.view.container) {
+      viewRef.current.view.container.addEventListener('touchstart', handleTouchStart, {
+        passive: true,
+      });
+      viewRef.current.view.container.addEventListener('touchmove', handleTouchMove, {
+        passive: true,
+      });
+      viewRef.current.view.container.addEventListener('touchend', handleTouchEnd, {
+        passive: true,
+      });
+    }
+  };
+
+  const removeTouchListeners = () => {
+    if (viewRef.current && viewRef.current.view && viewRef.current.view.container) {
+      viewRef.current.view.container.removeEventListener('touchstart', handleTouchStart);
+      viewRef.current.view.container.removeEventListener('touchmove', handleTouchMove);
+      viewRef.current.view.container.removeEventListener('touchend', handleTouchEnd);
+    }
+  };
+
+  useEffect(() => {
+    if (viewRef.current && viewRef.current.view && !viewRef.current.touchListenersAdded) {
+      addTouchListeners();
+      viewRef.current.touchListenersAdded = true;
+    }
+  }, [isLoaded]);
+
   const renderStationPoints = useCallback(() => {
     if (!viewRef.current || !isLoaded || !showStations || stationPoints.length === 0) {
-      console.log('Cannot render station points - prerequisites not met:', {
-        viewExists: !!viewRef.current,
-        isLoaded,
-        showStations,
-        stationPointsCount: stationPoints.length,
-      });
       return;
     }
 
@@ -158,33 +146,31 @@ const EsriMap = ({
 
     if (stationLayer && !stationLayer.destroyed) {
       if (prevStationPointsRef.current === stationPoints && stationLayer.graphics.length > 0) {
-        console.log(
-          `Station points already rendered (${stationLayer.graphics.length}) - skipping redraw`,
-        );
         SessionService.setMapInteractionState(false);
         return;
       }
 
-      console.log(`Clearing ${stationLayer.graphics.length} existing station graphics`);
       stationLayer.removeAll();
     } else {
-      console.warn('Station layer unavailable for rendering');
       SessionService.setMapInteractionState(false);
       return;
     }
 
-    console.log(`Rendering ${stationPoints.length} station points on map`);
-
-    // Track metrics for debugging
-    const startTime = performance.now();
     const stationGraphics = [];
     let successfullyAdded = 0;
     let failedToAdd = 0;
 
-    // Larger batch size for production
     const batchSize = 200;
 
-    // Use a more efficient approach with a single array push then addMany
+    const handleGraphicCreationError = () => {
+      failedToAdd++;
+    };
+
+    const handleBatchAddError = (batchSize) => {
+      failedToAdd += batchSize;
+      successfullyAdded -= batchSize;
+    };
+
     for (let i = 0; i < stationPoints.length; i += batchSize) {
       const batch = stationPoints.slice(i, i + batchSize);
       const batchGraphics = [];
@@ -227,52 +213,39 @@ const EsriMap = ({
             stationGraphics.push(stationGraphic);
             successfullyAdded++;
           } catch (err) {
-            failedToAdd++;
-            console.warn('Error creating station graphic:', err);
+            handleGraphicCreationError();
           }
         } else {
-          failedToAdd++;
+          handleGraphicCreationError();
         }
       });
 
-      // Add all graphics in the batch at once
       if (!stationLayer.destroyed && batchGraphics.length > 0) {
         try {
           stationLayer.addMany(batchGraphics);
         } catch (err) {
-          console.error('Error adding batch graphics to layer:', err);
-          // Fallback to adding one by one if batch fails
           batchGraphics.forEach((graphic) => {
             try {
               stationLayer.add(graphic);
             } catch (innerErr) {
-              failedToAdd++;
-              successfullyAdded--;
+              handleGraphicCreationError();
             }
           });
         }
       }
     }
 
-    const endTime = performance.now();
-    console.log(
-      `Station points rendering: Added ${successfullyAdded}, Failed ${failedToAdd}, Time: ${(endTime - startTime).toFixed(1)}ms`,
-    );
-
     prevStationPointsRef.current = stationPoints;
 
     setStationsLoaded(true);
 
-    // Zoom to stations if needed
     if (stationGraphics.length > 0 && !selectedStationId && view && !view.destroyed) {
       try {
-        // Delay the zoom slightly to allow map to stabilize
         setTimeout(() => {
           if (!view.destroyed) {
-            console.log('Zooming to station extents');
             view
               .goTo(stationGraphics, { animate: false })
-              .catch((error) => console.warn('Error during map navigation:', error))
+              .catch((error) => {})
               .finally(() => {
                 setTimeout(() => SessionService.setMapInteractionState(false), 500);
               });
@@ -281,7 +254,6 @@ const EsriMap = ({
           }
         }, 200);
       } catch (e) {
-        console.error('Exception during view.goTo preparation:', e);
         SessionService.setMapInteractionState(false);
       }
     } else {
@@ -290,10 +262,68 @@ const EsriMap = ({
   }, [isLoaded, showStations, stationPoints, selectedStationId]);
 
   useEffect(() => {
+    if (viewRef.current && viewRef.current.view && !viewRef.current.view.destroyed && isLoaded) {
+      // Update basemap when basemapType prop changes
+      if (currentBasemap !== basemapType) {
+        setCurrentBasemap(basemapType);
+
+        console.log(`Changing basemap from ${currentBasemap} to ${basemapType}`);
+
+        loadModules(['esri/Map', 'esri/layers/WebTileLayer', 'esri/Basemap'], { version: '4.25' })
+          .then(([Map, WebTileLayer, Basemap]) => {
+            const view = viewRef.current.view;
+
+            let newMap;
+            if (basemapType === 'google') {
+              // Create Google aerial basemap using proper URL pattern for Google Satellite
+              const googleSatelliteLayer = new WebTileLayer({
+                urlTemplate: 'https://mt{subDomain}.google.com/vt/lyrs=s&x={col}&y={row}&z={level}',
+                subDomains: ['0', '1', '2', '3'],
+                copyright: 'Google Maps Satellite',
+                title: 'Google Satellite',
+              });
+
+              const googleBasemap = new Basemap({
+                baseLayers: [googleSatelliteLayer],
+                title: 'Google Satellite',
+                id: 'google-satellite',
+              });
+
+              newMap = new Map({
+                basemap: googleBasemap,
+                qualityProfile: 'high',
+              });
+            } else {
+              // Create street basemap
+              newMap = new Map({
+                basemap: 'topo-vector',
+                qualityProfile: 'high',
+              });
+            }
+
+            // Transfer existing layers to the new map
+            if (view.map) {
+              const layers = view.map.layers.toArray();
+              layers.forEach((layer) => {
+                view.map.remove(layer);
+                newMap.add(layer);
+              });
+            }
+
+            // Set the new map on the view
+            view.map = newMap;
+          })
+          .catch((error) => {
+            console.error('Error changing basemap:', error);
+          });
+      }
+    }
+  }, [basemapType, isLoaded, currentBasemap]);
+
+  useEffect(() => {
     let view;
     let mapViewHandles = [];
 
-    // Track loading state properly with promises instead of timeouts
     const loadingStates = {
       viewReady: false,
       modulesLoaded: false,
@@ -301,27 +331,19 @@ const EsriMap = ({
       renderComplete: false,
     };
 
-    // Signal that the map is in an interactive state during initialization
     SessionService.setMapInteractionState(true);
 
     const options = {
       version: '4.25',
       css: true,
       dojoConfig: {
-        passiveEvents: true, // Set to true for better performance
+        passiveEvents: true,
         has: {
           'esri-passive-events': true,
         },
       },
     };
 
-    // Create a promise that resolves when map rendering is complete
-    let resolveRenderComplete;
-    const renderCompletePromise = new Promise((resolve) => {
-      resolveRenderComplete = resolve;
-    });
-
-    // Load ESRI modules using Promise-based pattern
     loadModules(
       [
         'esri/Map',
@@ -336,6 +358,8 @@ const EsriMap = ({
         'esri/widgets/Sketch',
         'esri/geometry/geometryEngine',
         'esri/config',
+        'esri/layers/WebTileLayer',
+        'esri/Basemap',
       ],
       options,
     )
@@ -353,17 +377,16 @@ const EsriMap = ({
           Sketch,
           geometryEngine,
           esriConfig,
+          WebTileLayer,
+          Basemap,
         ]) => {
           if (viewRef.current) return;
 
           loadingStates.modulesLoaded = true;
-          console.log('ESRI modules loaded successfully');
 
-          // Configure ESRI for better performance
           esriConfig.has = esriConfig.has || {};
           esriConfig.has['esri-passive-events'] = true;
 
-          // Add passive event support to avoid browser warnings
           esriConfig.options = {
             ...esriConfig.options,
             events: {
@@ -372,10 +395,33 @@ const EsriMap = ({
             },
           };
 
-          const map = new Map({
-            basemap: 'topo-vector',
-            qualityProfile: 'high', // Use high quality for better rendering
-          });
+          // Set basemap options based on basemapType prop
+          let mapOptions = {};
+          if (basemapType === 'google') {
+            // Create Google aerial basemap using WebTileLayer for better compatibility
+            const googleSatelliteLayer = new WebTileLayer({
+              urlTemplate: 'https://mt{subDomain}.google.com/vt/lyrs=s&x={col}&y={row}&z={level}',
+              subDomains: ['0', '1', '2', '3'],
+              copyright: 'Google Maps Satellite',
+              title: 'Google Satellite',
+            });
+
+            const googleBasemap = new Basemap({
+              baseLayers: [googleSatelliteLayer],
+              title: 'Google Satellite',
+              id: 'google-satellite',
+            });
+
+            mapOptions = {
+              basemap: googleBasemap,
+              qualityProfile: 'high',
+            };
+          } else {
+            mapOptions = { basemap: 'topo-vector', qualityProfile: 'high' };
+          }
+
+          const map = new Map(mapOptions);
+          setCurrentBasemap(basemapType);
 
           view = new MapView({
             container: mapRef.current,
@@ -389,26 +435,21 @@ const EsriMap = ({
               mouseWheelZoomEnabled: true,
               browserTouchPanEnabled: true,
             },
-            // Optimize performance with better loading
             loadingOptimization: true,
-            // Disable popup to improve performance
             popup: {
               dockEnabled: false,
               dockOptions: {
-                // Disable dock completely to improve performance
                 buttonEnabled: false,
                 breakpoint: false,
               },
             },
           });
 
-          // Set wheel and touch events as passive for better performance
           if (view.navigation) {
             view.navigation.mouseWheelEventOptions = { passive: true };
             view.navigation.browserTouchPanEventOptions = { passive: true };
           }
 
-          // Create layers for map
           const polygonLayer = new GraphicsLayer({ elevationInfo: { mode: 'on-the-ground' } });
           const streamLayer = new GraphicsLayer({ elevationInfo: { mode: 'on-the-ground' } });
           const lakeLayer = new GraphicsLayer({ elevationInfo: { mode: 'on-the-ground' } });
@@ -419,23 +460,17 @@ const EsriMap = ({
 
           map.addMany([polygonLayer, streamLayer, lakeLayer, stationLayer]);
 
-          // Wait for the view to be ready before setting up interactions
           view.when(() => {
             loadingStates.viewReady = true;
-            console.log('Map view is ready');
 
-            // Instead of timeouts, we use the view's ready state
             if (showStations && stationPoints.length > 0) {
               renderStationPointsWithBatching(stationLayer, Graphic, Point);
             }
 
-            // Add click event handler for station selection
             if (onStationSelect) {
-              // Add hover effect to improve usability
               const pointerMoveHandler = view.on(
                 'pointer-move',
                 debounce((event) => {
-                  // Skip if not showing stations or during processing
                   if (!showStations || loadingStates.stationsProcessing) {
                     return;
                   }
@@ -445,18 +480,15 @@ const EsriMap = ({
                     y: event.y,
                   };
 
-                  // Hit test with minimal processing
                   view
                     .hitTest(screenPoint, {
                       include: [stationLayer],
                     })
                     .then((response) => {
-                      // Find if we're hovering over a station
                       const stationGraphic = response.results?.find(
                         (result) => result.graphic?.layer === stationLayer,
                       )?.graphic;
 
-                      // Get all graphics to reset those not being hovered
                       const graphics = stationLayer.graphics.toArray();
 
                       graphics.forEach((graphic) => {
@@ -465,9 +497,7 @@ const EsriMap = ({
                         const isSelected = graphic.attributes.SiteNumber === selectedStationId;
                         const isHovered = stationGraphic && graphic === stationGraphic;
 
-                        // Only update if state changed to avoid unnecessary redraws
                         if (isHovered && graphic.symbol.size !== '10px' && !isSelected) {
-                          // Hovering - make bigger with outline
                           graphic.symbol = {
                             type: 'simple-marker',
                             color: [0, 114, 206, 0.9],
@@ -478,10 +508,8 @@ const EsriMap = ({
                             },
                           };
 
-                          // Change cursor to pointer to indicate clickable
                           mapRef.current.style.cursor = 'pointer';
                         } else if (!isHovered && !isSelected && graphic.symbol.size !== '8px') {
-                          // Reset to normal state
                           graphic.symbol = {
                             type: 'simple-marker',
                             color: [0, 114, 206, 0.7],
@@ -494,85 +522,61 @@ const EsriMap = ({
                         }
                       });
 
-                      // If not hovering over a station, reset cursor
                       if (!stationGraphic) {
                         mapRef.current.style.cursor = 'default';
                       }
                     })
-                    .catch((err) => {
-                      // Silent catch - no need to handle errors for hover effects
-                    });
+                    .catch((err) => {});
                 }, 50),
-              ); // Short debounce for responsive hover
+              );
 
               mapViewHandles.push(pointerMoveHandler);
 
-              // Click handler for selecting stations
               const clickHandler = view.on('click', (event) => {
-                // Prevent default behavior and propagation
                 event.stopPropagation();
 
-                // Skip if not showing stations or loading
                 if (!showStations || loadingStates.stationsProcessing) {
-                  console.log('Click ignored: not ready for station selection');
                   return;
                 }
 
                 SessionService.setMapInteractionState(true);
-                console.log('Map clicked, checking for stations...');
 
-                // Create the screen point from the event
                 const screenPoint = {
                   x: event.x,
                   y: event.y,
                 };
 
-                // Hit test to find graphics at the clicked location
                 view
                   .hitTest(screenPoint, {
                     include: [stationLayer],
                   })
                   .then((response) => {
-                    console.log('Hit test results:', response.results?.length || 0);
-
-                    // Find station graphics in the results
                     const stationGraphics = response.results?.filter(
                       (result) => result.graphic?.layer === stationLayer,
                     );
 
-                    console.log('Station graphics found:', stationGraphics?.length || 0);
-
-                    // If we found a station, call the selection handler
                     if (
                       stationGraphics &&
                       stationGraphics.length > 0 &&
                       stationGraphics[0].graphic?.attributes
                     ) {
                       const clickedStation = stationGraphics[0].graphic.attributes;
-                      console.log('Station selected:', clickedStation);
                       handleStationSelect(clickedStation);
-                    } else {
-                      console.log('No station found at click location');
-                      // No station found at this location
                     }
 
-                    // Release interaction state
                     setTimeout(() => {
                       SessionService.setMapInteractionState(false);
                     }, 500);
                   })
                   .catch((error) => {
-                    console.error('Error during hit test:', error);
                     SessionService.setMapInteractionState(false);
                   });
               });
 
-              // Add to handles for cleanup
               mapViewHandles.push(clickHandler);
             }
           });
 
-          // Define map interaction event handlers
           const handleMapInteractionStart = () => {
             SessionService.setMapInteractionState(true);
           };
@@ -583,20 +587,17 @@ const EsriMap = ({
             }
           }, 1000);
 
-          // Add event listeners for map interactions
           const interactionEvents = ['mouse-wheel', 'key-down', 'drag', 'double-click', 'click'];
           interactionEvents.forEach((eventName) => {
             const handle = view.on(eventName, handleMapInteractionStart);
             mapViewHandles.push(handle);
           });
 
-          // Add event listeners for interaction completion
           const dragEndHandle = view.on('drag-end', handleMapInteractionEnd);
           const keyUpHandle = view.on('key-up', handleMapInteractionEnd);
           const clickHandle = view.on('click', handleMapInteractionEnd);
           mapViewHandles.push(dragEndHandle, keyUpHandle, clickHandle);
 
-          // Store view information in ref for later use
           viewRef.current = {
             view,
             polygonLayer,
@@ -611,18 +612,13 @@ const EsriMap = ({
             geometryEngine,
           };
 
-          // A more efficient station point rendering function that uses batching
-          // and avoids timeouts by using the view's ready state
           const renderStationPointsWithBatching = (stationLayer, Graphic, Point) => {
             if (!stationPoints.length) return;
 
             loadingStates.stationsProcessing = true;
-            console.log(`Rendering ${stationPoints.length} station points using batching`);
 
-            // Clear any existing graphics
             stationLayer.removeAll();
 
-            // Efficient batch processing with Web Workers if supported
             const useWebWorker = window.Worker && stationPoints.length > 1000;
 
             if (useWebWorker) {
@@ -632,33 +628,24 @@ const EsriMap = ({
             }
           };
 
-          // Store the render function with a better name
           viewRef.current.renderStations = renderStationPointsWithBatching;
 
-          // Trigger initial data loading
           setIsLoaded(true);
-
-          // Signal rendering is ready to start
-          resolveRenderComplete();
         },
       )
       .catch((error) => {
-        console.error('Error loading ArcGIS modules:', error);
         SessionService.setMapInteractionState(false);
       });
 
-    // Efficient direct processing of station points
     const processStationPointsDirectly = (stationPoints, stationLayer, Graphic, Point) => {
-      const batchSize = 200; // Process in manageable chunks
+      const batchSize = 200;
       let processedCount = 0;
       let failedCount = 0;
 
-      // Use requestAnimationFrame to avoid blocking the UI thread
       const processBatch = (startIdx) => {
         const endIdx = Math.min(startIdx + batchSize, stationPoints.length);
         const batchGraphics = [];
 
-        // Process batch
         for (let i = startIdx; i < endIdx; i++) {
           const station = stationPoints[i];
           if (station.geometry && station.geometry.coordinates) {
@@ -700,91 +687,74 @@ const EsriMap = ({
           }
         }
 
-        // Add batch to layer
         if (batchGraphics.length > 0 && !stationLayer.destroyed) {
           try {
             stationLayer.addMany(batchGraphics);
           } catch (error) {
-            console.warn('Error adding batch graphics:', error);
             failedCount += batchGraphics.length;
             processedCount -= batchGraphics.length;
           }
         }
 
-        // Continue with next batch or complete
         if (endIdx < stationPoints.length) {
-          // Use requestAnimationFrame for smoother UI
           requestAnimationFrame(() => processBatch(endIdx));
         } else {
-          // All batches processed
-          console.log(
-            `Station points rendering complete: Added ${processedCount}, Failed ${failedCount}`,
-          );
           prevStationPointsRef.current = stationPoints;
           setStationsLoaded(true);
           loadingStates.stationsProcessing = false;
           loadingStates.renderComplete = true;
 
-          // Allow map interactions again
           SessionService.setMapInteractionState(false);
         }
       };
 
-      // Start processing first batch
       processBatch(0);
     };
 
-    // Use Web Workers for heavy processing (would need to be implemented in a real application)
-    // This is a placeholder that simulates what a web worker would do
     const processStationPointsWithWorker = (stationPoints, stationLayer, Graphic, Point) => {
-      console.log('Would use Web Worker for large station set, falling back to direct processing');
       processStationPointsDirectly(stationPoints, stationLayer, Graphic, Point);
     };
 
-    // When component unmounts
     return () => {
-      // Immediately cancel any ongoing processing
       loadingStates.stationsProcessing = false;
 
-      // Ensure we're not in an interactive state
       SessionService.setMapInteractionState(false);
 
-      // Clean up event handlers
       if (mapViewHandles.length > 0) {
         mapViewHandles.forEach((handle) => {
           if (handle && typeof handle.remove === 'function') {
             try {
               handle.remove();
-            } catch (e) {
-              console.warn('Error removing map handle:', e);
-            }
+            } catch (e) {}
           }
         });
       }
 
-      // Clean up highlight feature
       if (highlightedFeatureRef.current) {
         try {
           highlightedFeatureRef.current.remove();
-        } catch (e) {
-          console.warn('Error removing highlight:', e);
-        }
+        } catch (e) {}
         highlightedFeatureRef.current = null;
       }
 
-      // Properly destroy the view
       if (view) {
         try {
           view.destroy();
-        } catch (e) {
-          console.warn('Error destroying view:', e);
-        }
+        } catch (e) {}
         viewRef.current = null;
       }
 
-      console.log('EsriMap component unmounted, view and layers cleaned up');
+      removeTouchListeners();
     };
-  }, [onStationSelect, showStations, stationPoints, selectedStationId, handleStationSelect]);
+  }, [
+    onStationSelect,
+    showStations,
+    stationPoints,
+    selectedStationId,
+    handleStationSelect,
+    renderStationPoints,
+    removeTouchListeners,
+  ]);
 
   useEffect(() => {
     if (!viewRef.current || !isLoaded) {
@@ -792,7 +762,6 @@ const EsriMap = ({
     }
 
     if (showStations) {
-      console.log(`Station points changed: ${stationPoints.length} points, show: ${showStations}`);
       renderStationPoints();
     } else if (viewRef.current.stationLayer && !viewRef.current.stationLayer.destroyed) {
       viewRef.current.stationLayer.removeAll();
@@ -809,9 +778,6 @@ const EsriMap = ({
         viewRef.current.stationLayer.graphics.length === 0 &&
         visibilityRef.current
       ) {
-        console.log(
-          "Station visibility check: stations should be visible but aren't - forcing refresh",
-        );
         renderStationPoints();
       }
     }, 3000);
@@ -821,43 +787,31 @@ const EsriMap = ({
     };
   }, [stationPoints, showStations, isLoaded, renderStationPoints]);
 
-  // New function to force a refresh of the map and stations
   const refreshMap = useCallback(() => {
-    console.log('Forcing map refresh...');
     if (!viewRef.current || !isLoaded) {
-      console.log('Map not ready for refresh');
       return false;
     }
 
-    // Clear current graphics
     if (viewRef.current.stationLayer && !viewRef.current.stationLayer.destroyed) {
       viewRef.current.stationLayer.removeAll();
-      console.log('Cleared station graphics');
     }
 
-    // Reset the previous points reference to force redraw
     prevStationPointsRef.current = [];
 
-    // Re-render station points
     if (showStations && stationPoints.length > 0) {
-      console.log('Re-rendering station points');
       setTimeout(() => {
         renderStationPoints();
 
-        // Additional check to ensure points are rendered
         setTimeout(() => {
           if (viewRef.current?.stationLayer?.graphics.length === 0) {
-            console.log('Second attempt to render station points');
             renderStationPoints();
           }
         }, 1000);
       }, 100);
     }
 
-    // If we have a view, try to reset its extent to improve visibility
     if (viewRef.current.view && !viewRef.current.view.destroyed) {
       try {
-        console.log('Resetting map view extent');
         const initialExtent = {
           center: [-98, 39],
           zoom: 4,
@@ -868,18 +822,13 @@ const EsriMap = ({
             duration: 500,
             easing: 'ease-in-out',
           })
-          .catch((err) => {
-            console.warn('Error resetting map extent:', err);
-          });
-      } catch (e) {
-        console.error('Error during map extent reset:', e);
-      }
+          .catch((err) => {});
+      } catch (e) {}
     }
 
     return true;
   }, [isLoaded, showStations, stationPoints, renderStationPoints]);
 
-  // Expose the refresh function via the ref
   useEffect(() => {
     if (refreshMapRef && typeof refreshMapRef === 'object') {
       refreshMapRef.current = refreshMap;
@@ -898,8 +847,6 @@ const EsriMap = ({
     }
 
     if (selectedStationId && prevStationPointsRef.current === stationPoints && stationsLoaded) {
-      console.log(`Updating selection for station: ${selectedStationId}`);
-
       const graphics = stationLayer.graphics.toArray();
 
       graphics.forEach((graphic) => {
@@ -985,7 +932,8 @@ const EsriMap = ({
           }
         };
 
-        if (geometries.length > 0) {
+        // Only process each geometry type if it's visible
+        if (geometries.length > 0 && showWatershed) {
           processGeometries(geometries, polygonLayer, {
             type: 'polygon',
             symbol: {
@@ -996,7 +944,7 @@ const EsriMap = ({
           });
         }
 
-        if (lakesGeometries.length > 0) {
+        if (lakesGeometries.length > 0 && showLakes) {
           processGeometries(lakesGeometries, lakeLayer, {
             type: 'polygon',
             symbol: {
@@ -1007,7 +955,7 @@ const EsriMap = ({
           });
         }
 
-        if (streamsGeometries.length > 0) {
+        if (streamsGeometries.length > 0 && showStreams) {
           processGeometries(streamsGeometries, streamLayer, {
             type: 'polyline',
             symbol: {
@@ -1023,9 +971,7 @@ const EsriMap = ({
             .when(() => {
               view
                 .goTo(allGraphics, { duration: 500 })
-                .catch((e) => {
-                  console.warn('Error during map navigation:', e);
-                })
+                .catch((e) => {})
                 .finally(() => {
                   setIsLoadingGeometries(false);
 
@@ -1035,7 +981,6 @@ const EsriMap = ({
                 });
             })
             .catch((e) => {
-              console.warn('Error during view.when():', e);
               setIsLoadingGeometries(false);
               SessionService.setMapInteractionState(false);
             });
@@ -1048,12 +993,19 @@ const EsriMap = ({
         }
       })
       .catch((error) => {
-        console.error('Error loading modules:', error);
         setIsLoadingGeometries(false);
 
         SessionService.setMapInteractionState(false);
       });
-  }, [geometries, streamsGeometries, lakesGeometries, isLoaded]);
+  }, [
+    geometries,
+    streamsGeometries,
+    lakesGeometries,
+    isLoaded,
+    showWatershed,
+    showStreams,
+    showLakes,
+  ]);
 
   return (
     <>
