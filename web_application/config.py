@@ -111,7 +111,7 @@ class Config:
     GOOGLE_CLIENT_SECRET = ''
     
     try:
-        with open('/data/SWATGenXApp/codes/scripts/client_secret_952114684215-6gfiic7kq9i873vtdbp1hd8i7mp758uh.apps.googleusercontent.com.json') as f:
+        with open('/data/SWATGenXApp/codes/scripts/google-services/client_secret_952114684215-6gfiic7kq9i873vtdbp1hd8i7mp758uh.apps.googleusercontent.com.json') as f:
             client_info = json.load(f)
             if 'web' in client_info:
                 GOOGLE_CLIENT_ID = client_info['web']['client_id']
