@@ -10,6 +10,10 @@ def load_station_geometries():
     import pandas as pd
     import geopandas as gpd
     df = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
+    print(f"DataFrame columns: {df.columns.tolist()}")  # Debugging
+    ## check the columns
+    import time 
+    time.sleep(500)
     print(f"Columns in DataFrame: {df.columns.tolist()}")  # Debugging
     ## limit to CONUS based on Latitude and Longitude
     df = df[(df['Latitude'] >= 24.396308) & (df['Latitude'] <= 49.384358) & 
@@ -27,8 +31,19 @@ def load_station_geometries():
     gdf = gdf.to_crs(epsg=4326)
     ## change the base path ownership to rafieiva
     import os 
-    ## save to GeoJSON  
-    gdf = gdf[['SiteName', 'SiteNumber', 'Latitude', 'Longitude', 'site_no', 'geometry']]
+    
+    # Include all important columns in the GeoJSON file
+    columns_to_keep = [
+        'SiteName', 'SiteNumber', 'Latitude', 'Longitude', 'site_no', 
+        'Drainage area (sqkm)', 'Number of expected records (1999-2022)',
+        'Streamflow records gap (1999-2022) (%)', 'Status', 'USGSFunding', 
+        'HUC12 id of the station', 'HUC12 ids of the watershed', 'huc_cd',
+        'geometry'
+    ]
+    
+    # Ensure all columns exist before filtering
+    available_columns = [col for col in columns_to_keep if col in gdf.columns]
+    gdf = gdf[available_columns]
 
     gdf.to_file(SWATGenXPaths.FPS_CONUS_stations, driver='GeoJSON')
     ## read the GeoJSON file

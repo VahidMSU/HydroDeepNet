@@ -2,10 +2,9 @@
 cd /data/SWATGenXApp/codes/web_application/frontend
 
 echo "Auditing packages and cleaning up unused dependencies..."
-npm audit fix
-npm prune
+#npm audit fix
+#npm prune
 
 echo "Building the application..."
 npm run build
 
-npm start

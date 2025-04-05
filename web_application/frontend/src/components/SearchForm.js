@@ -70,7 +70,7 @@ function SearchForm({
   };
 
   // Handle Enter key press in search input
-  const handleSearchKeyPress = (e) => {
+  const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
@@ -111,28 +111,13 @@ function SearchForm({
     <StyledSearchForm>
       <SearchInputGroup>
         <label>Search or Select Station:</label>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '5px 10px',
-              backgroundColor: '#f0f8ff',
-              borderRadius: '5px',
-              marginRight: '10px',
-            }}
-          >
-            <FontAwesomeIcon icon={faMousePointer} style={{ marginRight: '5px' }} />
-            <span style={{ fontSize: '14px' }}>Click directly on map to select a station</span>
-          </div>
-        </div>
 
         <SearchInputWrapper>
           <FormInput
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            onKeyPress={handleSearchKeyPress}
+            onKeyDown={handleSearchKeyDown}
             placeholder="Enter station name or number"
           />
           <SearchButton onClick={handleSearch}>

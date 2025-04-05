@@ -37,12 +37,27 @@ const App = () => {
     <Router>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
-          {/* Public routes */}
+          {/* Public routes without Layout */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* SWATGenX route - standalone with no Layout/sidebar */}
+          <Route
+            path="/model_settings"
+            element={
+              PRIVATE_MODE ? (
+                <PrivateRoute>
+                  <SWATGenX />
+                </PrivateRoute>
+              ) : (
+                <SWATGenX />
+              )
+            }
+          />
+
           {/* Private routes with Layout */}
           <Route
             path="/*"
@@ -58,18 +73,6 @@ const App = () => {
                         </PrivateRoute>
                       ) : (
                         <Home />
-                      )
-                    }
-                  />
-                  <Route
-                    path="/model_settings"
-                    element={
-                      PRIVATE_MODE ? (
-                        <PrivateRoute>
-                          <SWATGenX />
-                        </PrivateRoute>
-                      ) : (
-                        <SWATGenX />
                       )
                     }
                   />

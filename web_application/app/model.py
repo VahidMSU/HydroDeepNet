@@ -10,7 +10,7 @@ from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 from app.extensions import csrf
 import geopandas as gpd
 from app.comm_utils import send_model_start_email, check_redis_health
-
+import numpy as np
 model_bp = Blueprint('model', __name__)
 
 @model_bp.route('/api/search_site', methods=['GET', 'POST'])
@@ -39,23 +39,40 @@ def get_station_characteristics():
     station_data = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
     current_app.logger.info(f"Station number: {station_no}")
 
-    # Find the row with that station
-    station_row = station_data[station_data.SiteNumber == station_no]
+    # Find the row with that station - fix the boolean comparison issue
+    station_row = station_data[station_data.SiteNumber.astype(str) == str(station_no)]
     if station_row.empty:
         current_app.logger.error(f"Station {station_no} not found in CSV.")
         return jsonify({"error": "Station not found"}), 404
 
-    # Convert row to dict
+    # Convert row to dict - Including all available columns
     characteristics = station_row.iloc[0].to_dict()
+    
+    # Rename some fields for better readability in the frontend
+    field_mappings = {
+        'Drainage area (sqkm)': 'DrainageArea',
+        'Number of expected records (1999-2022)': 'ExpectedRecords',
+        'Streamflow records gap (1999-2022) (%)': 'StreamflowGapPercent',
+        'HUC12 id of the station': 'StationHUC12',
+    }
+    
+    # Apply field renaming for better frontend usage
+    for old_name, new_name in field_mappings.items():
+        if old_name in characteristics:
+            characteristics[new_name] = characteristics.pop(old_name)
+    
     current_app.logger.info(f"Found station row for {station_no}")
 
     # Safely parse the HUC12 list from the CSV field
     # The CSV field looks like: "['040500040703','040500040508', ... ]"
     huc12_str = characteristics.get('HUC12 ids of the watershed')
-    if not huc12_str or pd.isna(huc12_str):
+    
+    # Explicitly check if the value is NaN or None
+    if huc12_str is None or (isinstance(huc12_str, float) and pd.isna(huc12_str)):
         # If missing/empty, just return characteristics without geometry
         current_app.logger.warning(f"No HUC12 data for station {station_no}")
         return jsonify(characteristics)
+        
     # Parse the string as a Python list
     try:
         #NOTE:This safely evaluates the string as a list:
@@ -64,6 +81,7 @@ def get_station_characteristics():
     except Exception as e:
         current_app.logger.error(f"Error parsing HUC12 list for {station_no}: {e}")
         return jsonify({"error": "Failed to parse HUC12 data"}), 500
+        
     # Now call geometry functions safely
     geometries = get_huc12_geometries(huc12_list)
     streams_geometries, lake_identifier = get_huc12_streams_geometries(huc12_list)
@@ -81,6 +99,18 @@ def get_station_characteristics():
     characteristics['lakes_geometries'] = lakes_geometries
     # Clean up if you don't want that field in your final JSON
     characteristics.pop('HUC12 ids of the watershed', None)
+    
+    # Clean up NaN values for JSON serialization
+    for key, value in characteristics.items():
+        if isinstance(value, (float, int, bool)) and pd.isna(value):
+            characteristics[key] = None
+        elif isinstance(value, np.ndarray):
+            # Convert numpy arrays to lists for JSON serialization
+            characteristics[key] = value.tolist()
+        elif pd.api.types.is_scalar(value) and pd.isna(value):
+            # Handle other scalar NaN values
+            characteristics[key] = None
+            
     # Return as JSON
     return jsonify(characteristics)
 
@@ -307,8 +337,24 @@ def get_station_geometries():
             current_app.logger.error(f"Station shapefile not found: {FPS_geometry_name_shp_path}")
             return jsonify({"error": "Station data file not found"}), 404
             
+        # Get file modification time for ETag generation
+        try:
+            mtime = os.path.getmtime(FPS_geometry_name_shp_path)
+            etag = f'"{int(mtime)}"'
+            
+            # Check If-None-Match header for conditional request
+            if_none_match = request.headers.get('If-None-Match')
+            if if_none_match and if_none_match == etag:
+                current_app.logger.info("Returning 304 Not Modified - client cache is valid")
+                return "", 304
+                
+        except (OSError, IOError) as e:
+            current_app.logger.warning(f"Error getting file modification time: {e}")
+            # Continue without ETag if we can't get mtime
+            etag = None
+        
         # Add cache headers to improve performance
-        cache_timeout = 3600  # 1 hour cache
+        cache_timeout = 86400  # 24 hour cache (increased from 1 hour)
         response = None
         
         try:
@@ -380,8 +426,26 @@ def get_station_geometries():
             
             # Create response with caching headers
             response = jsonify(stations_geojson)
+            
+            # Set aggressive caching headers to prevent frequent reloads
+            if etag:
+                response.headers["ETag"] = etag
+            
+            # Set Cache-Control and Expires headers 
             response.cache_control.max_age = cache_timeout
             response.cache_control.public = True
+            
+            # Set Expires header for older browsers/proxies
+            from datetime import datetime, timedelta
+            from email.utils import formatdate
+            expires_time = datetime.now() + timedelta(seconds=cache_timeout)
+            response.headers["Expires"] = formatdate(expires_time.timestamp(), localtime=False, usegmt=True)
+            
+            # Set Last-Modified header
+            if mtime:
+                from datetime import datetime  
+                last_modified = datetime.fromtimestamp(mtime)
+                response.headers["Last-Modified"] = formatdate(last_modified.timestamp(), localtime=False, usegmt=True)
             
             current_app.logger.info(
                 f"Returning {len(stations_geojson['features'])} station geometries "

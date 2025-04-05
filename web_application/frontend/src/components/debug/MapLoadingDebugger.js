@@ -5,6 +5,7 @@ const MapLoadingDebugger = () => {
   const [debugLog, setDebugLog] = useState([]);
   const [stationCount, setStationCount] = useState(0);
   const [lastRefresh, setLastRefresh] = useState(null);
+  const [lastLoadSource, setLastLoadSource] = useState('Not loaded');
 
   // Add logging function that can be used by other components
   const addLog = (message) => {
@@ -17,15 +18,61 @@ const MapLoadingDebugger = () => {
     window.mapDebug = {
       log: addLog,
       clearLogs: () => setDebugLog([]),
+
+      // Check the current state of station geometries in storage
+      checkStoredGeometries: () => {
+        try {
+          // Check localStorage first (persistent)
+          const localStorageData = localStorage.getItem('stationGeometriesPermanentCache');
+          if (localStorageData) {
+            const parsed = JSON.parse(localStorageData);
+            const timestamp = new Date(parsed.timestamp).toLocaleString();
+            const features = parsed.data || [];
+            addLog(`LocalStorage: ${features.length} stations from ${timestamp}`);
+            setStationCount(features.length);
+            setLastLoadSource('localStorage');
+            setLastRefresh(timestamp);
+            return features;
+          }
+
+          // Then check sessionStorage (current session only)
+          const sessionStorageData = sessionStorage.getItem('stationGeometriesPermanentCache');
+          if (sessionStorageData) {
+            const parsed = JSON.parse(sessionStorageData);
+            const timestamp = new Date(parsed.timestamp).toLocaleString();
+            const features = parsed.data || [];
+            addLog(`SessionStorage: ${features.length} stations from ${timestamp}`);
+            setStationCount(features.length);
+            setLastLoadSource('sessionStorage');
+            setLastRefresh(timestamp);
+            return features;
+          }
+
+          // Check if we have data in the window object (global variable)
+          if (window.stationGeometries && window.stationGeometries.length) {
+            addLog(`Window object: ${window.stationGeometries.length} stations (in-memory)`);
+            setStationCount(window.stationGeometries.length);
+            setLastLoadSource('window.stationGeometries');
+            return window.stationGeometries;
+          }
+
+          addLog('No stored station geometries found');
+          return null;
+        } catch (error) {
+          addLog(`Error checking stored geometries: ${error.message}`);
+          console.error('Error checking stored geometries:', error);
+          return null;
+        }
+      },
+
+      // Fetch stations from static file instead of API
       refreshGeometries: async () => {
-        addLog('Manually refreshing station geometries...');
+        addLog('Manually fetching station geometries from static file...');
 
         try {
-          setLastRefresh(new Date().toISOString());
           const timestamp = new Date().getTime();
-
-          // Make a direct fetch call with cache-busting headers
-          const response = await fetch(`/api/get_station_geometries?_=${timestamp}`, {
+          // Use static file path instead of API endpoint
+          const response = await fetch(`/static/stations.geojson?_=${timestamp}`, {
             headers: {
               'Cache-Control': 'no-cache, no-store, must-revalidate',
               Pragma: 'no-cache',
@@ -40,23 +87,51 @@ const MapLoadingDebugger = () => {
           const data = await response.json();
           const features = data.features || [];
           setStationCount(features.length);
-          addLog(`Successfully fetched ${features.length} stations`);
+          setLastRefresh(new Date().toISOString());
+          setLastLoadSource('static file (fresh load)');
+          addLog(`Successfully loaded ${features.length} stations from static file`);
+
+          // Store in localStorage for persistence
+          try {
+            const cacheData = {
+              data: features,
+              timestamp: Date.now(),
+            };
+            localStorage.setItem('stationGeometriesPermanentCache', JSON.stringify(cacheData));
+            sessionStorage.setItem('stationGeometriesPermanentCache', JSON.stringify(cacheData));
+            addLog('Saved stations to persistent storage');
+          } catch (e) {
+            addLog(`Error saving to storage: ${e.message}`);
+          }
 
           // Store in window for inspection
           window.stationGeometries = features;
 
           return features;
         } catch (error) {
-          addLog(`Error refreshing geometries: ${error.message}`);
+          addLog(`Error loading geometries: ${error.message}`);
           throw error;
+        }
+      },
+
+      // Clear geometry caches
+      clearGeometries: () => {
+        try {
+          localStorage.removeItem('stationGeometriesPermanentCache');
+          sessionStorage.removeItem('stationGeometriesPermanentCache');
+          delete window.stationGeometries;
+          setStationCount(0);
+          setLastRefresh(null);
+          setLastLoadSource('cleared');
+          addLog('All station geometry caches cleared');
+        } catch (error) {
+          addLog(`Error clearing geometries: ${error.message}`);
         }
       },
     };
 
-    // Initial fetch to test connection
-    window.mapDebug
-      .refreshGeometries()
-      .catch((err) => console.error('Initial geometry fetch error:', err));
+    // Check for stored geometries rather than fetching automatically
+    window.mapDebug.checkStoredGeometries();
 
     return () => {
       // Clean up global reference when component unmounts
@@ -122,11 +197,20 @@ const MapLoadingDebugger = () => {
         <div>{stationCount} stations</div>
       </div>
 
-      <div style={styles.stats}>Last refresh: {lastRefresh || 'Never'}</div>
+      <div style={styles.stats}>
+        <div>Last refresh: {lastRefresh || 'Never'}</div>
+        <div>Source: {lastLoadSource}</div>
+      </div>
 
       <div style={styles.buttons}>
+        <button style={styles.button} onClick={() => window.mapDebug.checkStoredGeometries()}>
+          Check Cache
+        </button>
         <button style={styles.button} onClick={() => window.mapDebug.refreshGeometries()}>
-          Refresh Geometries
+          Load Static File
+        </button>
+        <button style={styles.button} onClick={() => window.mapDebug.clearGeometries()}>
+          Clear Cache
         </button>
         <button style={styles.button} onClick={() => setDebugLog([])}>
           Clear Log
