@@ -13,11 +13,9 @@ from app.utils import find_VPUID
 from MODFLOW.MODGenX_API import create_modflow_model
 import time
 from redis import Redis
-
 # Set up logging
 log_dir = "/data/SWATGenXApp/codes/web_application/logs"
 logger = LoggerSetup(log_dir, rewrite=False).setup_logger("CeleryTasks")
-
 # Log system information for debugging
 logger.info(f"Python version: {sys.version}")
 logger.info(f"Current working directory: {os.getcwd()}")
@@ -86,11 +84,11 @@ except Exception as e:
              retry_kwargs={'max_retries': 3},
              queue='model_creation',
              acks_late=True,    # Acknowledge task after it's completed to prevent loss of tasks
-             reject_on_worker_lost=True,  # Requeue task if worker unexpectedly dies
-             rate_limit=None)  # Remove any rate limiting
+             reject_on_worker_lost=True)  # Requeue task if worker unexpectedly dies
+             # Note: rate_limit attribute removed - now configured via environment variables
 def create_model_task(self, username, site_no, ls_resolution, dem_resolution):
     """
-    Task to create a SWAT model with no concurrency limitations
+    Task to create a SWAT model with concurrency controlled by environment variables
     """
     # Import the task tracker within the task to ensure it's available in the Celery worker context
     from app.task_tracker import task_tracker

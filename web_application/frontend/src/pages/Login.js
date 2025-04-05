@@ -9,8 +9,10 @@ import {
   TextField,
   Checkbox,
   FormControlLabel,
+  Divider,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import GoogleIcon from '@mui/icons-material/Google';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -20,11 +22,21 @@ const Login = () => {
     remember_me: false,
   });
   const [errors, setErrors] = useState({});
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (token) {
       navigate('/');
+    }
+
+    // Check for error parameters in URL (for OAuth failures)
+    const queryParams = new URLSearchParams(window.location.search);
+    const error = queryParams.get('error');
+    if (error === 'google_auth_failed') {
+      setErrorMessage('Google authentication failed. Please try again.');
+    } else if (error === 'user_creation_failed') {
+      setErrorMessage('Failed to create user account. Please try another method.');
     }
   }, [navigate]);
 
@@ -79,6 +91,10 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = '/api/login/google';
+  };
+
   return (
     <Box
       sx={{
@@ -103,6 +119,36 @@ const Login = () => {
           >
             Login
           </Typography>
+
+          {/* Display error message if present */}
+          {errorMessage && (
+            <Typography variant="body2" sx={{ color: '#f44336', textAlign: 'center', mb: 2 }}>
+              {errorMessage}
+            </Typography>
+          )}
+
+          {/* OAuth Login Buttons */}
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<GoogleIcon />}
+            onClick={handleGoogleLogin}
+            sx={{
+              bgcolor: '#ffffff',
+              color: '#757575',
+              mb: 2,
+              '&:hover': { bgcolor: '#f5f5f5' },
+              fontWeight: 'bold',
+            }}
+          >
+            Sign in with Google
+          </Button>
+
+          <Divider sx={{ my: 2, color: 'white' }}>
+            <Typography variant="body2" sx={{ color: 'white', px: 1 }}>
+              OR
+            </Typography>
+          </Divider>
 
           {/* Standard Login Form */}
           <form onSubmit={handleSubmit}>
@@ -189,11 +235,11 @@ const Login = () => {
             </Button>
           </form>
 
+          {/* MSU NetID Login Button */}
           <Typography variant="body1" sx={{ color: 'white', textAlign: 'center', my: 2 }}>
             - or -
           </Typography>
 
-          {/* MSU NetID Login Button */}
           <Button
             fullWidth
             variant="contained"

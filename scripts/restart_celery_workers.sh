@@ -6,9 +6,10 @@ LOG_FILE="/data/SWATGenXApp/codes/web_application/logs/celery_restart.log"
 # Application directory
 APP_DIR="/data/SWATGenXApp/codes/web_application"
 
+# Pull values from environment variables with defaults
 # Number of worker processes to start - use system CPU count with a margin
 CPU_COUNT=$(nproc)
-WORKER_COUNT=${MAX_WORKER_COUNT:-$((CPU_COUNT * 8 / 10))}  # Use 80% of CPU cores for workers by default
+WORKER_COUNT=${MAX_WORKER_COUNT:-${CELERY_WORKER_COUNT:-$((CPU_COUNT * 8 / 10))}}
 if [[ "$WORKER_COUNT" -lt 5 ]]; then
     WORKER_COUNT=5  # Ensure at least 5 workers
 fi
@@ -22,10 +23,15 @@ if [[ "$MEMORY_PER_WORKER" -lt 1 ]]; then
 fi
 
 # Concurrency per worker - targeting ~200 total processes
-CONCURRENCY=${WORKER_CONCURRENCY:-$((200 / WORKER_COUNT + 1))}
+CONCURRENCY=${WORKER_CONCURRENCY:-${CELERY_WORKER_CONCURRENCY:-$((200 / WORKER_COUNT + 1))}}
 if [[ "$CONCURRENCY" -gt 16 ]]; then
     CONCURRENCY=16  # Cap concurrency at 16 per worker for stability
 fi
+
+# Get resource configuration from environment variables
+MAX_TASKS_PER_CHILD=${CELERY_MAX_TASKS_PER_CHILD:-100}
+MAX_MEMORY_PER_CHILD_MB=${CELERY_MAX_MEMORY_PER_CHILD_MB:-8192}  # 8GB default
+MODEL_WORKER_PERCENT=${CELERY_MODEL_CREATION_WORKER_PERCENT:-70}  # Default 70%
 
 # Venv path
 VENV_PATH="/data/SWATGenXApp/codes/.venv"
@@ -40,6 +46,12 @@ mkdir -p "$(dirname $LOG_FILE)"
 
 log "Starting Celery worker restart procedure"
 log "System resources: $CPU_COUNT CPUs, ${TOTAL_MEMORY_GB}GB RAM"
+log "Environment configuration:"
+log "- WORKER_COUNT: $WORKER_COUNT (from MAX_WORKER_COUNT/CELERY_WORKER_COUNT)"
+log "- CONCURRENCY: $CONCURRENCY (from WORKER_CONCURRENCY/CELERY_WORKER_CONCURRENCY)"
+log "- MAX_TASKS_PER_CHILD: $MAX_TASKS_PER_CHILD (from CELERY_MAX_TASKS_PER_CHILD)"
+log "- MAX_MEMORY_PER_CHILD_MB: $MAX_MEMORY_PER_CHILD_MB MB (from CELERY_MAX_MEMORY_PER_CHILD_MB)"
+log "- MODEL_WORKER_PERCENT: $MODEL_WORKER_PERCENT% (from CELERY_MODEL_CREATION_WORKER_PERCENT)"
 log "Deploying $WORKER_COUNT workers with concurrency $CONCURRENCY (total processes: $((WORKER_COUNT * CONCURRENCY)))"
 log "Memory allocated per worker: ${MEMORY_PER_WORKER}GB"
 
@@ -71,7 +83,7 @@ fi
 rm -f /tmp/celery-*.pid 2>/dev/null
 
 # Distribute workers across queues based on workload
-MODEL_CREATION_WORKERS=$((WORKER_COUNT * 7 / 10))  # 70% for model creation
+MODEL_CREATION_WORKERS=$((WORKER_COUNT * MODEL_WORKER_PERCENT / 100))  # Use percentage from config
 DEFAULT_WORKERS=$((WORKER_COUNT - MODEL_CREATION_WORKERS))  # Remaining for default queue
 
 log "Distributing workers: $MODEL_CREATION_WORKERS for model_creation, $DEFAULT_WORKERS for default queue"
@@ -86,8 +98,8 @@ for i in $(seq 1 $MODEL_CREATION_WORKERS); do
         --hostname=model${i}@%h \
         --queues=model_creation \
         --pool=prefork \
-        --max-tasks-per-child=20 \
-        --max-memory-per-child=$((MEMORY_PER_WORKER * 1024 * 1024)) \
+        --max-tasks-per-child=$MAX_TASKS_PER_CHILD \
+        --max-memory-per-child=$((MAX_MEMORY_PER_CHILD_MB * 1024 * 1024)) \
         --logfile="/data/SWATGenXApp/codes/web_application/logs/celery-model-worker-${i}.log" \
         --detach
     
@@ -105,8 +117,8 @@ for i in $(seq 1 $DEFAULT_WORKERS); do
         --hostname=default${i}@%h \
         --queues=celery \
         --pool=prefork \
-        --max-tasks-per-child=30 \
-        --max-memory-per-child=$((MEMORY_PER_WORKER * 1024 * 1024)) \
+        --max-tasks-per-child=$MAX_TASKS_PER_CHILD \
+        --max-memory-per-child=$((MAX_MEMORY_PER_CHILD_MB * 1024 * 1024)) \
         --logfile="/data/SWATGenXApp/codes/web_application/logs/celery-default-worker-${i}.log" \
         --detach
     

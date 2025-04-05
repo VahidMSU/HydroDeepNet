@@ -133,12 +133,45 @@ def make_celery(app=None):
         ]
     )
     
+    # Pull configuration from environment variables via Config class if app is provided
+    if app:
+        # Get config values from app, which gets them from environment
+        worker_prefetch_multiplier = app.config.get('CELERY_WORKER_PREFETCH_MULTIPLIER', 8)
+        task_soft_time_limit = app.config.get('CELERY_TASK_SOFT_TIME_LIMIT', 43200)
+        task_time_limit = app.config.get('CELERY_TASK_TIME_LIMIT', 86400)
+        disable_rate_limits = app.config.get('CELERY_DISABLE_RATE_LIMITS', True)
+        task_default_rate_limit = app.config.get('CELERY_TASK_DEFAULT_RATE_LIMIT', None)
+        broker_connection_retry = app.config.get('CELERY_BROKER_CONNECTION_RETRY', True)
+        broker_connection_max_retries = app.config.get('CELERY_BROKER_CONNECTION_MAX_RETRIES', 20)
+        redis_max_connections = app.config.get('CELERY_REDIS_MAX_CONNECTIONS', 500)
+        max_tasks_per_child = app.config.get('CELERY_MAX_TASKS_PER_CHILD', 100)
+        max_memory_per_child_mb = app.config.get('CELERY_MAX_MEMORY_PER_CHILD_MB', 8192)
+    else:
+        # Get from environment directly if no app
+        worker_prefetch_multiplier = int(os.environ.get('CELERY_WORKER_PREFETCH_MULTIPLIER', '8'))
+        task_soft_time_limit = int(os.environ.get('CELERY_TASK_SOFT_TIME_LIMIT', '43200'))
+        task_time_limit = int(os.environ.get('CELERY_TASK_TIME_LIMIT', '86400'))
+        disable_rate_limits = os.environ.get('CELERY_DISABLE_RATE_LIMITS', 'true').lower() == 'true'
+        task_default_rate_limit = os.environ.get('CELERY_TASK_DEFAULT_RATE_LIMIT')
+        broker_connection_retry = os.environ.get('CELERY_BROKER_CONNECTION_RETRY', 'true').lower() == 'true'
+        broker_connection_max_retries = int(os.environ.get('CELERY_BROKER_CONNECTION_MAX_RETRIES', '20'))
+        redis_max_connections = int(os.environ.get('CELERY_REDIS_MAX_CONNECTIONS', '500'))
+        max_tasks_per_child = int(os.environ.get('CELERY_MAX_TASKS_PER_CHILD', '100'))
+        max_memory_per_child_mb = int(os.environ.get('CELERY_MAX_MEMORY_PER_CHILD_MB', '8192'))
+
+    # Log the configuration values being used
+    logger.info(f"Using Celery configuration from environment:")
+    logger.info(f"worker_prefetch_multiplier: {worker_prefetch_multiplier}")
+    logger.info(f"disable_rate_limits: {disable_rate_limits}")
+    logger.info(f"task_default_rate_limit: {task_default_rate_limit}")
+    logger.info(f"max_tasks_per_child: {max_tasks_per_child}")
+    
     # Configure Celery for high concurrency and resource utilization
     celery_config = {
         # Essential connection settings
-        'broker_connection_retry': True,
+        'broker_connection_retry': broker_connection_retry,
         'broker_connection_retry_on_startup': True,
-        'broker_connection_max_retries': 20,
+        'broker_connection_max_retries': broker_connection_max_retries,
         'broker_connection_timeout': 10,
         
         # Transport options for Redis
@@ -147,7 +180,7 @@ def make_celery(app=None):
             'socket_connect_timeout': 10,
             'visibility_timeout': 43200,  # 12 hours (in seconds)
             'retry_on_timeout': True,
-            'max_connections': 500,  # Increased for higher concurrency
+            'max_connections': redis_max_connections,
             'health_check_interval': 30  # Check broker connection every 30s
         },
         
@@ -159,9 +192,9 @@ def make_celery(app=None):
         # Task execution settings for high throughput
         'task_acks_late': True,  # Tasks acknowledged after execution
         'task_reject_on_worker_lost': True,  # Requeue tasks if worker crashes
-        'task_default_rate_limit': None,  # Remove rate limiting
-        'worker_prefetch_multiplier': 8,  # Allow each worker to prefetch multiple tasks (increased)
-        'worker_disable_rate_limits': True,  # Disable rate limiting for max throughput
+        'task_default_rate_limit': task_default_rate_limit,  # Configure rate limiting from environment
+        'worker_prefetch_multiplier': worker_prefetch_multiplier,  # Allow each worker to prefetch multiple tasks
+        'worker_disable_rate_limits': disable_rate_limits,  # Configure rate limiting from environment
         'task_track_started': True,  # Track when tasks are started
         'task_send_sent_event': True,  # Enable sent events for task tracking
         'worker_send_task_events': True,  # Enable task events for monitoring
@@ -172,8 +205,8 @@ def make_celery(app=None):
         'result_extended': True,  # Store extended task metadata
         
         # Task time limits - extended for larger workloads
-        'task_soft_time_limit': 60 * 60 * 12,  # 12 hours soft limit
-        'task_time_limit': 60 * 60 * 24,  # 24 hours hard limit
+        'task_soft_time_limit': task_soft_time_limit,  # Configurable soft time limit
+        'task_time_limit': task_time_limit,  # Configurable hard time limit
         
         # Security settings
         'accept_content': ['json', 'pickle'],
@@ -181,8 +214,8 @@ def make_celery(app=None):
         'result_serializer': 'json',
         
         # Resource management settings optimized for high concurrency
-        'worker_max_tasks_per_child': 100,  # Increased for better throughput
-        'worker_max_memory_per_child': 8 * 1024 * 1024 * 1024,  # 8GB max memory per worker
+        'worker_max_tasks_per_child': max_tasks_per_child,  # Process more tasks before worker restart
+        'worker_max_memory_per_child': max_memory_per_child_mb * 1024 * 1024,  # Configurable memory limit
         
         # Pool settings for better resource utilization
         'worker_pool': 'prefork',

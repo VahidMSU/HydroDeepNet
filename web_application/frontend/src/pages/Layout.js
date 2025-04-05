@@ -33,13 +33,98 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       navigate('/login');
+    } else {
+      const storedUserName = localStorage.getItem('userName') || localStorage.getItem('username');
+      if (storedUserName && storedUserName !== 'User' && storedUserName !== 'undefined') {
+        setUserName(storedUserName);
+        console.log('Username found in localStorage:', storedUserName);
+      } else {
+        console.log('No username in localStorage, fetching from API');
+        fetchUserInfo();
+      }
     }
   }, [navigate]);
+
+  const fetchUserInfo = async () => {
+    try {
+      console.log('Fetching user info from API...');
+      const response = await fetch('/api/user/profile', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('User data received:', userData);
+
+        const name =
+          userData.name ||
+          userData.username ||
+          userData.email ||
+          userData.user?.name ||
+          userData.user?.username ||
+          userData.user?.email;
+
+        if (name && name !== 'undefined') {
+          console.log('Setting username to:', name);
+          setUserName(name);
+          localStorage.setItem('userName', name);
+        } else {
+          console.warn('No valid username found in user data');
+          setUserName('User');
+        }
+      } else {
+        console.error('Failed to fetch user profile:', response.status);
+        fetchAlternateUserInfo();
+      }
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+      fetchAlternateUserInfo();
+    }
+  };
+
+  const fetchAlternateUserInfo = async () => {
+    try {
+      console.log('Trying alternate user info endpoint...');
+      const response = await fetch('/api/auth/me', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('Alternate user data received:', userData);
+
+        const name =
+          userData.name ||
+          userData.username ||
+          userData.email ||
+          userData.user?.name ||
+          userData.user?.username ||
+          userData.user?.email;
+
+        if (name && name !== 'undefined') {
+          console.log('Setting username from alternate source to:', name);
+          setUserName(name);
+          localStorage.setItem('userName', name);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching alternate user info:', error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -73,10 +158,8 @@ const Layout = ({ children }) => {
         position: 'relative',
       }}
     >
-      {/* Add SessionChecker component */}
       {localStorage.getItem('authToken') && <SessionChecker />}
 
-      {/* Toggle Sidebar Button */}
       <IconButton
         onClick={() => setIsSidebarVisible(!isSidebarVisible)}
         sx={{
@@ -117,8 +200,7 @@ const Layout = ({ children }) => {
               HydroDeepNet
             </Typography>
 
-            {/* Add UserInfo component here */}
-            <UserInfo />
+            <UserInfo userName={userName} />
 
             <List>
               {[
@@ -156,7 +238,6 @@ const Layout = ({ children }) => {
             </List>
           </Box>
 
-          {/* Logout Section */}
           <Box sx={{ width: '100%' }}>
             <Divider sx={{ bgcolor: '#687891', mx: 2 }} />
             <List>
@@ -172,7 +253,6 @@ const Layout = ({ children }) => {
             </List>
           </Box>
 
-          {/* Footer Links */}
           <Box sx={{ p: 2, textAlign: 'center' }}>
             <Typography variant="body2" sx={{ color: '#687891' }}>
               <Link to="/privacy" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -194,7 +274,6 @@ const Layout = ({ children }) => {
         </Drawer>
       )}
 
-      {/* Main Content */}
       <Box
         component="main"
         sx={{

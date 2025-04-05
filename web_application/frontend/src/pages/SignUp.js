@@ -13,9 +13,11 @@ import {
   ListItemText,
   Paper,
   Alert,
+  Divider,
 } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import GoogleIcon from '@mui/icons-material/Google';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -144,6 +146,10 @@ const SignUp = () => {
     }
   };
 
+  const handleGoogleSignUp = () => {
+    window.location.href = '/api/login/google';
+  };
+
   return (
     <Box
       sx={{
@@ -178,6 +184,29 @@ const SignUp = () => {
               ))}
             </Box>
           )}
+
+          {/* Google Sign Up Button */}
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<GoogleIcon />}
+            onClick={handleGoogleSignUp}
+            sx={{
+              bgcolor: '#ffffff',
+              color: '#757575',
+              mb: 2,
+              '&:hover': { bgcolor: '#f5f5f5' },
+              fontWeight: 'bold',
+            }}
+          >
+            Sign up with Google
+          </Button>
+
+          <Divider sx={{ my: 2, color: 'white' }}>
+            <Typography variant="body2" sx={{ color: 'white', px: 1 }}>
+              OR
+            </Typography>
+          </Divider>
 
           <form onSubmit={handleSubmit}>
             <TextField
