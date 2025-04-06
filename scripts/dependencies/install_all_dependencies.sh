@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 
 # Base directories
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="/data/SWATGenXApp/codes"
+BASE_DIR="${SWAT_BASE_DIR:-$(cd "$SCRIPT_DIR/../../" && pwd)}"
 BIN_DIR="${BASE_DIR}/bin"
 
 # Ensure bin directory exists
@@ -40,6 +40,12 @@ warning() {
 if [[ $EUID -ne 0 ]]; then
    error "This script must be run as root to install system dependencies"
    exit 1
+fi
+
+# Check if apt-get is available
+if ! command -v apt-get &> /dev/null; then
+    error "apt-get is not available on this system. Please use a compatible package manager."
+    exit 1
 fi
 
 # Function to execute a script and check its status
@@ -73,12 +79,29 @@ log "System: $(lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | he
 # Step 1: Install system dependencies
 section "Installing System Dependencies"
 log "Updating package lists..."
-apt-get update
+if ! apt-get update; then
+    error "Failed to update package lists. Please check your network connection."
+    exit 1
+fi
 
-log "Installing required packages..."
-apt-get install -y build-essential cmake g++ gfortran wget unzip \
-                   libsqlite3-dev python3 python3-pip python3-dev \
-                   libcurl4-openssl-dev
+log "Checking and installing required packages..."
+required_packages=(
+    build-essential cmake g++ gfortran wget unzip
+    libsqlite3-dev python3 python3-pip python3-dev
+    libcurl4-openssl-dev
+)
+
+for package in "${required_packages[@]}"; do
+    if dpkg -l | grep -qw "$package"; then
+        log "Package already installed: $package"
+    else
+        log "Installing package: $package"
+        if ! apt-get install -y "$package"; then
+            error "Failed to install package: $package"
+            exit 1
+        fi
+    fi
+done
 
 # Step 2: Install GDAL
 if ! command -v gdalinfo &> /dev/null; then
@@ -120,19 +143,10 @@ section "Verifying Installation"
 log "Running dependency check..."
 "${SCRIPT_DIR}/check_dependencies.sh"
 
-# Done
-section "Installation Complete"
-log "All SWAT+ dependencies should now be installed"
-log "If any components are still missing, please refer to the individual installation scripts"
+# Summary of installation
+section "Installation Summary"
+log "SWAT+ dependencies installation completed."
+log "Review the logs above for any errors or warnings."
 echo ""
 echo -e "${GREEN}To verify the installation again later, run:${NC}"
-echo -e "  ${YELLOW}sudo bash /data/SWATGenXApp/codes/scripts/dependencies/check_dependencies.sh${NC}"
-```
-
-This comprehensive solution will:
-1. Standardize the dependency check script with consistent formatting and organization
-2. Improve the output clarity with organized sections
-3. Provide accurate feedback on what dependencies are installed and what might be missing
-4. Create an all-in-one installation script to ease the setup process
-```
-</file>
+echo -e "  ${YELLOW}sudo bash ${SCRIPT_DIR}/check_dependencies.sh${NC}"

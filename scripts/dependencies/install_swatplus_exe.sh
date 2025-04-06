@@ -9,40 +9,64 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-BIN_DIR="/data/SWATGenXApp/codes/bin"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BASE_DIR="${SWAT_BASE_DIR:-$(cd "$SCRIPT_DIR/../../" && pwd)}"
+BIN_DIR="${BASE_DIR}/bin"
+
+echo -e "${GREEN}Base directory: ${YELLOW}$BASE_DIR${NC}"
+echo -e "${GREEN}Script directory: ${YELLOW}$SCRIPT_DIR${NC}"
+echo -e "${GREEN}Bin directory: ${YELLOW}$BIN_DIR${NC}"
+
 if [ ! -d "$BIN_DIR" ]; then
     echo -e "${RED}Error: Bin directory not found at $BIN_DIR${NC}"
     exit 1
 fi
 
-## if already installed, exit
-if [ -f "$BIN_DIR/swatplus" ]; then
-    echo -e "${GREEN}SWAT+ is already installed at $BIN_DIR/swatplus${NC}"
-    exit 0
-fi
-
-BASE_DIR="/data/SWATGenXApp/codes/scripts/dependencies"
-
-if [ ! -d "$BASE_DIR" ]; then
-    echo -e "${RED}Error: Base directory not found at $BASE_DIR${NC}"
+if [ ! -d "$SCRIPT_DIR" ]; then
+    echo -e "${RED}Error: Base directory not found at $SCRIPT_DIR${NC}"
     exit 1
 fi
 
+# Check if the executable already exists in the bin directory
+if [ -x "$BIN_DIR/swatplus" ]; then
+    echo -e "${GREEN}SWAT+ executable is already installed: ${YELLOW}$BIN_DIR/swatplus${NC}"
+    exit 0
+fi
+
+# Check if the executable already exists in the build directory
+build_dir="$SCRIPT_DIR/swatplus/build/debug"
+final_exe=$(find "$build_dir" -type f -executable -name "swatplus*" | head -n 1)
+
+if [ -f "$final_exe" ]; then
+    echo -e "${GREEN}Found existing executable: ${YELLOW}$final_exe${NC}"
+    # Ensure the bin directory exists
+    mkdir -p "$BIN_DIR"
+    
+    # Copy the executable to the bin directory
+    cp "$final_exe" "$BIN_DIR/swatplus"
+    
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}Successfully copied executable to ${YELLOW}$BIN_DIR/swatplus${NC}"
+        # Make it executable
+        chmod +x "$BIN_DIR/swatplus"
+        exit 0
+    else
+        echo -e "${RED}Error: Failed to copy executable to $BIN_DIR/swatplus${NC}"
+        exit 1
+    fi
+fi
 
 # Set the SWAT+ directory
-SWATPLUS_DIR="$BASE_DIR/swatplus"
-
+SWATPLUS_DIR="$SCRIPT_DIR/swatplus"
 
 # Check if SWAT+ directory exists
 if [ ! -d "$SWATPLUS_DIR" ]; then
     echo -e "${RED}Error: SWAT+ directory not found at $SWATPLUS_DIR${NC}"
     ### clone from https://github.com/VahidMSU/swatplus.git
     echo -e "${GREEN}Cloning SWAT+ repository...${NC}"
-    cd $BASE_DIR
+    cd $SCRIPT_DIR
     git clone https://github.com/VahidMSU/swatplus.git
 fi
-
-
 
 # Detect system
 SYSTEM=$(uname -s)
@@ -259,7 +283,7 @@ fi
 echo -e "${GREEN}SWAT+ compilation process completed.${NC}"
 
 # Locate and copy the compiled swatplus executable
-final_exe=$(find . -maxdepth 1 -type f -executable -name "swatplus*" | head -n 1)
+final_exe=$(find "$build_dir" -type f -executable -name "swatplus*" | head -n 1)
 
 if [ -f "$final_exe" ]; then
     # Ensure the bin directory exists
@@ -278,17 +302,5 @@ if [ -f "$final_exe" ]; then
     fi
 else
     echo -e "${RED}Error: Compiled executable not found in $build_dir${NC}"
-    # Try harder to find the executable anywhere in the build directory
-    final_exe=$(find "$build_dir" -type f -executable -name "swatplus*" | head -n 1)
-    
-    if [ -f "$final_exe" ]; then
-        mkdir -p "$BIN_DIR"
-        cp "$final_exe" "$BIN_DIR/swatplus" && \
-        chmod +x "$BIN_DIR/swatplus" && \
-        echo -e "${GREEN}Successfully copied executable to ${YELLOW}$BIN_DIR/swatplus${NC}" || \
-        echo -e "${RED}Error: Failed to copy executable to $BIN_DIR/swatplus${NC}"
-    else
-        echo -e "${RED}Error: Could not find any swatplus executable in the build directory${NC}"
-        exit 1
-    fi
+    exit 1
 fi

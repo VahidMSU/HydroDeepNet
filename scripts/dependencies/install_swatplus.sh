@@ -1,7 +1,8 @@
 #!/bin/bash
 # SWAT+ Installation Script
 # Set the base directory
-BASE_DIR="/data/SWATGenXApp/codes"
+
+BASE_DIR="${SWAT_BASE_DIR:-$(cd "$SCRIPT_DIR/../../" && pwd)}"
 INSTALL_DIR="${BASE_DIR}/swatplus_installation"
 TARGET_DB_DIR="/usr/local/share/SWATPlus/Databases"
 USER_DB_DIR="${HOME}/.local/share/SWATPlus/Databases"
