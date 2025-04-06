@@ -47,7 +47,7 @@ class SWATGenXPaths:
     # Software Paths
     wgn_db: str = "/usr/local/share/SWATPlus/Databases/swatplus_wgn.sqlite"
     QSWATPlus_env_path: str = '/usr/share/qgis/python/plugins/QSWATPlusLinux3_64'
-    runQSWATPlus_path: str = "/data/SWATGenXApp/codes/scripts/runQSWATPlus.sh"
+    runQSWATPlus_path: str = "/data/SWATGenXApp/codes/scripts/tools/runQSWATPlus.sh"
     swat_exe: str = "/data/SWATGenXApp/codes/bin/swatplus"
     bin_path: str = "/data/SWATGenXApp/codes/bin/"
     
