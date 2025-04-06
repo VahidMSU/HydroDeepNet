@@ -1,6 +1,13 @@
 #!/bin/bash#!/bin/bash
-
+## run this only if /data/SWATGenXApp/codes/bin/modflow-nwt does not exist
 set -e  # Exit immediately if a command exits with non-zero status
+#run this only if /data/SWATGenXApp/codes/bin/modflow-nwt does not exist
+modflow_nwt=/data/SWATGenXApp/codes/bin/modflow-nwt
+if [ -f "$modflow_nwt" ]; then
+    echo "MODFLOW-NWT is already installed at $modflow_nwt"
+    exit 0
+fi
+
 cd /data/SWATGenXApp/codes/
 
 wget https://water.usgs.gov/water-resources/software/MODFLOW-NWT/MODFLOW-NWT_1.3.0.zip

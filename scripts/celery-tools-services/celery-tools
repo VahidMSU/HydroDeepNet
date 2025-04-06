@@ -2,7 +2,7 @@
 # SWATGenX Celery Management Tools - Unified Interface
 # This script provides a central command for all Celery management functions
 
-CELERY_DIR="/data/SWATGenXApp/codes/scripts/celery-services"
+CELERY_DIR="/data/SWATGenXApp/codes/scripts/celery-tools-services"
 UTILS_DIR="${CELERY_DIR}/utils"
 SERVICES_DIR="${CELERY_DIR}/services"
 PYTHON_ENV="/data/SWATGenXApp/codes/.venv/bin/python"
@@ -92,7 +92,7 @@ cmd_cleanup() {
 cmd_restart() {
     # Sudo required
     check_sudo true
-    ${SERVICES_DIR}/restart_corrupted_celery.sh "$@"
+    ${CELERY_DIR}/restart_corrupted_celery.sh "$@"
 }
 
 # Handle the restart-tasks command

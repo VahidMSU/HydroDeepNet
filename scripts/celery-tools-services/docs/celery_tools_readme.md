@@ -186,7 +186,7 @@ The Celery management tools are organized as follows:
 ├── celery-tools                 # Main command-line interface
 ├── install_celery_tools.sh      # Installation script
 ├── setup_celery_services.sh     # Setup script
-└── celery-services/            
+└── celery-tools-services/            
     ├── utils/                   # Python utilities
     ├── services/                # Service wrappers and systemd units
     └── docs/                    # Documentation

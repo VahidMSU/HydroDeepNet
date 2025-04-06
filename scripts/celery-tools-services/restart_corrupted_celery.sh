@@ -5,6 +5,9 @@
 # Set environment
 PYTHON_ENV="/data/SWATGenXApp/codes/.venv/bin/python"
 SCRIPTS_DIR="/data/SWATGenXApp/codes/scripts"
+CELERY_SERVICES_DIR="${SCRIPTS_DIR}/celery-tools-services"
+SERVICES_DIR="${CELERY_SERVICES_DIR}/services"
+UTILS_DIR="${CELERY_SERVICES_DIR}/utils"
 LOG_DIR="/data/SWATGenXApp/codes/web_application/logs"
 LOG_FILE="${LOG_DIR}/celery_recovery_$(date +%Y%m%d_%H%M%S).log"
 
@@ -43,18 +46,8 @@ else
     fi
 fi
 
-# First, fix any WRONGTYPE errors in Redis (a common cause of worker crashes)
-log "Fixing WRONGTYPE errors in Redis task metadata..."
-${SCRIPTS_DIR}/fix_redis_wrongtype_batch_wrapper.sh --yes 2>&1 | tee -a "${LOG_FILE}"
-
-# Then run regular cleanup script to fix corrupted tasks
-log "Running task queue corruption cleanup script..."
-${SCRIPTS_DIR}/cleanup_corrupted_tasks_wrapper.sh --repair --yes 2>&1 | tee -a "${LOG_FILE}"
-
-# If the cleanup script failed, still try to restart the workers
-if [ $? -ne 0 ]; then
-    log "WARNING: Cleanup script exited with errors, continuing with worker restart..."
-fi
+# Skip repair and cleanup steps as requested
+log "Skipping Redis WRONGTYPE fixes and queue cleanup steps"
 
 # Stop Celery workers
 log "Stopping Celery workers..."
@@ -92,7 +85,7 @@ fi
 
 # Check queue status
 log "Checking Celery queue status..."
-${PYTHON_ENV} ${SCRIPTS_DIR}/monitor_celery_status.py --queues --clean 2>&1 | tee -a "${LOG_FILE}"
+${PYTHON_ENV} ${UTILS_DIR}/monitor_celery_status.py --queues --clean 2>&1 | tee -a "${LOG_FILE}"
 
 log "Recovery process completed"
 log "Check the full log at: ${LOG_FILE}"

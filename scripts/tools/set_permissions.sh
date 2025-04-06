@@ -6,7 +6,7 @@ BASE_DIR="/data/SWATGenXApp"
 CODES_DIR="${BASE_DIR}/codes"
 APPDATA_DIR="${BASE_DIR}/GenXAppData"
 USERS_DIR="${BASE_DIR}/Users"
-GROUP_NAME="users"
+GROUP_NAME="www-data"
 
 # 1. Set ownership and permissions for the base directories
 echo "Setting ownership and permissions for base directories..."

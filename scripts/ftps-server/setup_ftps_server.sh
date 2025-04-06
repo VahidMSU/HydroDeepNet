@@ -6,6 +6,7 @@ set -e
 
 # Configuration
 SCRIPT_DIR="/data/SWATGenXApp/codes/scripts"
+CONFIG_DIR="/data/SWATGenXApp/codes/scripts/config"
 VSFTPD_CONF_FILE="/etc/vsftpd.conf"
 VSFTPD_USER_LIST="/etc/vsftpd.allowed_users"
 FTPS_ROOT="/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID"
@@ -59,12 +60,12 @@ if [ ! -d "$FTPS_ROOT" ]; then
 fi
 
 # Copy the vsftpd configuration file
-if [ -f "$SCRIPT_DIR/vsftpd.conf" ]; then
+if [ -f "$CONFIG_DIR/vsftpd.conf" ]; then
     log "Copying vsftpd configuration file to $VSFTPD_CONF_FILE"
-    cp "$SCRIPT_DIR/vsftpd.conf" "$VSFTPD_CONF_FILE"
+    cp "$CONFIG_DIR/vsftpd.conf" "$VSFTPD_CONF_FILE"
     chmod 644 "$VSFTPD_CONF_FILE"
 else
-    log "ERROR: vsftpd configuration file not found at $SCRIPT_DIR/vsftpd.conf"
+    log "ERROR: vsftpd configuration file not found at $CONFIG_DIR/vsftpd.conf"
     exit 1
 fi
 
