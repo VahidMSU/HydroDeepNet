@@ -1,7 +1,11 @@
 #!/bin/bash
 # Build the Docker image
 cd /home/ubuntu/repos/HydroDeepNet
-docker stop $(docker ps -q) || true
+
+if [ -n "$(docker ps -q)" ]; then
+  docker stop $(docker ps -q)
+fi
+
 docker system prune -a -f
 docker build -t hydrodeepnet_image .
 
