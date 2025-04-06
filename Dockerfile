@@ -257,12 +257,12 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo '# Start Flask application with gunicorn' >> /entrypoint.sh && \
     echo 'log "Starting Flask application..."' >> /entrypoint.sh && \
     echo 'cd /data/SWATGenXApp/codes' >> /entrypoint.sh && \
-    echo 'gunicorn -b 0.0.0.0:5000 run:app --daemon --access-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-access.log --error-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-error.log' >> /entrypoint.sh && \
+    echo 'source /data/SWATGenXApp/codes/.venv/bin/activate && gunicorn -b 0.0.0.0:5000 run:app --daemon --access-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-access.log --error-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-error.log' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Start Celery worker' >> /entrypoint.sh && \
     echo 'log "Starting Celery worker..."' >> /entrypoint.sh && \
     echo 'cd /data/SWATGenXApp/codes/web_application' >> /entrypoint.sh && \
-    echo 'celery -A celery_worker worker --loglevel=info --concurrency=4 --max-tasks-per-child=$CELERY_MAX_TASKS_PER_CHILD --logfile=/data/SWATGenXApp/codes/web_application/logs/celery/celery-worker.log --detach' >> /entrypoint.sh && \
+    echo 'source /data/SWATGenXApp/codes/.venv/bin/activate && celery -A celery_worker worker --loglevel=info --concurrency=4 --max-tasks-per-child=$CELERY_MAX_TASKS_PER_CHILD --logfile=/data/SWATGenXApp/codes/web_application/logs/celery/celery-worker.log --detach' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Start NGINX in foreground' >> /entrypoint.sh && \
     echo 'log "Starting NGINX..."' >> /entrypoint.sh && \
