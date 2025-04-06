@@ -37,28 +37,72 @@ fi
 log "Starting service restart procedure"
 
 # Detect Redis service name - could be redis.service or redis-server.service
-REDIS_SERVICE="redis-server.service"
-if ! systemctl list-unit-files | grep -q "$REDIS_SERVICE"; then
-    if systemctl list-unit-files | grep -q "redis.service"; then
-        REDIS_SERVICE="redis.service"
-    else
-        warning "Redis service not found as redis-server.service or redis.service"
-        # Try to find any Redis service
-        REDIS_SERVICE=$(systemctl list-unit-files | grep redis | head -n 1 | awk '{print $1}')
-        if [[ -z "$REDIS_SERVICE" ]]; then
-            error "Cannot find any Redis service"
-            REDIS_SERVICE="redis-server.service" # Default fallback
-        else
-            log "Found Redis service: $REDIS_SERVICE"
+REDIS_SERVICE=""
+if systemctl list-unit-files | grep -q "redis-server.service"; then
+    REDIS_SERVICE="redis-server.service"
+elif systemctl list-unit-files | grep -q "redis.service"; then
+    REDIS_SERVICE="redis.service"
+else
+    error "Redis service not found. Please check if Redis is installed properly."
+    exit 1
+fi
+log "Detected Redis service: $REDIS_SERVICE"
+
+# Define configuration sources and destinations
+CONFIG_DIR="/data/SWATGenXApp/codes/scripts/config"
+SYSTEMD_DIR="/etc/systemd/system"
+APACHE_DIR="/etc/apache2/sites-available"
+
+# Copy systemd service files
+log "Copying systemd service files..."
+if [ -d "$SYSTEMD_DIR" ]; then
+    # Copy all service files found in config directory to systemd
+    for service_file in "$CONFIG_DIR"/*.service; do
+        if [ -f "$service_file" ]; then
+            service_name=$(basename "$service_file")
+            # Skip redis.service if it's a system service
+            if [ "$service_name" = "redis.service" ] && systemctl list-unit-files | grep -q "^redis.service"; then
+                log "Skipping $service_name as it's already a system service"
+                continue
+            fi
+            
+            cp "$service_file" "$SYSTEMD_DIR/" && \
+            log "Copied $service_name to $SYSTEMD_DIR/" || \
+            error "Failed to copy $service_name to $SYSTEMD_DIR/"
         fi
-    fi
+    done
+else
+    error "Systemd directory $SYSTEMD_DIR not found. Cannot copy service files."
 fi
 
-# Copy service files to systemd directory
-log "Copying service files to systemd directory..."
-cp /data/SWATGenXApp/codes/scripts/celery-worker.service /etc/systemd/system/
-cp /data/SWATGenXApp/codes/scripts/flask-app.service /etc/systemd/system/
-# Don't copy our Redis service file, as the system already has one
+# Copy Apache configuration files
+log "Copying Apache configuration files..."
+if [ -d "$APACHE_DIR" ]; then
+    # Copy all .conf files to Apache sites-available
+    for conf_file in "$CONFIG_DIR"/*.conf; do
+        if [ -f "$conf_file" ]; then
+            conf_name=$(basename "$conf_file")
+            cp "$conf_file" "$APACHE_DIR/" && \
+            log "Copied $conf_name to $APACHE_DIR/" || \
+            error "Failed to copy $conf_name to $APACHE_DIR/"
+        fi
+    done
+    
+    # Enable Apache sites
+    log "Enabling Apache sites..."
+    if [ -f "$APACHE_DIR/000-default.conf" ]; then
+        a2ensite 000-default.conf 2>/dev/null || log "000-default.conf already enabled"
+    fi
+    if [ -f "$APACHE_DIR/ciwre-bae.conf" ]; then
+        a2ensite ciwre-bae.conf 2>/dev/null || log "ciwre-bae.conf already enabled"
+    fi
+    
+    # Reload Apache to apply changes
+    log "Reloading Apache service..."
+    systemctl reload apache2 || error "Failed to reload Apache. Please check Apache configuration."
+else
+    warning "Apache configuration directory $APACHE_DIR not found. Skipping Apache configuration."
+fi
 
 # Reload systemd to recognize the new service files
 log "Reloading systemd daemon..."

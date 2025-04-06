@@ -2,7 +2,7 @@
 # Wrapper script for the batch-oriented Redis WRONGTYPE fix tool
 
 PYTHON_ENV="/data/SWATGenXApp/codes/.venv/bin/python"
-SCRIPT_PATH="/data/SWATGenXApp/codes/scripts/celery-services/services/fix_redis_wrongtype_batch.py"
+SCRIPT_PATH="/data/SWATGenXApp/codes/scripts/celery-tools-services/services/fix_redis_wrongtype_batch.py"
 LOG_DIR="/data/SWATGenXApp/codes/web_application/logs"
 LOG_FILE="${LOG_DIR}/redis_batch_fix_$(date +%Y%m%d_%H%M%S).log"
 

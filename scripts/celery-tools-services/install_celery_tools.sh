@@ -2,7 +2,7 @@
 # Install script for SWATGenX Celery Management Tools
 
 SCRIPTS_DIR="/data/SWATGenXApp/codes/scripts"
-CELERY_SERVICES_DIR="${SCRIPTS_DIR}/celery-services"
+CELERY_SERVICES_DIR="${SCRIPTS_DIR}/celery-tools-services"
 SYSTEMD_DIR="/etc/systemd/system"
 BIN_DIR="/usr/local/bin"
 
@@ -17,8 +17,13 @@ fi
 
 # Make sure the directory structure is set up
 if [ ! -d "${CELERY_SERVICES_DIR}" ]; then
+    echo "Creating Celery services directory structure..."
+    mkdir -p "${CELERY_SERVICES_DIR}/utils"
+    mkdir -p "${CELERY_SERVICES_DIR}/services" 
+    mkdir -p "${CELERY_SERVICES_DIR}/docs"
+elif [ -f "${SCRIPTS_DIR}/setup_celery_services.sh" ]; then
     echo "Setting up Celery services directory..."
-    ${CELERY_SERVICES_DIR}/setup_celery_services.sh
+    bash "${SCRIPTS_DIR}/setup_celery_services.sh"
 fi
 
 # Make all scripts executable
@@ -28,12 +33,21 @@ find "${CELERY_SERVICES_DIR}" -name "*.sh" -exec chmod +x {} \;
 
 # Install the main command
 echo "Installing the main command..."
-ln -sf "${CELERY_SERVICES_DIR}/celery-tools" "${BIN_DIR}/celery-tools"
+if [ -f "${CELERY_SERVICES_DIR}/celery-tools" ]; then
+    ln -sf "${CELERY_SERVICES_DIR}/celery-tools" "${BIN_DIR}/celery-tools"
+else
+    echo "WARNING: celery-tools main script not found at ${CELERY_SERVICES_DIR}/celery-tools"
+fi
 
 # Install systemd services
 echo "Installing systemd services..."
-cp "${CELERY_SERVICES_DIR}/services/redis-fix.service" "${SYSTEMD_DIR}/"
-systemctl daemon-reload
+REDIS_SERVICE_PATH="${CELERY_SERVICES_DIR}/services/redis-fix.service"
+if [ -f "${REDIS_SERVICE_PATH}" ]; then
+    cp "${REDIS_SERVICE_PATH}" "${SYSTEMD_DIR}/"
+    systemctl daemon-reload
+else
+    echo "WARNING: Redis fix service file not found at ${REDIS_SERVICE_PATH}"
+fi
 
 echo "Installation completed successfully!"
 echo

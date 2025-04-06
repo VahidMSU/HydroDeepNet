@@ -1,0 +1,21 @@
+[Unit]
+Description=Celery Beat for SWATGenX
+After=network.target redis-server.service
+Requires=redis-server.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/data/SWATGenXApp/codes/web_application
+Environment="PATH=/data/SWATGenXApp/codes/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
+EnvironmentFile=-/data/SWATGenXApp/codes/scripts/config/swatgenx.env
+ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_worker beat --loglevel=info
+
+Restart=always
+RestartSec=5
+StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/celery-beat.log
+StandardError=append:/data/SWATGenXApp/codes/web_application/logs/celery-beat-error.log
+
+[Install]
+WantedBy=multi-user.target

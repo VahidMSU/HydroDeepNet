@@ -2,12 +2,12 @@
 # Setup script to organize Celery services and utilities
 
 SCRIPTS_DIR="/data/SWATGenXApp/codes/scripts"
-CELERY_SERVICES_DIR="${SCRIPTS_DIR}/celery-services"
+CELERY_SERVICES_DIR="${SCRIPTS_DIR}/celery-tools-services"
 BIN_DIR="/usr/local/bin"
 
 echo "Setting up Celery services directory structure..."
 
-# Create the celery-services directory if it doesn't exist
+# Create the celery-tools-services directory if it doesn't exist
 mkdir -p "${CELERY_SERVICES_DIR}"
 mkdir -p "${CELERY_SERVICES_DIR}/utils"
 mkdir -p "${CELERY_SERVICES_DIR}/services"

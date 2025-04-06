@@ -677,7 +677,7 @@ def main():
         sys.exit(1)
     
     # Add correct path for cleanup_corrupted_tasks import
-    sys.path.insert(0, '/data/SWATGenXApp/codes/scripts/celery-services/services')
+    sys.path.insert(0, '/data/SWATGenXApp/codes/scripts/celery-tools-services/services')
 
     # Now import the cleanup script correctly
     try:
