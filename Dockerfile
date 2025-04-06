@@ -35,10 +35,10 @@ RUN mkdir -p /etc/redis && \
     echo "dir /var/lib/redis" >> /etc/redis/redis.conf && \
     echo "daemonize yes" >> /etc/redis/redis.conf && \
     echo "loglevel notice" >> /etc/redis/redis.conf && \
-    echo "logfile /var/log/redis/redis-server.log" >> /etc/redis/redis.conf && \
-    chmod 777 /etc/redis /var/log/redis /var/lib/redis && \
+    echo "logfile /tmp/redis-server.log" >> /etc/redis/redis.conf && \
+    chmod 777 /etc/redis && \
     chmod 644 /etc/redis/redis.conf && \
-    chown -R redis:redis /etc/redis /var/log/redis /var/lib/redis
+    chown -R redis:redis /etc/redis
 
 # Create NGINX directories with proper permissions
 RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi \
@@ -235,10 +235,6 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo '    echo "[$(date '"'"'+%Y-%m-%d %H:%M:%S'"'"')] $1"' >> /entrypoint.sh && \
     echo '}' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Fix Redis permissions at runtime' >> /entrypoint.sh && \
-    echo 'log "Setting Redis permissions..."' >> /entrypoint.sh && \
-    echo 'mkdir -p /var/log/redis /var/lib/redis' >> /entrypoint.sh && \
-    echo 'chmod -R 777 /var/log/redis /var/lib/redis' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Start Redis and wait for it to be ready' >> /entrypoint.sh && \
     echo 'log "Starting Redis server..."' >> /entrypoint.sh && \
