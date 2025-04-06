@@ -116,22 +116,6 @@ RUN apt-get update && \
     apt-get install -y qgis qgis-plugin-grass python3-qgis --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# Build React frontend
-WORKDIR /data/SWATGenXApp/codes/web_application/frontend
-RUN npm install && npm run build
-
-# NGINX setup for serving React build and static files
-WORKDIR /data/SWATGenXApp/codes/web_application
-COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
-
-# Set up user
-RUN usermod -u 33 www-data && \
-    groupmod -g 33 www-data && \
-    mkdir -p /data/SWATGenXApp/Users && \
-    mkdir -p /data/SWATGenXApp/GenXAppData && \
-    chown -R www-data:www-data /data/SWATGenXApp && \
-    chmod -R 755 /data/SWATGenXApp
-
 # SWAT+ Installation - with improved error handling
 RUN mkdir -p /data/SWATGenXApp/codes/swatplus_installation && \
     cd /data/SWATGenXApp/codes && \
@@ -198,8 +182,9 @@ RUN mkdir -p /data/SWATGenXApp/codes/swatplus_installation && \
     echo "SWAT+ installation completed successfully!" && \
     rm -rf /data/SWATGenXApp/codes/swatplus_installation
 
-# Build React frontend
+# Build React frontend with increased memory limit
 WORKDIR /data/SWATGenXApp/codes/web_application/frontend
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm install && npm run build
 
 # NGINX setup for serving React build and static files
@@ -213,6 +198,7 @@ RUN usermod -u 33 www-data && \
     mkdir -p /data/SWATGenXApp/GenXAppData && \
     chown -R www-data:www-data /data/SWATGenXApp && \
     chmod -R 755 /data/SWATGenXApp
+
 
 # Create NGINX directories with proper permissions
 RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi \
