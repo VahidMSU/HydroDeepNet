@@ -55,6 +55,8 @@ RUN ln -sf /usr/local/lib/libgdal.so.34 /usr/local/lib/libgdal.so && \
 
 # Create Redis configuration
 RUN mkdir -p /etc/redis && \
+    mkdir -p /var/log/redis && \
+    mkdir -p /var/lib/redis && \
     echo "bind 127.0.0.1" > /etc/redis/redis.conf && \
     echo "protected-mode no" >> /etc/redis/redis.conf && \
     echo "port 6379" >> /etc/redis/redis.conf && \
@@ -62,8 +64,9 @@ RUN mkdir -p /etc/redis && \
     echo "daemonize yes" >> /etc/redis/redis.conf && \
     echo "loglevel notice" >> /etc/redis/redis.conf && \
     echo "logfile /var/log/redis/redis-server.log" >> /etc/redis/redis.conf && \
-    chown -R redis:redis /etc/redis && \
-    chmod 644 /etc/redis/redis.conf
+    chmod 755 /etc/redis /var/log/redis /var/lib/redis && \
+    chmod 644 /etc/redis/redis.conf && \
+    chown -R redis:redis /etc/redis /var/log/redis /var/lib/redis
 
 # Create directories and set up working directory
 WORKDIR /data/SWATGenXApp/codes
@@ -223,15 +226,9 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo '    echo "[$(date '"'"'+%Y-%m-%d %H:%M:%S'"'"')] $1"' >> /entrypoint.sh && \
     echo '}' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
-    echo '# Ensure Redis has proper permissions' >> /entrypoint.sh && \
-    echo 'log "Setting Redis permissions..."' >> /entrypoint.sh && \
-    echo 'mkdir -p /var/log/redis' >> /entrypoint.sh && \
-    echo 'chown -R redis:redis /etc/redis /var/log/redis /var/lib/redis' >> /entrypoint.sh && \
-    echo 'chmod 644 /etc/redis/redis.conf' >> /entrypoint.sh && \
-    echo '' >> /entrypoint.sh && \
     echo '# Start Redis and wait for it to be ready' >> /entrypoint.sh && \
     echo 'log "Starting Redis server..."' >> /entrypoint.sh && \
-    echo 'gosu redis redis-server /etc/redis/redis.conf' >> /entrypoint.sh && \
+    echo 'redis-server /etc/redis/redis.conf' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Wait for Redis to be ready' >> /entrypoint.sh && \
     echo 'log "Waiting for Redis to be ready..."' >> /entrypoint.sh && \
