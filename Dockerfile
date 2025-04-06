@@ -27,18 +27,17 @@ RUN apt-get update && apt-get install -y \
 
 # Create Redis configuration with proper permissions
 RUN mkdir -p /etc/redis && \
-    mkdir -p /var/log/redis && \
-    mkdir -p /var/lib/redis && \
+    mkdir -p /tmp/redis && \
     echo "bind 127.0.0.1" > /etc/redis/redis.conf && \
     echo "protected-mode no" >> /etc/redis/redis.conf && \
     echo "port 6379" >> /etc/redis/redis.conf && \
-    echo "dir /var/lib/redis" >> /etc/redis/redis.conf && \
+    echo "dir /tmp/redis" >> /etc/redis/redis.conf && \
     echo "daemonize yes" >> /etc/redis/redis.conf && \
     echo "loglevel notice" >> /etc/redis/redis.conf && \
     echo "logfile /tmp/redis-server.log" >> /etc/redis/redis.conf && \
-    chmod 777 /etc/redis && \
+    chmod 777 /etc/redis /tmp/redis && \
     chmod 644 /etc/redis/redis.conf && \
-    chown -R redis:redis /etc/redis
+    chown -R redis:redis /etc/redis /tmp/redis
 
 # Create NGINX directories with proper permissions
 RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi \
