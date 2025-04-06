@@ -20,9 +20,6 @@ RUN apt-get update && apt-get install -y \
     sudo \
     gnupg software-properties-common wget curl lsb-release \
     build-essential cmake sqlite3 libsqlite3-dev \
-    libproj-dev proj-data proj-bin \
-    libgeos-dev python3-dev swig xvfb gdb \
-    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Create Redis configuration with proper permissions
@@ -96,15 +93,33 @@ RUN . $VIRTUAL_ENV/bin/activate && \
     # Install the most critical dependencies first
     pip install --no-cache-dir gunicorn celery redis flask
 
+# Install remaining Python dependencies (except GDAL which will be installed later)
+RUN pip install --no-cache-dir -r requirements_docker.txt
+
+# Build React frontend with increased memory limit
+WORKDIR /data/SWATGenXApp/codes/web_application/frontend
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm install && npm run build
+
+# NGINX setup for serving React build and static files
+WORKDIR /data/SWATGenXApp/codes/web_application
+COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
+
+# Set up user
+RUN usermod -u 33 www-data && \
+    groupmod -g 33 www-data && \
+    mkdir -p /data/SWATGenXApp/Users && \
+    mkdir -p /data/SWATGenXApp/GenXAppData && \
+    chown -R www-data:www-data /data/SWATGenXApp && \
+    chmod -R 755 /data/SWATGenXApp
+
+# Now install GDAL, QGIS, and SWAT+ dependencies (moved to the end)
 # Install GDAL from apt repository
 RUN apt-get update && \
     apt-get install -y libgdal-dev gdal-bin python3-gdal && \
     export CPLUS_INCLUDE_PATH=/usr/include/gdal && \
     export C_INCLUDE_PATH=/usr/include/gdal && \
     pip install --no-cache-dir GDAL==$(gdal-config --version)
-
-# Install remaining Python dependencies
-RUN pip install --no-cache-dir -r requirements_docker.txt
 
 # Install QGIS after GDAL is properly installed
 RUN apt-get update && \
@@ -181,47 +196,6 @@ RUN mkdir -p /data/SWATGenXApp/codes/swatplus_installation && \
     echo "SWAT+ installation completed successfully!" && \
     rm -rf /data/SWATGenXApp/codes/swatplus_installation
 
-# Build React frontend with increased memory limit
-WORKDIR /data/SWATGenXApp/codes/web_application/frontend
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm install && npm run build
-
-# NGINX setup for serving React build and static files
-WORKDIR /data/SWATGenXApp/codes/web_application
-COPY ./docker/nginx/nginx.conf /etc/nginx/nginx.conf
-
-# Set up user
-RUN usermod -u 33 www-data && \
-    groupmod -g 33 www-data && \
-    mkdir -p /data/SWATGenXApp/Users && \
-    mkdir -p /data/SWATGenXApp/GenXAppData && \
-    chown -R www-data:www-data /data/SWATGenXApp && \
-    chmod -R 755 /data/SWATGenXApp
-
-
-# Create NGINX directories with proper permissions
-RUN mkdir -p /var/lib/nginx/body /var/lib/nginx/fastcgi \
-    /var/lib/nginx/proxy /var/lib/nginx/scgi \
-    /var/lib/nginx/uwsgi /var/cache/nginx /run/nginx && \
-    chown -R www-data:www-data /var/lib/nginx /var/cache/nginx /var/log/nginx /run/nginx && \
-    chmod -R 755 /var/lib/nginx /var/cache/nginx /var/log/nginx /run/nginx
-
-# Create runtime directory for QGIS
-RUN mkdir -p /tmp/runtime-www-data && \
-    chown www-data:www-data /tmp/runtime-www-data && \
-    chmod 700 /tmp/runtime-www-data
-
-# Create user runtime directory with proper permissions
-RUN mkdir -p /run/user/33 && \
-    chown www-data:www-data /run/user/33 && \
-    chmod 700 /run/user/33
-
-# Create logs directory with proper permissions for all services
-RUN mkdir -p /data/SWATGenXApp/codes/web_application/logs/celery && \
-    mkdir -p /var/log/redis && \
-    chown -R www-data:www-data /data/SWATGenXApp/codes/web_application/logs && \
-    chown -R redis:redis /var/log/redis
-
 # Create volume for Redis data persistence
 VOLUME ["/var/lib/redis"]
 
@@ -274,11 +248,11 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD redis-cli ping && \
       curl -f http://localhost:5000/ || exit 1
 
+# Expose ports
+EXPOSE 5000 80
+
 # Now switch to www-data user for application runtime
 USER www-data
 
-# Expose Flask and NGINX ports
-EXPOSE 5000 80
-
-# Use entrypoint script to start all services
+# Set the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
