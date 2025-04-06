@@ -36,7 +36,7 @@ RUN mkdir -p /etc/redis && \
     echo "daemonize yes" >> /etc/redis/redis.conf && \
     echo "loglevel notice" >> /etc/redis/redis.conf && \
     echo "logfile /var/log/redis/redis-server.log" >> /etc/redis/redis.conf && \
-    chmod 755 /etc/redis /var/log/redis /var/lib/redis && \
+    chmod 777 /etc/redis /var/log/redis /var/lib/redis && \
     chmod 644 /etc/redis/redis.conf && \
     chown -R redis:redis /etc/redis /var/log/redis /var/lib/redis
 
@@ -234,6 +234,11 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo 'log() {' >> /entrypoint.sh && \
     echo '    echo "[$(date '"'"'+%Y-%m-%d %H:%M:%S'"'"')] $1"' >> /entrypoint.sh && \
     echo '}' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Fix Redis permissions at runtime' >> /entrypoint.sh && \
+    echo 'log "Setting Redis permissions..."' >> /entrypoint.sh && \
+    echo 'mkdir -p /var/log/redis /var/lib/redis' >> /entrypoint.sh && \
+    echo 'chmod -R 777 /var/log/redis /var/lib/redis' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Start Redis and wait for it to be ready' >> /entrypoint.sh && \
     echo 'log "Starting Redis server..."' >> /entrypoint.sh && \
