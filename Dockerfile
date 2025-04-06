@@ -55,15 +55,15 @@ RUN ln -sf /usr/local/lib/libgdal.so.34 /usr/local/lib/libgdal.so && \
 
 # Create Redis configuration
 RUN mkdir -p /etc/redis && \
-    cat > /etc/redis/redis.conf << EOF
-bind 127.0.0.1
-protected-mode no
-port 6379
-dir /var/lib/redis
-daemonize yes
-loglevel notice
-logfile /var/log/redis/redis-server.log
-EOF
+    echo "bind 127.0.0.1" > /etc/redis/redis.conf && \
+    echo "protected-mode no" >> /etc/redis/redis.conf && \
+    echo "port 6379" >> /etc/redis/redis.conf && \
+    echo "dir /var/lib/redis" >> /etc/redis/redis.conf && \
+    echo "daemonize yes" >> /etc/redis/redis.conf && \
+    echo "loglevel notice" >> /etc/redis/redis.conf && \
+    echo "logfile /var/log/redis/redis-server.log" >> /etc/redis/redis.conf && \
+    chown -R redis:redis /etc/redis && \
+    chmod 644 /etc/redis/redis.conf
 
 # Create directories and set up working directory
 WORKDIR /data/SWATGenXApp/codes
@@ -215,48 +215,46 @@ RUN mkdir -p /data/SWATGenXApp/codes/web_application/logs/celery && \
 VOLUME ["/var/lib/redis"]
 
 # Create entrypoint script for proper service management
-RUN cat > /entrypoint.sh << 'EOF'
-#!/bin/bash
-set -e
-
-# Function to log messages
-log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
-}
-
-# Start Redis and wait for it to be ready
-log "Starting Redis server..."
-redis-server /etc/redis/redis.conf
-
-# Wait for Redis to be ready
-log "Waiting for Redis to be ready..."
-max_retries=30
-count=0
-while ! redis-cli ping &>/dev/null; do
-    count=$((count + 1))
-    if [ $count -ge $max_retries ]; then
-        log "Redis failed to start after $max_retries attempts"
-        exit 1
-    fi
-    log "Waiting for Redis... ($count/$max_retries)"
-    sleep 1
-done
-log "Redis is ready!"
-
-# Start Flask application with gunicorn
-log "Starting Flask application..."
-cd /data/SWATGenXApp/codes
-gunicorn -b 0.0.0.0:5000 run:app --daemon --access-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-access.log --error-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-error.log
-
-# Start Celery worker
-log "Starting Celery worker..."
-cd /data/SWATGenXApp/codes/web_application
-celery -A celery_worker worker --loglevel=info --concurrency=4 --max-tasks-per-child=$CELERY_MAX_TASKS_PER_CHILD --logfile=/data/SWATGenXApp/codes/web_application/logs/celery/celery-worker.log --detach
-
-# Start NGINX in foreground
-log "Starting NGINX..."
-nginx -g 'daemon off; pid /tmp/nginx.pid;'
-EOF
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'set -e' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Function to log messages' >> /entrypoint.sh && \
+    echo 'log() {' >> /entrypoint.sh && \
+    echo '    echo "[$(date '"'"'+%Y-%m-%d %H:%M:%S'"'"')] $1"' >> /entrypoint.sh && \
+    echo '}' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Start Redis and wait for it to be ready' >> /entrypoint.sh && \
+    echo 'log "Starting Redis server..."' >> /entrypoint.sh && \
+    echo 'redis-server /etc/redis/redis.conf' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Wait for Redis to be ready' >> /entrypoint.sh && \
+    echo 'log "Waiting for Redis to be ready..."' >> /entrypoint.sh && \
+    echo 'max_retries=30' >> /entrypoint.sh && \
+    echo 'count=0' >> /entrypoint.sh && \
+    echo 'while ! redis-cli ping &>/dev/null; do' >> /entrypoint.sh && \
+    echo '    count=$((count + 1))' >> /entrypoint.sh && \
+    echo '    if [ $count -ge $max_retries ]; then' >> /entrypoint.sh && \
+    echo '        log "Redis failed to start after $max_retries attempts"' >> /entrypoint.sh && \
+    echo '        exit 1' >> /entrypoint.sh && \
+    echo '    fi' >> /entrypoint.sh && \
+    echo '    log "Waiting for Redis... ($count/$max_retries)"' >> /entrypoint.sh && \
+    echo '    sleep 1' >> /entrypoint.sh && \
+    echo 'done' >> /entrypoint.sh && \
+    echo 'log "Redis is ready!"' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Start Flask application with gunicorn' >> /entrypoint.sh && \
+    echo 'log "Starting Flask application..."' >> /entrypoint.sh && \
+    echo 'cd /data/SWATGenXApp/codes' >> /entrypoint.sh && \
+    echo 'gunicorn -b 0.0.0.0:5000 run:app --daemon --access-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-access.log --error-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-error.log' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Start Celery worker' >> /entrypoint.sh && \
+    echo 'log "Starting Celery worker..."' >> /entrypoint.sh && \
+    echo 'cd /data/SWATGenXApp/codes/web_application' >> /entrypoint.sh && \
+    echo 'celery -A celery_worker worker --loglevel=info --concurrency=4 --max-tasks-per-child=$CELERY_MAX_TASKS_PER_CHILD --logfile=/data/SWATGenXApp/codes/web_application/logs/celery/celery-worker.log --detach' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo '# Start NGINX in foreground' >> /entrypoint.sh && \
+    echo 'log "Starting NGINX..."' >> /entrypoint.sh && \
+    echo 'nginx -g '"'"'daemon off; pid /tmp/nginx.pid;'"'"'' >> /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
