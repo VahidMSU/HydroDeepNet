@@ -223,9 +223,15 @@ RUN echo '#!/bin/bash' > /entrypoint.sh && \
     echo '    echo "[$(date '"'"'+%Y-%m-%d %H:%M:%S'"'"')] $1"' >> /entrypoint.sh && \
     echo '}' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
+    echo '# Ensure Redis has proper permissions' >> /entrypoint.sh && \
+    echo 'log "Setting Redis permissions..."' >> /entrypoint.sh && \
+    echo 'mkdir -p /var/log/redis' >> /entrypoint.sh && \
+    echo 'chown -R redis:redis /etc/redis /var/log/redis /var/lib/redis' >> /entrypoint.sh && \
+    echo 'chmod 644 /etc/redis/redis.conf' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
     echo '# Start Redis and wait for it to be ready' >> /entrypoint.sh && \
     echo 'log "Starting Redis server..."' >> /entrypoint.sh && \
-    echo 'redis-server /etc/redis/redis.conf' >> /entrypoint.sh && \
+    echo 'gosu redis redis-server /etc/redis/redis.conf' >> /entrypoint.sh && \
     echo '' >> /entrypoint.sh && \
     echo '# Wait for Redis to be ready' >> /entrypoint.sh && \
     echo 'log "Waiting for Redis to be ready..."' >> /entrypoint.sh && \
