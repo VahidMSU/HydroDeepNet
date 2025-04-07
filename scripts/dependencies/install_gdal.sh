@@ -4,8 +4,8 @@ set -e
 echo "📦 Installing GDAL 3.8.4..."
 
 # Prerequisites
-sudo apt-get update
-sudo apt-get install -y build-essential cmake g++ \
+apt-get update
+apt-get install -y build-essential cmake g++ \
     libproj-dev libgeos-dev libsqlite3-dev libtiff-dev libcurl4-openssl-dev \
     libpng-dev libjpeg-dev libopenjp2-7-dev libwebp-dev libhdf5-dev \
     libnetcdf-dev libspatialite-dev swig python3-dev python3-numpy \
@@ -19,9 +19,9 @@ mkdir build && cd build
 
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..
 cmake --build . --parallel $(nproc)
-sudo cmake --build . --target install --parallel $(nproc)
+cmake --build . --target install --parallel $(nproc)
 
-sudo ldconfig
+ldconfig
 cd ../..
 rm -rf gdal-3.8.4 gdal-3.8.4.tar.gz
 

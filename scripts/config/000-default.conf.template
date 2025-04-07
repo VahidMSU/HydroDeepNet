@@ -1,0 +1,123 @@
+<VirtualHost *:80>
+    ServerName ciwre-bae.campusad.msu.edu
+
+    # Serve the React build output
+    DocumentRoot ##BASE_DIR##/web_application/frontend/build
+    <Directory ##BASE_DIR##/web_application/frontend/build>
+        Require all granted
+        AllowOverride All
+        Options Indexes FollowSymLinks
+    </Directory>
+
+    # Let Apache preserve the Host header, disable open proxy
+    ProxyPreserveHost On
+    ProxyRequests Off
+    
+    # Add forwarded headers for Flask
+    RequestHeader set X-Forwarded-Proto "http"
+    RequestHeader set X-Forwarded-Host "%{HTTP_HOST}e" env=HTTP_HOST
+    RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}e" env=REMOTE_ADDR
+
+    # Add proxy timeout to prevent hanging requests
+    ProxyTimeout 60
+    
+    # Set proper content type for JSON responses from API
+    <LocationMatch "^/api/">
+        Header always set Content-Type "application/json" env=API_RESPONSE
+        SetEnvIf Request_URI "^/api/" API_RESPONSE
+    </LocationMatch>
+    
+    # Proxy API requests to Gunicorn on port 5050
+    ProxyPass        /api/ http://127.0.0.1:5050/api/ retry=0
+    ProxyPassReverse /api/ http://127.0.0.1:5050/api/
+
+    # Proxy WebSocket requests (if you use websockets)
+    ProxyPass        /ws ws://127.0.0.1:5050/ws
+    ProxyPassReverse /ws ws://127.0.0.1:5050/ws
+
+    # Proxy non-API paths that should be handled by the backend
+    ProxyPass        /login http://127.0.0.1:5050/login
+    ProxyPassReverse /login http://127.0.0.1:5050/login
+    
+    ProxyPass        /signup http://127.0.0.1:5050/signup
+    ProxyPassReverse /signup http://127.0.0.1:5050/signup
+
+    ProxyPass        /verify http://127.0.0.1:5050/api/verify
+    ProxyPassReverse /verify http://127.0.0.1:5050/api/verify
+
+    # Proxy model-related routes
+    ProxyPass        /model-settings http://127.0.0.1:5050/model-settings retry=0
+    ProxyPassReverse /model-settings http://127.0.0.1:5050/model-settings
+    
+    ProxyPass        /model-confirmation http://127.0.0.1:5050/model-confirmation
+    ProxyPassReverse /model-confirmation http://127.0.0.1:5050/model-confirmation
+    
+    # Proxy visualization routes
+    ProxyPass        /vision_system http://127.0.0.1:5050/vision_system
+    ProxyPassReverse /vision_system http://127.0.0.1:5050/vision_system
+
+    # Proxy download routes to Flask
+    ProxyPass        /download/ http://127.0.0.1:5050/download/
+    ProxyPassReverse /download/ http://127.0.0.1:5050/download/
+    
+    # Add new download_directory route
+    ProxyPass        /download_directory/ http://127.0.0.1:5050/download_directory/
+    ProxyPassReverse /download_directory/ http://127.0.0.1:5050/download_directory/
+
+    # Proxy reports routes
+    ProxyPass        /reports http://127.0.0.1:5050/reports
+    ProxyPassReverse /reports http://127.0.0.1:5050/reports
+
+    # Serve React static files directly
+    Alias /static/react ##BASE_DIR##/web_application/frontend/build/static
+    <Directory ##BASE_DIR##/web_application/frontend/build/static>
+        Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride None
+    </Directory>
+
+    # Legacy static files (images, videos, etc.)
+    Alias /static/images ##BASE_DIR##/../GenXAppData/images
+    <Directory ##BASE_DIR##/../GenXAppData/images>
+        Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Header set Access-Control-Allow-Origin "*"
+    </Directory>
+
+    Alias /static/videos ##BASE_DIR##/../GenXAppData/videos
+    <Directory ##BASE_DIR##/../GenXAppData/videos>
+        Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Header set Access-Control-Allow-Origin "*"
+    </Directory>
+
+    # Alias for visualization content
+    Alias /static/visualizations ##BASE_DIR##/../GenXAppData/SWATplus_by_VPUID/0000/huc12
+    <Directory ##BASE_DIR##/../GenXAppData/SWATplus_by_VPUID/0000/huc12>
+        Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Header set Access-Control-Allow-Origin "*"
+    </Directory>
+
+    # Allow access to user directories
+    <Directory ##BASE_DIR##/../Users>
+        Require all granted
+    </Directory>
+
+    # React frontend routing fallback: anything that isn't /api/, /ws, /static/, or a real file
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/api/
+    RewriteCond %{REQUEST_URI} !^/ws
+    RewriteCond %{REQUEST_URI} !^/download/
+    RewriteCond %{REQUEST_URI} !^/download_directory/
+    RewriteCond %{REQUEST_URI} !^/static/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ /index.html [QSA,L]
+
+    # Logs
+    ErrorLog  ##LOG_DIR##/react_flask_error.log
+    CustomLog ##LOG_DIR##/react_flask_access.log combined
+</VirtualHost>

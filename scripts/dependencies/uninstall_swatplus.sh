@@ -137,4 +137,4 @@ done
 
 log "SWAT+ uninstallation completed successfully"
 log "Note: If you installed QGIS specifically for SWAT+, you may want to uninstall it separately with:"
-log "  sudo apt-get remove --purge qgis qgis-plugin-grass"
+log "  apt-get remove --purge qgis qgis-plugin-grass"

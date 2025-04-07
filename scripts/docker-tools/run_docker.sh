@@ -1,7 +1,12 @@
 #!/bin/bash
 # Build the Docker image
 cd /data/SWATGenXApp/codes
-docker stop $(docker ps -q)
+
+# Stop running containers if any exist
+if [ "$(docker ps -q)" ]; then
+  docker stop $(docker ps -q)
+fi
+
 docker system prune -a -f
 docker build -t hydrodeepnet_image .
 

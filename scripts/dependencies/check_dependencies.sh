@@ -14,6 +14,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="${SWAT_BASE_DIR:-$(cd "$SCRIPT_DIR/../../" && pwd)}"
 BIN_DIR="${BASE_DIR}/bin"
 
+echo "Base directory: $BASE_DIR"
+echo "Script directory: $SCRIPT_DIR"
+echo "Bin directory: $BIN_DIR"
+
+sleep 1000
+
 # Paths
 LOG_DIR="${BASE_DIR}/web_application/logs"
 LOG_FILE="${LOG_DIR}/swat_dependencies_check.log"
@@ -252,13 +258,13 @@ else
     error "One or more required dependencies are missing or improperly installed"
     echo "" | tee -a "$LOG_FILE"
     echo -e "${YELLOW}To install missing components, you can run:${NC}" | tee -a "$LOG_FILE"
-    echo -e "  ${GREEN}sudo bash $SCRIPT_DIR/install_all_dependencies.sh${NC}" | tee -a "$LOG_FILE"
+    echo -e "  ${GREEN}bash $SCRIPT_DIR/install_all_dependencies.sh${NC}" | tee -a "$LOG_FILE"
     echo -e "Or run individual installation scripts:" | tee -a "$LOG_FILE"
-    echo -e "  ${GREEN}sudo bash $SCRIPT_DIR/install_swatplus.sh${NC}" | tee -a "$LOG_FILE"
-    echo -e "  ${GREEN}sudo bash $SCRIPT_DIR/install_swatplus_exe.sh${NC}" | tee -a "$LOG_FILE"
-    echo -e "  ${GREEN}sudo bash $SCRIPT_DIR/install_modflow.sh${NC}" | tee -a "$LOG_FILE"
-    echo -e "  ${GREEN}sudo bash $SCRIPT_DIR/install_qgis.sh${NC}" | tee -a "$LOG_FILE"
-    echo -e "  ${GREEN}sudo bash $SCRIPT_DIR/install_gdal.sh${NC}" | tee -a "$LOG_FILE"
+    echo -e "  ${GREEN}bash $SCRIPT_DIR/install_swatplus.sh${NC}" | tee -a "$LOG_FILE"
+    echo -e "  ${GREEN}bash $SCRIPT_DIR/install_swatplus_exe.sh${NC}" | tee -a "$LOG_FILE"
+    echo -e "  ${GREEN}bash $SCRIPT_DIR/install_modflow.sh${NC}" | tee -a "$LOG_FILE"
+    echo -e "  ${GREEN}bash $SCRIPT_DIR/install_qgis.sh${NC}" | tee -a "$LOG_FILE"
+    echo -e "  ${GREEN}bash $SCRIPT_DIR/install_gdal.sh${NC}" | tee -a "$LOG_FILE"
 fi
 
 log "Check completed. Full log available at: $LOG_FILE"

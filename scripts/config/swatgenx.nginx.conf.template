@@ -1,0 +1,135 @@
+server {
+    listen 80;
+    server_name localhost;
+    
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name localhost;
+    
+    # SSL configuration
+    ssl_certificate /etc/ssl/certs/ciwre-bae_campusad_msu_edu_cert.cer;
+    ssl_certificate_key /etc/ssl/private/ciwre-bae.campusad.msu.edu.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    
+    # Serve React application
+    root ##BASE_DIR##/web_application/frontend/build;
+    index index.html;
+    
+    # Add proper headers
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    
+    # API proxy settings
+    location /api/ {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+        proxy_connect_timeout 120s;
+    }
+    
+    # WebSocket proxy
+    location /ws {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 120s;
+    }
+    
+    # Special routes
+    location /login {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    location /signup {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    location /model-settings {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_read_timeout 120s;
+    }
+    
+    location /model-confirmation {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    location /verify {
+        proxy_pass http://127.0.0.1:5050/api/verify;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    # Download routes
+    location /download/ {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    location /download_directory/ {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    location /reports {
+        proxy_pass http://127.0.0.1:5050;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    # Static files
+    location /static/react/ {
+        alias ##BASE_DIR##/web_application/frontend/build/static/;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+    }
+    
+    location /static/images/ {
+        alias ##BASE_DIR##/../GenXAppData/images/;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+        add_header Access-Control-Allow-Origin "*";
+    }
+    
+    location /static/videos/ {
+        alias ##BASE_DIR##/../GenXAppData/videos/;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+        add_header Access-Control-Allow-Origin "*";
+    }
+    
+    location /static/visualizations/ {
+        alias ##BASE_DIR##/../GenXAppData/SWATplus_by_VPUID/0000/huc12/;
+        expires 30d;
+        add_header Cache-Control "public, max-age=2592000";
+        add_header Access-Control-Allow-Origin "*";
+    }
+    
+    # React app routing fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+        expires -1;
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+    }
+    
+    # Error logs
+    error_log ##LOG_DIR##/nginx-error.log;
+    access_log ##LOG_DIR##/nginx-access.log;
+}
