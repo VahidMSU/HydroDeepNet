@@ -1,7 +1,7 @@
 <VirtualHost *:443>
     ServerName ciwre-bae.campusad.msu.edu
-    DocumentRoot /data/SWATGenXApp/codes/web_application/frontend/build
-    <Directory /data/SWATGenXApp/codes/web_application/frontend/build>
+    DocumentRoot ##WEBAPP_DIR##/frontend/build
+    <Directory ##WEBAPP_DIR##/frontend/build>
         Require all granted
         AllowOverride All
         Options Indexes FollowSymLinks
@@ -99,24 +99,24 @@
     ProxyPassReverse /reports http://127.0.0.1:5050/reports
 
     # Serve React's static files
-    Alias /static/react /data/SWATGenXApp/codes/web_application/frontend/build/static
-    <Directory /data/SWATGenXApp/codes/web_application/frontend/build/static>
+    Alias /static/react ##WEBAPP_DIR##/frontend/build/static
+    <Directory ##WEBAPP_DIR##/frontend/build/static>
         Require all granted
         Options Indexes FollowSymLinks
         AllowOverride None
     </Directory>
 
     # Legacy static files
-    Alias /static/images /data/SWATGenXApp/GenXAppData/images
-    <Directory /data/SWATGenXApp/GenXAppData/images>
+    Alias /static/images ##DATA_DIR##/images
+    <Directory ##DATA_DIR##/images>
         Require all granted
         Options Indexes FollowSymLinks
         AllowOverride None
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
-    Alias /static/videos /data/SWATGenXApp/GenXAppData/videos
-    <Directory /data/SWATGenXApp/GenXAppData/videos>
+    Alias /static/videos ##DATA_DIR##/videos
+    <Directory ##DATA_DIR##/videos>
         Require all granted
         Options Indexes FollowSymLinks
         AllowOverride None
@@ -124,8 +124,8 @@
     </Directory>
 
     # Alias for visualization content
-    Alias /static/visualizations /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12
-    <Directory /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12>
+    Alias /static/visualizations ##DATA_DIR##/SWATplus_by_VPUID/0000/huc12
+    <Directory ##DATA_DIR##/SWATplus_by_VPUID/0000/huc12>
         Require all granted
         Options Indexes FollowSymLinks
         AllowOverride None
@@ -133,7 +133,7 @@
     </Directory>
     
     # Allow access to user directories
-    <Directory /data/SWATGenXApp/Users>
+    <Directory ##USER_DIR##>
         Require all granted
     </Directory>
 
@@ -154,6 +154,6 @@
     SSLCertificateKeyFile /etc/ssl/private/ciwre-bae.campusad.msu.edu.key
 
     # Error and Access Logs
-    ErrorLog /data/SWATGenXApp/codes/web_application/logs/ciwre-bae_error.log
-    CustomLog /data/SWATGenXApp/codes/web_application/logs/ciwre-bae_access.log combined
+    ErrorLog ##LOG_DIR##/ciwre-bae_error.log
+    CustomLog ##LOG_DIR##/ciwre-bae_access.log combined
 </VirtualHost>

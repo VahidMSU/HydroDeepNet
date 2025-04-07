@@ -13,7 +13,9 @@ YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
 
-source "/data/SWATGenXApp/codes/scripts/global_path.sh"
+source "global_path.sh"
+
+
 
 
 # Create a config file to store the web server preference
@@ -51,43 +53,53 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Web server selection with persistence
-echo -e "\n${YELLOW}=====================================================${NC}"
-echo -e "${GREEN}=== SWATGenX Production Web Server Selection ===${NC}"
-echo -e "${YELLOW}=====================================================${NC}"
-echo -e "Please select your web server for production:"
-echo -e "  ${GREEN}0) None${NC} - Do not start any web server"
-echo -e "  ${GREEN}1) Apache${NC} - Traditional and widely used"
-echo -e "  ${GREEN}2) Nginx${NC} - Lightweight and high performance"
 
-# Check if there's a saved preference
-SAVED_PREFERENCE=""
-if [ -f "$WEBSERVER_PREF_FILE" ]; then
-    SAVED_PREFERENCE=$(cat "$WEBSERVER_PREF_FILE")
-    if [ "$SAVED_PREFERENCE" = "apache" ]; then
-        echo -e "${YELLOW}Previously selected: Apache${NC}"
-    elif [ "$SAVED_PREFERENCE" = "nginx" ]; then
-        echo -e "${YELLOW}Previously selected: Nginx${NC}"
-    elif [ "$SAVED_PREFERENCE" = "none" ]; then
-        echo -e "${YELLOW}Previously selected: None${NC}"
+# Check if Celery is installed before starting Celery services
+if ! "${PYTHONPATH}/pip" show celery &>/dev/null; then
+    error "Celery is not installed. Aborting service restart."
+    echo "Please install Celery first using the dependencies/install_celery.sh script."
+    exit 1
+fi
+
+
+# New argument parsing for web server selection
+if [ "$#" -ge 2 ]; then
+    if [ "$1" = "--web-service" ]; then
+        WEB_SERVER_CHOICE="$2"
+        log "Command-line argument provided for web server selection: $WEB_SERVER_CHOICE"
     fi
 fi
 
-echo -e "${YELLOW}Automatically using previous selection or Apache in 15 seconds...${NC}"
-
-# Read user input with a 15 second timeout
-read -t 15 -p "Enter your choice [0/1/2]: " WEB_SERVER_CHOICE
-
-# Default to the saved preference or Apache if no input
+# Interactive web server selection if no command-line argument was provided
 if [ -z "$WEB_SERVER_CHOICE" ]; then
-    if [ ! -z "$SAVED_PREFERENCE" ]; then
-        WEB_SERVER="$SAVED_PREFERENCE"
-        log "Using saved web server preference: $WEB_SERVER"
-    else
-        WEB_SERVER="apache"
-        log "No input provided. Defaulting to Apache"
+    echo -e "\n${YELLOW}=====================================================${NC}"
+    echo -e "${GREEN}=== SWATGenX Production Web Server Selection ===${NC}"
+    echo -e "${YELLOW}=====================================================${NC}"
+    echo -e "Please select your web server for production:"
+    echo -e "  ${GREEN}0) None${NC} - Do not start any web server"
+    echo -e "  ${GREEN}1) Apache${NC} - Traditional and widely used"
+    echo -e "  ${GREEN}2) Nginx${NC} - Lightweight and high performance"
+
+    # Check if there's a saved preference
+    SAVED_PREFERENCE=""
+    if [ -f "$WEBSERVER_PREF_FILE" ]; then
+        SAVED_PREFERENCE=$(cat "$WEBSERVER_PREF_FILE")
+        if [ "$SAVED_PREFERENCE" = "apache" ]; then
+            echo -e "${YELLOW}Previously selected: Apache${NC}"
+        elif [ "$SAVED_PREFERENCE" = "nginx" ]; then
+            echo -e "${YELLOW}Previously selected: Nginx${NC}"
+        elif [ "$SAVED_PREFERENCE" = "none" ]; then
+            echo -e "${YELLOW}Previously selected: None${NC}"
+        fi
     fi
-elif [ "$WEB_SERVER_CHOICE" = "0" ]; then
+
+    echo -e "${YELLOW}Automatically using previous selection or Apache in 15 seconds...${NC}"
+
+    # Read user input with a 15 second timeout
+    read -t 15 -p "Enter your choice [0/1/2]: " WEB_SERVER_CHOICE
+fi
+
+if [ "$WEB_SERVER_CHOICE" = "0" ]; then
     WEB_SERVER="none"
     log "Selected no web server"
 elif [ "$WEB_SERVER_CHOICE" = "1" ]; then
@@ -97,7 +109,7 @@ elif [ "$WEB_SERVER_CHOICE" = "2" ]; then
     WEB_SERVER="nginx"
     log "Selected web server: Nginx"
 else
-    warning "Invalid selection: '$WEB_SERVER_CHOICE'. Must be 0, 1, or 2. Defaulting to Apache."
+    warning "Invalid selection: '$WEB_SERVER_CHOICE'. Defaulting to Apache."
     WEB_SERVER="apache"
 fi
 
@@ -110,15 +122,23 @@ echo -e "This preference has been saved for future runs.\n"
 
 log "Starting service restart procedure"
 
-# Detect Redis service name - could be redis.service or redis-server.service
+# Detect Redis service - attempt to install if not found
 REDIS_SERVICE=""
 if systemctl list-unit-files | grep -q "redis-server.service"; then
     REDIS_SERVICE="redis-server.service"
 elif systemctl list-unit-files | grep -q "redis.service"; then
     REDIS_SERVICE="redis.service"
 else
-    error "Redis service not found. Please check if Redis is installed properly."
-    exit 1
+    log "Redis service not found. Attempting to install Redis..."
+    ${DEPENDENCIES_DIR}/install_redis.sh
+    if systemctl list-unit-files | grep -q "redis-server.service"; then
+        REDIS_SERVICE="redis-server.service"
+    elif systemctl list-unit-files | grep -q "redis.service"; then
+        REDIS_SERVICE="redis.service"
+    else
+        error "Redis installation failed."
+        exit 1
+    fi
 fi
 log "Detected Redis service: $REDIS_SERVICE"
 
@@ -416,6 +436,8 @@ else
     systemctl status $REDIS_SERVICE --no-pager
 fi
 
+
+
 # Start Celery worker
 log "Starting Celery worker service..."
 systemctl start celery-worker.service
@@ -488,20 +510,16 @@ if [ "$WEB_SERVER" = "nginx" ]; then
             NGINX_CONF_FOUND=true
             conf_name=$(basename "$conf_file" .nginx.conf)
             
-            # Replace hardcoded paths with variables
+            # Use the generic function to replace template variables
             TEMP_CONF="${conf_file}.temp"
-            cp "$conf_file" "$TEMP_CONF"
-            sed -i "s|/data/SWATGenXApp/codes|${BASE_DIR}|g" "$TEMP_CONF"
-            sed -i "s|/data/SWATGenXApp/GenXAppData|${BASE_DIR}/../GenXAppData|g" "$TEMP_CONF"
-            sed -i "s|/data/SWATGenXApp/Users|${BASE_DIR}/../Users|g" "$TEMP_CONF"
+            replace_env_vars "$conf_file" "$TEMP_CONF"
             
-            # Copy the modified file
+            # Copy the modified file and create symlink in sites-enabled
             cp "$TEMP_CONF" "$NGINX_DIR/${conf_name}.conf" && \
             log "Copied ${conf_name}.conf to $NGINX_DIR/" || \
             error "Failed to copy ${conf_name}.conf to $NGINX_DIR/"
             rm -f "$TEMP_CONF"
             
-            # Create symlinks in sites-enabled
             ln -sf "$NGINX_DIR/${conf_name}.conf" "$NGINX_ENABLED_DIR/${conf_name}.conf" && \
             log "Enabled ${conf_name}.conf site" || \
             error "Failed to enable ${conf_name}.conf site"
@@ -582,6 +600,49 @@ elif [ "$WEB_SERVER" = "apache" ]; then
         systemctl disable nginx
     fi
     
+    # Check if Apache is properly installed by looking for apache2 package and service
+    if ! dpkg -s apache2 &>/dev/null || ! [ -f "/lib/systemd/system/apache2.service" ]; then
+        log "Apache is not installed or installation is incomplete. Installing Apache..."
+        if [ -f "${DEPENDENCIES_DIR}/install_apache.sh" ]; then
+            ${DEPENDENCIES_DIR}/install_apache.sh
+            if [ $? -ne 0 ]; then
+                error "Failed to install Apache. Please check installation logs."
+                log "Attempting direct installation with apt..."
+                apt-get update && apt-get install -y apache2 apache2-utils ssl-cert
+                if [ $? -ne 0 ]; then
+                    error "Direct Apache installation failed. Cannot continue with Apache."
+                    warning "Falling back to Nginx web server..."
+                    WEB_SERVER="nginx"
+                    # Loop back to Nginx section
+                    continue
+                fi
+            fi
+        else
+            error "Apache installation script not found at ${DEPENDENCIES_DIR}/install_apache.sh"
+            log "Attempting direct installation with apt..."
+            apt-get update && apt-get install -y apache2 apache2-utils ssl-cert
+            if [ $? -ne 0 ]; then
+                error "Direct Apache installation failed. Cannot continue with Apache."
+                warning "Falling back to no web server..."
+                WEB_SERVER="none"
+                continue
+            fi
+        fi
+        
+        # Verify Apache was installed successfully
+        if ! dpkg -s apache2 &>/dev/null || ! [ -f "/lib/systemd/system/apache2.service" ]; then
+            error "Apache installation verification failed. Cannot proceed with Apache."
+            warning "Falling back to no web server..."
+            WEB_SERVER="none"
+            continue
+        else
+            log "Apache installed successfully."
+        fi
+    fi
+    
+    # After ensuring Apache is installed, proceed with configuration
+    log "Apache is installed. Proceeding with configuration..."
+    
     # Enable Apache sites if they exist
     if [ -f "$APACHE_DIR/000-default.conf" ]; then
         a2ensite 000-default.conf 2>/dev/null || log "000-default.conf already enabled"
@@ -596,7 +657,7 @@ elif [ "$WEB_SERVER" = "apache" ]; then
     
     # Restart Apache to apply changes
     log "Starting Apache web server..."
-    systemctl start apache2 || error "Failed to start Apache. Please check Apache configuration."
+    systemctl restart apache2 || error "Failed to start Apache. Please check Apache configuration."
     
     # Verify Apache is running
     if systemctl is-active --quiet apache2; then
