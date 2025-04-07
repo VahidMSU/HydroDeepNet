@@ -27,7 +27,6 @@ echo "Config directory: $CONFIG_DIR"
 echo "Systemd directory: $SYSTEMD_DIR"
 echo "Apache directory: $APACHE_DIR"
 
-sleep 5
 
 # Define log file
 LOG_FILE="${LOG_DIR}/restart_services.log"
@@ -57,6 +56,7 @@ echo -e "\n${YELLOW}=====================================================${NC}"
 echo -e "${GREEN}=== SWATGenX Production Web Server Selection ===${NC}"
 echo -e "${YELLOW}=====================================================${NC}"
 echo -e "Please select your web server for production:"
+echo -e "  ${GREEN}0) None${NC} - Do not start any web server"
 echo -e "  ${GREEN}1) Apache${NC} - Traditional and widely used"
 echo -e "  ${GREEN}2) Nginx${NC} - Lightweight and high performance"
 
@@ -68,13 +68,15 @@ if [ -f "$WEBSERVER_PREF_FILE" ]; then
         echo -e "${YELLOW}Previously selected: Apache${NC}"
     elif [ "$SAVED_PREFERENCE" = "nginx" ]; then
         echo -e "${YELLOW}Previously selected: Nginx${NC}"
+    elif [ "$SAVED_PREFERENCE" = "none" ]; then
+        echo -e "${YELLOW}Previously selected: None${NC}"
     fi
 fi
 
 echo -e "${YELLOW}Automatically using previous selection or Apache in 15 seconds...${NC}"
 
 # Read user input with a 15 second timeout
-read -t 15 -p "Enter your choice [1/2]: " WEB_SERVER_CHOICE
+read -t 15 -p "Enter your choice [0/1/2]: " WEB_SERVER_CHOICE
 
 # Default to the saved preference or Apache if no input
 if [ -z "$WEB_SERVER_CHOICE" ]; then
@@ -85,6 +87,9 @@ if [ -z "$WEB_SERVER_CHOICE" ]; then
         WEB_SERVER="apache"
         log "No input provided. Defaulting to Apache"
     fi
+elif [ "$WEB_SERVER_CHOICE" = "0" ]; then
+    WEB_SERVER="none"
+    log "Selected no web server"
 elif [ "$WEB_SERVER_CHOICE" = "1" ]; then
     WEB_SERVER="apache"
     log "Selected web server: Apache"
@@ -92,7 +97,7 @@ elif [ "$WEB_SERVER_CHOICE" = "2" ]; then
     WEB_SERVER="nginx"
     log "Selected web server: Nginx"
 else
-    warning "Invalid selection: '$WEB_SERVER_CHOICE'. Must be 1 or 2. Defaulting to Apache."
+    warning "Invalid selection: '$WEB_SERVER_CHOICE'. Must be 0, 1, or 2. Defaulting to Apache."
     WEB_SERVER="apache"
 fi
 
@@ -338,7 +343,8 @@ systemctl stop celery-worker.service 2>/dev/null || log "Celery worker service w
 log "Stopping Redis service..."
 systemctl stop $REDIS_SERVICE 2>/dev/null || log "Redis service was not running"
 
-# Wait for processes to fully stop
+# Wait for services to stop completely...
+# for processes to fully stop
 log "Waiting for services to stop completely..."
 sleep 5
 
@@ -450,7 +456,7 @@ else
     systemctl status flask-app.service --no-pager
 fi
 
-# Configure and start the selected web server
+# Web server configuration/startup
 if [ "$WEB_SERVER" = "nginx" ]; then
     log "Configuring and starting Nginx web server..."
     
@@ -566,10 +572,7 @@ EOF
         warning "Falling back to Apache web server..."
         WEB_SERVER="apache"
     fi
-fi
-
-# If we've fallen back to Apache or Apache was selected initially
-if [ "$WEB_SERVER" = "apache" ]; then
+elif [ "$WEB_SERVER" = "apache" ]; then
     log "Configuring and starting Apache web server..."
     
     # Stop Nginx if it's running
@@ -604,6 +607,13 @@ if [ "$WEB_SERVER" = "apache" ]; then
         error "Failed to start Apache web server"
         systemctl status apache2 --no-pager
     fi
+elif [ "$WEB_SERVER" = "none" ]; then
+    log "No web server selected. Stopping any running web servers..."
+    systemctl stop apache2 > /dev/null 2>&1
+    systemctl disable apache2 > /dev/null 2>&1
+    systemctl stop nginx > /dev/null 2>&1
+    systemctl disable nginx > /dev/null 2>&1
+    log "Both Apache and Nginx have been stopped."
 fi
 
 # Enable services to start on boot
@@ -632,9 +642,11 @@ systemctl status flask-app.service --no-pager
 if [ "$WEB_SERVER" = "apache" ]; then
     echo -e "\n${GREEN}=== Apache Web Server Status ===${NC}"
     systemctl status apache2 --no-pager
-else
+elif [ "$WEB_SERVER" = "nginx" ]; then
     echo -e "\n${GREEN}=== Nginx Web Server Status ===${NC}"
     systemctl status nginx --no-pager
+else
+    echo -e "\n${GREEN}=== No Web Server Selected ===${NC}"
 fi
 
 # Output final status for log
@@ -674,9 +686,11 @@ echo -e "Active web server: ${YELLOW}$(echo $WEB_SERVER | tr '[:lower:]' '[:uppe
 if [ "$WEB_SERVER" = "apache" ]; then
     echo -e "Apache config: ${YELLOW}${APACHE_DIR}/000-default.conf${NC}"
     echo -e "Apache logs: ${YELLOW}/var/log/apache2/error.log${NC}"
-else
+elif [ "$WEB_SERVER" = "nginx" ]; then
     echo -e "Nginx config: ${YELLOW}/etc/nginx/sites-enabled/swatgenx.conf${NC}"
     echo -e "Nginx logs: ${YELLOW}/var/log/nginx/error.log${NC}"
+else
+    echo -e "No web server selected. No configuration or logs available."
 fi
 echo -e "To change web server, run this script again and select a different option."
 
