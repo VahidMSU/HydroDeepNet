@@ -3,10 +3,10 @@
 # This script provides a simpler interface for the cleanup tool
 
 # Define paths
-SCRIPT_DIR="/data/SWATGenXApp/codes/scripts/celery-tools-services"
+SCRIPT_DIR="${BASE_DIR}/scripts/celery-tools-services"
 PYTHON_SCRIPT="${SCRIPT_DIR}/utils/cleanup_corrupted_tasks.py"
-VENV_PYTHON="/data/SWATGenXApp/codes/.venv/bin/python"
-LOG_DIR="/data/SWATGenXApp/codes/web_application/logs"
+VENV_PYTHON="${BASE_DIR}/.venv/bin/python"
+LOG_DIR="${BASE_DIR}/web_application/logs"
 LOG_FILE="${LOG_DIR}/celery_cleanup_$(date +%Y%m%d_%H%M%S).log"
 
 # Ensure log directory exists

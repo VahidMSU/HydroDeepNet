@@ -11,16 +11,10 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
-
-
 source "global_path.sh"
-
-
-
-
 # Create a config file to store the web server preference
 WEBSERVER_PREF_FILE="${CONFIG_DIR}/webserver_preference"
-
+# echo
 echo "Base directory: $BASE_DIR"
 echo "Script directory: $SCRIPT_DIR"
 echo "Bin directory: $BIN_DIR"
@@ -28,8 +22,6 @@ echo "Log directory: $LOG_DIR"
 echo "Config directory: $CONFIG_DIR"
 echo "Systemd directory: $SYSTEMD_DIR"
 echo "Apache directory: $APACHE_DIR"
-
-
 # Define log file
 LOG_FILE="${LOG_DIR}/restart_services.log"
 mkdir -p "$LOG_DIR"

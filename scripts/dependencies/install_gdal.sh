@@ -25,4 +25,5 @@ ldconfig
 cd ../..
 rm -rf gdal-3.8.4 gdal-3.8.4.tar.gz
 
-echo "✅ GDAL 3.8.4 installed."
+echo "Installed GDAL version: $(gdal-config --version)"
+echo "✅ GDAL installed."

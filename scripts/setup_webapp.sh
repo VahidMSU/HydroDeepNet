@@ -1,10 +1,10 @@
 ## Frontend setup
-cd /data/SWATGenXApp/codes/web_application/frontend
 
+source global_path.sh
+cd $FRONTEND_DIR
 echo "Auditing packages and cleaning up unused dependencies..."
-#npm audit fix
-#npm prune
-
+npm audit fix
+npm prune
 echo "Building the application..."
 npm run build
 

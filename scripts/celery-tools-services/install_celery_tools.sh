@@ -1,10 +1,9 @@
 #!/bin/bash
 # Install script for SWATGenX Celery Management Tools
-
-SCRIPTS_DIR="/data/SWATGenXApp/codes/scripts"
-CELERY_SERVICES_DIR="${SCRIPTS_DIR}/celery-tools-services"
-SYSTEMD_DIR="/etc/systemd/system"
-BIN_DIR="/usr/local/bin"
+CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "SCRIPT_DIR: $CURRENT_DIR"
+source "${CURRENT_DIR}/../global_path.sh"
+CELERY_SERVICES_DIR="${SCRIPT_DIR}/celery-tools-services"
 
 echo "Installing SWATGenX Celery Management Tools..."
 
@@ -21,9 +20,9 @@ if [ ! -d "${CELERY_SERVICES_DIR}" ]; then
     mkdir -p "${CELERY_SERVICES_DIR}/utils"
     mkdir -p "${CELERY_SERVICES_DIR}/services" 
     mkdir -p "${CELERY_SERVICES_DIR}/docs"
-elif [ -f "${SCRIPTS_DIR}/setup_celery_services.sh" ]; then
+elif [ -f "${SCRIPT_DIR}/setup_celery_services.sh" ]; then
     echo "Setting up Celery services directory..."
-    bash "${SCRIPTS_DIR}/setup_celery_services.sh"
+    bash "${SCRIPT_DIR}/setup_celery_services.sh"
 fi
 
 # Make all scripts executable
@@ -34,7 +33,8 @@ find "${CELERY_SERVICES_DIR}" -name "*.sh" -exec chmod +x {} \;
 # Install the main command
 echo "Installing the main command..."
 if [ -f "${CELERY_SERVICES_DIR}/celery-tools" ]; then
-    ln -sf "${CELERY_SERVICES_DIR}/celery-tools" "${BIN_DIR}/celery-tools"
+    echo "Creating symlink to ${CELERY_SERVICES_DIR}/celery-tools in ${SYSTEM_BIN_DIR}/celery-tools"
+    ln -sf "${CELERY_SERVICES_DIR}/celery-tools" "${SYSTEM_BIN_DIR}/celery-tools"
 else
     echo "WARNING: celery-tools main script not found at ${CELERY_SERVICES_DIR}/celery-tools"
 fi

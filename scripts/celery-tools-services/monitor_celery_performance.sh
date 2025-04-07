@@ -1,14 +1,14 @@
 #!/bin/bash
 # Celery performance monitoring script
 # This script collects metrics on Celery workers and tasks
+CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "SCRIPT_DIR: $CURRENT_DIR"
+source "${CURRENT_DIR}/../global_path.sh"
 
-# Constants
-LOG_DIR="/data/SWATGenXApp/codes/web_application/logs"
+
 METRICS_DIR="${LOG_DIR}/metrics"
 REPORT_FILE="${METRICS_DIR}/celery_performance_report.txt"
 HISTORY_FILE="${METRICS_DIR}/celery_history.csv"
-VENV_PATH="/data/SWATGenXApp/codes/.venv"
-APP_DIR="/data/SWATGenXApp/codes/web_application"
 
 # Ensure directories exist
 mkdir -p "${METRICS_DIR}"
@@ -25,7 +25,7 @@ log "Hostname: $(hostname)"
 
 # Activate virtual environment
 source "${VENV_PATH}/bin/activate"
-cd "${APP_DIR}"
+cd "${WEBAPP_DIR}"
 
 # System resources
 log "--- System Resources ---"

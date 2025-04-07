@@ -19,6 +19,12 @@ APACHE_DIR="/etc/apache2/sites-available"
 BIN_DIR="${BASE_DIR}/bin"
 PYTHONPATH="${BASE_DIR}/.venv/bin"
 SWATGENXAPP_DIR="${BASE_DIR}/SWATGenXApp"
+FRONTEND_DIR="${WEBAPP_DIR}/frontend"
+PYTHON_ENV="${PYTHONPATH}/python"
+SYSTEM_BIN_DIR="/usr/local/bin"
+VENV_PATH="${BASE_DIR}/.venv"
+
+
 
 echo "$SCRIPT_DIR"
 echo "GLOBAL PATHS"

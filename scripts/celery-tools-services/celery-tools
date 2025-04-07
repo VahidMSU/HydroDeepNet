@@ -2,10 +2,15 @@
 # SWATGenX Celery Management Tools - Unified Interface
 # This script provides a central command for all Celery management functions
 
-CELERY_DIR="/data/SWATGenXApp/codes/scripts/celery-tools-services"
+# Get the real path of the script, even if it's a symlink
+REAL_PATH=$(readlink -f "${BASH_SOURCE[0]}")
+CURRENT_DIR="$(cd "$(dirname "${REAL_PATH}")" && pwd)"
+echo "SCRIPT_DIR: $CURRENT_DIR"
+source "${CURRENT_DIR}/../global_path.sh"
+
+CELERY_DIR="${SCRIPT_DIR}/celery-tools-services"
 UTILS_DIR="${CELERY_DIR}/utils"
 SERVICES_DIR="${CELERY_DIR}/services"
-PYTHON_ENV="/data/SWATGenXApp/codes/.venv/bin/python"
 
 # Define colors for output
 RED='\033[0;31m'

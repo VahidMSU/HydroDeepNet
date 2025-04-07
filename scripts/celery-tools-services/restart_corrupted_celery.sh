@@ -1,14 +1,14 @@
 #!/bin/bash
 # Celery and Redis Queue Recovery Script for SWATGenX
 # This script fixes corrupted tasks and restarts Celery workers after a "KeyError: 'properties'" crash
+CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "SCRIPT_DIR: $CURRENT_DIR"
+source "${CURRENT_DIR}/../global_path.sh"
 
-# Set environment
-PYTHON_ENV="/data/SWATGenXApp/codes/.venv/bin/python"
-SCRIPTS_DIR="/data/SWATGenXApp/codes/scripts"
-CELERY_SERVICES_DIR="${SCRIPTS_DIR}/celery-tools-services"
+
+CELERY_SERVICES_DIR="${SCRIPT_DIR}/celery-tools-services"
 SERVICES_DIR="${CELERY_SERVICES_DIR}/services"
 UTILS_DIR="${CELERY_SERVICES_DIR}/utils"
-LOG_DIR="/data/SWATGenXApp/codes/web_application/logs"
 LOG_FILE="${LOG_DIR}/celery_recovery_$(date +%Y%m%d_%H%M%S).log"
 
 # Ensure the log directory exists
