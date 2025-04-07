@@ -5,21 +5,21 @@ After=network.target redis-server.service
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/data/SWATGenXApp/codes/web_application
-Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data/SWATGenXApp/codes/.venv/bin"
+WorkingDirectory=${WEBAPP_DIR}
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${BASE_DIR}/.venv/bin"
 Environment="FLASK_APP=run.py"
 Environment="FLASK_ENV=production"
-Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
+Environment="PYTHONPATH=${BASE_DIR}:${WEBAPP_DIR}"
 Environment="REDIS_URL=redis://127.0.0.1:6379/0"
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:5050 run:app --timeout 120 --access-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-access.log --error-logfile /data/SWATGenXApp/codes/web_application/logs/gunicorn-error.log
+ExecStart=${BASE_DIR}/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:5050 run:app --timeout 120 --access-logfile ${LOG_DIR}/gunicorn-access.log --error-logfile ${LOG_DIR}/gunicorn-error.log
 
 # Restart policy
 Restart=always
 RestartSec=5
 
 # Logging
-StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/flask-app.log
-StandardError=append:/data/SWATGenXApp/codes/web_application/logs/flask-app-error.log
+StandardOutput=append:${LOG_DIR}/flask-app.log
+StandardError=append:${LOG_DIR}/flask-app-error.log
 
 [Install]
 WantedBy=multi-user.target

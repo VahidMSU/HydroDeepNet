@@ -6,17 +6,17 @@ Requires=redis-server.service
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/data/SWATGenXApp/codes/web_application
-Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data/SWATGenXApp/codes/.venv/bin"
+WorkingDirectory=${WEBAPP_DIR}
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${BASE_DIR}/.venv/bin"
 Environment="FLASK_ENV=production"
-Environment="PYTHONPATH=/data/SWATGenXApp/codes:/data/SWATGenXApp/codes/web_application"
+Environment="PYTHONPATH=${BASE_DIR}:${WEBAPP_DIR}"
 Environment="C_FORCE_ROOT=true"
 Environment="CELERY_LOG_LEVEL=DEBUG"
 Environment="REDIS_URL=redis://127.0.0.1:6379/0"
 Environment="API_SERVER_PORT=5050"
 
 # Configure worker with fixed parameters for stable queue processing
-ExecStart=/data/SWATGenXApp/codes/.venv/bin/celery -A celery_worker worker --loglevel=info -n model_worker@%%h -Q model_creation --concurrency=4 --prefetch-multiplier=1 --max-tasks-per-child=10 -O fair --without-heartbeat --without-gossip
+ExecStart=${BASE_DIR}/.venv/bin/celery -A celery_worker worker --loglevel=info -n model_worker@%%h -Q model_creation --concurrency=4 --prefetch-multiplier=1 --max-tasks-per-child=10 -O fair --without-heartbeat --without-gossip
 
 # Proper restart policy to handle connection issues
 Restart=always
@@ -28,8 +28,8 @@ TimeoutStartSec=60
 TimeoutStopSec=60
 
 # Logging
-StandardOutput=append:/data/SWATGenXApp/codes/web_application/logs/celery-worker.log
-StandardError=append:/data/SWATGenXApp/codes/web_application/logs/celery-worker-error.log
+StandardOutput=append:${LOG_DIR}/celery-worker.log
+StandardError=append:${LOG_DIR}/celery-worker-error.log
 
 [Install]
 WantedBy=multi-user.target

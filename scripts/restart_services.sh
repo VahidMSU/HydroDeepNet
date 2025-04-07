@@ -12,14 +12,10 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="${SWAT_BASE_DIR:-$(cd "$SCRIPT_DIR/../" && pwd)}"
-BIN_DIR="${BASE_DIR}/bin"
-LOG_DIR="${BASE_DIR}/web_application/logs"
-# Define configuration sources and destinations
-CONFIG_DIR="${SCRIPT_DIR}/config"
-SYSTEMD_DIR="/etc/systemd/system"
-APACHE_DIR="/etc/apache2/sites-available"
+
+source "/data/SWATGenXApp/codes/scripts/global_path.sh"
+
+
 # Create a config file to store the web server preference
 WEBSERVER_PREF_FILE="${CONFIG_DIR}/webserver_preference"
 
@@ -30,6 +26,8 @@ echo "Log directory: $LOG_DIR"
 echo "Config directory: $CONFIG_DIR"
 echo "Systemd directory: $SYSTEMD_DIR"
 echo "Apache directory: $APACHE_DIR"
+
+sleep 5
 
 # Define log file
 LOG_FILE="${LOG_DIR}/restart_services.log"
@@ -119,6 +117,29 @@ else
 fi
 log "Detected Redis service: $REDIS_SERVICE"
 
+# Function to replace environment variables in a file
+replace_env_vars() {
+    local input_file="$1"
+    local output_file="$2"
+    
+    # Create a copy of the input file
+    cp "$input_file" "$output_file"
+    
+    # Replace all environment variables with their values
+    sed -i "s|\${BASE_DIR}|$BASE_DIR|g" "$output_file"
+    sed -i "s|\${SCRIPT_DIR}|$SCRIPT_DIR|g" "$output_file"
+    sed -i "s|\${WEBAPP_DIR}|$WEBAPP_DIR|g" "$output_file"
+    sed -i "s|\${DEPENDENCIES_DIR}|$DEPENDENCIES_DIR|g" "$output_file"
+    sed -i "s|\${HOME_DIR}|$HOME_DIR|g" "$output_file"
+    sed -i "s|\${USER_DIR}|$USER_DIR|g" "$output_file"
+    sed -i "s|\${DATA_DIR}|$DATA_DIR|g" "$output_file"
+    sed -i "s|\${LOG_DIR}|$LOG_DIR|g" "$output_file"
+    sed -i "s|\${CONFIG_DIR}|$CONFIG_DIR|g" "$output_file"
+    sed -i "s|\${SYSTEMD_DIR}|$SYSTEMD_DIR|g" "$output_file"
+    sed -i "s|\${APACHE_DIR}|$APACHE_DIR|g" "$output_file"
+    sed -i "s|\${BIN_DIR}|$BIN_DIR|g" "$output_file"
+}
+
 # Copy systemd service files
 log "Copying systemd service files..."
 if [ -d "$SYSTEMD_DIR" ]; then
@@ -132,11 +153,11 @@ if [ -d "$SYSTEMD_DIR" ]; then
                 continue
             fi
             
-            # Replace any hardcoded paths with variables
+            # Create a temporary file with variables replaced
             TEMP_CONF="${service_file}.temp"
-            cp "$service_file" "$TEMP_CONF"
-            sed -i "s|/data/SWATGenXApp/codes|${BASE_DIR}|g" "$TEMP_CONF"
+            replace_env_vars "$service_file" "$TEMP_CONF"
             
+            # Copy the processed file to systemd
             cp "$TEMP_CONF" "$SYSTEMD_DIR/$service_name" && \
             log "Copied $service_name to $SYSTEMD_DIR/" || \
             error "Failed to copy $service_name to $SYSTEMD_DIR/"
@@ -166,14 +187,11 @@ if [ -d "$APACHE_DIR" ]; then
         
         if [ -f "$conf_file" ]; then
             conf_name=$(basename "$conf_file")
-            # Replace hardcoded paths with variables in the conf file
+            # Create a temporary file with variables replaced
             TEMP_CONF="${conf_file}.temp"
-            cp "$conf_file" "$TEMP_CONF"
-            sed -i "s|/data/SWATGenXApp/codes|${BASE_DIR}|g" "$TEMP_CONF"
-            sed -i "s|/data/SWATGenXApp/GenXAppData|${BASE_DIR}/../GenXAppData|g" "$TEMP_CONF"
-            sed -i "s|/data/SWATGenXApp/Users|${BASE_DIR}/../Users|g" "$TEMP_CONF"
+            replace_env_vars "$conf_file" "$TEMP_CONF"
             
-            # Copy the modified file
+            # Copy the processed file
             cp "$TEMP_CONF" "$APACHE_DIR/$conf_name" && \
             log "Copied $conf_name to $APACHE_DIR/" || \
             error "Failed to copy $conf_name to $APACHE_DIR/"
@@ -219,12 +237,9 @@ if command -v nginx &> /dev/null; then
             if [ -f "$conf_file" ]; then
                 conf_name=$(basename "$conf_file" .nginx.conf)
                 
-                # Replace hardcoded paths with variables
+                # Create a temporary file with variables replaced
                 TEMP_CONF="${conf_file}.temp"
-                cp "$conf_file" "$TEMP_CONF"
-                sed -i "s|/data/SWATGenXApp/codes|${BASE_DIR}|g" "$TEMP_CONF"
-                sed -i "s|/data/SWATGenXApp/GenXAppData|${BASE_DIR}/../GenXAppData|g" "$TEMP_CONF"
-                sed -i "s|/data/SWATGenXApp/Users|${BASE_DIR}/../Users|g" "$TEMP_CONF"
+                replace_env_vars "$conf_file" "$TEMP_CONF"
                 
                 # Copy the modified file
                 cp "$TEMP_CONF" "$NGINX_DIR/${conf_name}.conf" && \
@@ -247,6 +262,28 @@ if command -v nginx &> /dev/null; then
 else
     log "Nginx not installed, skipping Nginx configuration"
 fi
+
+# Process template files for both Apache and Nginx if any exist
+for template_file in "$CONFIG_DIR"/*.template; do
+    if [ -f "$template_file" ]; then
+        template_name=$(basename "$template_file" .template)
+        target_file="$CONFIG_DIR/$template_name"
+        
+        log "Processing template file: $template_file"
+        cp "$template_file" "$target_file.temp"
+        
+        # Replace template markers with actual values
+        sed -i "s|##BASE_DIR##|$BASE_DIR|g" "$target_file.temp"
+        sed -i "s|##WEBAPP_DIR##|$WEBAPP_DIR|g" "$target_file.temp"
+        sed -i "s|##LOG_DIR##|$LOG_DIR|g" "$target_file.temp"
+        sed -i "s|##USER_DIR##|$USER_DIR|g" "$target_file.temp"
+        sed -i "s|##DATA_DIR##|$DATA_DIR|g" "$target_file.temp"
+        
+        # Move to final location
+        mv "$target_file.temp" "$target_file"
+        log "Created $template_name from template"
+    fi
+done
 
 # Reload systemd to recognize the new service files
 log "Reloading systemd daemon..."
