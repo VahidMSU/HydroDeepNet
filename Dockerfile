@@ -12,9 +12,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # Install gosu first for proper user switching
 RUN apt-get update && \
-    apt-get install -y software-properties-common wget && \
+    apt-get install -y software-properties-common wget curl && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs npm && \
+    apt-get install -y nodejs && \
     add-apt-repository ppa:ubuntugis/ppa -y && \
     apt-get update && \
     apt-get install -y python3 python3-venv libgdal-dev wget libmpich-dev gosu && \
@@ -86,7 +86,6 @@ RUN ./dependencies/install_swatplus.sh
 RUN chmod +x ./dependencies/install_nginx.sh && \
     ./dependencies/install_nginx.sh
 
-
 # Create runtime directory for QGIS
 RUN mkdir -p /tmp/runtime-www-data && \
     chown www-data:www-data /tmp/runtime-www-data && \
@@ -103,10 +102,15 @@ RUN mkdir -p /data/SWATGenXApp/codes/web_application/logs/celery && \
     chown -R www-data:www-data /data/SWATGenXApp/codes/web_application/logs && \
     chown -R redis:redis /var/log/redis
 
+# Copy the entrypoint script
+COPY ./scripts/docker-tools/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Create volume for Redis data persistence
 VOLUME ["/var/lib/redis"]
-USER www-data
+
 # Expose Flask and NGINX ports
 EXPOSE 5000 80
+
 # Use entrypoint script to start all services
 ENTRYPOINT ["/entrypoint.sh"]
