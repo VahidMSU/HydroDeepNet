@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -16,6 +16,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -23,22 +24,34 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState('');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      navigate('/');
-    }
-
-    // Check for error parameters in URL (for OAuth failures)
-    const queryParams = new URLSearchParams(window.location.search);
-    const error = queryParams.get('error');
-    if (error === 'google_auth_failed') {
-      setErrorMessage('Google authentication failed. Please try again.');
-    } else if (error === 'user_creation_failed') {
-      setErrorMessage('Failed to create user account. Please try another method.');
-    }
-  }, [navigate]);
+    // First check for existing auth token
+    const checkAuth = async () => {
+      setIsCheckingAuth(true);
+      const token = localStorage.getItem('authToken');
+      
+      if (token) {
+        console.log('Auth token found, redirecting to home');
+        navigate('/');
+        return;
+      }
+      
+      // Check for error parameters in URL (for OAuth failures)
+      const queryParams = new URLSearchParams(location.search);
+      const error = queryParams.get('error');
+      if (error === 'google_auth_failed') {
+        setErrorMessage('Google authentication failed. Please try again.');
+      } else if (error === 'user_creation_failed') {
+        setErrorMessage('Failed to create user account. Please try another method.');
+      }
+      
+      setIsCheckingAuth(false);
+    };
+    
+    checkAuth();
+  }, [navigate, location.search]);
 
   const handleChange = ({ target: { name, value, type, checked } }) => {
     setFormData((prev) => ({
@@ -49,6 +62,8 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isCheckingAuth) return; // Prevent submission during auth check
+    
     setErrors({});
 
     const newErrors = {};
@@ -92,9 +107,22 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
+    // Record that we're initiating Google OAuth flow
+    sessionStorage.setItem('google_oauth_initiated', 'true');
+    // Redirect to Google OAuth endpoint
     window.location.href = '/api/login/google';
   };
 
+  // If still checking auth, show a loading indicator
+  if (isCheckingAuth) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div className="spinner"></div>
+      </Box>
+    );
+  }
+
+  // Normal render with login form
   return (
     <Box
       sx={{

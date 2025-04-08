@@ -34,22 +34,56 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [userName, setUserName] = useState('');
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      navigate('/login');
-    } else {
-      const storedUserName = localStorage.getItem('userName') || localStorage.getItem('username');
-      if (storedUserName && storedUserName !== 'User' && storedUserName !== 'undefined') {
-        setUserName(storedUserName);
-        console.log('Username found in localStorage:', storedUserName);
-      } else {
-        console.log('No username in localStorage, fetching from API');
-        fetchUserInfo();
-      }
+    // Parse query params to check for OAuth redirect
+    const queryParams = new URLSearchParams(location.search);
+    const googleLogin = queryParams.get('google_login');
+    const username = queryParams.get('username');
+    
+    // If this is a Google OAuth redirect, handle it
+    if (googleLogin === 'success' && username) {
+      console.log('Google OAuth redirect detected, setting auth state...');
+      localStorage.setItem('authToken', 'true');
+      localStorage.setItem('username', username);
+      
+      // Set username directly from redirect params
+      setUserName(username);
+      localStorage.setItem('userName', username);
+      
+      // Remove query parameters for cleaner URL
+      navigate(location.pathname, { replace: true });
+      setIsCheckingAuth(false);
+      return;
     }
-  }, [navigate]);
+
+    // For non-OAuth login, proceed with normal auth check
+    const checkAuth = async () => {
+      setIsCheckingAuth(true);
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        console.log('No auth token found, redirecting to login');
+        // Small delay to prevent race conditions during page initialization
+        setTimeout(() => {
+          navigate('/login');
+        }, 100);
+      } else {
+        const storedUserName = localStorage.getItem('userName') || localStorage.getItem('username');
+        if (storedUserName && storedUserName !== 'User' && storedUserName !== 'undefined') {
+          setUserName(storedUserName);
+          console.log('Username found in localStorage:', storedUserName);
+        } else {
+          console.log('No username in localStorage, fetching from API');
+          fetchUserInfo();
+        }
+      }
+      setIsCheckingAuth(false);
+    };
+    
+    checkAuth();
+  }, [navigate, location]);
 
   const fetchUserInfo = async () => {
     try {

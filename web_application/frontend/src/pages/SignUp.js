@@ -147,6 +147,10 @@ const SignUp = () => {
   };
 
   const handleGoogleSignUp = () => {
+    // Record that we're initiating Google OAuth flow from signup page
+    sessionStorage.setItem('google_oauth_initiated', 'true');
+    sessionStorage.setItem('oauth_from_signup', 'true');
+    // Redirect to Google OAuth endpoint
     window.location.href = '/api/login/google';
   };
 
