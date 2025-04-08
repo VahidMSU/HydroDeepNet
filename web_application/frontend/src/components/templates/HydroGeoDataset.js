@@ -4,10 +4,11 @@ import {
   faSearch,
   faDatabase,
   faRobot,
-  faPaperPlane,
   faChartBar,
   faFileAlt,
+  faExternalLinkAlt,
 } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 import MapComponent from '../MapComponent';
 import HydroGeoDatasetForm from '../forms/HydroGeoDataset';
@@ -19,18 +20,12 @@ import {
   ContentLayout,
   QuerySidebar,
   MapContainer,
-  ChatContainer,
-  ChatHeader,
-  ChatMessagesContainer,
-  MessageBubble,
-  MessageList,
-  ChatInputContainer,
   ResultsContainer,
-  ThinkingIndicator,
   TabContainer,
   TabNav,
   TabButton,
   TabContent,
+  InfoCard,
 } from '../../styles/HydroGeoDataset.tsx';
 
 import { debugLog, validatePolygonCoordinates } from '../../utils/debugUtils';
@@ -51,11 +46,6 @@ const HydroGeoDataset = () => {
   const [data, setData] = useState(null);
   const [activeTab, setActiveTab] = useState('query');
   const [mapRefreshKey, setMapRefreshKey] = useState(0); // Add a key to force map refresh
-
-  // Chatbot related states
-  const [message, setMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   // Add refs for map instances
   const queryMapRef = useRef(null);
@@ -113,56 +103,6 @@ const HydroGeoDataset = () => {
     };
     fetchSubvariables();
   }, [formData.variable]);
-
-  useEffect(() => {
-    const initializeAgent = async () => {
-      try {
-        setIsLoading(true);
-
-        // First set a default welcome message in case the request fails
-        setChatHistory([
-          {
-            type: 'bot',
-            content:
-              "Hello! I'm the HydroGeo Assistant. I can help you understand environmental and hydrological data. What would you like to know?",
-          },
-        ]);
-
-        try {
-          const response = await fetch('/api/chatbot/initialize', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ context: 'hydrogeo_dataset' }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            // Update with the server-provided message if available
-            setChatHistory([
-              {
-                type: 'bot',
-                content:
-                  data.welcome_message ||
-                  "Hello! I'm the HydroGeo Assistant. How can I help you with environmental and hydrological data today?",
-              },
-            ]);
-          } else {
-            console.warn('Server returned non-OK status for chatbot initialization');
-            // Keep the default message already set
-          }
-        } catch (error) {
-          console.error('Error initializing chatbot:', error);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Initialize the agent when the component mounts
-    initializeAgent();
-  }, []);
 
   // Add effect to refresh map when tab changes
   useEffect(() => {
@@ -267,57 +207,6 @@ const HydroGeoDataset = () => {
     }
   };
 
-  const handleChatSubmit = async (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-
-    // Add user message to chat history
-    const userMessage = { type: 'user', content: message };
-    setChatHistory((prev) => [...prev, userMessage]);
-    setIsLoading(true);
-
-    const currentMessage = message;
-    setMessage(''); // Clear input field immediately after submission
-
-    try {
-      const response = await fetch('/api/chatbot', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: currentMessage,
-          context: 'hydrogeo_dataset',
-        }),
-      });
-
-      let botResponse;
-      if (response.ok) {
-        const data = await response.json();
-        botResponse = data.response;
-      } else {
-        console.error('Error response from server:', response.status);
-        botResponse =
-          'Sorry, I encountered an error while processing your request. Please try again.';
-      }
-
-      // Add chatbot response to chat history
-      setChatHistory((prev) => [...prev, { type: 'bot', content: botResponse }]);
-    } catch (error) {
-      console.error('Error sending message to chatbot:', error);
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          type: 'bot',
-          content:
-            'Sorry, there was an error connecting to the assistant. Please check your network connection and try again.',
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Modified tab switching function for better reliability
   const handleTabChange = (tabName) => {
     // Skip if already on this tab or switch in progress
@@ -381,6 +270,9 @@ const HydroGeoDataset = () => {
     [mapVisibility, mapRefreshKey, selectedGeometry, handleGeometryChange],
   );
 
+  // For loading state
+  const [isLoading, setIsLoading] = useState(false);
+
   return (
     <HydroGeoContainer>
       <HydroGeoHeader>
@@ -394,6 +286,37 @@ const HydroGeoDataset = () => {
           data variables.
         </p>
       </HydroGeoHeader>
+
+      <InfoCard style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h3>
+            <FontAwesomeIcon icon={faRobot} className="icon" />
+            Need Help?
+          </h3>
+          <p>
+            Our AI assistant can answer your questions about environmental data, guide you through using
+            this tool, and help interpret results.
+          </p>
+        </div>
+        <Link 
+          to="/hydrogeo-assistant" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            padding: '0.8rem 1.2rem', 
+            backgroundColor: '#FF8500', 
+            color: 'white', 
+            borderRadius: '8px', 
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            marginLeft: '1rem'
+          }}
+        >
+          <FontAwesomeIcon icon={faRobot} style={{ marginRight: '0.5rem' }} />
+          Open Assistant
+          <FontAwesomeIcon icon={faExternalLinkAlt} style={{ marginLeft: '0.5rem', fontSize: '0.8rem' }} />
+        </Link>
+      </InfoCard>
 
       <TabContainer>
         <TabNav>
@@ -472,45 +395,6 @@ const HydroGeoDataset = () => {
           </ContentLayout>
         </TabContent>
       </TabContainer>
-
-      <ChatContainer>
-        <ChatHeader>
-          <h2>
-            <FontAwesomeIcon icon={faRobot} className="icon" />
-            HydroGeo Assistant
-          </h2>
-        </ChatHeader>
-
-        <ChatMessagesContainer>
-          <MessageList>
-            {chatHistory.map((chat, index) => (
-              <MessageBubble key={index} className={chat.type}>
-                {chat.content}
-              </MessageBubble>
-            ))}
-            {isLoading && (
-              <ThinkingIndicator>
-                <div className="dot"></div>
-                <div className="dot"></div>
-                <div className="dot"></div>
-              </ThinkingIndicator>
-            )}
-          </MessageList>
-        </ChatMessagesContainer>
-
-        <ChatInputContainer onSubmit={handleChatSubmit}>
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Ask a question about the data..."
-            disabled={isLoading}
-          />
-          <button type="submit" disabled={isLoading || !message.trim()}>
-            <FontAwesomeIcon icon={faPaperPlane} className="icon" />
-          </button>
-        </ChatInputContainer>
-      </ChatContainer>
     </HydroGeoContainer>
   );
 };

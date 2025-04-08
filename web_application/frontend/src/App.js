@@ -14,6 +14,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const VisionSystem = lazy(() => import('./pages/VisionSystem'));
 const HydroGeoDataset = lazy(() => import('./pages/HydroGeoDataset'));
+const HydroGeoAssistant = lazy(() => import('./pages/HydroGeoAssistant'));
 const UserDashboard = lazy(() => import('./pages/UserDashboard'));
 const ContactUs = lazy(() => import('./pages/ContactUs'));
 const AboutUs = lazy(() => import('./pages/AboutUs'));
@@ -121,6 +122,18 @@ const App = () => {
                         </PrivateRoute>
                       ) : (
                         <HydroGeoDataset />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/hydrogeo-assistant"
+                    element={
+                      PRIVATE_MODE ? (
+                        <PrivateRoute>
+                          <HydroGeoAssistant />
+                        </PrivateRoute>
+                      ) : (
+                        <HydroGeoAssistant />
                       )
                     }
                   />

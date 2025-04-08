@@ -26,6 +26,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import InfoIcon from '@mui/icons-material/Info';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 const drawerWidth = 250;
 
@@ -244,6 +245,7 @@ const Layout = ({ children }) => {
                 { text: 'Michigan', icon: <PlaceIcon />, path: '/michigan' },
                 { text: 'Vision System', icon: <VisibilityIcon />, path: '/vision_system' },
                 { text: 'HydroGeoDataset', icon: <StorageIcon />, path: '/hydro_geo_dataset' },
+                { text: 'HydroGeo Assistant', icon: <SmartToyIcon />, path: '/hydrogeo-assistant' },
                 { text: 'Dashboard', icon: <FolderIcon />, path: '/user_dashboard' },
                 { text: 'Contact', icon: <EmailIcon />, path: '/contact' },
                 { text: 'About', icon: <InfoIcon />, path: '/about' },
