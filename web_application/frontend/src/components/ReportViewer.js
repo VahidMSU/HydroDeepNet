@@ -126,56 +126,66 @@ const ReportViewer = ({ reportUrl, reportId }) => {
     setLoading(false);
 
     try {
-      const iframeDocument =
-        iframeRef.current.contentDocument || iframeRef.current.contentWindow.document;
-      const iframeLocation = iframeRef.current.contentWindow.location;
+      // Access iframe content - might fail in production due to cross-origin restrictions
+      const iframeWindow = iframeRef.current.contentWindow;
+      
+      // Use try-catch specifically for the potentially failing cross-origin access
+      try {
+        const iframeDocument = iframeRef.current.contentDocument || iframeWindow.document;
+        const iframeLocation = iframeWindow.location;
 
-      console.log(`Iframe loaded: ${iframeLocation.href}`);
+        console.log(`Iframe loaded: ${iframeLocation.href}`);
 
-      // Check if the URL has the correct format, if not redirect
-      const correctUrlPattern = new RegExp(`/api/reports/${reportId}/view/`);
-      if (
-        reportId &&
-        !correctUrlPattern.test(iframeLocation.pathname) &&
-        iframeLocation.pathname.includes(`/api/reports/${reportId}/`)
-      ) {
-        console.warn('Detected incorrect URL pattern, redirecting to correct URL');
-        // Extract the path after reportId
-        const wrongPath = iframeLocation.pathname.split(`/api/reports/${reportId}/`)[1];
-        if (wrongPath) {
-          // Redirect to the correct URL with the /view/ segment
-          navigateToSubpath(wrongPath);
-          return;
-        }
-      }
-
-      // Add event listener to capture link clicks within the iframe
-      iframeDocument.body.addEventListener('click', (event) => {
-        // Find if the click was on a link or within a link
-        let target = event.target;
-        while (target && target !== iframeDocument.body) {
-          if (target.tagName === 'A') {
-            const href = target.getAttribute('href');
-            console.log(`Link clicked in iframe: ${href}`);
-
-            // Only intercept relative links within the report
-            if (
-              href &&
-              !href.startsWith('http') &&
-              !href.startsWith('//') &&
-              !href.startsWith('#')
-            ) {
-              event.preventDefault();
-              event.stopPropagation();
-              navigateToSubpath(href);
-            }
-            break;
+        // Check if the URL has the correct format, if not redirect
+        const correctUrlPattern = new RegExp(`/api/reports/${reportId}/view/`);
+        if (
+          reportId &&
+          !correctUrlPattern.test(iframeLocation.pathname) &&
+          iframeLocation.pathname.includes(`/api/reports/${reportId}/`)
+        ) {
+          console.warn('Detected incorrect URL pattern, redirecting to correct URL');
+          // Extract the path after reportId
+          const wrongPath = iframeLocation.pathname.split(`/api/reports/${reportId}/`)[1];
+          if (wrongPath) {
+            // Redirect to the correct URL with the /view/ segment
+            navigateToSubpath(wrongPath);
+            return;
           }
-          target = target.parentNode;
         }
-      });
+
+        // Add event listener to capture link clicks within the iframe
+        iframeDocument.body.addEventListener('click', (event) => {
+          // Find if the click was on a link or within a link
+          let target = event.target;
+          while (target && target !== iframeDocument.body) {
+            if (target.tagName === 'A') {
+              const href = target.getAttribute('href');
+              console.log(`Link clicked in iframe: ${href}`);
+
+              // Only intercept relative links within the report
+              if (
+                href &&
+                !href.startsWith('http') &&
+                !href.startsWith('//') &&
+                !href.startsWith('#')
+              ) {
+                event.preventDefault();
+                event.stopPropagation();
+                navigateToSubpath(href);
+              }
+              break;
+            }
+            target = target.parentNode;
+          }
+        });
+      } catch (crossOriginError) {
+        // This is expected in production environment due to cross-origin restrictions
+        console.warn('Cross-origin access to iframe content restricted:', crossOriginError.message);
+        // We can still continue without the click interception functionality
+        // Report will still display correctly
+      }
     } catch (err) {
-      console.warn('Unable to add click handlers to iframe content:', err);
+      console.warn('Unable to access iframe content:', err);
     }
   };
 
@@ -324,6 +334,7 @@ const ReportViewer = ({ reportUrl, reportId }) => {
           src={reportUrl}
           onLoad={handleIframeLoad}
           title="Report Viewer"
+          sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
         />
         {loading && (
           <LoadingIndicator>

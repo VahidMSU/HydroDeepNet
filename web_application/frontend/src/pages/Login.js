@@ -263,19 +263,10 @@ const Login = () => {
             </Button>
           </form>
 
-          {/* MSU NetID Login Button */}
           <Typography variant="body1" sx={{ color: 'white', textAlign: 'center', my: 2 }}>
             - or -
           </Typography>
 
-          <Button
-            fullWidth
-            variant="contained"
-            sx={{ bgcolor: '#ff8500', color: 'white', '&:hover': { bgcolor: '#e67e00' } }}
-            href="/login?msu_oauth=True"
-          >
-            Login with MSU NetID
-          </Button>
 
           {/* Sign Up Link */}
           <Typography variant="body2" sx={{ color: 'white', textAlign: 'center', mt: 3 }}>

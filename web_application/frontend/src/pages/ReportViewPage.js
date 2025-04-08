@@ -61,7 +61,8 @@ const ReportViewPage = () => {
 
   useEffect(() => {
     if (reportId) {
-      setReportUrl(`/api/reports/${reportId}/view?type=html`);
+      const timestamp = new Date().getTime();
+      setReportUrl(`/api/reports/${reportId}/view?type=html&t=${timestamp}`);
     }
   }, [reportId]);
 
