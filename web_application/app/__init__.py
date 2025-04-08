@@ -34,6 +34,14 @@ def create_app(config_class=Config):  # Update function signature
         static_folder='/data/SWATGenXApp/GenXAppData',
     )
 
+    # Load configurations
+    app.config.from_object(config_class)  # Update to use config_class
+    
+    # Export GOOGLE_API_KEY to environment for Agno
+    if hasattr(config_class, 'GOOGLE_API_KEY') and config_class.GOOGLE_API_KEY:
+        os.environ['GOOGLE_API_KEY'] = config_class.GOOGLE_API_KEY
+        logger.info(f"Exported GOOGLE_API_KEY to environment: {config_class.GOOGLE_API_KEY[:10]}...")
+    
     # Clean up CORS configuration - use just one comprehensive configuration
     CORS(
         app,

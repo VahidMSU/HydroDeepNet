@@ -10,7 +10,8 @@ from app.viz_report import viz_report_bp
 from app.debug import debug_bp, register_debug_routes
 from app.static import static_bp
 from app.hydrogeo import hydrogeo_bp
-from app.chatbot import chatbot_bp
+# Import our new chatbot blueprint from the correct location
+from app.chatbot import chatbot_bp  # Updated import path for the Agno-enabled chatbot
 from app.password_reset import password_reset_bp
 
 class AppManager:
@@ -113,9 +114,8 @@ class AppManager:
         self.app.register_blueprint(viz_report_bp)
         self.app.register_blueprint(static_bp)
         self.app.register_blueprint(hydrogeo_bp)
-        self.app.register_blueprint(chatbot_bp)
+        self.app.register_blueprint(chatbot_bp)  # This should now register our new chatbot blueprint with Agno
         self.app.register_blueprint(password_reset_bp)
-        
         # Register debug routes conditionally
         register_debug_routes(self.app)
         

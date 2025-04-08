@@ -20,6 +20,7 @@ class Config:
     SAML_SP_CERTIFICATE = "/etc/shibboleth/sp-cert.pem"
     SAML_LOGIN_REDIRECT = "/sso/login"
     SAML_LOGOUT_REDIRECT = "/sso/logout"
+    GOOGLE_API_KEY='AIzaSyCNvHkGEo33oOYffvAkBql6kC9ty7ijklM'
 
     # Determine the site URL based on environment
     ENV = os.getenv('FLASK_ENV', 'production')
