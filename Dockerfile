@@ -106,11 +106,17 @@ RUN mkdir -p /data/SWATGenXApp/codes/web_application/logs/celery &&
 COPY ./scripts/docker-tools/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Copy the entrypoint script
+COPY ./scripts/docker-tools/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Create volume for Redis data persistence
 VOLUME ["/var/lib/redis"]
 
+
 # Expose Flask and NGINX ports
 EXPOSE 5000 80
+
 
 # Use entrypoint script to start all services
 ENTRYPOINT ["/entrypoint.sh"]
