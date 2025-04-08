@@ -7,6 +7,7 @@ import os
 import logging
 import traceback
 import sys
+import re
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -130,6 +131,53 @@ def get_agno_agent(model_id='gemini-1.5-flash', session_id=None):
         logger.error(traceback.format_exc())
         raise
 
+def clean_response_text(text):
+    """
+    Clean and format the response text from the Agno agent.
+    
+    Args:
+        text (str): The raw response text from the agent.
+        
+    Returns:
+        str: The cleaned and formatted text.
+    """
+    if not text:
+        return ""
+    
+    # Remove ANSI color codes
+    text = re.sub(r'\x1b\[[0-9;]*m', '', text)
+    
+    # Remove common console box-drawing patterns
+    text = re.sub(r'┏━.*?━┓', '', text, flags=re.DOTALL)
+    text = re.sub(r'┗━.*?━┛', '', text, flags=re.DOTALL)
+    text = re.sub(r'[┏┓┗┛━┃]', '', text)
+    
+    # Remove Message/Response headers with their timestamps
+    text = re.sub(r'Message.*?\n', '', text, flags=re.DOTALL)
+    text = re.sub(r'Response \(\d+\.\d+s\).*?\n', '', text, flags=re.DOTALL)
+    text = re.sub(r'Response.*?\n', '', text, flags=re.DOTALL)
+    
+    # Get all lines, preserving empty lines for markdown formatting
+    lines = text.split('\n')
+    
+    # Remove leading/trailing empty lines
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    while lines and not lines[-1].strip():
+        lines.pop()
+    
+    # Join lines back together, preserving internal empty lines for markdown formatting
+    cleaned_text = '\n'.join(lines)
+    
+    # Fix markdown formatting issues
+    # Ensure correct bullet point formatting
+    cleaned_text = re.sub(r'•\s*', '* ', cleaned_text)
+    
+    # Ensure headers have space after #
+    cleaned_text = re.sub(r'(#+)(\w)', r'\1 \2', cleaned_text)
+    
+    return cleaned_text.strip()
+
 def agno_respond(agent, prompt):
     """
     Get a response from an Agno agent.
@@ -155,15 +203,48 @@ def agno_respond(agent, prompt):
         try:
             response = agent.run(prompt)
             if response and isinstance(response, str):
-                logger.info(f"Generated response using agent.run(): {response[:50]}...")
-                return response
+                cleaned_response = clean_response_text(response)
+                logger.info(f"Generated response using agent.run(): {cleaned_response[:50]}...")
+                return cleaned_response
         except (AttributeError, TypeError) as e:
             logger.warning(f"agent.run() method failed: {e}")
+            
+            # If the standard run() fails, try to extract the content using the iterator
+            try:
+                # Get the run iterator which may work better in some Agno versions
+                run_iterator = agent.run(prompt, stream=True)
+                content_parts = []
+                
+                for part in run_iterator:
+                    # Different versions of Agno may have different response structures
+                    if hasattr(part, 'content') and part.content:
+                        content_parts.append(part.content)
+                    elif hasattr(part, 'response') and part.response:
+                        content_parts.append(part.response)
+                    elif hasattr(part, 'text') and part.text:
+                        content_parts.append(part.text)
+                    elif isinstance(part, str):
+                        content_parts.append(part)
+                    # Try to extract from a dictionary structure if present
+                    elif isinstance(part, dict):
+                        for key in ['content', 'response', 'text', 'message']:
+                            if key in part and part[key]:
+                                content_parts.append(str(part[key]))
+                                break
+                
+                if content_parts:
+                    response = "".join(content_parts)
+                    response = clean_response_text(response)
+                    logger.info(f"Generated response using run iterator: {response[:50]}...")
+                    return response
+            except Exception as iterator_e:
+                logger.warning(f"Run iterator method failed: {iterator_e}")
         
         # Next try chat() which should return a response in most newer Agno versions
         try:
             response = agent.chat(prompt)
             if response and isinstance(response, str):
+                response = clean_response_text(response)
                 logger.info(f"Generated response using agent.chat(): {response[:50]}...")
                 return response
         except (AttributeError, TypeError) as e:
@@ -184,20 +265,33 @@ def agno_respond(agent, prompt):
             
             # Extracting just the assistant's response from ANSI-colored output
             import re
-            # Try to extract the actual response text, skipping ANSI codes and headers
+            # Try to extract the actual response text, removing ANSI codes and box-drawing characters
             clean_response = re.sub(r'\x1b\[[0-9;]*m', '', response)  # Remove ANSI color codes
-            response_lines = [line for line in clean_response.split('\n') if line.strip() and not line.strip().startswith('┏') and not line.strip().startswith('┗') and not line.strip().startswith('┃') and 'Response' not in line]
+            
+            # Remove box-drawing characters and headers completely
+            clean_response = re.sub(r'┏━.*?━┓', '', clean_response, flags=re.DOTALL)
+            clean_response = re.sub(r'┗━.*?━┛', '', clean_response, flags=re.DOTALL)
+            clean_response = re.sub(r'[┏┓┗┛━┃]', '', clean_response)
+            
+            # Remove Message/Response headers
+            clean_response = re.sub(r'Message.*?\n', '', clean_response, flags=re.DOTALL)
+            clean_response = re.sub(r'Response.*?\n', '', clean_response, flags=re.DOTALL)
+            
+            # Get all non-empty lines and remove leading/trailing whitespace
+            response_lines = [line.strip() for line in clean_response.split('\n') if line.strip()]
             
             if response_lines:
-                cleaned_response = ' '.join(response_lines).strip()
+                cleaned_response = '\n'.join(response_lines).strip()
                 if cleaned_response:
-                    logger.info(f"Generated response by capturing print_response stdout: {cleaned_response[:50]}...")
-                    return cleaned_response
+                    final_response = clean_response_text(cleaned_response)
+                    logger.info(f"Generated response by capturing print_response stdout: {final_response[:50]}...")
+                    return final_response
             
             # If we got some response but couldn't clean it properly, return the raw captured output
             if response.strip():
-                logger.info(f"Generated raw response: {response[:50]}...")
-                return response.strip()
+                cleaned_raw = clean_response_text(response.strip())
+                logger.info(f"Generated raw response: {cleaned_raw[:50]}...")
+                return cleaned_raw
             
         except Exception as inner_e:
             logger.error(f"Output capture failed: {str(inner_e)}")
@@ -209,6 +303,7 @@ def agno_respond(agent, prompt):
                     method = getattr(agent, method_name)
                     response = method(prompt)
                     if response and isinstance(response, str):
+                        response = clean_response_text(response)
                         logger.info(f"Generated response using agent.{method_name}(): {response[:50]}...")
                         return response
                 except Exception as method_e:

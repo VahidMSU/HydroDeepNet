@@ -38,6 +38,50 @@ const Layout = ({ children }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
+    // Check if we should hide the sidebar based on current route
+    if (location.pathname === '/hydrogeo-assistant') {
+      // For HydroGeoAssistant, we now want to keep the sidebar visible
+      setIsSidebarVisible(true);
+    } else {
+      // Check if sidebar was previously hidden by HydroGeoAssistant
+      const shouldHideSidebar = sessionStorage.getItem('hideSidebar') === 'true';
+      if (!shouldHideSidebar) {
+        setIsSidebarVisible(true);
+      }
+    }
+  }, [location.pathname]);
+
+  // Listen for custom events from HydroGeoAssistant
+  useEffect(() => {
+    const handleHydroGeoAssistantLoaded = (event) => {
+      if (event.detail && event.detail.hideSidebar) {
+        setIsSidebarVisible(false);
+      }
+    };
+
+    const handleSidebarToggle = (event) => {
+      if (event.detail !== undefined) {
+        setIsSidebarVisible(event.detail.showSidebar);
+      }
+    };
+
+    // Add event listeners for the custom events
+    window.addEventListener('hydrogeo-assistant-loaded', handleHydroGeoAssistantLoaded);
+    window.addEventListener('hydrogeo-sidebar-toggle', handleSidebarToggle);
+
+    // Check sessionStorage on component mount
+    if (sessionStorage.getItem('hideSidebar') === 'true') {
+      setIsSidebarVisible(false);
+    }
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('hydrogeo-assistant-loaded', handleHydroGeoAssistantLoaded);
+      window.removeEventListener('hydrogeo-sidebar-toggle', handleSidebarToggle);
+    };
+  }, []);
+
+  useEffect(() => {
     // Parse query params to check for OAuth redirect
     const queryParams = new URLSearchParams(location.search);
     const googleLogin = queryParams.get('google_login');
@@ -195,18 +239,21 @@ const Layout = ({ children }) => {
     >
       {localStorage.getItem('authToken') && <SessionChecker />}
 
-      <IconButton
-        onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-        sx={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          zIndex: 1201,
-          color: 'white',
-        }}
-      >
-        {isSidebarVisible ? <CloseIcon /> : <MenuIcon />}
-      </IconButton>
+      {/* Only show the sidebar toggle button if not on the HydroGeoAssistant page */}
+      {location.pathname !== '/hydrogeo-assistant' && (
+        <IconButton
+          onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+          sx={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            zIndex: 1201,
+            color: 'white',
+          }}
+        >
+          {isSidebarVisible ? <CloseIcon /> : <MenuIcon />}
+        </IconButton>
+      )}
 
       {localStorage.getItem('authToken') && isSidebarVisible && (
         <Drawer
@@ -314,13 +361,13 @@ const Layout = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: 3, // Keep consistent padding for all pages
           minHeight: '100vh',
           maxWidth: '100%',
           overflowX: 'hidden',
         }}
       >
-        <Toolbar />
+        {location.pathname !== '/hydrogeo-assistant' && <Toolbar />}
         {children}
       </Box>
     </Box>

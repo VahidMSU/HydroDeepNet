@@ -8,7 +8,10 @@ export const HydroGeoContainer = styled.div`
   padding: 2rem;
   background-color: ${colors.background};
   min-height: 100vh;
+  height: 100vh;
   color: ${colors.text};
+  box-sizing: border-box;
+  overflow: hidden;
 `;
 
 export const HydroGeoHeader = styled.div`
@@ -289,6 +292,9 @@ export const ChatContainer = styled.div`
   overflow: hidden;
   margin-top: 1.5rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 `;
 
 export const ChatHeader = styled.div`
@@ -298,6 +304,7 @@ export const ChatHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   
   h2 {
     color: ${colors.accent};
@@ -315,10 +322,13 @@ export const ChatHeader = styled.div`
 `;
 
 export const ChatMessagesContainer = styled.div`
-  height: 350px;
+  height: 100%;
+  min-height: 350px;
   padding: 1.5rem;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: rgba(0, 0, 0, 0.2);
+  flex: 1;
   
   /* Custom scrollbar for chat */
   &::-webkit-scrollbar {
@@ -376,6 +386,7 @@ export const ChatInputContainer = styled.form`
   background-color: ${colors.surfaceDark};
   border-top: 1px solid ${colors.border};
   gap: 0.8rem;
+  flex-shrink: 0;
   
   input {
     flex: 1;

@@ -9,6 +9,8 @@ import {
   faCheckCircle,
   faExclamationTriangle,
   faSpinner,
+  faChevronDown,
+  faChevronUp,
 } from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -32,6 +34,9 @@ const HydroGeoAssistant = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
   const [agnoStatus, setAgnoStatus] = useState({ connected: false, error: null });
+  const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [samplesExpanded, setSamplesExpanded] = useState(false);
+  const [settingsExpanded, setSettingsExpanded] = useState(false);
 
   // Models available for selection
   const availableModels = [
@@ -215,10 +220,56 @@ const HydroGeoAssistant = () => {
     return <div dangerouslySetInnerHTML={{ __html: formattedContent }} />;
   };
 
+  // Helper to render collapsible section
+  const CollapsibleSection = ({ title, icon, isExpanded, setExpanded, children }) => (
+    <div style={{ 
+      marginBottom: '0.5rem',
+      backgroundColor: '#2a2a2a',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      border: '1px solid #444'
+    }}>
+      <div 
+        style={{ 
+          padding: '0.7rem 1rem',
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          cursor: 'pointer',
+          backgroundColor: '#333',
+          borderBottom: isExpanded ? '1px solid #444' : 'none'
+        }}
+        onClick={() => setExpanded(!isExpanded)}
+      >
+        <h3 style={{ margin: 0, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <FontAwesomeIcon icon={icon} style={{ color: '#ff8500' }} />
+          {title}
+        </h3>
+        <FontAwesomeIcon 
+          icon={isExpanded ? faChevronUp : faChevronDown} 
+          style={{ fontSize: '0.8rem', color: '#999' }}
+        />
+      </div>
+      {isExpanded && (
+        <div style={{ padding: '0.8rem 1rem' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <HydroGeoContainer>
-      <HydroGeoHeader>
-        <h1>
+    <HydroGeoContainer style={{ 
+      overflow: 'hidden',
+      paddingLeft: '280px'
+    }}>
+      <HydroGeoHeader style={{ 
+        padding: '0.75rem', 
+        marginBottom: '0.75rem', 
+        flexShrink: 0,
+        minHeight: 'auto'
+      }}>
+        <h1 style={{ fontSize: '1.8rem', margin: 0 }}>
           <FontAwesomeIcon icon={faRobot} style={{ marginRight: '0.8rem' }} />
           HydroGeo Assistant
           <span style={{ 
@@ -233,129 +284,169 @@ const HydroGeoAssistant = () => {
             Powered by Agno
           </span>
         </h1>
-        <p>
-          Ask questions about environmental and hydrological data. This AI assistant can help you
-          understand data sources, interpret results, and guide you through using the HydroGeo
-          dataset explorer.
-        </p>
       </HydroGeoHeader>
 
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-        <InfoCard style={{ flex: 1, minWidth: '300px' }}>
-          <h3>
-            <FontAwesomeIcon icon={faInfo} className="icon" />
-            About the Assistant
-          </h3>
-          <p>
-            The HydroGeo Assistant is powered by <strong>Agno</strong> and <strong>Gemini</strong>, offering 
-            advanced AI capabilities for environmental data analysis. You can ask questions about data 
-            sources, methodologies, analysis techniques, and more.
-          </p>
-          
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            marginTop: '1rem', 
-            padding: '0.5rem', 
-            backgroundColor: agnoStatus.connected ? 'rgba(72, 187, 120, 0.1)' : 'rgba(229, 62, 62, 0.1)', 
-            borderRadius: '0.5rem' 
-          }}>
-            <FontAwesomeIcon 
-              icon={agnoStatus.connected ? faCheckCircle : agnoStatus.error ? faExclamationTriangle : faSpinner} 
-              style={{ 
-                color: agnoStatus.connected ? '#48bb78' : '#e53e3e', 
-                marginRight: '0.5rem',
-                ...((!agnoStatus.connected && !agnoStatus.error) && { animation: 'spin 1s linear infinite' })
-              }} 
-            />
-            <span style={{ color: agnoStatus.connected ? '#2f855a' : '#c53030' }}>
-              {agnoStatus.connected ? 'Connected to Agno' : agnoStatus.error ? `Connection error: ${agnoStatus.error}` : 'Connecting to Agno...'}
-            </span>
-          </div>
-        </InfoCard>
-
-        <InfoCard style={{ flex: 1, minWidth: '300px' }}>
-          <h3>
-            <FontAwesomeIcon icon={faQuestionCircle} className="icon" />
-            Sample Questions
-          </h3>
-          <ul style={{ color: '#666', paddingLeft: '1.5rem', margin: '0.5rem 0' }}>
-            <li>What climate data sources are available in the HydroGeo dataset?</li>
-            <li>How can I interpret PRISM precipitation data?</li>
-            <li>What is the difference between LOCA and CMIP climate projections?</li>
-            <li>How do I create a report for my area of interest?</li>
-          </ul>
-        </InfoCard>
-      </div>
-
-      <FormGroup style={{ marginTop: '1rem' }}>
-        <label>
-          <FontAwesomeIcon icon={faCog} className="icon" />
-          Model Selection
-        </label>
-        <InputField>
-          <select 
-            value={selectedModel} 
-            onChange={handleModelChange}
-            style={{ 
-              padding: '0.7rem 1rem',
-              backgroundColor: '#2a2a2a',
-              color: 'white',
-              border: '1px solid #444',
-              borderRadius: '0.5rem',
-              width: '100%'
-            }}
+      <div style={{ 
+        display: 'flex', 
+        gap: '1.5rem', 
+        height: 'calc(100vh - 120px)',
+        maxHeight: 'calc(100vh - 120px)',
+        overflow: 'hidden'
+      }}>
+        {/* Sidebar with collapsible elements */}
+        <div style={{ 
+          width: '280px', 
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          flexShrink: 0,
+          paddingRight: '0.5rem'
+        }}>
+          <CollapsibleSection 
+            title="About the Assistant" 
+            icon={faInfo} 
+            isExpanded={aboutExpanded} 
+            setExpanded={setAboutExpanded}
           >
-            {availableModels.map((model) => (
-              <option key={model.id} value={model.id} disabled={model.disabled}>
-                {model.name} {model.disabled ? '(Coming Soon)' : ''}
-              </option>
-            ))}
-          </select>
-        </InputField>
-        <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem' }}>
-          Currently using: <strong>{selectedModel}</strong> by {availableModels.find(m => m.id === selectedModel)?.provider}
-        </p>
-      </FormGroup>
+            <p style={{ fontSize: '0.85rem', color: '#ccc', margin: 0 }}>
+              The HydroGeo Assistant is powered by <strong>Agno</strong> and <strong>Gemini</strong>, offering 
+              advanced AI capabilities for environmental data analysis. You can ask questions about data 
+              sources, methodologies, analysis techniques, and more.
+            </p>
+            
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              marginTop: '0.8rem', 
+              padding: '0.5rem', 
+              backgroundColor: agnoStatus.connected ? 'rgba(72, 187, 120, 0.1)' : 'rgba(229, 62, 62, 0.1)', 
+              borderRadius: '0.5rem',
+              fontSize: '0.8rem'
+            }}>
+              <FontAwesomeIcon 
+                icon={agnoStatus.connected ? faCheckCircle : agnoStatus.error ? faExclamationTriangle : faSpinner} 
+                style={{ 
+                  color: agnoStatus.connected ? '#48bb78' : '#e53e3e', 
+                  marginRight: '0.5rem',
+                  ...((!agnoStatus.connected && !agnoStatus.error) && { animation: 'spin 1s linear infinite' })
+                }} 
+              />
+              <span style={{ color: agnoStatus.connected ? '#2f855a' : '#c53030' }}>
+                {agnoStatus.connected ? 'Connected to Agno' : agnoStatus.error ? `Connection error: ${agnoStatus.error}` : 'Connecting to Agno...'}
+              </span>
+            </div>
+          </CollapsibleSection>
 
-      <ChatContainer style={{ flexGrow: 1, marginTop: '1.5rem' }}>
-        <ChatHeader>
-          <h2>
-            <FontAwesomeIcon icon={faRobot} className="icon" />
-            Chat with the Assistant
-          </h2>
-        </ChatHeader>
+          <CollapsibleSection 
+            title="Sample Questions" 
+            icon={faQuestionCircle} 
+            isExpanded={samplesExpanded} 
+            setExpanded={setSamplesExpanded}
+          >
+            <ul style={{ color: '#ccc', paddingLeft: '1.2rem', margin: '0', fontSize: '0.85rem' }}>
+              <li>What climate data sources are available in the HydroGeo dataset?</li>
+              <li>How can I interpret PRISM precipitation data?</li>
+              <li>What is the difference between LOCA and CMIP climate projections?</li>
+              <li>How do I create a report for my area of interest?</li>
+            </ul>
+          </CollapsibleSection>
 
-        <ChatMessagesContainer>
-          <MessageList>
-            {chatHistory.map((chat, index) => (
-              <MessageBubble key={index} className={chat.type}>
-                {renderMessageContent(chat.content)}
-              </MessageBubble>
-            ))}
-            {isLoading && (
-              <ThinkingIndicator>
-                <div className="dot"></div>
-                <div className="dot"></div>
-                <div className="dot"></div>
-              </ThinkingIndicator>
-            )}
-          </MessageList>
-        </ChatMessagesContainer>
+          <CollapsibleSection 
+            title="Model Settings" 
+            icon={faCog} 
+            isExpanded={settingsExpanded} 
+            setExpanded={setSettingsExpanded}
+          >
+            <FormGroup style={{ margin: 0 }}>
+              <InputField style={{ marginBottom: '0.5rem' }}>
+                <select 
+                  value={selectedModel} 
+                  onChange={handleModelChange}
+                  style={{ 
+                    padding: '0.6rem 0.8rem',
+                    backgroundColor: '#2a2a2a',
+                    color: 'white',
+                    border: '1px solid #444',
+                    borderRadius: '0.5rem',
+                    width: '100%',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  {availableModels.map((model) => (
+                    <option key={model.id} value={model.id} disabled={model.disabled}>
+                      {model.name} {model.disabled ? '(Coming Soon)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </InputField>
+              <p style={{ fontSize: '0.8rem', color: '#999', margin: '0.3rem 0 0 0' }}>
+                Currently using: <strong>{selectedModel}</strong> by {availableModels.find(m => m.id === selectedModel)?.provider}
+              </p>
+            </FormGroup>
+          </CollapsibleSection>
+        </div>
 
-        <ChatInputContainer onSubmit={handleChatSubmit}>
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Ask a question about environmental data..."
-            disabled={isLoading}
-          />
-          <button type="submit" disabled={isLoading || !message.trim()}>
-            <FontAwesomeIcon icon={faPaperPlane} className="icon" />
-          </button>
-        </ChatInputContainer>
-      </ChatContainer>
+        {/* Main chat area - takes most of the screen */}
+        <ChatContainer style={{ 
+          flexGrow: 1, 
+          marginTop: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          maxHeight: '100%',
+          overflow: 'hidden'
+        }}>
+          <ChatHeader style={{ 
+            padding: '0.8rem',
+            flexShrink: 0
+          }}>
+            <h2>
+              <FontAwesomeIcon icon={faRobot} className="icon" />
+              Chat with the Assistant
+            </h2>
+          </ChatHeader>
+
+          <ChatMessagesContainer style={{ 
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            maxHeight: 'calc(100% - 75px)'
+          }}>
+            <MessageList>
+              {chatHistory.map((chat, index) => (
+                <MessageBubble key={index} className={chat.type}>
+                  {renderMessageContent(chat.content)}
+                </MessageBubble>
+              ))}
+              {isLoading && (
+                <ThinkingIndicator>
+                  <div className="dot"></div>
+                  <div className="dot"></div>
+                  <div className="dot"></div>
+                </ThinkingIndicator>
+              )}
+            </MessageList>
+          </ChatMessagesContainer>
+
+          <ChatInputContainer 
+            onSubmit={handleChatSubmit}
+            style={{ flexShrink: 0 }}
+          >
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Ask a question about environmental data..."
+              disabled={isLoading}
+            />
+            <button type="submit" disabled={isLoading || !message.trim()}>
+              <FontAwesomeIcon icon={faPaperPlane} className="icon" />
+            </button>
+          </ChatInputContainer>
+        </ChatContainer>
+      </div>
     </HydroGeoContainer>
   );
 };

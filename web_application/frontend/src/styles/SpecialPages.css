@@ -1,0 +1,27 @@
+/* SpecialPages.css - Styles for special pages that interact with the main sidebar */
+
+/* Adjust pages that use the main sidebar */
+.using-main-sidebar .MuiDrawer-paper {
+  z-index: 1000;
+}
+
+/* SWATGenX specific adjustments */
+body.using-main-sidebar .MuiBox-root {
+  padding: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* Make sure the sidebar appears on top in special pages */
+body.using-main-sidebar .MuiDrawer-root {
+  z-index: 1200;
+}
+
+/* Make drawer content visible */
+body.using-main-sidebar .MuiDrawer-paper {
+  background-color: #2b2b2c !important;
+}
+
+/* Hide toolbar space for special pages */
+body.using-main-sidebar .MuiToolbar-root {
+  display: none;
+} 

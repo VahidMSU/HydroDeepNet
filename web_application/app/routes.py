@@ -116,7 +116,6 @@ class AppManager:
         self.app.register_blueprint(hydrogeo_bp)
         self.app.register_blueprint(chatbot_bp)  # This should now register our new chatbot blueprint with Agno
         self.app.register_blueprint(password_reset_bp)
-        # Register debug routes conditionally
         register_debug_routes(self.app)
         
         self.app.logger.info("All blueprints registered")
