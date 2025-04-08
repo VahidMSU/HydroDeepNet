@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  swatgenx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: swatgenx:latest
+    container_name: swatgenx_app
+    ports:
+      - "8080:80"  # Web server on alternative port 8080
+      - "5051:5050"  # Flask-SocketIO API on alternative port 5051
+      - "5001:5000"  # Flask API on alternative port 5001
+    volumes:
+      - swatgenx_users:/data/SWATGenXApp/Users
+      - swatgenx_redis:/var/lib/redis
+      - ./web_application/logs:/data/SWATGenXApp/codes/web_application/logs
+    environment:
+      - FLASK_APP=run.py
+      - FLASK_ENV=production
+      - PYTHONPATH=/data/SWATGenXApp/codes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  swatgenx_users:
+    name: swatgenx_users
+  swatgenx_redis:
+    name: swatgenx_redis

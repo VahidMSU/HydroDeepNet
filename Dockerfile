@@ -11,17 +11,17 @@ ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/data/SWATGenXApp/Users
 
 # Install gosu first for proper user switching
-RUN apt-get update && \
-    apt-get install -y software-properties-common wget && \
-    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs npm && \
-    add-apt-repository ppa:ubuntugis/ppa -y && \
-    apt-get update && \
-    apt-get install -y python3 python3-venv libgdal-dev wget libmpich-dev gosu && \
+RUN apt-get update &&
+    apt-get install -y software-properties-common wget curl &&
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - &&
+    apt-get install -y nodejs &&
+    add-apt-repository ppa:ubuntugis/ppa -y &&
+    apt-get update &&
+    apt-get install -y python3 python3-venv libgdal-dev wget libmpich-dev gosu &&
     rm -rf /var/lib/apt/lists/*
 
 # Ensure GDAL uses the correct library
-RUN ln -sf /usr/local/lib/libgdal.so.34 /usr/local/lib/libgdal.so && \
+RUN ln -sf /usr/local/lib/libgdal.so.34 /usr/local/lib/libgdal.so &&
     ldconfig
 
 # Create directories and set up working directory
@@ -41,17 +41,17 @@ RUN ./scripts/dependencies/install_gdal.sh
 
 # Prepare a modified requirements file
 WORKDIR /data/SWATGenXApp/codes
-RUN grep -v "mod_wsgi" requirements.txt | grep -v "numpy==" > requirements_docker.txt || cp requirements.txt requirements_docker.txt
+RUN grep -v "mod_wsgi" requirements.txt | grep -v "numpy==" >requirements_docker.txt || cp requirements.txt requirements_docker.txt
 
 # Activate the virtual environment and install Python dependencies
-RUN . $VIRTUAL_ENV/bin/activate && \
-    pip install --no-cache-dir --upgrade pip setuptools wheel && \
+RUN . $VIRTUAL_ENV/bin/activate &&
+    pip install --no-cache-dir --upgrade pip setuptools wheel &&
     # Install numpy with a compatible version first
-    pip install --no-cache-dir 'numpy>=1.26.4,<2.0.0' && \
+    pip install --no-cache-dir 'numpy>=1.26.4,<2.0.0' &&
     # Install the most critical dependencies first
-    pip install --no-cache-dir gunicorn celery redis flask && \
+    pip install --no-cache-dir gunicorn celery redis flask &&
     # Then try to install most of the requirements
-    pip install --no-cache-dir -r requirements_docker.txt && \
+    pip install --no-cache-dir -r requirements_docker.txt &&
     # Make sure essential packages are installed
     pip install --no-cache-dir scipy gdal pandas matplotlib scikit-learn
 
@@ -83,30 +83,34 @@ RUN chmod +x ./dependencies/install_swatplus.sh
 RUN ./dependencies/install_swatplus.sh
 
 # Install and configure Nginx using custom script
-RUN chmod +x ./dependencies/install_nginx.sh && \
+RUN chmod +x ./dependencies/install_nginx.sh &&
     ./dependencies/install_nginx.sh
 
-
 # Create runtime directory for QGIS
-RUN mkdir -p /tmp/runtime-www-data && \
-    chown www-data:www-data /tmp/runtime-www-data && \
+RUN mkdir -p /tmp/runtime-www-data &&
+    chown www-data:www-data /tmp/runtime-www-data &&
     chmod 700 /tmp/runtime-www-data
 
 # Create user runtime directory with proper permissions
-RUN mkdir -p /run/user/33 && \
-    chown www-data:www-data /run/user/33 && \
+RUN mkdir -p /run/user/33 &&
+    chown www-data:www-data /run/user/33 &&
     chmod 700 /run/user/33
 
 # Create logs directory with proper permissions for all services
-RUN mkdir -p /data/SWATGenXApp/codes/web_application/logs/celery && \
-    mkdir -p /var/log/redis && \
-    chown -R www-data:www-data /data/SWATGenXApp/codes/web_application/logs && \
+RUN mkdir -p /data/SWATGenXApp/codes/web_application/logs/celery &&
+    mkdir -p /var/log/redis &&
+    chown -R www-data:www-data /data/SWATGenXApp/codes/web_application/logs &&
     chown -R redis:redis /var/log/redis
+
+# Copy the entrypoint script
+COPY ./scripts/docker-tools/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Create volume for Redis data persistence
 VOLUME ["/var/lib/redis"]
-USER www-data
+
 # Expose Flask and NGINX ports
 EXPOSE 5000 80
+
 # Use entrypoint script to start all services
 ENTRYPOINT ["/entrypoint.sh"]
