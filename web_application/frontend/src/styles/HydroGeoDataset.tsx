@@ -549,6 +549,7 @@ export const TabButton = styled.button`
 export const TabContent = styled.div`
   padding: 1.5rem 0;
   display: none;
+  max-height: calc(100vh - 250px); /* Adjust based on header and navigation */
   
   &.active {
     display: block;
@@ -622,7 +623,10 @@ export const ReportStatusContainer = styled.div`
 `;
 
 export const ReportList = styled.div`
-  margin-top: 1rem;
+  /* Added space for better readability and scrolling */
+  padding-right: 8px;
+  margin-right: 0;
+  padding-bottom: 20px; /* Add padding at the bottom for better scrolling experience */
 `;
 
 export const ReportItem = styled.div`

@@ -260,8 +260,7 @@ const HydroGeoAssistant = () => {
 
   return (
     <HydroGeoContainer style={{ 
-      overflow: 'hidden',
-      paddingLeft: '280px'
+      overflow: 'hidden'
     }}>
       <HydroGeoHeader style={{ 
         padding: '0.75rem', 

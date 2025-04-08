@@ -1,23 +1,29 @@
 import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import HydroGeoAssistantTemplate from '../components/templates/HydroGeoAssistant.js';
 import '../styles/Layout.tsx'; // Ensure the path is correct
 import '../styles/NoScroll.css'; // Import the no-scroll CSS
 
 const HydroGeoAssistant = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Force a clean state by adding a URL hash for loading
+  useEffect(() => {
+    if (!window.location.hash.includes('noscroll_loaded')) {
+      window.location.hash = 'noscroll_loaded';
+      window.location.reload();
+    }
+  }, []);
+  
   // Add effect to prevent scrolling on body but keep sidebar visible
   useEffect(() => {
-    // Save original styles
-    const originalStyle = window.getComputedStyle(document.body).overflow;
+    // Add the no-scroll classes
+    document.documentElement.classList.add('no-scroll-page');
+    document.body.classList.add('no-scroll-page');
     
-    // Prevent scrolling on body
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.height = '100%';
-    
-    // Apply additional body class
-    document.body.classList.add('no-scroll');
+    // Store that we're coming from a no-scroll page
+    sessionStorage.setItem('came_from_noscroll', 'true');
     
     // Ensure sidebar is shown by removing any hide flags
     sessionStorage.removeItem('hideSidebar');
@@ -30,17 +36,13 @@ const HydroGeoAssistant = () => {
     
     // Cleanup function to restore original styles
     return () => {
-      document.body.style.overflow = originalStyle;
-      document.documentElement.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      document.body.classList.remove('no-scroll');
+      document.documentElement.classList.remove('no-scroll-page');
+      document.body.classList.remove('no-scroll-page');
     };
   }, []);
 
   return (
-    <div className="no-scroll-container">
+    <div className="no-scroll-container no-scroll-with-sidebar">
       <HydroGeoAssistantTemplate />
     </div>
   );

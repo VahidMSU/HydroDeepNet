@@ -277,7 +277,7 @@ const ReportGenerator = ({ formData }) => {
           <li>Select the type of report you need from the options below.</li>
           <li>Choose the time period and resolution for your data.</li>
           <li>Click "Generate Report" and wait for the system to process your request.</li>
-          <li>Once complete, you can download or view the generated report.</li>
+          <li>Once complete, you can view and download reports from the "My Reports" tab.</li>
         </ol>
       </InfoBox>
 
@@ -384,85 +384,6 @@ const ReportGenerator = ({ formData }) => {
           </div>
         )}
       </ReportForm>
-
-      {reports.length > 0 && (
-        <ReportStatusContainer>
-          <h4>
-            <FontAwesomeIcon icon={faClipboard} className="icon" />
-            Your Reports
-          </h4>
-          <ReportList>
-            {reports.map((report) => {
-              // Ensure report_id is available
-              const reportId = report.report_id || report.timestamp;
-
-              return (
-                <ReportItem key={reportId} className={report.status}>
-                  <div className="report-header">
-                    <div className="report-title">
-                      <FontAwesomeIcon
-                        icon={
-                          report.status === 'processing'
-                            ? faSpinner
-                            : report.status === 'failed'
-                              ? faTimesCircle
-                              : faCheck
-                        }
-                        className={report.status === 'processing' ? 'fa-spin' : ''}
-                      />
-                      {report.report_type && `${report.report_type.toUpperCase()} Report`}
-                      {!report.report_type && 'Environmental Report'}
-                    </div>
-                    <div className="report-date">{formatTimestamp(report.timestamp)}</div>
-                  </div>
-
-                  <div className="report-details">
-                    {report.status === 'processing' ? (
-                      <>
-                        <div>Report is being generated...</div>
-                        <ReportProgressBar>
-                          <div className="progress-inner" style={{ width: '60%' }}></div>
-                        </ReportProgressBar>
-                      </>
-                    ) : report.status === 'failed' ? (
-                      <div>Error: {report.error || 'Failed to generate report'}</div>
-                    ) : (
-                      <div>
-                        Report completed successfully. Generated {report.reports?.length || 0}{' '}
-                        files.
-                      </div>
-                    )}
-                  </div>
-
-                  {report.status === 'completed' && (
-                    <div className="report-actions">
-                      {/* Use the captured reportId in the onClick handlers */}
-                      <button
-                        onClick={() => {
-                          console.log('Download clicked for report ID:', reportId);
-                          handleReportAction('download', reportId);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faDownload} className="icon" />
-                        Download
-                      </button>
-                      <button
-                        onClick={() => {
-                          console.log('View clicked for report ID:', reportId);
-                          handleReportAction('view', reportId);
-                        }}
-                      >
-                        <FontAwesomeIcon icon={faEye} className="icon" />
-                        View
-                      </button>
-                    </div>
-                  )}
-                </ReportItem>
-              );
-            })}
-          </ReportList>
-        </ReportStatusContainer>
-      )}
     </div>
   );
 };

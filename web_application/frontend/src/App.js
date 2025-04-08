@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './pages/Layout';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -33,9 +33,39 @@ const LoadingFallback = () => (
   </div>
 );
 
+// Scroll state cleanup component
+const ScrollStateCleanup = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    // If we're navigating to a regular page (not a no-scroll page)
+    if (
+      !location.pathname.includes('hydrogeo-assistant') && 
+      !location.pathname.includes('hydro_geo_dataset') && 
+      !location.pathname.includes('model_settings')
+    ) {
+      // Check if we need to clean up scroll classes
+      const cameFromNoScroll = sessionStorage.getItem('came_from_noscroll') === 'true';
+      
+      if (cameFromNoScroll) {
+        console.log('Cleaning up no-scroll state');
+        // Clean up classes
+        document.documentElement.classList.remove('no-scroll-page');
+        document.body.classList.remove('no-scroll-page');
+        
+        // Reset the flag
+        sessionStorage.removeItem('came_from_noscroll');
+      }
+    }
+  }, [location.pathname]);
+  
+  return null;
+};
+
 const App = () => {
   return (
     <Router>
+      <ScrollStateCleanup />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           {/* Public routes without Layout */}

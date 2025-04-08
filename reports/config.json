@@ -1,0 +1,31 @@
+{
+  "RESOLUTION": 250,
+  "resolution": 250,
+  "start_year": 2010,
+  "end_year": 2020,
+  "bounding_box": [
+    -85.444332,
+    43.158148,
+    -84.239256,
+    44.164683
+  ],
+  "aggregation": "monthly",
+  "use_synthetic_data_fallback": false,
+  "include_climate_change": true,
+  "prism_config": {
+    "fill_gaps": false
+  },
+  "nsrdb_config": {
+    "extract_for_swat": false
+  },
+  "cdl_config": {
+    "recode_crops": false
+  },
+  "climate_change_config": {
+    "start_year": 2045,
+    "end_year": 2060,
+    "model": "ACCESS-CM2",
+    "ensemble": "r1i1p1f1",
+    "scenario": "ssp245"
+  }
+}
