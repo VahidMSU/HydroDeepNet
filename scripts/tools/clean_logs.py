@@ -5,7 +5,7 @@ path = "/data/SWATGenXApp/codes/web_application/logs"
 log_files = os.listdir(path)    
 
 # Maximum file size in bytes (20MB)
-MAX_SIZE = 20 * 1024 * 1024
+MAX_SIZE = 5 * 1024 * 1024
 
 def trim_log_file(file_path, max_size):
     """Trim log file to be under the maximum size by removing old lines."""
