@@ -22,7 +22,7 @@ import pickle
 from agno.knowledge.combined import CombinedKnowledgeBase
 import re
 import traceback
-
+from PIL import Image as PILImage
 from Logger import LoggerSetup
 import os 
 
@@ -241,6 +241,22 @@ class InteractiveDocumentReader:
             
         logger.info("InteractiveDocumentReader initialized successfully")
         return True
+
+    def _create_image_summary(self,path):
+        """Create a summary of an image file."""
+        #image = Image.open(path)
+        image = PILImage.open(path)
+        summary = f"""
+        Image file: {path}
+        Size: {image.size}
+        Format: {image.format}
+        Mode: {image.mode}
+        Is animated: {getattr(image, 'is_animated', False)}
+        Frames: {getattr(image, 'n_frames', 1)}
+        """
+        return summary.strip()
+
+    
     
     def _configure_logging(self):
         """Configure logging for both our code and Agno's logging."""
@@ -409,89 +425,86 @@ class InteractiveDocumentReader:
             'other': []
         }
         
-        try:
-            # Walk through the directory structure
-            for root, dirs, files in os.walk(base_path):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    file_ext = os.path.splitext(file)[1].lower()[1:]
-                    
-                    # Categorize file by extension
-                    if file_ext in self.discovered_files:
-                        self.discovered_files[file_ext].append(file_path)
-                    else:
-                        self.discovered_files['other'].append(file_path)
-            
-            # Log information about discovered files
-            discovered_count = {k: len(v) for k, v in self.discovered_files.items() if v}
-            logger.info(f"Discovered file counts: {discovered_count}")
-            
-            # Update config with discovered files
-            for file_type, file_paths in self.discovered_files.items():
-                if file_paths:
-                    if file_type == 'csv':
-                        for i, path in enumerate(file_paths):
-                            table_name = f"{file_type}_{i}_docs"
-                            if 'csv' not in self.config:
-                                self.config['csv'] = []
-                            
-                            # Check if path is already in config
-                            if not any(cfg.get('path') == path for cfg in self.config['csv']):
-                                self.config['csv'].append({
-                                    'path': path,
-                                    'table_name': table_name
-                                })
-                    elif file_type == 'json':
-                        for i, path in enumerate(file_paths):
-                            table_name = f"{file_type}_{i}_docs"
-                            if 'json' not in self.config:
-                                self.config['json'] = []
-                            
-                            # Check if path is already in config
-                            if not any(cfg.get('path') == path for cfg in self.config['json']):
-                                self.config['json'].append({
-                                    'path': path,
-                                    'table_name': table_name
-                                })
-                    elif file_type in ['png', 'jpg']:
-                        for i, path in enumerate(file_paths):
-                            table_name = f"image_{i}_analysis"
-                            if 'image' not in self.config:
-                                self.config['image'] = []
-                            
-                            # Check if path is already in config
-                            if not any(cfg.get('path') == path for cfg in self.config['image']):
-                                self.config['image'].append({
-                                    'path': path,
-                                    'table_name': table_name
-                                })
-                            # Create a basic image summary
-                            self._create_image_summary(path)
-                    elif file_type in ['pdf', 'docx', 'md', 'txt']:
-                        for i, path in enumerate(file_paths):
-                            table_name = f"{file_type}_{i}_docs"
-                            if file_type not in self.config:
-                                self.config[file_type] = []
-                            
-                            # Check if path is already in config
-                            if not any(cfg.get('path') == path for cfg in self.config[file_type]):
-                                self.config[file_type].append({
-                                    'path': path,
-                                    'table_name': table_name
-                                })
-            
-            # Generate data summaries for all discovered files
-            self._generate_data_summaries()
-            
-            # Ensure the discovered files are properly reflected in the agent's instructions
-            self._update_interactive_agent_instructions()
-            
-            logger.info(f"Discovered files: {json.dumps({k: len(v) for k, v in self.discovered_files.items()})}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"_discover_files Error discovering files: {str(e)}")
-            return False
+        # Walk through the directory structure
+        for root, dirs, files in os.walk(base_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                file_ext = os.path.splitext(file)[1].lower()[1:]
+                
+                # Categorize file by extension
+                if file_ext in self.discovered_files:
+                    self.discovered_files[file_ext].append(file_path)
+                else:
+                    self.discovered_files['other'].append(file_path)
+        
+        # Log information about discovered files
+        discovered_count = {k: len(v) for k, v in self.discovered_files.items() if v}
+        logger.info(f"Discovered file counts: {discovered_count}")
+        
+        # Update config with discovered files
+        for file_type, file_paths in self.discovered_files.items():
+            if file_paths:
+                if file_type == 'csv':
+                    for i, path in enumerate(file_paths):
+                        table_name = f"{file_type}_{i}_docs"
+                        if 'csv' not in self.config:
+                            self.config['csv'] = []
+                        
+                        # Check if path is already in config
+                        if not any(cfg.get('path') == path for cfg in self.config['csv']):
+                            self.config['csv'].append({
+                                'path': path,
+                                'table_name': table_name
+                            })
+                elif file_type == 'json':
+                    for i, path in enumerate(file_paths):
+                        table_name = f"{file_type}_{i}_docs"
+                        if 'json' not in self.config:
+                            self.config['json'] = []
+                        
+                        # Check if path is already in config
+                        if not any(cfg.get('path') == path for cfg in self.config['json']):
+                            self.config['json'].append({
+                                'path': path,
+                                'table_name': table_name
+                            })
+                elif file_type in ['png', 'jpg']:
+                    for i, path in enumerate(file_paths):
+                        table_name = f"image_{i}_analysis"
+                        if 'image' not in self.config:
+                            self.config['image'] = []
+                        
+                        # Check if path is already in config
+                        if not any(cfg.get('path') == path for cfg in self.config['image']):
+                            self.config['image'].append({
+                                'path': path,
+                                'table_name': table_name
+                            })
+                        # Create a basic image summary
+                        self._create_image_summary(path)
+                elif file_type in ['pdf', 'docx', 'md', 'txt']:
+                    for i, path in enumerate(file_paths):
+                        table_name = f"{file_type}_{i}_docs"
+                        if file_type not in self.config:
+                            self.config[file_type] = []
+                        
+                        # Check if path is already in config
+                        if not any(cfg.get('path') == path for cfg in self.config[file_type]):
+                            self.config[file_type].append({
+                                'path': path,
+                                'table_name': table_name
+                            })
+        
+        # Generate data summaries for all discovered files
+        self._generate_data_summaries()
+        
+        # Ensure the discovered files are properly reflected in the agent's instructions
+        self._update_interactive_agent_instructions()
+        
+        logger.info(f"Discovered files: {json.dumps({k: len(v) for k, v in self.discovered_files.items()})}")
+        return True
+        
+
     
     def _update_interactive_agent_instructions(self):
         """Update the instructions for the interactive agent with current file information."""
@@ -2403,66 +2416,62 @@ class InteractiveDocumentReader:
         # Update context
         self.context['current_topic'] = 'image_analysis'
         self.context['current_files'] = [target_image_path]
+                # Create a direct Image object
+        image_obj = Image(filepath=target_image_path)
         
-        try:
-            # Create a direct Image object
-            image_obj = Image(filepath=target_image_path)
+        # First try using the visual analyst from the multi-agent system
+        if self.agents.get("visual_analyst") is not None:
+            logger.info(f"Using visual analyst agent to analyze {target_image_name}")
             
-            # First try using the visual analyst from the multi-agent system
-            if self.agents.get("visual_analyst") is not None:
-                logger.info(f"Using visual analyst agent to analyze {target_image_name}")
-                
-                # Get analysis context by looking for related CSV files
-                context_info = self._get_image_context(target_image_path)
-                
+            # Get analysis context by looking for related CSV files
+            context_info = self._get_image_context(target_image_path)
+            
+            prompt = f"""
+            Please analyze this image: {target_image_name} in detail.
+            
+            Focus on these aspects:
+            1. What type of visualization or chart is this?
+            2. What are the main features, trends, or patterns visible?
+            3. What variables or data are being represented?
+            4. What scientific insights can be drawn from this visualization?
+            5. How does this relate to environmental or geological data?
+            
+            {context_info}
+            
+            Provide a comprehensive analysis with key observations and insights.
+            """
+            
+            try:
+                # Use print_response with stream=False instead of ask
+                analysis = self.agents["visual_analyst"].print_response(prompt, images=[image_obj], stream=False)
+                return analysis
+            except Exception as e:
+                logger.error(f"Error using visual analyst agent: {str(e)}")
+                # Fall back to the regular image agent
+                pass
+        
+        # Fallback to the simple image agent
+        logger.info(f"Falling back to simple image agent for {target_image_name}")
+        if self.image_agent is not None:
+            try:
                 prompt = f"""
-                Please analyze this image: {target_image_name} in detail.
+                Please analyze this image: {target_image_name}
                 
-                Focus on these aspects:
-                1. What type of visualization or chart is this?
-                2. What are the main features, trends, or patterns visible?
-                3. What variables or data are being represented?
-                4. What scientific insights can be drawn from this visualization?
-                5. How does this relate to environmental or geological data?
-                
-                {context_info}
-                
-                Provide a comprehensive analysis with key observations and insights.
+                What does this image show? What type of visualization is it?
+                What are the main patterns or trends visible?
+                What scientific insights can we gain from this image?
                 """
                 
-                try:
-                    # Use print_response with stream=False instead of ask
-                    analysis = self.agents["visual_analyst"].print_response(prompt, images=[image_obj], stream=False)
-                    return analysis
-                except Exception as e:
-                    logger.error(f"Error using visual analyst agent: {str(e)}")
-                    # Fall back to the regular image agent
-                    pass
-            
-            # Fallback to the simple image agent
-            logger.info(f"Falling back to simple image agent for {target_image_name}")
-            if self.image_agent is not None:
-                try:
-                    prompt = f"""
-                    Please analyze this image: {target_image_name}
-                    
-                    What does this image show? What type of visualization is it?
-                    What are the main patterns or trends visible?
-                    What scientific insights can we gain from this image?
-                    """
-                    
-                    # Use print_response for the image agent as well, not ask
-                    analysis = self.image_agent.print_response(prompt, images=[image_obj], stream=False)
-                    return analysis
-                except Exception as e:
-                    logger.error(f"Error using image agent fallback: {str(e)}")
-            
-            # Last resort: basic image description if both agents fail
-            return f"I found the image {target_image_name} but couldn't analyze it with my AI vision capabilities. The image agents encountered errors."
-            
-        except Exception as e:
-            logger.error(f"Error in image analysis: {str(e)}")
-            return f"I encountered an error while trying to analyze the image: {str(e)}"
+                # Use print_response for the image agent as well, not ask
+                analysis = self.image_agent.print_response(prompt, images=[image_obj], stream=False)
+                return analysis
+            except Exception as e:
+                logger.error(f"Error using image agent fallback: {str(e)}")
+        
+        # Last resort: basic image description if both agents fail
+        return f"I found the image {target_image_name} but couldn't analyze it with my AI vision capabilities. The image agents encountered errors."
+        
+
     
     def _get_image_context(self, image_path):
         """Get context information for an image by looking for related data files."""
