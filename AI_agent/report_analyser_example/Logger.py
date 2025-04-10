@@ -2,6 +2,8 @@ import logging
 import os
 
 
+
+
 class LoggerSetup:
     """
     Class to set up a logger for logging messages to a file and optionally to the console.
@@ -56,6 +58,9 @@ class LoggerSetup:
 
             self.logger.info(f"Logging to {path}")
 
+        # Configure additional logging settings
+        self.configure_logging()
+        
         return self.logger
         
     def set_verbose(self, verbose):
@@ -88,7 +93,9 @@ class LoggerSetup:
             message (str): The error message to log.
             time_stamp (bool): Whether to include a timestamp in the log.
         """
-        self.info(message, level="error", time_stamp=time_stamp)
+        if not self.logger:
+            return
+        self.logger.error(message)
 
     def warning(self, message, time_stamp=True):
         """
@@ -98,48 +105,75 @@ class LoggerSetup:
             message (str): The warning message to log.
             time_stamp (bool): Whether to include a timestamp in the log.
         """
-        self.info(message, level="warning", time_stamp=time_stamp)
+        if not self.logger:
+            return
+        self.logger.warning(message)
 
     def info(self, message, level="info", time_stamp=True):
         """
-        Log a message with or without a timestamp.
+        Log a message with the specified level.
 
         Args:
             message (str): The message to log.
             level (str): The logging level (e.g., "info", "error").
             time_stamp (bool): Whether to include a timestamp in the log.
         """
-        # Create a temporary logger with the desired format
-        temp_logger = logging.getLogger("TempLogger")
-        temp_logger.setLevel(self.logger.level)
-
-        # Remove existing handlers to avoid duplicates
-        temp_logger.handlers.clear()
-
-        # Define the log format based on the time_stamp flag
-        log_format = '%(asctime)s - %(levelname)s - %(message)s' if time_stamp else '%(levelname)s - %(message)s'
-
-        # Add file handler
-        for handler in self.logger.handlers:
-            if isinstance(handler, logging.FileHandler):
-                new_file_handler = logging.FileHandler(handler.baseFilename)
-                new_file_handler.setFormatter(logging.Formatter(log_format))
-                temp_logger.addHandler(new_file_handler)
-
-        # Add console handler only if verbose is True
-        if self.verbose:
-            console_handler = logging.StreamHandler()
-            console_handler.setFormatter(logging.Formatter(log_format))
-            temp_logger.addHandler(console_handler)
-
-        # Log the message at the specified level
+        if not self.logger:
+            return
+            
         log_methods = {
-            "info": temp_logger.info,
-            "error": temp_logger.error,
-            "warning": temp_logger.warning,
-            "debug": temp_logger.debug
+            "info": self.logger.info,
+            "error": self.logger.error,
+            "warning": self.logger.warning,
+            "debug": self.logger.debug
         }
-        log_method = log_methods.get(level.lower(), temp_logger.info)
+        log_method = log_methods.get(level.lower(), self.logger.info)
         log_method(message)
 
 
+
+
+    def configure_logging(self):
+        """Configure logging for both our code and Agno's logging."""
+        try:
+           
+            
+            log_file = "/data/SWATGenXApp/codes/AI_agent/logs/AI_AgentLogger.log"
+            
+            # Create a file handler that writes directly to our log file
+            # rather than going through our logger (which would cause recursion)
+            if log_file and os.path.exists(os.path.dirname(log_file)):
+                file_handler = logging.FileHandler(log_file)
+                formatter = logging.Formatter('%(asctime)s - AGNO - %(levelname)s - %(message)s')
+                file_handler.setFormatter(formatter)
+                file_handler.setLevel(logging.WARNING)  # Only capture warnings and errors
+                
+                # Capture all existing loggers
+                root_logger = logging.getLogger()
+                
+                # Remove any existing handlers to prevent double logging
+                for handler in list(root_logger.handlers):
+                    if isinstance(handler, logging.StreamHandler) and not isinstance(handler, logging.FileHandler):
+                        # Keep file handlers but remove console handlers
+                        root_logger.removeHandler(handler)
+                
+                # Add our direct file handler to the root logger
+                root_logger.addHandler(file_handler)
+                
+                # Set level on the root logger
+                root_logger.setLevel(logging.WARNING)
+                
+                # Silence specific noisy loggers
+                for logger_name in ['openai', 'httpx', 'urllib3', 'asyncio', 'agno']:
+                    logging.getLogger(logger_name).setLevel(logging.WARNING)
+                
+                self.logger.info("Configured Agno logging to write directly to log file")
+            else:
+                # Fallback: just silence everything to avoid console output
+                logging.getLogger().setLevel(logging.ERROR)
+                for logger_name in ['openai', 'httpx', 'urllib3', 'asyncio', 'agno']:
+                    logging.getLogger(logger_name).setLevel(logging.ERROR)
+                self.logger.info("Configured Agno logging with minimal output (no log file found)")
+            
+        except Exception as e:
+            self.logger.error(f"Error configuring logging: {str(e)}")

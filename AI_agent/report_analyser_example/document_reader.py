@@ -16,14 +16,13 @@ import glob
 from pathlib import Path
 import matplotlib.pyplot as plt
 from datetime import datetime
-import redis
 import uuid
-import pickle
 from agno.knowledge.combined import CombinedKnowledgeBase
 import re
 import traceback
 from PIL import Image as PILImage
-from Logger import LoggerSetup
+import logging
+from AI_agent.report_analyser_example.Logger import LoggerSetup
 import os 
 from utils import (
     extract_image_name,
@@ -33,6 +32,10 @@ from utils import (
     extract_main_topic,
     calculate_similarity
 )
+from redis_tools import RedisTools
+from prompt_handler import extract_keywords, clean_response_output, should_visualize
+from data_visualizer import DataVisualizer
+from knowledge_graph import KnowledgeGraph
 
 logger = LoggerSetup(verbose=False, rewrite=True)   
 logger = logger.setup_logger("AI_AgentLogger")
@@ -101,78 +104,34 @@ class InteractiveDocumentReader:
             "total_responses": 0
         }
         
-        # Redis integration for persistent conversation history
-        try:
-            self.redis = redis.Redis.from_url(redis_url)
-            logger.info(f"Connected to Redis at {redis_url}")
-            self.has_redis = True
-        except Exception as e:
-            logger.warning(f"Could not connect to Redis: {str(e)}. Using in-memory storage instead.")
-            self.has_redis = False
-            
-    def _save_to_redis(self, key, value, expire_seconds=86400):
-        """Save a value to Redis with expiration time (default 24 hours)."""
-        if not self.has_redis:
-            return False
+        # Initialize Redis tools
+        self.redis_tools = RedisTools(redis_url, self.session_id)
+        self.has_redis = self.redis_tools.has_redis
         
-        try:
-            full_key = f"doc_reader:{self.session_id}:{key}"
-            serialized = pickle.dumps(value)
-            self.redis.set(full_key, serialized, ex=expire_seconds)
-            return True
-        except Exception as e:
-            logger.error(f"_save_to_redis Error saving to Redis: {str(e)}")
-            return False
-    
-    def _load_from_redis(self, key):
-        """Load a value from Redis."""
-        if not self.has_redis:
-            return None
-        
-        try:
-            full_key = f"doc_reader:{self.session_id}:{key}"
-            serialized = self.redis.get(full_key)
-            if serialized:
-                return pickle.loads(serialized)
-            return None
-        except Exception as e:
-            logger.error(f"_load_from_redis Error loading from Redis: {str(e)}")
-            return None
-    
-    def _clear_redis_session(self):
-        """Clear all keys for the current session."""
-        if not self.has_redis:
-            return
-        
-        try:
-            pattern = f"doc_reader:{self.session_id}:*"
-            for key in self.redis.scan_iter(match=pattern):
-                self.redis.delete(key)
-        except Exception as e:
-            logger.error(f"_clear_redis_session Error clearing Redis session: {str(e)}")
+        # Initialize utility classes
+        self.data_visualizer = None
+        self.knowledge_graph_manager = None
     
     def _sync_conversation_history(self):
         """Sync conversation history with Redis."""
         if self.has_redis:
-            # Try to load from Redis first
-            redis_history = self._load_from_redis('conversation_history')
-            if redis_history:
-                self.conversation_history = redis_history
-            else:
-                # Save current history
-                self._save_to_redis('conversation_history', self.conversation_history)
+            # Sync conversation history and context with Redis
+            updated_data = self.redis_tools.sync_data(
+                {
+                    'conversation_history': self.conversation_history,
+                    'context': self.context
+                },
+                ['conversation_history', 'context']
+            )
             
-            # Also sync context
-            redis_context = self._load_from_redis('context')
-            if redis_context:
-                self.context = redis_context
-            else:
-                self._save_to_redis('context', self.context)
+            self.conversation_history = updated_data['conversation_history']
+            self.context = updated_data['context']
     
     def initialize(self, auto_discover=False, base_path=None):
         """Initialize the interactive document reader with optional file discovery."""
         # Configure logging first
-        self._configure_logging()
+        self.logger = LoggerSetup(verbose=False, rewrite=True)
+        self.logger = self.logger.setup_logger("AI_AgentLogger")
         
         logger.info("Initializing InteractiveDocumentReader")
         
@@ -214,16 +173,18 @@ class InteractiveDocumentReader:
         # Initialize conversation history
         self.conversation_history = []
         
+        # Initialize utility classes
+        self.data_visualizer = DataVisualizer(logger=logger)
+        
         # Check for Redis
         if self.has_redis:
-            # Try to load conversation history from Redis
-            saved_history = self._load_from_redis('conversation_history')
+            # Try to load conversation history and context from Redis
+            saved_history = self.redis_tools.load_from_redis('conversation_history')
             if saved_history:
                 self.conversation_history = saved_history
                 logger.info(f"Loaded conversation history from Redis: {len(saved_history)} messages")
             
-            # Try to load context from Redis
-            saved_context = self._load_from_redis('context')
+            saved_context = self.redis_tools.load_from_redis('context')
             if saved_context:
                 self.context = saved_context
                 logger.info(f"Loaded context from Redis")
@@ -251,55 +212,6 @@ class InteractiveDocumentReader:
         return True
 
     
-    
-    def _configure_logging(self):
-        """Configure logging for both our code and Agno's logging."""
-        try:
-            # Redirect Agno's logging to our logger
-            import logging
-            import os
-            
-            # Use the same log file as our logger
-            from Logger import LoggerSetup
-            log_file = "/data/SWATGenXApp/codes/AI_agent/logs/AI_AgentLogger.log"
-            
-            # Create a file handler that writes directly to our log file
-            # rather than going through our logger (which would cause recursion)
-            if log_file and os.path.exists(os.path.dirname(log_file)):
-                file_handler = logging.FileHandler(log_file)
-                formatter = logging.Formatter('%(asctime)s - AGNO - %(levelname)s - %(message)s')
-                file_handler.setFormatter(formatter)
-                file_handler.setLevel(logging.WARNING)  # Only capture warnings and errors
-                
-                # Capture all existing loggers
-                root_logger = logging.getLogger()
-                
-                # Remove any existing handlers to prevent double logging
-                for handler in list(root_logger.handlers):
-                    if isinstance(handler, logging.StreamHandler) and not isinstance(handler, logging.FileHandler):
-                        # Keep file handlers but remove console handlers
-                        root_logger.removeHandler(handler)
-                
-                # Add our direct file handler to the root logger
-                root_logger.addHandler(file_handler)
-                
-                # Set level on the root logger
-                root_logger.setLevel(logging.WARNING)
-                
-                # Silence specific noisy loggers
-                for logger_name in ['openai', 'httpx', 'urllib3', 'asyncio', 'agno']:
-                    logging.getLogger(logger_name).setLevel(logging.WARNING)
-                
-                logger.info("Configured Agno logging to write directly to log file")
-            else:
-                # Fallback: just silence everything to avoid console output
-                logging.getLogger().setLevel(logging.ERROR)
-                for logger_name in ['openai', 'httpx', 'urllib3', 'asyncio', 'agno']:
-                    logging.getLogger(logger_name).setLevel(logging.ERROR)
-                logger.info("Configured Agno logging with minimal output (no log file found)")
-            
-        except Exception as e:
-            logger.error(f"Error configuring logging: {str(e)}")
     
     def _initialize_multi_agent_system(self):
         """Initialize the multi-agent system with specialized agents."""
@@ -860,127 +772,19 @@ class InteractiveDocumentReader:
     
     def visualize_data(self, file_path, x_column=None, y_column=None, chart_type='auto'):
         """Generate a visualization for numerical data in CSV files."""
-        try:
-            if not file_path.endswith('.csv'):
-                return f"Visualization is currently only supported for CSV files. The file {file_path} is not a CSV."
-            
-            # Check if file is too large
-            row_count = 0
-            with open(file_path, 'r') as f:
-                for i, _ in enumerate(f):
-                    row_count = i + 1
-                    if row_count > 1000:
-                        return f"Warning: CSV file {os.path.basename(file_path)} has more than 1000 rows ({row_count}). Visualization skipped to prevent memory issues. Consider visualizing a subset of the data instead."
-            
-            df = pd.read_csv(file_path)
-            
-            # If columns aren't specified, try to guess appropriate ones
-            numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-            
-            if not numeric_cols:
-                return "No numeric columns found for visualization."
-            
-            if not x_column:
-                # Try to find a good x-axis - prefer date-like or first column
-                if any(col.lower().find('date') >= 0 for col in df.columns):
-                    date_cols = [col for col in df.columns if col.lower().find('date') >= 0]
-                    x_column = date_cols[0]
-                else:
-                    x_column = df.columns[0]
-            
-            if not y_column:
-                # Use first numeric column that's not the x column
-                for col in numeric_cols:
-                    if col != x_column:
-                        y_column = col
-                        break
-                else:
-                    y_column = numeric_cols[0]
-            
-            # Determine chart type if auto
-            if chart_type == 'auto':
-                if len(df) > 50:
-                    chart_type = 'line'
-                else:
-                    chart_type = 'bar'
-            
-            # Create the plot
-            plt.figure(figsize=(10, 6))
-            
-            if chart_type == 'line':
-                plt.plot(df[x_column], df[y_column])
-            elif chart_type == 'bar':
-                plt.bar(df[x_column], df[y_column])
-            elif chart_type == 'scatter':
-                plt.scatter(df[x_column], df[y_column])
-            
-            plt.xlabel(x_column)
-            plt.ylabel(y_column)
-            plt.title(f"{y_column} vs {x_column} from {os.path.basename(file_path)}")
-            plt.xticks(rotation=45)
-            plt.tight_layout()
-            
-            # Save the plot to a file
-            output_dir = os.path.join(os.path.dirname(file_path), "visualizations")
-            os.makedirs(output_dir, exist_ok=True)
-            
-            filename = f"{os.path.splitext(os.path.basename(file_path))[0]}_{x_column}_{y_column}_{chart_type}.png"
-            output_path = os.path.join(output_dir, filename)
-            plt.savefig(output_path)
-            plt.close()
-            
-            return output_path
-            
-        except Exception as e:
-            logger.error(f"_visualize_data Error visualizing data: {str(e)}")
-            return f"Error creating visualization: {str(e)}"
+        return self.data_visualizer.visualize_data(file_path, x_column, y_column, chart_type)
     
     def analyze_data(self, file_path):
         """Generate a basic statistical analysis for data files."""
-        try:
-            if not file_path.endswith('.csv'):
-                return f"Statistical analysis is currently only supported for CSV files. The file {file_path} is not a CSV."
-            
-            # Check if file is too large
-            row_count = 0
-            with open(file_path, 'r') as f:
-                for i, _ in enumerate(f):
-                    row_count = i + 1
-                    if row_count > 1000:
-                        return f"Warning: CSV file {os.path.basename(file_path)} has more than 1000 rows ({row_count}). Analysis skipped to prevent memory issues. Consider analyzing a subset of the data instead."
-            
-            df = pd.read_csv(file_path)
-            
-            # Get numeric columns for analysis
-            numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-            
-            if not numeric_cols:
-                return "No numeric columns found for analysis."
-            
-            # Generate basic statistics
-            stats = df[numeric_cols].describe().to_dict()
-            
-            # Calculate correlations if there are multiple numeric columns
-            correlations = None
-            if len(numeric_cols) > 1:
-                correlations = df[numeric_cols].corr().to_dict()
-            
-            # Prepare the analysis results
-            analysis = {
-                'file_name': os.path.basename(file_path),
-                'path': file_path,
-                'rows': len(df),
-                'columns': len(df.columns),
-                'statistics': stats,
-                'correlations': correlations,
-                'missing_values_count': df.isnull().sum().to_dict()
-            }
-            
-            return analysis
-            
-        except Exception as e:
-            logger.error(f"_analyze_data Error analyzing data: {str(e)}")
-            return f"Error analyzing data: {str(e)}"
+        return self.data_visualizer.analyze_csv_data(file_path)
+    
+    def _should_visualize(self, query, csv_path):
+        """Determine if we should create a visualization based on the query and data."""
+        return self.data_visualizer.should_visualize(query, csv_path)
+    
+    def _create_contextual_visualization(self, query, csv_path):
+        """Create a visualization customized to answer the specific query."""
+        return self.data_visualizer.create_contextual_visualization(query, csv_path)
     
     def chat(self, message):
         """Process user's message and return a response through the appropriate agent."""
@@ -1118,8 +922,8 @@ class InteractiveDocumentReader:
             
             # Save updated conversation history and context to Redis
             if self.has_redis:
-                self._save_to_redis('conversation_history', self.conversation_history)
-                self._save_to_redis('context', self.context)
+                self.redis_tools.save_to_redis('conversation_history', self.conversation_history)
+                self.redis_tools.save_to_redis('context', self.context)
                 
             # Update metrics
             response_time = (datetime.now() - start_time).total_seconds()
@@ -1138,56 +942,7 @@ class InteractiveDocumentReader:
         """
         Clean output text removing debug information and formatting.
         """
-        if not text:
-            return ""
-        
-        try:
-            import re
-            
-            # Remove ANSI color codes
-            text = re.sub(r'\x1b\[[0-9;]*m', '', text)
-            
-            # Remove debug headers and info
-            text = re.sub(r'DEBUG.*?METRICS.*?\n', '', text, flags=re.DOTALL)
-            text = re.sub(r'DEBUG .*?OpenAI Response.*?\n', '', text, flags=re.DOTALL)
-            text = re.sub(r'DEBUG Added .*?AgentMemory.*?\n', '', text, flags=re.DOTALL)
-            text = re.sub(r'DEBUG Logging Agent Run.*?\n', '', text, flags=re.DOTALL)
-            text = re.sub(r'DEBUG \*{15} Agent Run.*?\n', '', text, flags=re.DOTALL)
-            
-            # Remove box characters and metadata surrounding the message and response
-            text = re.sub(r'┏━+\s*Message\s*━+┓.*?┗━+┛', '', text, flags=re.DOTALL)
-            text = re.sub(r'┏━+\s*Response.*?┓.*?┗━+┛', '', text, flags=re.DOTALL)
-            
-            # Remove individual box characters that may remain
-            text = re.sub(r'[┏┓┗┛━┃]', '', text)
-            
-            # Remove header lines
-            text = re.sub(r'Message.*?\n', '', text, flags=re.DOTALL)
-            text = re.sub(r'Response \(\d+\.\d+s\).*?\n', '', text, flags=re.DOTALL)
-            text = re.sub(r'Response.*?\n', '', text, flags=re.DOTALL)
-            
-            # Remove line numbers and file paths from logs
-            text = re.sub(r'\b\d{4}-\d{2}-\d{2}.*?- ', '', text)
-            
-            # Clean up whitespace
-            lines = text.split('\n')
-            
-            # Remove empty lines at the beginning and end
-            while lines and not lines[0].strip():
-                lines.pop(0)
-            while lines and not lines[-1].strip():
-                lines.pop()
-                
-            # Join lines back together
-            cleaned_text = '\n'.join(lines)
-            
-            # Remove AI: prefix that might appear
-            cleaned_text = re.sub(r'^AI:\s*', '', cleaned_text)
-            
-            return cleaned_text.strip()
-        except Exception as e:
-            logger.error(f"Error cleaning response output: {str(e)}")
-            return text  # Return original text if cleaning fails
+        return clean_response_output(text, logger)
     
     def _route_to_multi_agent_system(self, message):
         """Route a user message through the multi-agent system for processing."""
@@ -1458,7 +1213,7 @@ class InteractiveDocumentReader:
                 'last_question': None
             }
             if self.has_redis:
-                self._clear_redis_session()
+                self.redis_tools.clear_redis_session()
             return "Conversation history and context cleared."
         elif command == "/context":
             # Debug command to show current context
@@ -2182,129 +1937,10 @@ class InteractiveDocumentReader:
             logger.error(f"_analyze_json_for_query Error analyzing JSON: {str(e)}")
             return f"I tried to analyze the JSON file but encountered an error: {str(e)}"
     
-    def _should_visualize(self, query, csv_path):
-        """Determine if we should create a visualization based on the query and data."""
-        visualization_indicators = ['show', 'plot', 'graph', 'chart', 'visualize', 'trend', 
-                                'compare', 'relationship', 'correlation', 'pattern']
-        
-        # Check if query explicitly asks for visualization
-        if any(indicator in query.lower() for indicator in visualization_indicators):
-            return True
-        
-        try:
-            # Check if data is suitable for visualization
-            df = pd.read_csv(csv_path)
-            
-            # Need at least one numeric column
-            numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-            if not numeric_cols:
-                return False
-            
-            # Check for time-series data (date columns or sequential values)
-            has_date_col = any('date' in col.lower() or 'time' in col.lower() or 'year' in col.lower() 
-                            for col in df.columns)
-            
-            # If data has multiple numeric columns or time dimension, it's good for visualization
-            return has_date_col or len(numeric_cols) >= 2
-            
-        except Exception:
-            return False
-    
-    def _create_contextual_visualization(self, query, csv_path):
-        """Create a visualization customized to answer the specific query."""
-        try:
-            df = pd.read_csv(csv_path)
-            
-            # Determine which columns to visualize based on the query
-            keywords = self._extract_keywords(query)
-            numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-            
-            if not numeric_cols:
-                return None
-            
-            # Try to find columns mentioned in the query
-            mentioned_cols = []
-            for col in df.columns:
-                if any(kw in col.lower() for kw in keywords):
-                    mentioned_cols.append(col)
-            
-            # Determine x and y columns
-            x_col = None
-            y_col = None
-            
-            # Look for date/time columns first for x-axis
-            for col in df.columns:
-                if 'date' in col.lower() or 'time' in col.lower() or 'year' in col.lower():
-                    x_col = col
-                    break
-            
-            # If no date column, use the first column
-            if not x_col:
-                x_col = df.columns[0]
-            
-            # For y-axis, prioritize columns mentioned in the query
-            for col in mentioned_cols:
-                if col in numeric_cols:
-                    y_col = col
-                    break
-            
-            # If no mentioned column is numeric, use the first numeric column
-            if not y_col and numeric_cols:
-                y_col = numeric_cols[0]
-            
-            # Determine appropriate chart type
-            chart_type = 'line'  # Default
-            if 'distribution' in query.lower() or 'histogram' in query.lower():
-                chart_type = 'histogram'
-            elif 'scatter' in query.lower() or 'correlation' in query.lower() or 'relationship' in query.lower():
-                chart_type = 'scatter'
-            elif len(df) < 30:  # Small datasets look better as bar charts
-                chart_type = 'bar'
-            
-            # Create the visualization
-            plt.figure(figsize=(10, 6))
-            
-            if chart_type == 'line':
-                plt.plot(df[x_col], df[y_col])
-                plt.title(f"{y_col} over {x_col}")
-            elif chart_type == 'bar':
-                plt.bar(df[x_col], df[y_col])
-                plt.title(f"{y_col} by {x_col}")
-            elif chart_type == 'scatter':
-                plt.scatter(df[x_col], df[y_col])
-                plt.title(f"Relationship between {x_col} and {y_col}")
-            elif chart_type == 'histogram':
-                plt.hist(df[y_col], bins=15)
-                plt.title(f"Distribution of {y_col}")
-            
-            plt.xlabel(x_col)
-            plt.ylabel(y_col)
-            plt.xticks(rotation=45)
-            plt.tight_layout()
-            
-            # Save the plot
-            output_dir = os.path.join(os.path.dirname(csv_path), "visualizations")
-            os.makedirs(output_dir, exist_ok=True)
-            
-            # Use query keywords in the filename
-            query_slug = "_".join(keywords[:2]).replace(' ', '_')
-            filename = f"auto_viz_{query_slug}_{y_col}_{chart_type}.png"
-            output_path = os.path.join(output_dir, filename)
-            plt.savefig(output_path)
-            plt.close()
-            
-            return output_path
-            
-        except Exception as e:
-            logger.error(f"_create_contextual_visualization Error creating visualization: {str(e)}")
-            return None
-    
     def _extract_keywords(self, text):
         """Extract important keywords from a message."""
-        # This is a simple implementation that could be enhanced with NLP techniques
-        common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'with', 'about'}
-        words = text.lower().split()
-        return [word for word in words if word not in common_words and len(word) > 2]
+        # Use the standalone function from prompt_handler.py
+        return extract_keywords(text)
     
     def _analyze_specific_image(self, image_name):
         """Analyze a specific image using the visual analyst agent and specialized functions."""
@@ -2641,234 +2277,21 @@ class InteractiveDocumentReader:
         """Create and populate a knowledge graph to represent domain concepts and their relationships."""
         logger.info("Creating knowledge graph")
         
-        # Initialize knowledge graph structure
-        self.knowledge_graph = {
-            "nodes": {},  # Concepts and entities
-            "relationships": {},  # How concepts are connected
-            "file_concepts": {},  # Mapping from files to concepts they contain
-            "domain_terms": {
-                "hydrology": ["groundwater", "aquifer", "water level", "flow", "recharge", "discharge", 
-                              "streamflow", "runoff", "infiltration", "hydraulic conductivity"],
-                "climate": ["precipitation", "rainfall", "temperature", "evaporation", "evapotranspiration",
-                           "drought", "flood", "seasonal", "annual", "monthly"],
-                "agriculture": ["crop", "yield", "irrigation", "soil", "land use", "vegetation", 
-                               "fertilizer", "NDVI", "ET", "land cover"],
-                "geography": ["location", "region", "spatial", "map", "terrain", "elevation", "slope", 
-                             "aspect", "watershed", "basin"],
-                "time": ["temporal", "time series", "seasonal", "annual", "trend", "change", "variability",
-                        "extreme", "prediction", "forecast", "simulation"]
-            }
-        }
+        # Initialize knowledge graph with discovered files
+        self.knowledge_graph_manager = KnowledgeGraph(
+            discovered_files=self.discovered_files,
+            logger=logger
+        )
         
-        try:
-            # Extract concepts from markdown files
-            self._populate_knowledge_from_docs()
+        # Create the knowledge graph
+        return self.knowledge_graph_manager.create_knowledge_graph()
             
-            # Extract concepts from CSV headers and data
-            self._populate_knowledge_from_csv()
-            
-            # Extract concepts from image filenames
-            self._populate_knowledge_from_images()
-            
-            # Build relationships between concepts
-            self._build_concept_relationships()
-            
-            logger.info(f"Knowledge graph created with {len(self.knowledge_graph['nodes'])} concepts and {len(self.knowledge_graph['relationships'])} relationships")
-            return True
-        except Exception as e:
-            logger.error(f"create_knowledge_graph Error creating knowledge graph: {str(e)}")
-            return False
-            
-    def _populate_knowledge_from_docs(self):
-        """Extract concepts and relationships from markdown documentation."""
-        md_files = self.discovered_files.get('md', [])
-        
-        for md_path in md_files:
-            file_name = os.path.basename(md_path)
-            self.knowledge_graph["file_concepts"][file_name] = set()
-            
-            try:
-                with open(md_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
-                # Extract all domain terms that appear in the document
-                for domain, terms in self.knowledge_graph["domain_terms"].items():
-                    for term in terms:
-                        if term.lower() in content.lower():
-                            # Add or update node for this term
-                            if term not in self.knowledge_graph["nodes"]:
-                                self.knowledge_graph["nodes"][term] = {
-                                    "domain": domain,
-                                    "count": 1,
-                                    "files": [file_name]
-                                }
-                            else:
-                                self.knowledge_graph["nodes"][term]["count"] += 1
-                                if file_name not in self.knowledge_graph["nodes"][term]["files"]:
-                                    self.knowledge_graph["nodes"][term]["files"].append(file_name)
-                            
-                            # Add to file concepts
-                            self.knowledge_graph["file_concepts"][file_name].add(term)
-            except Exception as e:
-                logger.error(f"_populate_knowledge_from_docs Error extracting knowledge from {file_name}: {str(e)}")
-                
-    def _populate_knowledge_from_csv(self):
-        """Extract concepts from CSV headers and data."""
-        csv_files = self.discovered_files.get('csv', [])
-        
-        for csv_path in csv_files:
-            file_name = os.path.basename(csv_path)
-            self.knowledge_graph["file_concepts"][file_name] = set()
-            
-            try:
-                # Check file size first before reading
-                row_count = 0
-                with open(csv_path, 'r') as f:
-                    for i, _ in enumerate(f):
-                        row_count = i + 1
-                        if row_count > 1000:
-                            break
-                
-                # Read the file (first 100 rows only if large)
-                if row_count > 1000:
-                    df = pd.read_csv(csv_path, nrows=100)
-                else:
-                    df = pd.read_csv(csv_path)
-                
-                # Extract concepts from column names
-                for column in df.columns:
-                    column_lower = column.lower()
-                    
-                    # Check against domain terms
-                    for domain, terms in self.knowledge_graph["domain_terms"].items():
-                        for term in terms:
-                            if term.lower() in column_lower:
-                                # Add or update node for this term
-                                if term not in self.knowledge_graph["nodes"]:
-                                    self.knowledge_graph["nodes"][term] = {
-                                        "domain": domain,
-                                        "count": 1,
-                                        "files": [file_name]
-                                    }
-                                else:
-                                    self.knowledge_graph["nodes"][term]["count"] += 1
-                                    if file_name not in self.knowledge_graph["nodes"][term]["files"]:
-                                        self.knowledge_graph["nodes"][term]["files"].append(file_name)
-                                
-                                # Add to file concepts
-                                self.knowledge_graph["file_concepts"][file_name].add(term)
-            except Exception as e:
-                logger.error(f"_populate_knowledge_from_csv Error extracting knowledge from {file_name}: {str(e)}")
-                
-
-    def _populate_knowledge_from_images(self):
-        """Extract concepts from image filenames."""
-        for img_type in ['png', 'jpg']:
-            for img_path in self.discovered_files.get(img_type, []):
-                file_name = os.path.basename(img_path)
-                self.knowledge_graph["file_concepts"][file_name] = set()
-                
-                # Extract concepts from filename
-                file_name_lower = file_name.lower()
-                
-                # Check against domain terms
-                for domain, terms in self.knowledge_graph["domain_terms"].items():
-                    for term in terms:
-                        if term.lower() in file_name_lower:
-                            # Add or update node for this term
-                            if term not in self.knowledge_graph["nodes"]:
-                                self.knowledge_graph["nodes"][term] = {
-                                    "domain": domain,
-                                    "count": 1,
-                                    "files": [file_name]
-                                }
-                            else:
-                                self.knowledge_graph["nodes"][term]["count"] += 1
-                                if file_name not in self.knowledge_graph["nodes"][term]["files"]:
-                                    self.knowledge_graph["nodes"][term]["files"].append(file_name)
-                            
-                            # Add to file concepts
-                            self.knowledge_graph["file_concepts"][file_name].add(term)
-                
-    def _build_concept_relationships(self):
-        """Build relationships between concepts based on co-occurrence."""
-        # Find concepts that co-occur in the same files
-        for file_name, concepts in self.knowledge_graph["file_concepts"].items():
-            # Create relationships between all pairs of concepts in this file
-            concept_list = list(concepts)
-            for i in range(len(concept_list)):
-                for j in range(i + 1, len(concept_list)):
-                    concept1 = concept_list[i]
-                    concept2 = concept_list[j]
-                    
-                    # Create a unique relationship key (alphabetically ordered)
-                    rel_key = f"{min(concept1, concept2)}--{max(concept1, concept2)}"
-                    
-                    if rel_key not in self.knowledge_graph["relationships"]:
-                        self.knowledge_graph["relationships"][rel_key] = {
-                            "source": min(concept1, concept2),
-                            "target": max(concept1, concept2),
-                            "weight": 1,
-                            "files": [file_name]
-                        }
-                    else:
-                        self.knowledge_graph["relationships"][rel_key]["weight"] += 1
-                        if file_name not in self.knowledge_graph["relationships"][rel_key]["files"]:
-                            self.knowledge_graph["relationships"][rel_key]["files"].append(file_name)
-                            
     def _answer_from_knowledge_graph(self, query):
         """Try to answer a query using the knowledge graph."""
-        if not hasattr(self, 'knowledge_graph') or not self.knowledge_graph:
+        if not self.knowledge_graph_manager:
             return None
             
-        # Extract keywords from the query
-        keywords = self._extract_keywords(query)
-        
-        # Find concepts in the query
-        matched_concepts = []
-        for concept in self.knowledge_graph["nodes"]:
-            if concept.lower() in query.lower():
-                matched_concepts.append(concept)
-            
-        if not matched_concepts:
-            return None
-            
-        # Find files relevant to these concepts
-        relevant_files = {}
-        for concept in matched_concepts:
-            node = self.knowledge_graph["nodes"].get(concept)
-            if node and "files" in node:
-                for file in node["files"]:
-                    if file not in relevant_files:
-                        relevant_files[file] = 1
-                    else:
-                        relevant_files[file] += 1
-        
-        # Find relationships between matched concepts
-        related_concepts = set()
-        for concept in matched_concepts:
-            for rel_key, rel in self.knowledge_graph["relationships"].items():
-                if rel["source"] == concept or rel["target"] == concept:
-                    other_concept = rel["target"] if rel["source"] == concept else rel["source"]
-                    related_concepts.add(other_concept)
-                    
-        # Build a response using the knowledge graph
-        if matched_concepts and relevant_files:
-            response = f"Based on my knowledge graph, I found information about {', '.join(matched_concepts)} in the following files:\n\n"
-            
-            # List the most relevant files (files with the most concept matches)
-            sorted_files = sorted(relevant_files.items(), key=lambda x: x[1], reverse=True)[:5]
-            for file, count in sorted_files:
-                response += f"- {file}\n"
-                
-            # Add information about related concepts
-            if related_concepts:
-                response += f"\nThese concepts are related to: {', '.join(related_concepts)}.\n"
-                response += "Would you like me to analyze any of these files or explore these related concepts further?"
-                
-            return response
-            
-        return None
+        return self.knowledge_graph_manager.answer_query(query)
 
     def _handle_csv_command(self, args):
         """Handle /csv command to analyze a CSV file or list available CSV files."""
