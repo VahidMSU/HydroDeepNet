@@ -25,6 +25,14 @@ import traceback
 from PIL import Image as PILImage
 from Logger import LoggerSetup
 import os 
+from utils import (
+    extract_image_name,
+    create_image_summary,
+    is_response_complete,
+    deduplicate_content,
+    extract_main_topic,
+    calculate_similarity
+)
 
 logger = LoggerSetup(verbose=False, rewrite=True)   
 logger = logger.setup_logger("AI_AgentLogger")
@@ -241,20 +249,6 @@ class InteractiveDocumentReader:
             
         logger.info("InteractiveDocumentReader initialized successfully")
         return True
-
-    def _create_image_summary(self,path):
-        """Create a summary of an image file."""
-        #image = Image.open(path)
-        image = PILImage.open(path)
-        summary = f"""
-        Image file: {path}
-        Size: {image.size}
-        Format: {image.format}
-        Mode: {image.mode}
-        Is animated: {getattr(image, 'is_animated', False)}
-        Frames: {getattr(image, 'n_frames', 1)}
-        """
-        return summary.strip()
 
     
     
@@ -481,7 +475,7 @@ class InteractiveDocumentReader:
                                 'table_name': table_name
                             })
                         # Create a basic image summary
-                        self._create_image_summary(path)
+                        create_image_summary(path)
                 elif file_type in ['pdf', 'docx', 'md', 'txt']:
                     for i, path in enumerate(file_paths):
                         table_name = f"{file_type}_{i}_docs"
@@ -1010,7 +1004,7 @@ class InteractiveDocumentReader:
                         break
                     elif action['type'] == 'image_analysis' and "analyze" in message.lower():
                         # Extract image name from user message
-                        image_name = self._extract_image_name(message)
+                        image_name = extract_image_name(message)
                         if image_name:
                             logger.debug(f"Handling image analysis for '{image_name}'")
                             response = self._analyze_specific_image(image_name)
@@ -1111,7 +1105,7 @@ class InteractiveDocumentReader:
             if self.conversation_history and self.conversation_history[-1]["role"] == "assistant":
                 # If the last message is very similar to the current response, don't add it again
                 last_response = self.conversation_history[-1]["content"]
-                similarity = self._calculate_similarity(last_response, response)
+                similarity = calculate_similarity(last_response, response)
                 if similarity > 0.8:  # 80% similarity threshold
                     # Update the existing message rather than adding a new one
                     logger.debug(f"Updating existing message in history (similarity: {similarity:.2f})")
@@ -1207,6 +1201,7 @@ class InteractiveDocumentReader:
             coordinator_prompt = f"""
             The user asked: "{message}"
             
+
             Based on this message, determine which specialist agent would be most appropriate
             to handle this query. The available specialist agents are:
             
@@ -1431,56 +1426,6 @@ class InteractiveDocumentReader:
             
         # Default to general query
         return "general"
-        
-    def _extract_image_name(self, message):
-        """Extract the image name from a user message."""
-        patterns = [
-            r'analyze\s+(\S+(?:\.png|\.jpg)?)',
-            r'analyse\s+(\S+(?:\.png|\.jpg)?)',
-            r'analysis\s+(\S+(?:\.png|\.jpg)?)',
-            r'show\s+(\S+(?:\.png|\.jpg)?)',
-            r'image\s+(\S+(?:\.png|\.jpg)?)'
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, message.lower())
-            if match:
-                # Get the image name without extension if specified
-                image_name = match.group(1)
-                # Remove extension if present
-                image_name = os.path.splitext(image_name)[0]
-                return image_name
-        
-        # If no patterns matched, check for mentions of files that match our image files
-        for img_type in ['png', 'jpg']:
-            for file_path in self.discovered_files.get(img_type, []):
-                file_name = os.path.basename(file_path)
-                # Remove extension for comparison
-                base_name = os.path.splitext(file_name)[0]
-                
-                # Check if the base name appears in the message
-                if base_name.lower() in message.lower():
-                    return base_name
-        
-        return None
-    
-    def _calculate_similarity(self, str1, str2):
-        """Calculate simple similarity between two strings."""
-        if not str1 or not str2:
-            return 0
-            
-        # Convert to sets of words for a simple Jaccard similarity
-        set1 = set(str1.lower().split())
-        set2 = set(str2.lower().split())
-        
-        if not set1 or not set2:
-            return 0
-            
-        # Calculate Jaccard similarity: intersection over union
-        intersection = len(set1.intersection(set2))
-        union = len(set1.union(set2))
-        
-        return intersection / union if union > 0 else 0
     
     def _handle_command(self, message):
         """Handle special commands starting with /."""
@@ -2109,7 +2054,7 @@ class InteractiveDocumentReader:
                     results.append(json_analysis)
         
         # Update context to reflect what we've analyzed
-        self.context['current_topic'] = self._extract_main_topic(query)
+        self.context['current_topic'] = extract_main_topic(query)
         self.context['current_files'] = relevant_sources['high_relevance']
         
         # Combine all results with synthesis - ensure we have actual results
@@ -2126,30 +2071,6 @@ class InteractiveDocumentReader:
                 return results[0] if results[0] is not None else "I analyzed the file but couldn't extract meaningful information."
         else:
             return "I couldn't find any relevant information in the selected files."
-    
-    def _extract_main_topic(self, query):
-        """Extract the main topic from a query."""
-        topic_indicators = {
-            'solar': ['solar', 'pv', 'photovoltaic', 'sun', 'energy', 'power', 'renewable'],
-            'groundwater': ['water', 'groundwater', 'aquifer', 'well', 'hydrology'],
-            'precipitation': ['rain', 'precipitation', 'rainfall', 'weather', 'storm', 'climate'],
-            'temperature': ['temperature', 'heat', 'warm', 'cold', 'climate'],
-            'statistics': ['statistics', 'stats', 'average', 'mean', 'median', 'trend', 'analysis']
-        }
-        
-        # Count indicators for each topic
-        topic_scores = {topic: 0 for topic in topic_indicators}
-        for topic, indicators in topic_indicators.items():
-            for indicator in indicators:
-                if indicator in query.lower():
-                    topic_scores[topic] += 1
-        
-        # Find topic with highest score
-        if any(score > 0 for score in topic_scores.values()):
-            main_topic = max(topic_scores.items(), key=lambda x: x[1])[0]
-            return main_topic
-        else:
-            return "general_inquiry"
     
     def _quick_csv_analysis(self, csv_path):
         """Quick analysis of CSV data focused on answering the user's query."""
@@ -2569,7 +2490,7 @@ class InteractiveDocumentReader:
                 # Find related CSV files with similar name patterns
                 for csv_path in self.discovered_files.get('csv', []):
                     csv_name = os.path.basename(csv_path)
-                    if self._calculate_similarity(image_name.split('.')[0], csv_name.split('.')[0]) > 0.7:
+                    if calculate_similarity(image_name.split('.')[0], csv_name.split('.')[0]) > 0.7:
                         self.data_context["relationships"][image_name] = csv_name
 
     def validate_response(self, response, query):
@@ -2600,14 +2521,14 @@ class InteractiveDocumentReader:
                 return response
             
         # Check for incomplete or truncated responses
-        if not self._is_response_complete(response):
+        if not is_response_complete(response):
             logger.debug("Response appears incomplete, completing it")
             response = self._complete_response(response)
             
         # Check for repeated content
         if self._has_repeated_sections(response):
             logger.debug("Response has repeated sections, deduplicating")
-            response = self._deduplicate_content(response)
+            response = deduplicate_content(response)
             
         # Only add this context clarification for long responses that seem to be
         # generic or not directly addressing the query
@@ -2652,61 +2573,12 @@ class InteractiveDocumentReader:
             
         # Check for similar consecutive sections
         for i in range(len(paragraphs) - 1):
-            similarity = self._calculate_similarity(paragraphs[i], paragraphs[i+1])
+            similarity = calculate_similarity(paragraphs[i], paragraphs[i+1])
             if similarity > 0.7:  # 70% similarity threshold
                 return True
                 
         return False
-        
-    def _deduplicate_content(self, text):
-        """Remove duplicated content from a response."""
-        if not text:
-            return text
-            
-        # Split text into paragraphs
-        paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
-        if len(paragraphs) <= 1:
-            return text
-            
-        # Filter out duplicate paragraphs while preserving order
-        unique_paragraphs = []
-        seen_paragraphs = set()
-        
-        for paragraph in paragraphs:
-            # Check if this is a duplicate or very similar to an existing paragraph
-            is_duplicate = paragraph in seen_paragraphs
-            is_similar = any(self._calculate_similarity(paragraph, p) > 0.8 for p in unique_paragraphs)
-            
-            if not is_duplicate and not is_similar:
-                unique_paragraphs.append(paragraph)
-                seen_paragraphs.add(paragraph)
-                
-        # Reconstruct the text
-        return '\n\n'.join(unique_paragraphs)
-        
-    def _is_response_complete(self, text):
-        """Check if a response appears to be complete."""
-        if not text:
-            return False
-            
-        # Check for cut-off indicators
-        incomplete_indicators = [
-            '...', '…',  # Ellipsis at the end
-            lambda t: t.endswith((':', ',', '-', '(', '{')),  # Ends with punctuation that expects more content
-            lambda t: t.count('(') > t.count(')'),  # Unbalanced parentheses
-            lambda t: t.count('{') > t.count('}'),  # Unbalanced braces
-            lambda t: t.count('[') > t.count(']'),  # Unbalanced brackets
-        ]
-        
-        for indicator in incomplete_indicators:
-            if callable(indicator):
-                if indicator(text):
-                    return False
-            elif text.strip().endswith(indicator):
-                return False
-                
-        return True
-        
+  
     def _complete_response(self, text):
         """Try to make an incomplete response complete."""
         if not text:
@@ -2888,6 +2760,7 @@ class InteractiveDocumentReader:
             except Exception as e:
                 logger.error(f"_populate_knowledge_from_csv Error extracting knowledge from {file_name}: {str(e)}")
                 
+
     def _populate_knowledge_from_images(self):
         """Extract concepts from image filenames."""
         for img_type in ['png', 'jpg']:
