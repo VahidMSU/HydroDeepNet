@@ -16,7 +16,7 @@ chatbot_bp = Blueprint('chatbot', __name__)
 
 # Try to import Agno modules, but handle gracefully if not available
 try:
-    from AI_agent.agno_hydrogeo import get_agno_agent, agno_respond
+    from report_analyser_example.agno_hydrogeo import get_agno_agent, agno_respond
     AGNO_AVAILABLE = True
     logger.info("Successfully imported Agno modules")
 except ImportError as e:

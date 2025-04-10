@@ -9,7 +9,6 @@ from agno.agent import Agent
 from agno.embedder.openai import OpenAIEmbedder
 from agno.media import Image
 from agno.models.openai import OpenAIChat
-import logging
 import os
 import json
 import pandas as pd
@@ -27,7 +26,7 @@ import traceback
 from Logger import LoggerSetup
 import os 
 
-logger = LoggerSetup(verbose=False)
+logger = LoggerSetup(verbose=False, rewrite=True)   
 logger = logger.setup_logger("AI_AgentLogger")
 
 class InteractiveDocumentReader:
@@ -252,7 +251,7 @@ class InteractiveDocumentReader:
             
             # Use the same log file as our logger
             from Logger import LoggerSetup
-            log_file = LoggerSetup.log_file
+            log_file = "/data/SWATGenXApp/codes/AI_agent/logs/AI_AgentLogger.log"
             
             # Create a file handler that writes directly to our log file
             # rather than going through our logger (which would cause recursion)

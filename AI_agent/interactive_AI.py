@@ -72,7 +72,7 @@ def interactive_chat(use_agno=True, model_id="gemini-1.5-flash"):
     if use_agno:
         try:
             # Try to import Agno modules
-            from agno_hydrogeo import get_agno_agent, agno_respond
+            from report_analyser_example.agno_hydrogeo import get_agno_agent, agno_respond
             
             # Create an agent
             agent = get_agno_agent(model_id=model_id)

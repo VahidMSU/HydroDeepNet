@@ -27,7 +27,7 @@ def main():
     logger.info("Testing API key retrieval from agno_hydrogeo.py:")
     try:
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        from agno_hydrogeo import GOOGLE_API_KEY, get_google_api_key
+        from report_analyser_example.agno_hydrogeo import GOOGLE_API_KEY, get_google_api_key
         
         logger.info(f"✅ GOOGLE_API_KEY from agno_hydrogeo.py: {GOOGLE_API_KEY[:10]}...")
         
@@ -43,14 +43,14 @@ def main():
     # Try creating an Agno agent
     logger.info("Testing Agno agent creation...")
     try:
-        from agno_hydrogeo import get_agno_agent
+        from report_analyser_example.agno_hydrogeo import get_agno_agent
         
         agent = get_agno_agent()
         logger.info("✅ Successfully created Agno agent")
         
         # Try a simple test message
         try:
-            from agno_hydrogeo import agno_respond
+            from report_analyser_example.agno_hydrogeo import agno_respond
             response = agno_respond(agent, "Say hello")
             logger.info(f"✅ Agent response: {response[:50]}...")
         except Exception as e:
