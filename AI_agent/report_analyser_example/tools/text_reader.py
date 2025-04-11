@@ -54,19 +54,6 @@ if __name__ == "__main__":
     from dir_discover import discover_reports
     reports_dict = discover_reports()
     report_timestamp = sorted(reports_dict.keys())[-1]
-    print(report_timestamp)
-    
-    # Find the cdl_data.csv file in the nsrdb group
-    climate_change_files = reports_dict[report_timestamp]["groups"]["climate_change"]["files"]
-    doc_path = None
-    #
-    # Files are organized by extension
-    if ".md" in climate_change_files:
-        for file_info in climate_change_files[".md"]:
-            if file_info["name"] == "climate_change_report.md":
-                doc_path = file_info["path"]
-                break
-
-
-
+    doc_path = reports_dict[report_timestamp]["groups"]["climate_change"]["files"]['.md']['climate_change_report.md']['path']
+    print(doc_path)
     analyze_report(doc_path)

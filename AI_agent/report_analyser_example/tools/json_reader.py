@@ -36,4 +36,5 @@ def json_reader(json_path="/data/SWATGenXApp/Users/admin/Reports/20250324_222749
 
 if __name__ == "__main__":
     json_path = "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/config.json"
+    
     json_reader(json_path)

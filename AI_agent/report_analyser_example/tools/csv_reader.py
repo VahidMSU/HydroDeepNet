@@ -3,22 +3,42 @@ from agno.vectordb.pgvector import PgVector
 import logging
 import pandas as pd
 from dir_discover import discover_reports
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def csv_reader(csv_path, recreate_db=False):
+    """
+    Analyzes CSV files using vector database and AI.
+    
+    Args:
+        csv_path: Path to the CSV file
+        recreate_db: If True, drops and recreates the database table. Use this when getting duplicate key errors.
+    """
     # First read the CSV directly to get basic info
     df = pd.read_csv(csv_path)
     logger.info(f"CSV file contains {len(df)} rows and {len(df.columns)} columns")
 
+    # Create vector database connection with table recreation option
+    vector_db = PgVector(
+        table_name="csv_documents",
+        db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
+    )
+    
+    # If recreate_db is True, drop the existing table
+    if recreate_db:
+        logger.info("Recreating database table...")
+        try:
+            vector_db.drop_table()
+            logger.info("Existing table dropped successfully")
+        except Exception as e:
+            logger.warning(f"Error dropping table (this is normal if it doesn't exist): {e}")
+
     # Create CSV knowledge base
     knowledge_base = CSVKnowledgeBase(
         path=csv_path,
-        vector_db=PgVector(
-            table_name="csv_documents",
-            db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
-        )
+        vector_db=vector_db
     )
     logger.info("CSV knowledge base initialized")
 
@@ -31,8 +51,12 @@ def csv_reader(csv_path, recreate_db=False):
     logger.info("Agent created with CSV knowledge")
 
     # Load the knowledge base with recreation option
-    agent.knowledge.load(recreate=recreate_db)
-    logger.info("Knowledge base loaded successfully")
+    try:
+        agent.knowledge.load(recreate=recreate_db)
+        logger.info("Knowledge base loaded successfully")
+    except Exception as e:
+        logger.error(f"Error loading knowledge base: {e}")
+        logger.info("Trying to proceed with analysis anyway...")
 
     # Create a more specific prompt with CSV context
     analysis_prompt = f"""The CSV file at {csv_path} contains {len(df)} rows and {len(df.columns)} columns.
@@ -54,26 +78,15 @@ def csv_reader(csv_path, recreate_db=False):
         return str(df.describe())
     return response
 
-
 if __name__ == "__main__":
     reports_dict = discover_reports()
     report_timestamp = sorted(reports_dict.keys())[-1]
     print(report_timestamp)
     
     # Find the cdl_data.csv file in the nsrdb group
-    nsrdb_files = reports_dict[report_timestamp]["groups"]["cdl"]["files"]
-    csv_path = None
-    #
-    # Files are organized by extension
-    if ".csv" in nsrdb_files:
-        for file_info in nsrdb_files[".csv"]:
-            if file_info["name"] == "cdl_data.csv":
-                csv_path = file_info["path"]
-                break
-    
-    if csv_path is None:
-        raise FileNotFoundError("Could not find cdl_data.csv in the report")
-        
+    csv_path = reports_dict[report_timestamp]["groups"]["cdl"]["files"]['.csv']['cdl_data.csv']['path']
+
     print(csv_path)
+    # Note: Set recreate_db=True if getting duplicate key errors
     response = csv_reader(csv_path, recreate_db=True)
     print(response)

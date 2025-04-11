@@ -8,15 +8,16 @@ from agno.embedder.openai import OpenAIEmbedder
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.media import Image
-from dir_discover import discover_reports
+from typing import Dict, Optional
 import os
 from pathlib import Path
 
-def combined_reader(report_timestamp=None, group_name=None, recreate_db=False):
+def combined_reader(reports_dict: Dict, report_timestamp: Optional[str] = None, group_name: Optional[str] = None, recreate_db: bool = False):
     """
     Analyzes a complete report group by combining multiple types of data.
     
     Args:
+        reports_dict: Dictionary containing the report structure
         report_timestamp: Specific report timestamp to analyze (e.g., "20250324_222749")
         group_name: Specific group to analyze (e.g., "groundwater", "climate")
         recreate_db: Whether to recreate the database
@@ -24,9 +25,6 @@ def combined_reader(report_timestamp=None, group_name=None, recreate_db=False):
     Returns:
         The analysis response
     """
-    # Get reports structure
-    reports_dict = discover_reports()
-    
     # If no timestamp provided, use the latest
     if report_timestamp is None:
         report_timestamp = sorted(reports_dict.keys())[-1]
@@ -79,13 +77,13 @@ def combined_reader(report_timestamp=None, group_name=None, recreate_db=False):
     # Add markdown/text files
     for ext in [".md", ".txt"]:
         if ext in files:
-            for file_data in files[ext]:
-                print(f"Adding text: {file_data['name']}")
-                with open(file_data["path"], "r") as f:
+            for filename, file_info in files[ext].items():
+                print(f"Adding text: {filename}")
+                with open(file_info["path"], "r") as f:
                     content = f.read()
                 
                 text_kb = TextKnowledgeBase(
-                    path=file_data["path"],
+                    path=file_info["path"],
                     text=content,
                     vector_db=PgVector(
                         table_name="text_documents",
@@ -97,10 +95,10 @@ def combined_reader(report_timestamp=None, group_name=None, recreate_db=False):
     
     # Add CSV files
     if ".csv" in files:
-        for file_data in files[".csv"]:
-            print(f"Adding CSV: {file_data['name']}")
+        for filename, file_info in files[".csv"].items():
+            print(f"Adding CSV: {filename}")
             csv_kb = CSVKnowledgeBase(
-                path=file_data["path"],
+                path=file_info["path"],
                 vector_db=PgVector(
                     table_name="csv_documents",
                     db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
@@ -146,13 +144,13 @@ def combined_reader(report_timestamp=None, group_name=None, recreate_db=False):
             ]
         )
         
-        for file_data in files[".png"]:
-            print(f"Processing image: {file_data['name']}")
+        for filename, file_info in files[".png"].items():
+            print(f"Processing image: {filename}")
             description = image_agent.print_response(
                 "What does this visualization show? Provide a detailed analysis.",
-                images=[Image(filepath=file_data["path"])]
+                images=[Image(filepath=file_info["path"])]
             )
-            image_descriptions.append(f"Analysis of {file_data['name']}:\n{description}")
+            image_descriptions.append(f"Analysis of {filename}:\n{description}")
     
     # Create comprehensive analysis prompt
     image_section = "\n\nImage Analyses:\n" + "\n".join(image_descriptions) if image_descriptions else ""
@@ -172,10 +170,16 @@ Focus on providing an integrated analysis that connects all pieces of informatio
     return agent.print_response(analysis_prompt, stream=True)
 
 if __name__ == "__main__":
+    # Import discover_reports only when running as main
+    from dir_discover import discover_reports
+    
+    # Get the reports structure
+    reports = discover_reports()
+    
     # Example: Analyze the latest report's groundwater group
-    response = combined_reader(group_name="groundwater", recreate_db=True)
+    response = combined_reader(reports, group_name="groundwater", recreate_db=True)
     print("\nAnalysis:")
     print(response)
     
     # To see available groups in a specific report:
-    # combined_reader("20250324_222749")
+    # combined_reader(reports, "20250324_222749")

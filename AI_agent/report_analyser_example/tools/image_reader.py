@@ -37,20 +37,11 @@ if __name__ == "__main__":
     
     reports_dict = discover_reports()
     
-    # Collect all PNG images from the reports structure
-    png_images = []
-    for report_name, report_data in reports_dict.items():
-        for group_name, group_data in report_data["groups"].items():
-            if ".png" in group_data["files"]:
-                png_images.extend([f["path"] for f in group_data["files"][".png"]])
-  
-    # Select a random image
-    image_path = random.choice(png_images)
-    print(f"Selected image: {image_path}")
+    report_timestamp = sorted(reports_dict.keys())[-1]
 
+    image_path = reports_dict[report_timestamp]["groups"]["cdl"]["files"]['.png']['cdl_rotation.png']['path']
     
-    if image_path:
-        print(f"\nAnalyzing image: {image_path}")
-        response = image_reader(image_path)
-        print("\nAnalysis:")
-        print(response)
+    print(image_path)
+
+    response = image_reader(image_path)
+    print(response)
