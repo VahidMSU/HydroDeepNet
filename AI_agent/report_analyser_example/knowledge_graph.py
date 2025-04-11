@@ -26,6 +26,40 @@ class KnowledgeGraph:
         self.logger = logger
         self.knowledge_graph = None
         
+        # Initialize domain terms with comprehensive vocabulary
+        self.domain_terms = {
+            "hydrology": [
+                "groundwater", "aquifer", "water level", "flow", "recharge", "discharge", 
+                "streamflow", "runoff", "infiltration", "hydraulic conductivity",
+                "water table", "piezometric", "porosity", "permeability", "transmissivity"
+            ],
+            "climate": [
+                "precipitation", "rainfall", "temperature", "evaporation", "evapotranspiration",
+                "drought", "flood", "seasonal", "annual", "monthly", "humidity", "wind",
+                "climate change", "weather", "storm", "extreme events"
+            ],
+            "agriculture": [
+                "crop", "yield", "irrigation", "soil", "land use", "vegetation", 
+                "fertilizer", "NDVI", "ET", "land cover", "planting", "harvesting",
+                "growing season", "crop rotation", "agricultural practices"
+            ],
+            "geography": [
+                "location", "region", "spatial", "map", "terrain", "elevation", "slope", 
+                "aspect", "watershed", "basin", "topography", "landscape", "GIS",
+                "coordinates", "geographic features"
+            ],
+            "time": [
+                "temporal", "time series", "seasonal", "annual", "trend", "change", "variability",
+                "extreme", "prediction", "forecast", "simulation", "historical",
+                "future", "past", "present"
+            ],
+            "analysis": [
+                "statistics", "correlation", "regression", "trend analysis", "significance",
+                "average", "mean", "median", "standard deviation", "variance",
+                "distribution", "pattern", "anomaly", "outlier"
+            ]
+        }
+        
     def create_knowledge_graph(self):
         """
         Create and populate a knowledge graph to represent domain concepts and their relationships.
@@ -41,18 +75,7 @@ class KnowledgeGraph:
             "nodes": {},  # Concepts and entities
             "relationships": {},  # How concepts are connected
             "file_concepts": {},  # Mapping from files to concepts they contain
-            "domain_terms": {
-                "hydrology": ["groundwater", "aquifer", "water level", "flow", "recharge", "discharge", 
-                              "streamflow", "runoff", "infiltration", "hydraulic conductivity"],
-                "climate": ["precipitation", "rainfall", "temperature", "evaporation", "evapotranspiration",
-                           "drought", "flood", "seasonal", "annual", "monthly"],
-                "agriculture": ["crop", "yield", "irrigation", "soil", "land use", "vegetation", 
-                               "fertilizer", "NDVI", "ET", "land cover"],
-                "geography": ["location", "region", "spatial", "map", "terrain", "elevation", "slope", 
-                             "aspect", "watershed", "basin"],
-                "time": ["temporal", "time series", "seasonal", "annual", "trend", "change", "variability",
-                        "extreme", "prediction", "forecast", "simulation"]
-            }
+            "domain_terms": self.domain_terms
         }
         
         try:
@@ -231,15 +254,40 @@ class KnowledgeGraph:
         # Extract keywords from the query
         keywords = extract_keywords(query)
         
-        # Find concepts in the query
+        # Find concepts in the query with fuzzy matching
         matched_concepts = []
         for concept in self.knowledge_graph["nodes"]:
+            # Exact match
             if concept.lower() in query.lower():
                 matched_concepts.append(concept)
+                continue
             
+            # Fuzzy match - check for concept words in query
+            concept_words = concept.lower().split()
+            if len(concept_words) > 1 and all(word in query.lower() for word in concept_words):
+                matched_concepts.append(concept)
+        
+        # If no direct concept matches, try domain inference
         if not matched_concepts:
-            return None
+            domain_matches = {}
+            query_keywords = extract_keywords(query)
             
+            # Check if query keywords match our domain terms
+            for domain, terms in self.knowledge_graph["domain_terms"].items():
+                match_count = sum(1 for kw in query_keywords if any(kw in term.lower() for term in terms))
+                if match_count > 0:
+                    domain_matches[domain] = match_count
+            
+            if domain_matches:
+                top_domain = max(domain_matches.items(), key=lambda x: x[1])[0]
+                relevant_concepts = [concept for concept, data in self.knowledge_graph["nodes"].items() 
+                                   if data.get("domain") == top_domain][:5]
+                
+                if relevant_concepts:
+                    return f"Your question seems to be about {top_domain}. Here are some related concepts I know about: {', '.join(relevant_concepts)}. Would you like me to provide information about any of these?"
+            
+            return None
+        
         # Find files relevant to these concepts
         relevant_files = {}
         for concept in matched_concepts:

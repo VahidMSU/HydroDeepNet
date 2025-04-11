@@ -1,0 +1,1 @@
+{"id": "67a0a938-47a7-4ab8-ab58-07cc7a75bd4b", "timestamp": "2025-04-10T22:19:10.250977", "user_input": "hi", "agent_response": null, "context_used": {"patterns_matched": [], "timestamp": "2025-04-10T22:19:07.926418"}, "metadata": {"enhanced_query": null, "confidence": 0.9, "response_metadata": {"agent": "document_navigator", "role": "primary"}}}

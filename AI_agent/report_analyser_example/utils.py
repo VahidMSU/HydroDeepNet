@@ -1,24 +1,102 @@
 import os
 import re
 import pandas as pd
+from context_manager import context
 
-def calculate_similarity(str1, str2):
-    """Calculate simple similarity between two strings using Jaccard similarity."""
-    if not str1 or not str2:
-        return 0
+import json 
         
-    # Convert to sets of words for a simple Jaccard similarity
-    set1 = set(str1.lower().split())
-    set2 = set(str2.lower().split())
+def discover_files(base_path, config, logger):
+    """Auto-discover and categorize files in the given directory."""
+    logger.info(f"Auto-discovering files in {base_path}")
     
-    if not set1 or not set2:
-        return 0
-        
-    # Calculate Jaccard similarity: intersection over union
-    intersection = len(set1.intersection(set2))
-    union = len(set1.union(set2))
+    # Initialize discovered files by category
+    discovered_files = {
+        'pdf': [],
+        'csv': [],
+        'json': [],
+        'docx': [],
+        'md': [],
+        'txt': [],
+        'png': [],
+        'jpg': [],
+        'html': [],
+        'other': []
+    }
     
-    return intersection / union if union > 0 else 0
+    # Walk through the directory structure
+    for root, dirs, files in os.walk(base_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            file_ext = os.path.splitext(file)[1].lower()[1:]
+            
+            # Categorize file by extension
+            if file_ext in discovered_files:
+                discovered_files[file_ext].append(file_path)
+            else:
+                discovered_files['other'].append(file_path)
+    
+    # Log information about discovered files
+    discovered_count = {k: len(v) for k, v in discovered_files.items() if v}
+    logger.info(f"Discovered file counts: {discovered_count}")
+    
+    # Update config with discovered files
+    for file_type, file_paths in discovered_files.items():
+        if file_paths:
+            if file_type == 'csv':
+                for i, path in enumerate(file_paths):
+                    table_name = f"{file_type}_{i}_docs"
+                    if 'csv' not in config:
+                        config['csv'] = []
+                    
+                    # Check if path is already in config
+                    if not any(cfg.get('path') == path for cfg in config['csv']):
+                        config['csv'].append({
+                            'path': path,
+                            'table_name': table_name
+                        })
+            elif file_type == 'json':
+                for i, path in enumerate(file_paths):
+                    table_name = f"{file_type}_{i}_docs"
+                    if 'json' not in config:
+                        config['json'] = []
+                    
+                    # Check if path is already in config
+                    if not any(cfg.get('path') == path for cfg in config['json']):
+                        config['json'].append({
+                            'path': path,
+                            'table_name': table_name
+                        })
+            elif file_type in ['png', 'jpg']:
+                for i, path in enumerate(file_paths):
+                    table_name = f"image_{i}_analysis"
+                    if 'image' not in config:
+                        config['image'] = []
+                    
+                    # Check if path is already in config
+                    if not any(cfg.get('path') == path for cfg in config['image']):
+                        config['image'].append({
+                            'path': path,
+                            'table_name': table_name
+                        })
+                    # Create a basic image summary
+                    create_image_summary(path)
+            elif file_type in ['pdf', 'docx', 'md', 'txt']:
+                for i, path in enumerate(file_paths):
+                    table_name = f"{file_type}_{i}_docs"
+                    if file_type not in config:
+                        config[file_type] = []
+                    
+                    # Check if path is already in config
+                    if not any(cfg.get('path') == path for cfg in config[file_type]):
+                        config[file_type].append({
+                            'path': path,
+                            'table_name': table_name
+                        })
+    
+    logger.info(f"Discovered files: {json.dumps({k: len(v) for k, v in discovered_files.items()})}")
+    return discovered_files
+    
+
 
 def extract_image_name(message, discovered_files=None):
     """Extract the image name from a user message."""
@@ -40,16 +118,18 @@ def extract_image_name(message, discovered_files=None):
             return image_name
     
     # If discovered_files is provided, check for mentions of files that match image files
-    if discovered_files:
-        for img_type in ['png', 'jpg']:
-            for file_path in discovered_files.get(img_type, []):
-                file_name = os.path.basename(file_path)
-                # Remove extension for comparison
-                base_name = os.path.splitext(file_name)[0]
-                
-                # Check if the base name appears in the message
-                if base_name.lower() in message.lower():
-                    return base_name
+    if discovered_files is None:
+        discovered_files = context.discovered_files
+        
+    for img_type in ['png', 'jpg']:
+        for file_path in discovered_files.get(img_type, []):
+            file_name = os.path.basename(file_path)
+            # Remove extension for comparison
+            base_name = os.path.splitext(file_name)[0]
+            
+            # Check if the base name appears in the message
+            if base_name.lower() in message.lower():
+                return base_name
     
     return None
 
@@ -66,58 +146,47 @@ def create_image_summary(path):
         Is animated: {getattr(image, 'is_animated', False)}
         Frames: {getattr(image, 'n_frames', 1)}
         """
+        
+        # Save summary to context
+        context.save_analysis_result(path + "_metadata", summary.strip())
+        
         return summary.strip()
     except Exception as e:
         return f"Error creating image summary: {str(e)}"
 
-def is_response_complete(text):
-    """Check if a response appears to be complete."""
-    if not text:
-        return False
-        
-    # Check for cut-off indicators
-    incomplete_indicators = [
-        '...', '…',  # Ellipsis at the end
-        lambda t: t.endswith((':', ',', '-', '(', '{')),  # Ends with punctuation that expects more content
-        lambda t: t.count('(') > t.count(')'),  # Unbalanced parentheses
-        lambda t: t.count('{') > t.count('}'),  # Unbalanced braces
-        lambda t: t.count('[') > t.count(']'),  # Unbalanced brackets
-    ]
+def calculate_fuzzy_match(str1, str2):
+    """Calculate fuzzy match score between two strings."""
+    # Convert both strings to lowercase for comparison
+    str1 = str1.lower()
+    str2 = str2.lower()
     
-    for indicator in incomplete_indicators:
-        if callable(indicator):
-            if indicator(text):
-                return False
-        elif text.strip().endswith(indicator):
-            return False
-            
-    return True
-
-def deduplicate_content(text, similarity_threshold=0.8):
-    """Remove duplicated content from a response."""
-    if not text:
-        return text
-        
-    # Split text into paragraphs
-    paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
-    if len(paragraphs) <= 1:
-        return text
-        
-    # Filter out duplicate paragraphs while preserving order
-    unique_paragraphs = []
-    seen_paragraphs = set()
+    # If either string is empty, return 0
+    if not str1 or not str2:
+        return 0
     
-    for paragraph in paragraphs:
-        # Check if this is a duplicate or very similar to an existing paragraph
-        is_duplicate = paragraph in seen_paragraphs
-        is_similar = any(calculate_similarity(paragraph, p) > similarity_threshold for p in unique_paragraphs)
-        
-        if not is_duplicate and not is_similar:
-            unique_paragraphs.append(paragraph)
-            seen_paragraphs.add(paragraph)
-            
-    # Reconstruct the text
-    return '\n\n'.join(unique_paragraphs)
+    # If strings are identical, return 1
+    if str1 == str2:
+        return 1
+    
+    # Split into words and find common words
+    words1 = set(str1.split())
+    words2 = set(str2.split())
+    
+    # Calculate Jaccard similarity for words
+    intersection = len(words1.intersection(words2))
+    union = len(words1.union(words2))
+    
+    if union == 0:
+        return 0
+    
+    # Calculate word-based similarity
+    word_similarity = intersection / union
+    
+    # Calculate character-based similarity for non-exact word matches
+    char_similarity = len(set(str1).intersection(set(str2))) / len(set(str1).union(set(str2)))
+    
+    # Return weighted average of word and character similarity
+    return 0.7 * word_similarity + 0.3 * char_similarity
 
 def extract_main_topic(query):
     """Extract the main topic from a query."""

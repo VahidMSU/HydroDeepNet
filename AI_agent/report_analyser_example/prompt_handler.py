@@ -5,6 +5,8 @@ This module provides functions to extract semantic information from text input.
 import re
 import logging
 import pandas as pd
+import os
+from context_manager import context
 
 def extract_keywords(text):
     """
@@ -175,3 +177,441 @@ def should_visualize(query, csv_path, logger=None):
         if logger:
             logger.error(f"Error in should_visualize: {str(e)}")
         return False
+
+    
+def enhance_relevance(response, query):
+    """Try to enhance the relevance of a response to the query."""
+    # If response already seems relevant, leave it as is
+    if calculate_query_relevance(response, query) >= 0.7:
+        return response
+        
+    # Extract key information from the query
+    query_terms = extract_keywords(query)
+    
+    # Append a note addressing the query more directly
+    enhanced = response.strip()
+    enhanced += "\n\nRegarding your specific question about " + ", ".join(query_terms[:3]) + ": "
+    enhanced += f"I've provided the available information above. If you need more specific details about {' or '.join(query_terms[:2])}, please let me know."
+    
+    return enhanced
+
+
+def validate_response(response, query, logger):
+    """
+    Validate and improve the agent's response.
+    
+    Args:
+        response: The raw response from the agent
+        query: The user's query that prompted this response
+        
+    Returns:
+        The validated and potentially enhanced response
+    """
+    logger.debug(f"Validating response: length={len(response) if response else 0}")
+    
+    # Skip validation if response is None or empty
+    if not response or not response.strip():
+        logger.warning("Empty response received during validation")
+        return "I apologize, but I couldn't generate a complete response."
+        
+    # If the response is very short, check if it's an error or apology
+    if len(response.strip()) < 20:
+        logger.warning(f"Very short response: '{response}'")
+        if "error" in response.lower() or "apologize" in response.lower() or "sorry" in response.lower():
+            return response
+        else:
+            # For very short non-error responses, we assume they're valid
+            return response
+        
+    # Check for incomplete or truncated responses
+    if not is_response_complete(response):
+        logger.debug("Response appears incomplete, completing it")
+        response = complete_response(response)
+        
+    # Check for repeated content
+    if has_repeated_sections(response):
+        logger.debug("Response has repeated sections, deduplicating")
+        response = deduplicate_content(response)
+        
+    # Only add this context clarification for long responses that seem to be
+    # generic or not directly addressing the query
+    relevance_score = calculate_query_relevance(response, query)
+    logger.debug(f"Response relevance score: {relevance_score:.2f}")
+    
+    if len(response) > 500 and relevance_score < 0.3:
+        query_terms = ", ".join(extract_keywords(query)[:3])
+        if query_terms:
+            logger.debug(f"Adding clarification for low-relevance response about: {query_terms}")
+            # Only add clarification text if the response seems generic and unrelated
+            if not response.endswith("\n"):
+                response += "\n\n"
+            else:
+                response += "\n"
+            response += f"Regarding your specific question about {query_terms}: I've provided the available information above. If you need more specific details, please let me know."
+    
+    # Remove any empty list items or bullet points
+    response = re.sub(r'\n\s*[-*]\s*\n', '\n\n', response)
+    
+    # Remove any remaining debug information
+    cleaned_response = clean_response_output(response)
+    
+    return cleaned_response
+
+def has_repeated_sections(text):
+    """Check if a response has repeated sections."""
+    if not text:
+        return False
+        
+    # Split text into paragraphs
+    paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+    if len(paragraphs) <= 1:
+        return False
+        
+    # Check for duplicate paragraphs
+    seen_paragraphs = set()
+    for paragraph in paragraphs:
+        if paragraph in seen_paragraphs:
+            return True
+        seen_paragraphs.add(paragraph)
+        
+    # Check for similar consecutive sections
+    for i in range(len(paragraphs) - 1):
+        similarity = calculate_similarity(paragraphs[i], paragraphs[i+1])
+        if similarity > 0.7:  # 70% similarity threshold
+            return True
+            
+    return False
+
+def complete_response(text):
+    """Try to make an incomplete response complete."""
+    if not text:
+        return "I apologize, but I couldn't generate a complete response."
+        
+    # If cut off with ellipsis, add a proper ending
+    if text.strip().endswith(('...', '…')):
+        return text.strip() + "\n\nI apologize, but the response was truncated. Please let me know if you'd like more information on this topic."
+        
+    # Balance unmatched parentheses, brackets, braces
+    for open_char, close_char in [('(', ')'), ('[', ']'), ('{', '}')]:
+        open_count = text.count(open_char)
+        close_count = text.count(close_char)
+        if open_count > close_count:
+            # Add missing closing characters
+            text = text + (close_char * (open_count - close_count))
+            
+    # If ends with a colon, add a concluding sentence
+    if text.strip().endswith(':'):
+        text = text + " I'll provide more details if you'd like additional information."
+        
+    return text
+    
+def calculate_query_relevance(response, query):
+    """Calculate how relevant a response is to the original query."""
+    if not response or not query:
+        return 0.0
+        
+    # Extract key terms from the query
+    query_terms = set(extract_keywords(query))
+    if not query_terms:
+        return 1.0  # No meaningful terms to match
+        
+    # Check how many query terms appear in the response
+    response_lower = response.lower()
+    matched_terms = sum(1 for term in query_terms if term.lower() in response_lower)
+    
+    # Calculate relevance score
+    relevance_score = matched_terms / len(query_terms) if query_terms else 0.0
+    
+    return relevance_score
+
+
+def is_response_complete(text):
+    """Check if a response appears to be complete."""
+    if not text:
+        return False
+        
+    # Check for cut-off indicators
+    incomplete_indicators = [
+        '...', '…',  # Ellipsis at the end
+        lambda t: t.endswith((':', ',', '-', '(', '{')),  # Ends with punctuation that expects more content
+        lambda t: t.count('(') > t.count(')'),  # Unbalanced parentheses
+        lambda t: t.count('{') > t.count('}'),  # Unbalanced braces
+        lambda t: t.count('[') > t.count(']'),  # Unbalanced brackets
+    ]
+    
+    for indicator in incomplete_indicators:
+        if callable(indicator):
+            if indicator(text):
+                return False
+        elif text.strip().endswith(indicator):
+            return False
+            
+    return True
+
+
+
+def deduplicate_content(text, similarity_threshold=0.8):
+    """Remove duplicated content from a response."""
+    if not text:
+        return text
+        
+    # Split text into paragraphs
+    paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
+    if len(paragraphs) <= 1:
+        return text
+        
+    # Filter out duplicate paragraphs while preserving order
+    unique_paragraphs = []
+    seen_paragraphs = set()
+    
+    for paragraph in paragraphs:
+        # Check if this is a duplicate or very similar to an existing paragraph
+        is_duplicate = paragraph in seen_paragraphs
+        is_similar = any(calculate_similarity(paragraph, p) > similarity_threshold for p in unique_paragraphs)
+        
+        if not is_duplicate and not is_similar:
+            unique_paragraphs.append(paragraph)
+            seen_paragraphs.add(paragraph)
+            
+    # Reconstruct the text
+    return '\n\n'.join(unique_paragraphs)
+
+
+
+
+def calculate_similarity(str1, str2):
+    """Calculate simple similarity between two strings using Jaccard similarity."""
+    if not str1 or not str2:
+        return 0
+        
+    # Convert to sets of words for a simple Jaccard similarity
+    set1 = set(str1.lower().split())
+    set2 = set(str2.lower().split())
+    
+    if not set1 or not set2:
+        return 0
+        
+    # Calculate Jaccard similarity: intersection over union
+    intersection = len(set1.intersection(set2))
+    union = len(set1.union(set2))
+    
+    return intersection / union if union > 0 else 0
+
+
+
+
+def handle_markdown_command(args, discovered_files, logger):
+    """Handle /markdown command to view markdown files."""
+    # If no args are provided, list all markdown files
+    if not args.strip():
+        md_files = context.discovered_files.get('md', [])
+        if not md_files:
+            return "No markdown files have been discovered yet. Use `/discover path` to find files."
+        
+        md_list = "## Available Markdown Files:\n\n"
+        for i, path in enumerate(md_files, 1):
+            md_list += f"{i}. {os.path.basename(path)}\n"
+        
+        md_list += "\nTo view a markdown file, use `/markdown [filename]` or `/md [filename]`"
+        return md_list
+    
+    # If a filename is provided, find and read the file
+    file_path = args.strip()
+    
+    # Remove extension if present to improve matching
+    base_file_name = os.path.splitext(file_path)[0]
+    
+    # Find matching files if path is partial
+    matching_files = []
+    for path in context.discovered_files.get('md', []):
+        path_basename = os.path.basename(path)
+        path_basename_noext = os.path.splitext(path_basename)[0]
+        
+        # Match with or without extension
+        if (base_file_name.lower() in path_basename_noext.lower() or
+            file_path.lower() in path_basename.lower()):
+            matching_files.append(path)
+    
+    if not matching_files:
+        return f"No markdown files found matching '{file_path}'. Use `/files` to see available files."
+    
+    if len(matching_files) > 1:
+        file_list = "\n".join([f"- {os.path.basename(path)}" for path in matching_files])
+        return f"Multiple markdown files found matching '{file_path}'. Please be more specific:\n\n{file_list}"
+    
+    # We found exactly one matching file
+    target_md = matching_files[0]
+    
+    # Update context
+    context.set_current_topic('markdown_view', [target_md])
+    
+    try:
+        # Check if we have a cached analysis
+        cached_analysis = context.get_file_analysis(target_md)
+        if cached_analysis:
+            return cached_analysis
+            
+        # Read the markdown file
+        with open(target_md, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Prepare response
+        response = f"## Markdown File: {os.path.basename(target_md)}\n\n"
+        response += content
+        
+        # Save to context
+        context.save_analysis_result(target_md, response)
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error reading markdown file: {str(e)}")
+        return f"Error reading markdown file '{os.path.basename(target_md)}': {str(e)}"
+
+def handle_csv_command(args, discovered_files, logger, limit=5):
+    """Handle /csv command to view and analyze CSV files."""
+    from csv_utils import analyze_csv, perform_column_stats
+    
+    # If no args are provided, list all CSV files
+    if not args.strip():
+        csv_files = context.discovered_files.get('csv', [])
+        if not csv_files:
+            return "No CSV files have been discovered yet. Use `/discover path` to find files."
+        
+        csv_list = "## Available CSV Files:\n\n"
+        for i, path in enumerate(csv_files, 1):
+            csv_list += f"{i}. {os.path.basename(path)}\n"
+        
+        csv_list += "\nTo view a CSV file, use `/csv [filename]` or `/csv [filename] [column_name]` to analyze a specific column."
+        return csv_list
+    
+    # Parse arguments - could be filename only or filename + column
+    args_list = args.split()
+    file_path = args_list[0]
+    column_name = args_list[1] if len(args_list) > 1 else None
+    
+    # Remove extension if present to improve matching
+    base_file_name = os.path.splitext(file_path)[0]
+    
+    # Find matching files if path is partial
+    matching_files = []
+    for path in context.discovered_files.get('csv', []):
+        path_basename = os.path.basename(path)
+        path_basename_noext = os.path.splitext(path_basename)[0]
+        
+        # Match with or without extension
+        if (base_file_name.lower() in path_basename_noext.lower() or
+            file_path.lower() in path_basename.lower()):
+            matching_files.append(path)
+    
+    if not matching_files:
+        return f"No CSV files found matching '{file_path}'. Use `/files` to see available files."
+    
+    if len(matching_files) > 1:
+        file_list = "\n".join([f"- {os.path.basename(path)}" for path in matching_files])
+        return f"Multiple CSV files found matching '{file_path}'. Please be more specific:\n\n{file_list}"
+    
+    # We found exactly one matching file
+    target_csv = matching_files[0]
+    
+    # Update context
+    context.set_current_topic('csv_analysis', [target_csv])
+    
+    try:
+        # If a column name is provided, perform column analysis
+        if column_name:
+            # Check if we already have analysis results for this column
+            cache_key = f"{target_csv}:{column_name}"
+            cached_results = context.get_file_analysis(cache_key)
+            if cached_results:
+                return cached_results
+            
+            # Otherwise perform the analysis
+            column_analysis = perform_column_stats(target_csv, column_name, logger)
+            
+            # Save the results to context
+            context.save_analysis_result(cache_key, column_analysis)
+            
+            return column_analysis
+        
+        # Otherwise show general CSV info
+        cached_results = context.get_file_analysis(target_csv)
+        if cached_results:
+            return cached_results
+        
+        # If not in cache, analyze the CSV
+        csv_analysis = analyze_csv(target_csv, limit, logger)
+        
+        # Save the results
+        context.save_analysis_result(target_csv, csv_analysis)
+        
+        return csv_analysis
+        
+    except Exception as e:
+        logger.error(f"Error analyzing CSV file: {str(e)}")
+        return f"Error analyzing CSV file '{os.path.basename(target_csv)}': {str(e)}"
+
+def handle_json_command(args, discovered_files, logger):
+    """Handle /json command to view and analyze JSON files."""
+    from json_queries import analyze_json_file
+    
+    # If no args are provided, list all JSON files
+    if not args.strip():
+        json_files = context.discovered_files.get('json', [])
+        if not json_files:
+            return "No JSON files have been discovered yet. Use `/discover path` to find files."
+        
+        json_list = "## Available JSON Files:\n\n"
+        for i, path in enumerate(json_files, 1):
+            json_list += f"{i}. {os.path.basename(path)}\n"
+        
+        json_list += "\nTo view a JSON file, use `/json [filename]`"
+        return json_list
+    
+    # Parse arguments
+    file_path = args.split()[0]
+    
+    # Remove extension if present to improve matching
+    base_file_name = os.path.splitext(file_path)[0]
+    
+    # Find matching files if path is partial
+    matching_files = []
+    for path in context.discovered_files.get('json', []):
+        path_basename = os.path.basename(path)
+        path_basename_noext = os.path.splitext(path_basename)[0]
+        
+        # Match with or without extension
+        if (base_file_name.lower() in path_basename_noext.lower() or
+            file_path.lower() in path_basename.lower()):
+            matching_files.append(path)
+    
+    if not matching_files:
+        return f"No JSON files found matching '{file_path}'. Use `/files` to see available files."
+    
+    if len(matching_files) > 1:
+        file_list = "\n".join([f"- {os.path.basename(path)}" for path in matching_files])
+        return f"Multiple JSON files found matching '{file_path}'. Please be more specific:\n\n{file_list}"
+    
+    # We found exactly one matching file
+    target_json = matching_files[0]
+    
+    # Update context
+    context.set_current_topic('json_analysis', [target_json])
+    
+    try:
+        # Check if we already have analysis results for this file
+        cached_results = context.get_file_analysis(target_json)
+        if cached_results:
+            return cached_results
+        
+        # Otherwise analyze the JSON
+        json_analysis = analyze_json_file(target_json, logger)
+        
+        # Save the results
+        context.save_analysis_result(target_json, json_analysis)
+        
+        return json_analysis
+        
+    except Exception as e:
+        logger.error(f"Error analyzing JSON file: {str(e)}")
+        return f"Error analyzing JSON file '{os.path.basename(target_json)}': {str(e)}"

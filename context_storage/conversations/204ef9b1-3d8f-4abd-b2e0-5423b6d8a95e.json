@@ -1,0 +1,1 @@
+{"id": "204ef9b1-3d8f-4abd-b2e0-5423b6d8a95e", "timestamp": "2025-04-10T23:13:49.880586", "user_input": "hi", "agent_response": "I apologize, but I encountered an error processing your request.", "context_used": {}, "metadata": {"error": "'NoneType' object has no attribute 'route_query'"}}

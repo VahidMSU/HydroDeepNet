@@ -4,7 +4,12 @@ from agno.knowledge.csv import CSVKnowledgeBase
 from agno.knowledge.json import JSONKnowledgeBase
 from agno.knowledge.docx import DocxKnowledgeBase
 from agno.knowledge.website import WebsiteKnowledgeBase
+from agno.knowledge.combined import CombinedKnowledgeBase
 from agno.vectordb.pgvector import PgVector
+from redis_tools import RedisTools
+from data_visualizer import DataVisualizer
+from knowledge_graph import KnowledgeGraph
+from context_manager import context
 from agno.agent import Agent
 from agno.embedder.openai import OpenAIEmbedder
 from agno.media import Image
@@ -17,7 +22,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from datetime import datetime
 import uuid
-from agno.knowledge.combined import CombinedKnowledgeBase
+
 import re
 import traceback
 from PIL import Image as PILImage
@@ -27,32 +32,88 @@ import os
 from utils import (
     extract_image_name,
     create_image_summary,
-    is_response_complete,
-    deduplicate_content,
-    extract_main_topic,
-    calculate_similarity
+    extract_main_topic
 )
-from redis_tools import RedisTools
-from prompt_handler import extract_keywords, clean_response_output, should_visualize
-from data_visualizer import DataVisualizer
-from knowledge_graph import KnowledgeGraph
+from prompt_handler import (
+                deduplicate_content,
+                  calculate_similarity, 
+                  is_response_complete,
+                  clean_response_output,
+                  extract_keywords,
+                  should_visualize,
+                  validate_response,
+                  complete_response,
+                  enhance_relevance,
+)
+
+
 
 logger = LoggerSetup(verbose=False, rewrite=True)   
 logger = logger.setup_logger("AI_AgentLogger")
+
+
+class QueryProcessor:
+    def process_query(self, query):
+        # 1. Check conversation history
+        relevant_history = self.get_relevant_history(query)
+        
+        # 2. Search knowledge base
+        kb_results = self.knowledge_base.search(query)
+        
+        # 3. Route to appropriate agent
+        agent_response = self.coordinator.route_query(query)
+        
+        # 4. Combine and enhance response
+        final_response = self.enhance_response(
+            query, 
+            relevant_history, 
+            kb_results, 
+            agent_response
+        )
+        
+        return final_response
+
 
 class InteractiveDocumentReader:
     """An interactive AI system for understanding and interpreting various document types."""
     
     def __init__(self, config=None, redis_url="redis://localhost:6379/0"):
-        """
-        Initialize the interactive document reader.
+        """Initialize the document reader with the given configuration."""
+        self.logger = None
+        self._setup_logger()
         
-        Args:
-            config: Dictionary containing configuration for different document types and database
-                If None, will attempt auto-discovery
-            redis_url: URL for Redis connection (used for persistent conversation context)
-        """
+        # Initialize Redis connection
+        self.redis_url = redis_url
+        self.redis_client = None
+        try:
+            import redis
+            self.redis_client = redis.from_url(redis_url)
+            self.logger.info("Connected to Redis")
+        except Exception as e:
+            self.logger.warning(f"Could not connect to Redis: {str(e)}")
+            
+        # Store basic configuration
         self.config = config or {}
+        self.session_id = os.environ.get('SESSION_ID', str(uuid.uuid4()))
+        self.logger.info(f"Session ID: {self.session_id}")
+        
+        # Multi-agent system components
+        self.interactive_agent = None
+        self.knowledge_base = {}
+        self.image_reader = None
+        
+        # Document discovery and processing
+        self.discovered_files = {}
+        self.base_path = None
+        
+        # Update the global context
+        context.session_id = self.session_id
+        context.discovered_files = self.discovered_files
+        context.base_path = self.base_path
+        
+        # Set default conversation history
+        self._sync_conversation_history()
+        
         self.db_url = self.config.get('db_url', "postgresql+psycopg://ai:ai@localhost:5432/ai")
         self.knowledge_bases = {}
         self.combined_knowledge_base = None
@@ -63,10 +124,7 @@ class InteractiveDocumentReader:
         
         # New fields for interactive capabilities
         self.conversation_history = []
-        self.discovered_files = {}
         self.data_summaries = {}
-        self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(uuid.uuid4())[:8]
-        self.interactive_agent = None
         
         # Multi-agent system
         self.agents = {
@@ -75,16 +133,6 @@ class InteractiveDocumentReader:
             "visual_analyst": None,
             "data_scientist": None,
             "domain_expert": None
-        }
-        
-        # Context tracking
-        self.context = {
-            'current_topic': None,
-            'current_files': [],
-            'pending_questions': [],
-            'pending_actions': [],
-            'last_question': None,
-            'agent_states': {}  # Track state of each agent
         }
         
         # State machine for conversation management
@@ -106,26 +154,42 @@ class InteractiveDocumentReader:
         
         # Initialize Redis tools
         self.redis_tools = RedisTools(redis_url, self.session_id)
-        self.has_redis = self.redis_tools.has_redis
         
         # Initialize utility classes
         self.data_visualizer = None
         self.knowledge_graph_manager = None
+        
+        # Set up context with session info
+        context.session_id = self.session_id
+        if config:
+            context.config = config
     
+    def _setup_logger(self):
+        """Setup the logger for the document reader."""
+        self.logger = LoggerSetup(verbose=False, rewrite=False) 
+        self.logger = self.logger.setup_logger("AI_AgentLogger")
+        
     def _sync_conversation_history(self):
         """Sync conversation history with Redis."""
-        if self.has_redis:
-            # Sync conversation history and context with Redis
-            updated_data = self.redis_tools.sync_data(
-                {
-                    'conversation_history': self.conversation_history,
-                    'context': self.context
-                },
-                ['conversation_history', 'context']
-            )
+        from context_manager import context
+        
+        if not self.redis_client:
+            return False
             
-            self.conversation_history = updated_data['conversation_history']
-            self.context = updated_data['context']
+        try:
+            # Attempt to retrieve existing context from Redis
+            redis_context = self.redis_client.get(f"context:{self.session_id}")
+            if redis_context:
+                # Load and update our local context
+                updated_data = json.loads(redis_context)
+                context.conversation_history = updated_data.get('conversation_history', [])
+                self.logger.info(f"Loaded conversation history from Redis ({len(context.conversation_history)} messages)")
+                return True
+                
+            return False
+        except Exception as e:
+            self.logger.error(f"Error syncing conversation history: {str(e)}")
+            return False
     
     def initialize(self, auto_discover=False, base_path=None):
         """Initialize the interactive document reader with optional file discovery."""
@@ -153,15 +217,6 @@ class InteractiveDocumentReader:
             'json': [],
         }
         
-        # Initialize context
-        self.context = {
-            'current_topic': None,
-            'current_files': [],
-            'pending_questions': [],
-            'pending_actions': [],
-            'last_question': None
-        }
-        
         # Initialize knowledge base and agents
         self.knowledge_bases = {}
         self.agent = None
@@ -175,19 +230,26 @@ class InteractiveDocumentReader:
         
         # Initialize utility classes
         self.data_visualizer = DataVisualizer(logger=logger)
+
+
         
-        # Check for Redis
-        if self.has_redis:
-            # Try to load conversation history and context from Redis
-            saved_history = self.redis_tools.load_from_redis('conversation_history')
-            if saved_history:
-                self.conversation_history = saved_history
-                logger.info(f"Loaded conversation history from Redis: {len(saved_history)} messages")
-            
-            saved_context = self.redis_tools.load_from_redis('context')
-            if saved_context:
-                self.context = saved_context
-                logger.info(f"Loaded context from Redis")
+        # Set base path in context
+        context.base_path = base_path
+        
+        saved_history = self.redis_tools.load_from_redis('conversation_history')
+        if saved_history:
+            self.conversation_history = saved_history
+            context.add_to_conversation("assistant", "Hello! I'm your interactive document assistant. How can I help you analyze your data today?")
+            logger.info(f"Loaded conversation history from Redis: {len(saved_history)} messages")
+        
+        saved_context_data = self.redis_tools.load_from_redis('context')
+        if saved_context_data:
+            # Transfer data to our AppContext singleton
+            if 'current_topic' in saved_context_data:
+                context.current_topic = saved_context_data['current_topic']
+            if 'current_files' in saved_context_data:
+                context.current_files = saved_context_data['current_files']
+            logger.info(f"Loaded context from Redis")
         
         # Auto-discover files if requested
         if auto_discover and base_path:
@@ -207,6 +269,7 @@ class InteractiveDocumentReader:
                 "role": "assistant", 
                 "content": "Hello! I'm your interactive document assistant. How can I help you analyze your data today?"
             })
+            context.add_to_conversation("assistant", "Hello! I'm your interactive document assistant. How can I help you analyze your data today?")
             
         logger.info("InteractiveDocumentReader initialized successfully")
         return True
@@ -314,103 +377,17 @@ class InteractiveDocumentReader:
             return False
             
     def _discover_files(self, base_path):
-        """Auto-discover and categorize files in the given directory."""
-        logger.info(f"Auto-discovering files in {base_path}")
-        
-        # Initialize discovered files by category
-        self.discovered_files = {
-            'pdf': [],
-            'csv': [],
-            'json': [],
-            'docx': [],
-            'md': [],
-            'txt': [],
-            'png': [],
-            'jpg': [],
-            'html': [],
-            'other': []
-        }
-        
-        # Walk through the directory structure
-        for root, dirs, files in os.walk(base_path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                file_ext = os.path.splitext(file)[1].lower()[1:]
-                
-                # Categorize file by extension
-                if file_ext in self.discovered_files:
-                    self.discovered_files[file_ext].append(file_path)
-                else:
-                    self.discovered_files['other'].append(file_path)
-        
-        # Log information about discovered files
-        discovered_count = {k: len(v) for k, v in self.discovered_files.items() if v}
-        logger.info(f"Discovered file counts: {discovered_count}")
-        
-        # Update config with discovered files
-        for file_type, file_paths in self.discovered_files.items():
-            if file_paths:
-                if file_type == 'csv':
-                    for i, path in enumerate(file_paths):
-                        table_name = f"{file_type}_{i}_docs"
-                        if 'csv' not in self.config:
-                            self.config['csv'] = []
-                        
-                        # Check if path is already in config
-                        if not any(cfg.get('path') == path for cfg in self.config['csv']):
-                            self.config['csv'].append({
-                                'path': path,
-                                'table_name': table_name
-                            })
-                elif file_type == 'json':
-                    for i, path in enumerate(file_paths):
-                        table_name = f"{file_type}_{i}_docs"
-                        if 'json' not in self.config:
-                            self.config['json'] = []
-                        
-                        # Check if path is already in config
-                        if not any(cfg.get('path') == path for cfg in self.config['json']):
-                            self.config['json'].append({
-                                'path': path,
-                                'table_name': table_name
-                            })
-                elif file_type in ['png', 'jpg']:
-                    for i, path in enumerate(file_paths):
-                        table_name = f"image_{i}_analysis"
-                        if 'image' not in self.config:
-                            self.config['image'] = []
-                        
-                        # Check if path is already in config
-                        if not any(cfg.get('path') == path for cfg in self.config['image']):
-                            self.config['image'].append({
-                                'path': path,
-                                'table_name': table_name
-                            })
-                        # Create a basic image summary
-                        create_image_summary(path)
-                elif file_type in ['pdf', 'docx', 'md', 'txt']:
-                    for i, path in enumerate(file_paths):
-                        table_name = f"{file_type}_{i}_docs"
-                        if file_type not in self.config:
-                            self.config[file_type] = []
-                        
-                        # Check if path is already in config
-                        if not any(cfg.get('path') == path for cfg in self.config[file_type]):
-                            self.config[file_type].append({
-                                'path': path,
-                                'table_name': table_name
-                            })
-        
-        # Generate data summaries for all discovered files
-        self._generate_data_summaries()
-        
-        # Ensure the discovered files are properly reflected in the agent's instructions
-        self._update_interactive_agent_instructions()
-        
-        logger.info(f"Discovered files: {json.dumps({k: len(v) for k, v in self.discovered_files.items()})}")
-        return True
-        
+        try:
+            from utils import discover_files
+            self.discovered_files = discover_files(base_path, self.config, logger)
+            # Generate data summaries for all discovered files
+            self._generate_data_summaries()
+            # Ensure the discovered files are properly reflected in the agent's instructions
+            self._update_interactive_agent_instructions()
 
+        except Exception as e:
+            logger.error(f"_discover_files Error discovering files: {str(e)}")
+            return False
     
     def _update_interactive_agent_instructions(self):
         """Update the instructions for the interactive agent with current file information."""
@@ -778,13 +755,12 @@ class InteractiveDocumentReader:
         """Generate a basic statistical analysis for data files."""
         return self.data_visualizer.analyze_csv_data(file_path)
     
-    def _should_visualize(self, query, csv_path):
-        """Determine if we should create a visualization based on the query and data."""
-        return self.data_visualizer.should_visualize(query, csv_path)
-    
+
     def _create_contextual_visualization(self, query, csv_path):
         """Create a visualization customized to answer the specific query."""
         return self.data_visualizer.create_contextual_visualization(query, csv_path)
+    
+
     
     def chat(self, message):
         """Process user's message and return a response through the appropriate agent."""
@@ -793,17 +769,20 @@ class InteractiveDocumentReader:
         try:
             # Add the message to conversation history
             self.conversation_history.append({"role": "user", "content": message})
+            context.add_to_conversation("user", message)
             logger.debug(f"Processing user message: '{message[:50] if message else ''}...'")
             
             # Check if there are pending actions to confirm
             pending_handled = False
-            if self.context.get('pending_actions'):
-                for i, action in enumerate(self.context.get('pending_actions', [])):
+            pending_actions = context.config.get('pending_actions', [])
+            if pending_actions:
+                for i, action in enumerate(pending_actions):
                     if action['type'] == 'file_check' and "yes" in message.lower():
                         # User confirmed file check
                         logger.debug(f"Handling file check confirmation for {len(action['file_paths'])} files")
                         response = self._handle_file_check(action['file_paths'])
-                        self.context['pending_actions'].pop(i)
+                        pending_actions.pop(i)
+                        context.config['pending_actions'] = pending_actions
                         pending_handled = True
                         break
                     elif action['type'] == 'image_analysis' and "analyze" in message.lower():
@@ -812,7 +791,8 @@ class InteractiveDocumentReader:
                         if image_name:
                             logger.debug(f"Handling image analysis for '{image_name}'")
                             response = self._analyze_specific_image(image_name)
-                            self.context['pending_actions'].pop(i)
+                            pending_actions.pop(i)
+                            context.config['pending_actions'] = pending_actions
                             pending_handled = True
                             break
             
@@ -858,7 +838,7 @@ class InteractiveDocumentReader:
                             # Apply response validation framework
                             if raw_response:
                                 logger.debug(f"Validating raw response of length: {len(raw_response) if raw_response else 0}")
-                                response = self.validate_response(raw_response, message)
+                                response = validate_response(raw_response, message, self.logger)
                             else:
                                 logger.warning("Received empty response from agent")
                                 response = "I apologize, but I couldn't generate a response. Please try rephrasing your question."
@@ -878,7 +858,7 @@ class InteractiveDocumentReader:
                         # Apply response validation framework
                         if raw_response:
                             logger.debug(f"Validating raw response of length: {len(raw_response) if raw_response else 0}")
-                            response = self.validate_response(raw_response, message)
+                            response = validate_response(raw_response, message, self.logger)
                         else:
                             logger.warning("Received empty response from agent")
                             response = "I apologize, but I couldn't generate a response. Please try rephrasing your question."
@@ -890,7 +870,7 @@ class InteractiveDocumentReader:
             
             # Clean the response of any debug information or formatting
             logger.debug(f"Cleaning response output of length: {len(response) if response else 0}")
-            cleaned_response = self._clean_response_output(response)
+            cleaned_response = clean_response_output(response, logger)
             logger.debug(f"Cleaned response of length: {len(cleaned_response) if cleaned_response else 0}")
             
             # Don't use apology messages if we have a real response
@@ -919,11 +899,16 @@ class InteractiveDocumentReader:
             if should_add_to_history:
                 logger.debug("Adding response to conversation history")
                 self.conversation_history.append({"role": "assistant", "content": response})
+                context.add_to_conversation("assistant", response)
             
             # Save updated conversation history and context to Redis
-            if self.has_redis:
-                self.redis_tools.save_to_redis('conversation_history', self.conversation_history)
-                self.redis_tools.save_to_redis('context', self.context)
+            self.redis_tools.save_to_redis('conversation_history', self.conversation_history)
+            self.redis_tools.save_to_redis('context', {
+                'current_topic': context.current_topic,
+                'current_files': context.current_files,
+                'analysis_results': context.analysis_results,
+                'config': context.config
+            })
                 
             # Update metrics
             response_time = (datetime.now() - start_time).total_seconds()
@@ -937,13 +922,7 @@ class InteractiveDocumentReader:
             logger.error(f"Error in chat: {str(e)}")
             logger.error(traceback.format_exc())
             return f"Error processing your request: {str(e)}"
-    
-    def _clean_response_output(self, text):
-        """
-        Clean output text removing debug information and formatting.
-        """
-        return clean_response_output(text, logger)
-    
+
     def _route_to_multi_agent_system(self, message):
         """Route a user message through the multi-agent system for processing."""
         try:
@@ -1144,17 +1123,60 @@ class InteractiveDocumentReader:
             logger.error(f"Error routing through multi-agent system: {str(e)}")
             logger.error(traceback.format_exc())
             return "I'm sorry, I encountered an error while processing your request. Could you try again with a different question?"
-    
+
+    def _check_cached_analysis(self, query, keywords):
+        """Check if the analysis is cached in Redis or in the global context."""
+        from context_manager import context
+        
+        # Create a cache key from the query
+        cache_key = f"query:{query}"
+        
+        # First check Redis
+        if self.redis_tools and self.redis_tools.has_redis:
+            cached_analysis = self.redis_tools.get_cached_analysis(cache_key)
+            if cached_analysis and cached_analysis != query and len(cached_analysis) > 30:
+                self.logger.info(f"Found cached analysis in Redis for query: {query[:50]}...")
+                return cached_analysis
+        
+        # Then check global context
+        if keywords:
+            # Try to find matching analysis results in context
+            for key, result in context.analysis_results.items():
+                # Avoid returning the user's question as the answer
+                if result == query or not isinstance(result, str) or len(result) < 30:
+                    continue
+                    
+                # Check if the key or result contains any of our keywords
+                key_matches = any(kw.lower() in key.lower() for kw in keywords if len(kw) > 3)
+                result_matches = isinstance(result, str) and any(kw.lower() in result.lower() for kw in keywords if len(kw) > 3)
+                
+                if (key_matches or result_matches) and key != 'last_question':
+                    self.logger.info(f"Found relevant cached analysis in context for: {key}")
+                    return result
+                    
+        return None
+
     def _analyze_query_type(self, message):
-        """Analyze a user query to determine its type."""
+        """Analyze a user query to determine its type and extract keywords."""
         message_lower = message.lower()
+        
+        # Extract keywords from the message
+        keywords = []
+        # Remove common stop words and tokenize
+        stop_words = ['a', 'an', 'the', 'and', 'or', 'but', 'if', 'then', 'else', 'when', 'at', 'from', 'by', 'for', 'with', 'about', 'to', 'in', 'on', 'what', 'which', 'who', 'whom', 'whose', 'where', 'when', 'why', 'how', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing']
+        
+        # Split message and filter out stop words
+        words = message_lower.split()
+        keywords = [word.strip('.,?!()[]{}:;"\'') for word in words 
+                   if word.strip('.,?!()[]{}:;"\'') and word.strip('.,?!()[]{}:;"\'') not in stop_words 
+                   and len(word.strip('.,?!()[]{}:;"\'')) > 2]
         
         # Check for file listing queries
         if any(pattern in message_lower for pattern in [
             "list", "show", "what files", "available files", "what documents",
             "display files", "show me the files", "what images"
         ]):
-            return "file_listing"
+            return "file_listing", keywords
             
         # Check for image analysis queries
         if any(pattern in message_lower for pattern in [
@@ -1162,7 +1184,7 @@ class InteractiveDocumentReader:
             "describe image", "explain image", "what does the image show",
             "interpret the chart", "explain the graph", "analyze the chart"
         ]):
-            return "image_analysis"
+            return "image_analysis", keywords
             
         # Check for data analysis queries
         if any(pattern in message_lower for pattern in [
@@ -1170,17 +1192,17 @@ class InteractiveDocumentReader:
             "what does the data show", "data analysis", "statistical", "mean",
             "average", "distribution", "csv analysis", "analyze csv"
         ]):
-            return "data_analysis"
+            return "data_analysis", keywords
             
         # Check for domain knowledge queries
         if any(pattern in message_lower for pattern in [
             "explain", "why does", "how does", "what causes", "relationship between",
             "impact of", "effect of", "mechanism", "process", "scientific explanation"
         ]):
-            return "domain_knowledge"
+            return "domain_knowledge", keywords
             
         # Default to general query
-        return "general"
+        return "general", keywords
     
     def _handle_command(self, message):
         """Handle special commands starting with /."""
@@ -1205,15 +1227,7 @@ class InteractiveDocumentReader:
         elif command == "/clear":
             # Clear conversation history
             self.conversation_history = []
-            self.context = {
-                'current_topic': None,
-                'current_files': [],
-                'pending_questions': [],
-                'pending_actions': [],
-                'last_question': None
-            }
-            if self.has_redis:
-                self.redis_tools.clear_redis_session()
+            self.redis_tools.clear_redis_session()
             return "Conversation history and context cleared."
         elif command == "/context":
             # Debug command to show current context
@@ -1222,103 +1236,140 @@ class InteractiveDocumentReader:
             return f"Unknown command: {command}. Type /help for available commands."
     
     def _handle_visualize_command(self, args):
-        """Handle /visualize command."""
-        # Command format: /visualize file_path [x_column] [y_column] [chart_type]
-        parts = args.split(maxsplit=3)
-        file_path = parts[0] if len(parts) > 0 else None
-        x_column = parts[1] if len(parts) > 1 else None
-        y_column = parts[2] if len(parts) > 2 else None
-        chart_type = parts[3] if len(parts) > 3 else 'auto'
+        """Handle /visualize command to visualize CSV data."""
+        from context_manager import context
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        from matplotlib import style
         
-        if not file_path:
-            return "Please specify a file path to visualize."
+        # Parse arguments - format is "/visualize file_name [x_column] [y_column] [chart_type]"
+        args_list = args.strip().split()
+        if not args_list:
+            return "Please specify a CSV file to visualize. Example: `/visualize data.csv column1 column2`"
         
-        # Find matching files if path is partial
-        matching_files = []
-        for file_type in self.discovered_files:
-            for path in self.discovered_files[file_type]:
-                if file_path in path:
-                    matching_files.append(path)
-        
-        if not matching_files:
-            return f"No files found matching '{file_path}'."
-        
-        if len(matching_files) > 1:
-            return f"Multiple files found matching '{file_path}'. Please be more specific:\n" + \
-                    "\n".join(matching_files)
-        
-        # Visualize the file
-        result = self.visualize_data(matching_files[0], x_column, y_column, chart_type)
-        
-        # Add the generated visualization to image agent
-        if result and os.path.exists(result) and result.endswith('.png'):
-            image_obj = Image(filepath=result)
-            self.images.append(image_obj)
-            
-            if not self.image_agent:
-                self._initialize_image_reader('image', {'path': result})
-            
-            # Update context with the current visualization
-            self.context['current_topic'] = 'visualization'
-            self.context['current_files'].append(matching_files[0])
-            self.context['last_visualization'] = result
-            
-            return f"Visualization created: {result}"
-        
-        return result
-    
-    def _handle_analyze_command(self, args):
-        """Handle /analyze command."""
-        # Command format: /analyze file_path
-        file_path = args.strip()
-        
-        if not file_path:
-            return "Please specify a file path to analyze."
+        # Extract file_name and optional column names
+        file_path = args_list[0]
+        x_column = args_list[1] if len(args_list) > 1 else None
+        y_column = args_list[2] if len(args_list) > 2 else None
+        chart_type = args_list[3] if len(args_list) > 3 else 'auto'
         
         # Find matching files if path is partial
         matching_files = []
-        for file_type in self.discovered_files:
-            for path in self.discovered_files[file_type]:
-                if file_path in path:
-                    matching_files.append(path)
+        for path in self.discovered_files.get('csv', []):
+            if file_path.lower() in path.lower():
+                matching_files.append(path)
         
         if not matching_files:
-            return f"No files found matching '{file_path}'."
+            return f"No CSV files found matching '{file_path}'. Use `/files` to see available files."
         
         if len(matching_files) > 1:
-            return f"Multiple files found matching '{file_path}'. Please be more specific:\n" + \
-                    "\n".join(matching_files)
+            file_list = "\n".join([f"- {os.path.basename(path)}" for path in matching_files])
+            return f"Multiple CSV files found matching '{file_path}'. Please be more specific:\n\n{file_list}"
+        
+        # We found exactly one matching file
+        csv_path = matching_files[0]
         
         # Update context
-        self.context['current_topic'] = 'analysis'
-        self.context['current_files'] = [matching_files[0]]
+        context.set_current_topic('visualization', [csv_path])
         
-        # Analyze the file
-        return self.analyze_data(matching_files[0])
+        try:
+            # Create visualization
+            result = self.visualize_data(csv_path, x_column, y_column, chart_type)
+            context.save_visualization(f"visualize_{os.path.basename(csv_path)}", csv_path, result)
+            return result
+        except Exception as e:
+            self.logger.error(f"Error visualizing CSV data: {str(e)}")
+            return f"Error visualizing CSV file '{os.path.basename(csv_path)}': {str(e)}"
+    
+    def _handle_analyze_command(self, args):
+        """Handle /analyze command to analyze a file."""
+        from context_manager import context
+        
+        if not args.strip():
+            return "Please specify a file to analyze. Example: `/analyze data.csv`"
+        
+        file_path = args.strip()
+        
+        # Find matching files if path is partial
+        matching_files = []
+        for file_type, files in self.discovered_files.items():
+            for path in files:
+                if file_path.lower() in path.lower():
+                    matching_files.append(path)
+        
+        if not matching_files:
+            return f"No files found matching '{file_path}'. Use `/files` to see available files."
+        
+        if len(matching_files) > 1:
+            file_list = "\n".join([f"- {os.path.basename(path)}" for path in matching_files])
+            return f"Multiple files found matching '{file_path}'. Please be more specific:\n\n{file_list}"
+        
+        # We found exactly one matching file
+        target_file = matching_files[0]
+        target_file_ext = os.path.splitext(target_file)[1].lower()
+        
+        # Update context
+        context.set_current_topic('analysis', [target_file])
+        
+        # Call appropriate analyzer based on file type
+        try:
+            if target_file_ext == '.csv':
+                from csv_utils import handle_csv_command
+                return handle_csv_command(os.path.basename(target_file), self.discovered_files, self.logger)
+            elif target_file_ext == '.json':
+                from json_queries import analyze_json_file
+                return analyze_json_file(target_file, self.logger)
+            elif target_file_ext in ['.png', '.jpg', '.jpeg']:
+                return self._analyze_specific_image(os.path.basename(target_file))
+            else:
+                return f"Analysis of {target_file_ext} files is not yet supported."
+        except Exception as e:
+            self.logger.error(f"Error in _handle_analyze_command: {str(e)}")
+            return f"Error analyzing file '{os.path.basename(target_file)}': {str(e)}"
     
     def _handle_discover_command(self, args):
-        """Handle /discover command."""
-        # Command format: /discover base_path
-        base_path = args.strip()
+        """Handle /discover command to find files in a directory."""
+        from context_manager import context
+        import os
+        from utils import discover_files
         
-        if not base_path:
-            return "Please specify a base path to discover files."
+        # Get the directory path from args, or use the current base_path
+        path = args.strip()
+        if not path:
+            path = self.base_path
+            if not path:
+                return "Please specify a directory path to discover files."
         
-        success = self._discover_files(base_path)
+        # If path is relative, make it absolute based on the base_path
+        if not os.path.isabs(path) and self.base_path:
+            path = os.path.join(self.base_path, path)
         
-        if success:
-            # Summarize discovered files
-            summary = "Discovered files:\n"
-            for file_type, file_paths in self.discovered_files.items():
-                if file_paths:
-                    summary += f"- {file_type}: {len(file_paths)} files\n"
-            
-            # Update context
-            self.context['current_topic'] = 'file_discovery'
-            
-            return summary
-        else:
-            return "Error discovering files. Check the logs for details."
+        # Check if path exists
+        if not os.path.exists(path):
+            return f"Directory path '{path}' does not exist."
+        
+        # Update context
+        context.set_current_topic('file_discovery', [path])
+        context.base_path = path
+        
+        # Discover files
+        self.discovered_files = discover_files(path, self.config, self.logger)
+        context.discovered_files = self.discovered_files
+        
+        # Summarize discovered files
+        file_counts = {k: len(v) for k, v in self.discovered_files.items() if v}
+        
+        if not file_counts:
+            return f"No files found in '{path}'."
+        
+        # Format the response
+        response = f"## Discovered Files in {path}\n\n"
+        for file_type, count in file_counts.items():
+            if count > 0:
+                response += f"- {file_type.upper()}: {count} files\n"
+        
+        response += "\nUse `/files` to list all files or `/files [type]` to list files of a specific type."
+        return response
     
     def _handle_help_command(self):
         """Handle /help command."""
@@ -1425,211 +1476,285 @@ class InteractiveDocumentReader:
         return "\n\n".join(results)
     
     def _handle_question(self, message):
-        """Handle regular user questions with intelligent data source selection."""
-        # First, check if it's specifically an image analysis request
-        analyze_match = re.search(r'(analyze|analyse|analysis)\s+([^\s\.]+(?:\.\w+)?)', message.lower())
-        if analyze_match:
-            requested_item = analyze_match.group(2)
-            # Check if it has an extension
-            if '.' in requested_item:
-                # It has an extension, handle by extension type
-                file_ext = os.path.splitext(requested_item)[1].lower()
-                if file_ext in ['.png', '.jpg']:
-                    # It's an image file
-                    image_name = os.path.basename(requested_item)
-                    return self._analyze_specific_image(image_name)
-                elif file_ext in ['.md', '.markdown']:
-                    # It's a markdown file
-                    md_name = os.path.basename(requested_item)
-                    return self._handle_markdown_command(md_name)
-                elif file_ext == '.csv':
-                    # It's a CSV file
-                    csv_name = os.path.basename(requested_item)
-                    return self._handle_csv_command(csv_name)
-            else:
-                # No extension, check against various file types starting with images
-                # Check if it's a valid image name
-                for img_type in ['png', 'jpg']:
-                    for img_path in self.discovered_files.get(img_type, []):
-                        if requested_item.lower() in os.path.basename(img_path).lower():
-                            # It's a valid image, so analyze it directly
-                            return self._analyze_specific_image(requested_item)
-                
-                # Check if it's a markdown file
-                for md_path in self.discovered_files.get('md', []):
-                    if requested_item.lower() in os.path.basename(md_path).lower():
+        """Handle a question message."""
+        try:
+            # Analyze the query type
+            query_type, keywords = self._analyze_query_type(message)
+            
+            # Store the question in context
+            from context_manager import context
+            context.save_analysis_result('last_question', message)
+            
+            # Check for cached analysis results that might be relevant
+            cached_results = self._check_cached_analysis(message, keywords)
+            if cached_results:
+                self.logger.info(f"Found cached analysis results for query: {message[:50]}...")
+                return cached_results
+            
+            # Check if it's specifically an image analysis request
+            analyze_match = re.search(r'(analyze|analyse|analysis)\s+([^\s\.]+(?:\.\w+)?)', message.lower())
+            if analyze_match:
+                requested_item = analyze_match.group(2)
+                # Check if it has an extension
+                if '.' in requested_item:
+                    # It has an extension, handle by extension type
+                    file_ext = os.path.splitext(requested_item)[1].lower()
+                    if file_ext in ['.png', '.jpg']:
+                        # It's an image file
+                        image_name = os.path.basename(requested_item)
+                        return self._analyze_specific_image(image_name)
+                    elif file_ext in ['.md', '.markdown']:
                         # It's a markdown file
-                        return self._handle_markdown_command(requested_item)
-                
-                # Check if it's a CSV file
-                for csv_path in self.discovered_files.get('csv', []):
-                    if requested_item.lower() in os.path.basename(csv_path).lower():
+                        md_name = os.path.basename(requested_item)
+                        return self._handle_markdown_command(md_name)
+                    elif file_ext == '.csv':
                         # It's a CSV file
-                        return self._handle_csv_command(requested_item)
+                        csv_name = os.path.basename(requested_item)
+                        return self._handle_csv_command(csv_name)
+                else:
+                    # No extension, check against various file types starting with images
+                    # Check if it's a valid image name
+                    for img_type in ['png', 'jpg']:
+                        for img_path in self.discovered_files.get(img_type, []):
+                            if requested_item.lower() in os.path.basename(img_path).lower():
+                                # It's a valid image, so analyze it directly
+                                return self._analyze_specific_image(requested_item)
+                
+                    # Check if it's a markdown file
+                    for md_path in self.discovered_files.get('md', []):
+                        if requested_item.lower() in os.path.basename(md_path).lower():
+                            # It's a markdown file
+                            return self._handle_markdown_command(requested_item)
+                
+                    # Check if it's a CSV file
+                    for csv_path in self.discovered_files.get('csv', []):
+                        if requested_item.lower() in os.path.basename(csv_path).lower():
+                            # It's a CSV file
+                            return self._handle_csv_command(requested_item)
         
-        # Check if we can answer using the knowledge graph - for non-image-analysis questions
-        kg_answer = self._answer_from_knowledge_graph(message)
-        if kg_answer:
-            return kg_answer
+            # Check if we can answer using the knowledge graph - for non-image-analysis questions
+            kg_answer = self._answer_from_knowledge_graph(message)
+            if kg_answer:
+                return kg_answer
             
-        # Rest of the existing _handle_question method...
-        # Check if the question is about listing files
-        list_file_patterns = [
-            r'list\s+(the\s+)?(all\s+)?(\w+)(\s+files)?',
-            r'show\s+(the\s+)?(all\s+)?(\w+)(\s+files)?',
-            r'what\s+(\w+)(\s+files)?\s+(do\s+you\s+have|are\s+available)',
-            r'display\s+(the\s+)?(\w+)(\s+files)?'
-        ]
-        
-        for pattern in list_file_patterns:
-            match = re.search(pattern, message.lower())
-            if match:
-                file_type = match.group(3)
-                
-                # Map common file type references to our internal categories
-                file_type_mapping = {
-                    'image': ['png', 'jpg'],
-                    'images': ['png', 'jpg'],
-                    'picture': ['png', 'jpg'],
-                    'pictures': ['png', 'jpg'],
-                    'photo': ['png', 'jpg'],
-                    'photos': ['png', 'jpg'],
-                    'png': ['png'],
-                    'jpg': ['jpg'],
-                    'text': ['txt'],
-                    'markdown': ['md'],
-                    'md': ['md'],
-                    'csv': ['csv'],
-                    'spreadsheet': ['csv'],
-                    'spreadsheets': ['csv'],
-                    'excel': ['csv'],
-                    'doc': ['docx'],
-                    'document': ['docx', 'pdf', 'txt', 'md'],
-                    'documents': ['docx', 'pdf', 'txt', 'md'],
-                    'pdf': ['pdf']
-                }
-                
-                if file_type in file_type_mapping:
-                    file_types = file_type_mapping[file_type]
+            # Rest of the existing _handle_question method...
+            # Check if the question is about listing files
+            list_file_patterns = [
+                r'list\s+(the\s+)?(all\s+)?(\w+)(\s+files)?',
+                r'show\s+(the\s+)?(all\s+)?(\w+)(\s+files)?',
+                r'what\s+(\w+)(\s+files)?\s+(do\s+you\s+have|are\s+available)',
+                r'display\s+(the\s+)?(\w+)(\s+files)?'
+            ]
+            
+            for pattern in list_file_patterns:
+                match = re.search(pattern, message.lower())
+                if match:
+                    file_type = match.group(3)
                     
-                    # Gather all files of the requested types
-                    all_files = []
-                    for ft in file_types:
-                        if ft in self.discovered_files:
-                            all_files.extend([(ft, f) for f in self.discovered_files[ft]])
+                    # For direct "list csv files" or "list images" commands
+                    if message.lower().strip() == f"list {file_type} files" or message.lower().strip() == f"list {file_type}":
+                        # Map simple requests to the /files command or specific file type commands
+                        if file_type == "csv":
+                            return self._handle_csv_command("")
+                        elif file_type in ["image", "images"]:
+                            return self._handle_files_command()
                     
-                    if all_files:
-                        # Format the response
-                        response = f"## Available {file_type.title()} Files:\n\n"
+                    # Map common file type references to our internal categories
+                    file_type_mapping = {
+                        'image': ['png', 'jpg'],
+                        'images': ['png', 'jpg'],
+                        'picture': ['png', 'jpg'],
+                        'pictures': ['png', 'jpg'],
+                        'photo': ['png', 'jpg'],
+                        'photos': ['png', 'jpg'],
+                        'png': ['png'],
+                        'jpg': ['jpg'],
+                        'text': ['txt'],
+                        'markdown': ['md'],
+                        'md': ['md'],
+                        'csv': ['csv'],
+                        'spreadsheet': ['csv'],
+                        'spreadsheets': ['csv'],
+                        'excel': ['csv'],
+                        'doc': ['docx'],
+                        'document': ['docx', 'pdf', 'txt', 'md'],
+                        'documents': ['docx', 'pdf', 'txt', 'md'],
+                        'pdf': ['pdf']
+                    }
+                    
+                    if file_type in file_type_mapping:
+                        file_types = file_type_mapping[file_type]
                         
-                        for i, (ft, file_path) in enumerate(all_files, 1):
-                            file_name = os.path.basename(file_path)
-                            response += f"{i}. {file_name} ({ft.upper()} file)\n"
+                        # Gather all files of the requested types
+                        all_files = []
+                        for ft in file_types:
+                            if ft in self.discovered_files:
+                                all_files.extend([(ft, f) for f in self.discovered_files[ft]])
                         
-                        if file_type in ['image', 'images', 'picture', 'pictures']:
-                            response += "\nTo analyze an image, use `analyze [image name]`"
-                        elif file_type in ['csv', 'spreadsheet', 'spreadsheets']:
-                            response += "\nTo analyze a CSV file, use `/csv [filename]` or `/analyze [filename]`"
-                        elif file_type in ['markdown', 'md']:
-                            response += "\nTo view a markdown file, use `/markdown [filename]` or `/md [filename]`"
-                        
-                        return response
-                    else:
-                        return f"No {file_type} files were found. Use /discover to scan for files."
+                        if all_files:
+                            # Format the response
+                            response = f"## Available {file_type.title()} Files:\n\n"
+                            
+                            for i, (ft, file_path) in enumerate(all_files, 1):
+                                file_name = os.path.basename(file_path)
+                                response += f"{i}. {file_name} ({ft.upper()} file)\n"
+                            
+                            if file_type in ['image', 'images', 'picture', 'pictures']:
+                                response += "\nTo analyze an image, use `analyze [image name]`"
+                            elif file_type in ['csv', 'spreadsheet', 'spreadsheets']:
+                                response += "\nTo analyze a CSV file, use `/csv [filename]` or `/analyze [filename]`"
+                            elif file_type in ['markdown', 'md']:
+                                response += "\nTo view a markdown file, use `/markdown [filename]` or `/md [filename]`"
+                            
+                            return response
+                        else:
+                            return f"No {file_type} files were found. Use /discover to scan for files."
         
-        # Original code continues from here...
+            # Check for introduction or overview requests
+            if any(phrase in message.lower() for phrase in ["introduce yourself", "who are you", "what are you"]):
+                intro = """
+                Hello! I'm HydroDeepNet, an AI data analysis assistant designed to help you analyze and understand environmental data.
+                
+                I can help with:
+                - Analyzing CSV data files and providing statistical insights
+                - Interpreting images, charts, and visualizations
+                - Summarizing markdown reports and documentation
+                - Creating visualizations from data
+                
+                You can get started by using commands like:
+                - `/files` to see available files
+                - `/csv [filename]` to analyze CSV files
+                - `analyze [image name]` to analyze images
+                - `/help` for a list of all commands
+                """
+                return intro.strip()
+                
+            # Check for general data overview requests
+            if any(phrase in message.lower() for phrase in ["what data", "available data", "data available", "data you have", "data types"]):
+                data_overview = f"""
+                # Available Data Sources
+                
+                ## CSV Files ({len(self.discovered_files.get('csv', []))})
+                Statistical data about groundwater, climate, vegetation, and more
+                
+                ## Images ({len(self.discovered_files.get('png', []) + self.discovered_files.get('jpg', []))})
+                Visualizations including maps, charts, time series, and spatial analyses
+                
+                ## Documentation ({len(self.discovered_files.get('md', []))})
+                Detailed reports about the different data domains
+                
+                ## JSON Files ({len(self.discovered_files.get('json', []))})
+                Configuration and metadata information
+                
+                Use `/files` to see a complete list of files, or specify a type like `/csv` or `/markdown`
+                """
+                return data_overview.strip()
+            
+            # Original code continues from here...
+            
+            # Process the message to extract key information
+            keywords = extract_keywords(message)
+            
+            # If the query is specifically about analyzing an image, handle it directly
+            if message.lower().startswith(('analyze ', 'analysis ', 'analyse ')):
+                image_name = message.lower().replace('analyze ', '').replace('analysis ', '').replace('analyse ', '').strip()
+                return self._analyze_specific_image(image_name)
+            
+            # Try to find the most relevant data sources for this question
+            relevant_sources = self._find_relevant_data_sources(message, keywords)
+            
+            # If we found highly relevant sources, automatically use them to answer the question
+            if relevant_sources and relevant_sources['high_relevance']:
+                return self._answer_with_relevant_sources(message, relevant_sources)
+            
+            # If there are potentially relevant sources but we're not sure, suggest them
+            if relevant_sources and relevant_sources['medium_relevance']:
+                from context_manager import context
+                suggested_files = relevant_sources['medium_relevance']
+                
+                # Ensure pending_actions exists in context.config
+                if 'pending_actions' not in context.config:
+                    context.config['pending_actions'] = []
+                    
+                context.config['pending_actions'].append({
+                    'type': 'file_check',
+                    'file_paths': suggested_files
+                })
+                file_names = [os.path.basename(f) for f in suggested_files]
+                return f"I think these files might help answer your question about {keywords[:3]}: {', '.join(file_names)}. Would you like me to analyze them for you?"
+            
+            # Update context with the current question
+            from context_manager import context
+            context.save_analysis_result('last_question', message)
+            
+            # Check if question is about images generally
+            is_image_question = any(keyword in message.lower() for keyword in 
+                                ['image', 'picture', 'graph', 'chart', 'plot', 'visualization', 'png', 'jpg'])
+            
+            # If asking about images specifically, provide a list of available images
+            if is_image_question and (self.discovered_files.get('png') or self.discovered_files.get('jpg')):
+                relevant_images = self._find_relevant_images(message, keywords)
+                if relevant_images:
+                    # If we found specifically relevant images, offer those
+                    image_list = "\n".join([f"- {os.path.basename(img)}" for img in relevant_images])
+                    return f"I found these images that might relate to your question about {keywords[:3]}:\n\n{image_list}\n\nWould you like me to analyze any of these images? You can say 'analyze [image name]'."
+                else:
+                    # Otherwise show all images
+                    image_files = []
+                    for img_type in ['png', 'jpg']:
+                        image_files.extend(self.discovered_files.get(img_type, []))
+                    
+                    if image_files:
+                        image_list = "\n".join([f"- {os.path.basename(img)}" for img in image_files])
+                        return f"I found the following image files:\n\n{image_list}\n\nWould you like me to analyze any of these images? You can say 'analyze [image name]'."
         
-        # Process the message to extract key information
-        keywords = self._extract_keywords(message)
-        
-        # If the query is specifically about analyzing an image, handle it directly
-        if message.lower().startswith(('analyze ', 'analysis ', 'analyse ')):
-            image_name = message.lower().replace('analyze ', '').replace('analysis ', '').replace('analyse ', '').strip()
-            return self._analyze_specific_image(image_name)
-        
-        # Try to find the most relevant data sources for this question
-        relevant_sources = self._find_relevant_data_sources(message, keywords)
-        
-        # If we found highly relevant sources, automatically use them to answer the question
-        if relevant_sources and relevant_sources['high_relevance']:
-            return self._answer_with_relevant_sources(message, relevant_sources)
-        
-        # If there are potentially relevant sources but we're not sure, suggest them
-        if relevant_sources and relevant_sources['medium_relevance']:
-            suggested_files = relevant_sources['medium_relevance']
-            self.context['pending_actions'].append({
-                'type': 'file_check',
-                'file_paths': suggested_files
-            })
-            file_names = [os.path.basename(f) for f in suggested_files]
-            return f"I think these files might help answer your question about {keywords[:3]}: {', '.join(file_names)}. Would you like me to analyze them for you?"
-        
-        # Update context with the current question
-        self.context['last_question'] = message
-        
-        # Check if question is about images generally
-        is_image_question = any(keyword in message.lower() for keyword in 
-                            ['image', 'picture', 'graph', 'chart', 'plot', 'visualization', 'png', 'jpg'])
-        
-        # If asking about images specifically, provide a list of available images
-        if is_image_question and (self.discovered_files.get('png') or self.discovered_files.get('jpg')):
-            relevant_images = self._find_relevant_images(message, keywords)
-            if relevant_images:
-                # If we found specifically relevant images, offer those
-                image_list = "\n".join([f"- {os.path.basename(img)}" for img in relevant_images])
-                return f"I found these images that might relate to your question about {keywords[:3]}:\n\n{image_list}\n\nWould you like me to analyze any of these images? You can say 'analyze [image name]'."
+            # Forward the regular questions to the appropriate agent
+            if self.interactive_agent:
+                # Use the interactive agent with carefully filtered conversation history
+                filtered_history = self._prepare_conversation_history()
+                
+                try:
+                    # Set stream=False to avoid repetition issues with streamed responses
+                    response = self.interactive_agent.print_response(
+                        message,
+                        context=filtered_history,
+                        stream=False
+                    )
+                    return response
+                except Exception as e:
+                    logger.error(f"_handle_question Error with interactive agent: {str(e)}")
+                    # Fallback to direct print_response if the first attempt fails
+                    return self.interactive_agent.print_response(
+                        message,
+                        context=filtered_history,
+                        stream=False
+                    )
+            elif self.image_agent and self.images and is_image_question:
+                # If the question seems to be about images
+                try:
+                    return self.image_agent.print_response(
+                        message,
+                        images=self.images,
+                        stream=False
+                    )
+                except Exception as e:
+                    logger.error(f"_handle_question Error with image agent: {str(e)}")
+                    return self.image_agent.print_response(
+                        message,
+                        images=self.images,
+                        stream=False
+                    )
+            elif self.agent:
+                # Use the regular agent for text-based knowledge
+                return self.agent.print_response(message, stream=False)
             else:
-                # Otherwise show all images
-                image_files = []
-                for img_type in ['png', 'jpg']:
-                    image_files.extend(self.discovered_files.get(img_type, []))
+                return "No agent or knowledge base has been initialized. Please initialize first or use /discover to find files."
                 
-                if image_files:
-                    image_list = "\n".join([f"- {os.path.basename(img)}" for img in image_files])
-                    return f"I found the following image files:\n\n{image_list}\n\nWould you like me to analyze any of these images? You can say 'analyze [image name]'."
-        
-        # Forward the regular questions to the appropriate agent
-        if self.interactive_agent:
-            # Use the interactive agent with carefully filtered conversation history
-            filtered_history = self._prepare_conversation_history()
-            
-            try:
-                # Set stream=False to avoid repetition issues with streamed responses
-                response = self.interactive_agent.print_response(
-                    message,
-                    context=filtered_history,
-                    stream=False
-                )
-                return response
-            except Exception as e:
-                logger.error(f"_handle_question Error with interactive agent: {str(e)}")
-                # Fallback to direct print_response if the first attempt fails
-                return self.interactive_agent.print_response(
-                    message,
-                    context=filtered_history,
-                    stream=False
-                )
-        elif self.image_agent and self.images and is_image_question:
-            # If the question seems to be about images
-            try:
-                return self.image_agent.print_response(
-                    message,
-                    images=self.images,
-                    stream=False
-                )
-            except Exception as e:
-                logger.error(f"_handle_question Error with image agent: {str(e)}")
-                return self.image_agent.print_response(
-                    message,
-                    images=self.images,
-                    stream=False
-                )
-        elif self.agent:
-            # Use the regular agent for text-based knowledge
-            return self.agent.print_response(message, stream=False)
-        else:
-            return "No agent or knowledge base has been initialized. Please initialize first or use /discover to find files."
-            
+        except Exception as e:
+            logger.error(f"_handle_question Error: {str(e)}")
+            logger.error(traceback.format_exc())
+            return f"Error processing your question: {str(e)}"
+    
     def _prepare_conversation_history(self):
         """Prepare a filtered conversation history to avoid repetition."""
         if not self.conversation_history:
@@ -1666,6 +1791,8 @@ class InteractiveDocumentReader:
     
     def _find_relevant_data_sources(self, query, keywords):
         """Intelligently find relevant data sources based on the user's query."""
+        from context_manager import context
+        
         result = {
             'high_relevance': [],  # Will answer directly with these
             'medium_relevance': [] # Will suggest these to the user
@@ -1768,6 +1895,7 @@ class InteractiveDocumentReader:
     
     def _answer_with_relevant_sources(self, query, relevant_sources):
         """Proactively analyze and answer using the identified relevant sources."""
+        from context_manager import context
         results = []
         
         # First, analyze each highly relevant source
@@ -1783,7 +1911,7 @@ class InteractiveDocumentReader:
                     results.append(analysis)
                 
                 # Create a contextual visualization if appropriate
-                if self._should_visualize(query, source_path):
+                if should_visualize(query, source_path):
                     viz_path = self._create_contextual_visualization(query, source_path)
                     if viz_path:
                         results.append(f"I've created a visualization to help answer your question: {os.path.basename(viz_path)}")
@@ -1809,14 +1937,13 @@ class InteractiveDocumentReader:
                     results.append(json_analysis)
         
         # Update context to reflect what we've analyzed
-        self.context['current_topic'] = extract_main_topic(query)
-        self.context['current_files'] = relevant_sources['high_relevance']
+        context.set_current_topic(extract_main_topic(query), relevant_sources['high_relevance'])
         
         # Combine all results with synthesis - ensure we have actual results
         if results:
             if len(results) > 1:
                 synthesis = f"Based on the {len(relevant_sources['high_relevance'])} relevant files I analyzed, "
-                synthesis += f"here's what I can tell you about {self.context['current_topic']}:\n\n"
+                synthesis += f"here's what I can tell you about {context.current_topic}:\n\n"
                 # Filter out any None values before joining
                 filtered_results = [r for r in results if r is not None]
                 synthesis += "\n\n".join(filtered_results)
@@ -1830,47 +1957,8 @@ class InteractiveDocumentReader:
     def _quick_csv_analysis(self, csv_path):
         """Quick analysis of CSV data focused on answering the user's query."""
         try:
-            # Check file size first
-            row_count = 0
-            with open(csv_path, 'r') as f:
-                for i, _ in enumerate(f):
-                    row_count = i + 1
-                    if row_count > 1000:
-                        return f"CSV file {os.path.basename(csv_path)} has {row_count} rows (showing summary only due to size)."
-            
-            # Read the CSV data
-            df = pd.read_csv(csv_path)
-            
-            # Basic statistics
-            summary = f"The file contains {len(df)} rows and {len(df.columns)} columns.\n"
-            summary += f"Columns: {', '.join(df.columns.tolist())}\n\n"
-            
-            # Find numeric columns for statistical analysis
-            numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-            if numeric_cols:
-                summary += "Key statistics:\n"
-                for col in numeric_cols[:3]:  # Limit to first 3 numeric columns
-                    summary += f"- {col}: min={df[col].min():.2f}, max={df[col].max():.2f}, avg={df[col].mean():.2f}\n"
-            
-            # Check for interesting patterns
-            if len(numeric_cols) >= 2:
-                # Find highest correlation
-                corr_matrix = df[numeric_cols].corr()
-                highest_corr = 0
-                pair = (None, None)
-                
-                for i, col1 in enumerate(numeric_cols):
-                    for col2 in numeric_cols[i+1:]:
-                        if abs(corr_matrix.loc[col1, col2]) > abs(highest_corr):
-                            highest_corr = corr_matrix.loc[col1, col2]
-                            pair = (col1, col2)
-                
-                if pair[0] and abs(highest_corr) > 0.5:
-                    corr_type = "positive" if highest_corr > 0 else "negative"
-                    summary += f"\nI noticed a strong {corr_type} correlation ({highest_corr:.2f}) between {pair[0]} and {pair[1]}."
-            
-            return summary
-            
+            from csv_utils import quick_csv_analysis
+            return quick_csv_analysis(csv_path)
         except Exception as e:
             logger.error(f"_quick_csv_analysis Error in quick CSV analysis: {str(e)}")
             return f"I tried to analyze {os.path.basename(csv_path)} but encountered an error: {str(e)}"
@@ -1878,156 +1966,72 @@ class InteractiveDocumentReader:
     def _analyze_json_for_query(self, query, json_path):
         """Extract relevant information from JSON based on the query."""
         try:
-            with open(json_path, 'r') as f:
-                data = json.load(f)
-            
-            # Extract query keywords
-            keywords = self._extract_keywords(query)
-            
-            # Simple summary
-            summary = f"The JSON file '{os.path.basename(json_path)}' "
-            
-            if isinstance(data, dict):
-                summary += f"contains {len(data)} top-level keys.\n"
-                
-                # Find keys that match keywords
-                matching_keys = []
-                for key in data.keys():
-                    if any(kw in key.lower() for kw in keywords):
-                        matching_keys.append(key)
-                
-                if matching_keys:
-                    summary += "Here are the sections that seem relevant to your question:\n\n"
-                    for key in matching_keys[:3]:  # Limit to first 3 matches
-                        value = data[key]
-                        if isinstance(value, (dict, list)) and len(str(value)) > 500:
-                            # Summarize large objects/arrays
-                            if isinstance(value, dict):
-                                summary += f"- {key}: A dictionary with {len(value)} keys\n"
-                            else:
-                                summary += f"- {key}: An array with {len(value)} items\n"
-                        else:
-                            # Show the actual value for smaller data
-                            summary += f"- {key}: {json.dumps(value)}\n"
-                else:
-                    # No direct matches, show top-level structure
-                    summary += "Top-level keys: " + ", ".join(list(data.keys())[:10])
-                    if len(data) > 10:
-                        summary += f" and {len(data) - 10} more."
-            elif isinstance(data, list):
-                summary += f"contains a list with {len(data)} items.\n"
-                if data and isinstance(data[0], dict):
-                    # Show structure of list items
-                    keys = data[0].keys()
-                    summary += f"Each item has these fields: {', '.join(keys)}\n"
-                    
-                    # Try to find items matching the query
-                    matching_items = []
-                    for item in data[:20]:  # Only check first 20 items
-                        if any(kw in str(item).lower() for kw in keywords):
-                            matching_items.append(item)
-                    
-                    if matching_items:
-                        summary += f"\nFound {len(matching_items)} items relevant to your query. First match:\n"
-                        summary += json.dumps(matching_items[0], indent=2)
-            
-            return summary
-            
+            from json_queries import analyze_json_for_query
+            return analyze_json_for_query(query, json_path)
         except Exception as e:
             logger.error(f"_analyze_json_for_query Error analyzing JSON: {str(e)}")
             return f"I tried to analyze the JSON file but encountered an error: {str(e)}"
     
-    def _extract_keywords(self, text):
-        """Extract important keywords from a message."""
-        # Use the standalone function from prompt_handler.py
-        return extract_keywords(text)
     
     def _analyze_specific_image(self, image_name):
-        """Analyze a specific image using the visual analyst agent and specialized functions."""
-        # Remove extension if present to improve matching
-        base_image_name = os.path.splitext(image_name)[0]
+        """Analyze a specific image file based on the name."""
+        from context_manager import context
+        import os
         
-        # Find matching image paths
-        matching_images = []
+        # If image has an extension, strip it for better matching
+        base_name = os.path.splitext(image_name)[0]
+        
+        # Find all image files in discovered files
+        all_images = []
         for img_type in ['png', 'jpg']:
-            for path in self.discovered_files.get(img_type, []):
-                path_basename = os.path.basename(path)
-                path_basename_noext = os.path.splitext(path_basename)[0]
-                
-                # Match with or without extension
-                if (base_image_name.lower() in path_basename_noext.lower() or 
-                    image_name.lower() in path_basename.lower()):
-                    matching_images.append(path)
+            all_images.extend(self.discovered_files.get(img_type, []))
         
-        if not matching_images:
-            return f"I couldn't find any image matching '{image_name}'. Please check the name and try again."
+        # Find matching images
+        target_image_path = None
+        for path in all_images:
+            path_basename = os.path.basename(path)
+            path_basename_noext = os.path.splitext(path_basename)[0]
+            
+            # Match with or without extension
+            if base_name.lower() in path_basename_noext.lower():
+                target_image_path = path
+                break
         
-        if len(matching_images) > 1:
-            image_list = "\n".join([f"- {os.path.basename(img)}" for img in matching_images])
-            return f"I found multiple images matching '{image_name}'. Please be more specific:\n\n{image_list}"
-        
-        # We found exactly one matching image
-        target_image_path = matching_images[0]
-        target_image_name = os.path.basename(target_image_path)
+        if not target_image_path:
+            return f"No image found matching '{image_name}'. Use `/files` to see available files."
         
         # Update context
-        self.context['current_topic'] = 'image_analysis'
-        self.context['current_files'] = [target_image_path]
-                # Create a direct Image object
-        image_obj = Image(filepath=target_image_path)
+        context.set_current_topic('image_analysis', [target_image_path])
         
-        # First try using the visual analyst from the multi-agent system
-        if self.agents.get("visual_analyst") is not None:
-            logger.info(f"Using visual analyst agent to analyze {target_image_name}")
+        try:
+            # Check if we have a cached analysis for this image
+            cached_analysis = context.get_file_analysis(target_image_path)
+            if cached_analysis:
+                return cached_analysis
             
-            # Get analysis context by looking for related CSV files
-            context_info = self._get_image_context(target_image_path)
+            # Get context information about the image
+            img_context = self._get_image_context(target_image_path)
             
-            prompt = f"""
-            Please analyze this image: {target_image_name} in detail.
+            # Generate a summary of the image
+            from utils import create_image_summary
+            summary = create_image_summary(target_image_path)
             
-            Focus on these aspects:
-            1. What type of visualization or chart is this?
-            2. What are the main features, trends, or patterns visible?
-            3. What variables or data are being represented?
-            4. What scientific insights can be drawn from this visualization?
-            5. How does this relate to environmental or geological data?
+            # Combine information
+            response = f"## Analysis of {os.path.basename(target_image_path)}\n\n"
+            response += summary + "\n\n"
             
-            {context_info}
+            if img_context:
+                response += "### Context\n"
+                response += img_context
             
-            Provide a comprehensive analysis with key observations and insights.
-            """
+            # Save analysis in context
+            context.save_analysis_result(target_image_path, response)
             
-            try:
-                # Use print_response with stream=False instead of ask
-                analysis = self.agents["visual_analyst"].print_response(prompt, images=[image_obj], stream=False)
-                return analysis
-            except Exception as e:
-                logger.error(f"Error using visual analyst agent: {str(e)}")
-                # Fall back to the regular image agent
-                pass
-        
-        # Fallback to the simple image agent
-        logger.info(f"Falling back to simple image agent for {target_image_name}")
-        if self.image_agent is not None:
-            try:
-                prompt = f"""
-                Please analyze this image: {target_image_name}
-                
-                What does this image show? What type of visualization is it?
-                What are the main patterns or trends visible?
-                What scientific insights can we gain from this image?
-                """
-                
-                # Use print_response for the image agent as well, not ask
-                analysis = self.image_agent.print_response(prompt, images=[image_obj], stream=False)
-                return analysis
-            except Exception as e:
-                logger.error(f"Error using image agent fallback: {str(e)}")
-        
-        # Last resort: basic image description if both agents fail
-        return f"I found the image {target_image_name} but couldn't analyze it with my AI vision capabilities. The image agents encountered errors."
-        
+            return response
+            
+        except Exception as e:
+            self.logger.error(f"Error analyzing image: {str(e)}")
+            return f"Error analyzing image '{os.path.basename(target_image_path)}': {str(e)}"
 
     
     def _get_image_context(self, image_path):
@@ -2129,149 +2133,7 @@ class InteractiveDocumentReader:
                     if calculate_similarity(image_name.split('.')[0], csv_name.split('.')[0]) > 0.7:
                         self.data_context["relationships"][image_name] = csv_name
 
-    def validate_response(self, response, query):
-        """
-        Validate and improve the agent's response.
-        
-        Args:
-            response: The raw response from the agent
-            query: The user's query that prompted this response
-            
-        Returns:
-            The validated and potentially enhanced response
-        """
-        logger.debug(f"Validating response: length={len(response) if response else 0}")
-        
-        # Skip validation if response is None or empty
-        if not response or not response.strip():
-            logger.warning("Empty response received during validation")
-            return "I apologize, but I couldn't generate a complete response."
-            
-        # If the response is very short, check if it's an error or apology
-        if len(response.strip()) < 20:
-            logger.warning(f"Very short response: '{response}'")
-            if "error" in response.lower() or "apologize" in response.lower() or "sorry" in response.lower():
-                return response
-            else:
-                # For very short non-error responses, we assume they're valid
-                return response
-            
-        # Check for incomplete or truncated responses
-        if not is_response_complete(response):
-            logger.debug("Response appears incomplete, completing it")
-            response = self._complete_response(response)
-            
-        # Check for repeated content
-        if self._has_repeated_sections(response):
-            logger.debug("Response has repeated sections, deduplicating")
-            response = deduplicate_content(response)
-            
-        # Only add this context clarification for long responses that seem to be
-        # generic or not directly addressing the query
-        relevance_score = self._calculate_query_relevance(response, query)
-        logger.debug(f"Response relevance score: {relevance_score:.2f}")
-        
-        if len(response) > 500 and relevance_score < 0.3:
-            query_terms = ", ".join(self._extract_keywords(query)[:3])
-            if query_terms:
-                logger.debug(f"Adding clarification for low-relevance response about: {query_terms}")
-                # Only add clarification text if the response seems generic and unrelated
-                if not response.endswith("\n"):
-                    response += "\n\n"
-                else:
-                    response += "\n"
-                response += f"Regarding your specific question about {query_terms}: I've provided the available information above. If you need more specific details, please let me know."
-        
-        # Remove any empty list items or bullet points
-        response = re.sub(r'\n\s*[-*]\s*\n', '\n\n', response)
-        
-        # Remove any remaining debug information
-        cleaned_response = self._clean_response_output(response)
-        
-        return cleaned_response
 
-    def _has_repeated_sections(self, text):
-        """Check if a response has repeated sections."""
-        if not text:
-            return False
-            
-        # Split text into paragraphs
-        paragraphs = [p.strip() for p in text.split('\n\n') if p.strip()]
-        if len(paragraphs) <= 1:
-            return False
-            
-        # Check for duplicate paragraphs
-        seen_paragraphs = set()
-        for paragraph in paragraphs:
-            if paragraph in seen_paragraphs:
-                return True
-            seen_paragraphs.add(paragraph)
-            
-        # Check for similar consecutive sections
-        for i in range(len(paragraphs) - 1):
-            similarity = calculate_similarity(paragraphs[i], paragraphs[i+1])
-            if similarity > 0.7:  # 70% similarity threshold
-                return True
-                
-        return False
-  
-    def _complete_response(self, text):
-        """Try to make an incomplete response complete."""
-        if not text:
-            return "I apologize, but I couldn't generate a complete response."
-            
-        # If cut off with ellipsis, add a proper ending
-        if text.strip().endswith(('...', '…')):
-            return text.strip() + "\n\nI apologize, but the response was truncated. Please let me know if you'd like more information on this topic."
-            
-        # Balance unmatched parentheses, brackets, braces
-        for open_char, close_char in [('(', ')'), ('[', ']'), ('{', '}')]:
-            open_count = text.count(open_char)
-            close_count = text.count(close_char)
-            if open_count > close_count:
-                # Add missing closing characters
-                text = text + (close_char * (open_count - close_count))
-                
-        # If ends with a colon, add a concluding sentence
-        if text.strip().endswith(':'):
-            text = text + " I'll provide more details if you'd like additional information."
-            
-        return text
-        
-    def _calculate_query_relevance(self, response, query):
-        """Calculate how relevant a response is to the original query."""
-        if not response or not query:
-            return 0.0
-            
-        # Extract key terms from the query
-        query_terms = set(self._extract_keywords(query))
-        if not query_terms:
-            return 1.0  # No meaningful terms to match
-            
-        # Check how many query terms appear in the response
-        response_lower = response.lower()
-        matched_terms = sum(1 for term in query_terms if term.lower() in response_lower)
-        
-        # Calculate relevance score
-        relevance_score = matched_terms / len(query_terms) if query_terms else 0.0
-        
-        return relevance_score
-        
-    def _enhance_relevance(self, response, query):
-        """Try to enhance the relevance of a response to the query."""
-        # If response already seems relevant, leave it as is
-        if self._calculate_query_relevance(response, query) >= 0.7:
-            return response
-            
-        # Extract key information from the query
-        query_terms = self._extract_keywords(query)
-        
-        # Append a note addressing the query more directly
-        enhanced = response.strip()
-        enhanced += "\n\nRegarding your specific question about " + ", ".join(query_terms[:3]) + ": "
-        enhanced += f"I've provided the available information above. If you need more specific details about {' or '.join(query_terms[:2])}, please let me know."
-        
-        return enhanced
 
     def create_knowledge_graph(self):
         """Create and populate a knowledge graph to represent domain concepts and their relationships."""
@@ -2289,152 +2151,56 @@ class InteractiveDocumentReader:
     def _answer_from_knowledge_graph(self, query):
         """Try to answer a query using the knowledge graph."""
         if not self.knowledge_graph_manager:
+            logger.debug("Knowledge graph manager not initialized")
             return None
-            
-        return self.knowledge_graph_manager.answer_query(query)
+        
+        logger.info(f"Attempting to answer query using knowledge graph: {query[:50]}...")
+        try:
+            answer = self.knowledge_graph_manager.answer_query(query)
+            if answer:
+                logger.info("Found answer in knowledge graph")
+            else:
+                logger.info("No answer found in knowledge graph")
+            return answer
+        except Exception as e:
+            logger.error(f"Error querying knowledge graph: {str(e)}")
+            return None
 
     def _handle_csv_command(self, args):
         """Handle /csv command to analyze a CSV file or list available CSV files."""
-        # If no args are provided, list all CSV files
-        if not args.strip():
-            csv_files = self.discovered_files.get('csv', [])
-            if not csv_files:
-                return "No CSV files have been discovered yet. Use /discover path to find files."
-            
-            csv_list = "## Available CSV Files:\n\n"
-            for i, path in enumerate(csv_files, 1):
-                csv_list += f"{i}. {os.path.basename(path)}\n"
-            
-            csv_list += "\nTo analyze a CSV file, use `/csv [filename]` or `/analyze [filename]`"
-            return csv_list
-        
-        # If a filename is provided, find and analyze the file
-        file_path = args.strip()
-        
-        # Remove extension if present to improve matching
-        base_file_name = os.path.splitext(file_path)[0]
-        
-        # Find matching files if path is partial
-        matching_files = []
-        for path in self.discovered_files.get('csv', []):
-            path_basename = os.path.basename(path)
-            path_basename_noext = os.path.splitext(path_basename)[0]
-            
-            # Match with or without extension
-            if (base_file_name.lower() in path_basename_noext.lower() or
-                file_path.lower() in path_basename.lower()):
-                matching_files.append(path)
-        
-        if not matching_files:
-            return f"No CSV files found matching '{file_path}'. Use `/files` to see available files."
-        
-        if len(matching_files) > 1:
-            file_list = "\n".join([f"- {os.path.basename(path)}" for path in matching_files])
-            return f"Multiple CSV files found matching '{file_path}'. Please be more specific:\n\n{file_list}"
-        
-        # We found exactly one matching file
-        target_csv = matching_files[0]
-        
-        # Update context
-        self.context['current_topic'] = 'csv_analysis'
-        self.context['current_files'] = [target_csv]
-        
         try:
-            # Read the CSV data
-            df = pd.read_csv(target_csv)
-            
-            # Prepare response
-            filename = os.path.basename(target_csv)
-            response = f"## Analysis of {filename}\n\n"
-            response += f"This CSV file contains {len(df)} rows and {len(df.columns)} columns.\n\n"
-            
-            # List all columns
-            response += "### Columns:\n"
-            for col in df.columns:
-                response += f"- {col}\n"
-            
-            # Show a preview
-            response += "\n### Preview (first 5 rows):\n"
-            response += df.head(5).to_string()
-            
-            # Add basic statistics for numeric columns
-            numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-            if numeric_cols:
-                response += "\n\n### Basic Statistics:\n"
-                # Calculate statistics for numeric columns
-                stats_df = df[numeric_cols].describe().round(2)
-                response += stats_df.to_string()
-                
-                # Suggest visualization if there are numeric columns
-                response += "\n\nYou can create visualizations with `/visualize " + filename + " [x_column] [y_column]`"
-            
-            return response
-            
+            from csv_utils import handle_csv_command
+            return handle_csv_command(args, self.discovered_files, logger)
         except Exception as e:
-            logger.error(f"Error analyzing CSV file: {str(e)}")
-            return f"Error analyzing CSV file '{os.path.basename(target_csv)}': {str(e)}"
-    
+            logger.error(f"_handle_csv_command Error in CSV command: {str(e)}")
+            return f"Error processing CSV command: {str(e)}"
+
     def _handle_markdown_command(self, args):
         """Handle /markdown command to view markdown files."""
-        # If no args are provided, list all markdown files
-        if not args.strip():
-            md_files = self.discovered_files.get('md', [])
-            if not md_files:
-                return "No markdown files have been discovered yet. Use `/discover path` to find files."
-            
-            md_list = "## Available Markdown Files:\n\n"
-            for i, path in enumerate(md_files, 1):
-                md_list += f"{i}. {os.path.basename(path)}\n"
-            
-            md_list += "\nTo view a markdown file, use `/markdown [filename]` or `/md [filename]`"
-            return md_list
-        
-        # If a filename is provided, find and read the file
-        file_path = args.strip()
-        
-        # Remove extension if present to improve matching
-        base_file_name = os.path.splitext(file_path)[0]
-        
-        # Find matching files if path is partial
-        matching_files = []
-        for path in self.discovered_files.get('md', []):
-            path_basename = os.path.basename(path)
-            path_basename_noext = os.path.splitext(path_basename)[0]
-            
-            # Match with or without extension
-            if (base_file_name.lower() in path_basename_noext.lower() or
-                file_path.lower() in path_basename.lower()):
-                matching_files.append(path)
-        
-        if not matching_files:
-            return f"No markdown files found matching '{file_path}'. Use `/files` to see available files."
-        
-        if len(matching_files) > 1:
-            file_list = "\n".join([f"- {os.path.basename(path)}" for path in matching_files])
-            return f"Multiple markdown files found matching '{file_path}'. Please be more specific:\n\n{file_list}"
-        
-        # We found exactly one matching file
-        target_md = matching_files[0]
-        
-        # Update context
-        self.context['current_topic'] = 'markdown_view'
-        self.context['current_files'] = [target_md]
-        
         try:
-            # Read the markdown file
-            with open(target_md, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            # Prepare response
-            response = f"## Markdown File: {os.path.basename(target_md)}\n\n"
-            response += content
-            
-            return response
-            
+            from prompt_handler import handle_markdown_command
+            return handle_markdown_command(args, self.discovered_files, logger)
         except Exception as e:
-            logger.error(f"Error reading markdown file: {str(e)}")
-            return f"Error reading markdown file '{os.path.basename(target_md)}': {str(e)}"
-
+            logger.error(f"_handle_markdown_command Error in markdown command: {str(e)}")
+            return f"Error processing markdown command: {str(e)}"
+    
+    def _handle_context_command(self, args=None):
+        """Display the current context."""
+        from context_manager import context
+        
+        # Get the current context as a dictionary
+        ctx = {
+            'session_id': context.session_id,
+            'current_topic': context.current_topic,
+            'current_files': context.current_files,
+            'discovered_file_count': {k: len(v) for k, v in context.discovered_files.items() if v},
+            'analysis_results_count': len(context.analysis_results),
+            'conversation_history_count': len(context.conversation_history)
+        }
+        
+        return f"Current context:\n{json.dumps(ctx, indent=2)}"
+        
+        
 def interactive_document_reader(base_path):
     """Example usage of the InteractiveDocumentReader."""
     reader = InteractiveDocumentReader()
