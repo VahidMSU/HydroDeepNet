@@ -2,12 +2,12 @@ from agno.knowledge.csv import CSVKnowledgeBase
 from agno.vectordb.pgvector import PgVector
 import logging
 import pandas as pd
-
+from dir_discover import discover_reports
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def csv_reader(csv_path="/data/SWATGenXApp/Users/admin/Reports/20250324_222749/groundwater/groundwater_stats.csv", recreate_db=False):
+def csv_reader(csv_path, recreate_db=False):
     # First read the CSV directly to get basic info
     df = pd.read_csv(csv_path)
     logger.info(f"CSV file contains {len(df)} rows and {len(df.columns)} columns")
@@ -56,5 +56,24 @@ def csv_reader(csv_path="/data/SWATGenXApp/Users/admin/Reports/20250324_222749/g
 
 
 if __name__ == "__main__":
-    response = csv_reader(recreate_db=True)
+    reports_dict = discover_reports()
+    report_timestamp = sorted(reports_dict.keys())[-1]
+    print(report_timestamp)
+    
+    # Find the cdl_data.csv file in the nsrdb group
+    nsrdb_files = reports_dict[report_timestamp]["groups"]["cdl"]["files"]
+    csv_path = None
+    #
+    # Files are organized by extension
+    if ".csv" in nsrdb_files:
+        for file_info in nsrdb_files[".csv"]:
+            if file_info["name"] == "cdl_data.csv":
+                csv_path = file_info["path"]
+                break
+    
+    if csv_path is None:
+        raise FileNotFoundError("Could not find cdl_data.csv in the report")
+        
+    print(csv_path)
+    response = csv_reader(csv_path, recreate_db=True)
     print(response)

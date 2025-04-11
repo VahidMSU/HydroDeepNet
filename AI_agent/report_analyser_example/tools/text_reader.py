@@ -40,9 +40,9 @@ def analyze_report(doc_path):
 
 Based on this report, please provide:
 1. Overview of the study area and available data
-2. Key findings about aquifer properties (thickness, conductivity, transmissivity)
-3. Important patterns and relationships between properties
-4. Main hydrogeologic implications
+2. Key findings about the report (statistics, trends, patterns, etc.)
+3. Important patterns and relationships between the data
+4. Main implications of the report
 5. Key recommendations
 
 Focus on the most significant findings and their practical implications."""
@@ -51,5 +51,22 @@ Focus on the most significant findings and their practical implications."""
     return agent.print_response(analysis_prompt, stream=True)
 
 if __name__ == "__main__":
-    doc_path = "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/groundwater/groundwater_report.md"
+    from dir_discover import discover_reports
+    reports_dict = discover_reports()
+    report_timestamp = sorted(reports_dict.keys())[-1]
+    print(report_timestamp)
+    
+    # Find the cdl_data.csv file in the nsrdb group
+    climate_change_files = reports_dict[report_timestamp]["groups"]["climate_change"]["files"]
+    doc_path = None
+    #
+    # Files are organized by extension
+    if ".md" in climate_change_files:
+        for file_info in climate_change_files[".md"]:
+            if file_info["name"] == "climate_change_report.md":
+                doc_path = file_info["path"]
+                break
+
+
+
     analyze_report(doc_path)

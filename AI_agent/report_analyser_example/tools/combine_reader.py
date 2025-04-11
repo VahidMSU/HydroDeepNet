@@ -8,33 +8,51 @@ from agno.embedder.openai import OpenAIEmbedder
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.media import Image
+from dir_discover import discover_reports
 import os
 from pathlib import Path
 
-def combined_reader(report_dir="/data/SWATGenXApp/Users/admin/Reports/20250324_222749", recreate_db=False):
+def combined_reader(report_timestamp=None, group_name=None, recreate_db=False):
     """
-    Analyzes a complete report by combining multiple types of data.
+    Analyzes a complete report group by combining multiple types of data.
     
     Args:
-        report_dir: Path to the report directory
+        report_timestamp: Specific report timestamp to analyze (e.g., "20250324_222749")
+        group_name: Specific group to analyze (e.g., "groundwater", "climate")
         recreate_db: Whether to recreate the database
         
     Returns:
         The analysis response
     """
-    # Check if directory exists
-    if not os.path.exists(report_dir):
-        print(f"Report directory not found: {report_dir}")
-        return
-
-    # Define paths based on report directory
-    groundwater_dir = os.path.join(report_dir, "groundwater")
-    config_path = os.path.join(report_dir, "config.json")
-    report_path = os.path.join(groundwater_dir, "groundwater_report.md")
-    stats_path = os.path.join(groundwater_dir, "groundwater_stats.csv")
-    image_path = os.path.join(groundwater_dir, "groundwater_correlation.png")
+    # Get reports structure
+    reports_dict = discover_reports()
     
-    print(f"Processing report in: {report_dir}")
+    # If no timestamp provided, use the latest
+    if report_timestamp is None:
+        report_timestamp = sorted(reports_dict.keys())[-1]
+    
+    if report_timestamp not in reports_dict:
+        print(f"Report {report_timestamp} not found")
+        return
+    
+    report_data = reports_dict[report_timestamp]
+    print(f"Processing report: {report_timestamp}")
+    
+    # If no group specified, show available groups and return
+    if group_name is None:
+        print("\nAvailable groups:")
+        for group in report_data["groups"].keys():
+            print(f"- {group}")
+        return
+    
+    if group_name not in report_data["groups"]:
+        print(f"Group {group_name} not found in report {report_timestamp}")
+        print("Available groups:", list(report_data["groups"].keys()))
+        return
+    
+    # Get group data
+    group_data = report_data["groups"][group_name]
+    print(f"\nProcessing group: {group_name}")
     
     # Initialize the embedder
     embedder = OpenAIEmbedder()
@@ -42,42 +60,11 @@ def combined_reader(report_dir="/data/SWATGenXApp/Users/admin/Reports/20250324_2
     # Create knowledge bases for different file types
     knowledge_bases = []
     
-    # Add markdown report if it exists
-    if os.path.exists(report_path):
-        print(f"Adding report: {report_path}")
-        with open(report_path, "r") as f:
-            report_content = f.read()
-        
-        document = Document(content=report_content)
-        report_kb = TextKnowledgeBase(
-            path=report_path,
-            text=report_content,
-            vector_db=PgVector(
-                table_name="report_documents",
-                db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
-            ),
-            embedder=embedder
-        )
-        knowledge_bases.append(report_kb)
-    
-    # Add CSV stats if it exists
-    if os.path.exists(stats_path):
-        print(f"Adding stats: {stats_path}")
-        csv_kb = CSVKnowledgeBase(
-            path=stats_path,
-            vector_db=PgVector(
-                table_name="csv_documents",
-                db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
-            ),
-            embedder=embedder
-        )
-        knowledge_bases.append(csv_kb)
-    
-    # Add config file if it exists
-    if os.path.exists(config_path):
-        print(f"Adding config: {config_path}")
+    # Process config file if it exists
+    if report_data["config"]:
+        print(f"Adding config: {report_data['config']}")
         config_kb = TextKnowledgeBase(
-            path=config_path,
+            path=report_data["config"],
             vector_db=PgVector(
                 table_name="config_documents",
                 db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
@@ -85,6 +72,42 @@ def combined_reader(report_dir="/data/SWATGenXApp/Users/admin/Reports/20250324_2
             embedder=embedder
         )
         knowledge_bases.append(config_kb)
+    
+    # Process files by type
+    files = group_data["files"]
+    
+    # Add markdown/text files
+    for ext in [".md", ".txt"]:
+        if ext in files:
+            for file_data in files[ext]:
+                print(f"Adding text: {file_data['name']}")
+                with open(file_data["path"], "r") as f:
+                    content = f.read()
+                
+                text_kb = TextKnowledgeBase(
+                    path=file_data["path"],
+                    text=content,
+                    vector_db=PgVector(
+                        table_name="text_documents",
+                        db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
+                    ),
+                    embedder=embedder
+                )
+                knowledge_bases.append(text_kb)
+    
+    # Add CSV files
+    if ".csv" in files:
+        for file_data in files[".csv"]:
+            print(f"Adding CSV: {file_data['name']}")
+            csv_kb = CSVKnowledgeBase(
+                path=file_data["path"],
+                vector_db=PgVector(
+                    table_name="csv_documents",
+                    db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
+                ),
+                embedder=embedder
+            )
+            knowledge_bases.append(csv_kb)
     
     # Combine the knowledge bases
     combined_kb = CombinedKnowledgeBase(
@@ -110,43 +133,49 @@ def combined_reader(report_dir="/data/SWATGenXApp/Users/admin/Reports/20250324_2
     combined_kb.load(recreate=recreate_db)
     print("Knowledge base loaded successfully")
     
-    # Process image if it exists
-    image_description = ""
-    if os.path.exists(image_path):
-        print(f"Processing image: {image_path}")
+    # Process images if they exist
+    image_descriptions = []
+    if ".png" in files:
         image_agent = Agent(
             model=OpenAIChat(id="gpt-4o"),
             markdown=True,
             instructions=[
-                "You are analyzing groundwater data visualizations.",
+                f"You are analyzing {group_name} visualizations.",
                 "Provide detailed analysis of the charts and plots.",
                 "Focus on trends, patterns, and relationships in the data."
             ]
         )
-        image_description = image_agent.print_response(
-            "What does this visualization show? Provide a detailed analysis.",
-            images=[Image(filepath=image_path)]
-        )
+        
+        for file_data in files[".png"]:
+            print(f"Processing image: {file_data['name']}")
+            description = image_agent.print_response(
+                "What does this visualization show? Provide a detailed analysis.",
+                images=[Image(filepath=file_data["path"])]
+            )
+            image_descriptions.append(f"Analysis of {file_data['name']}:\n{description}")
     
     # Create comprehensive analysis prompt
-    analysis_prompt = f"""
-    Please provide a comprehensive analysis of the groundwater report by synthesizing all available information:
+    image_section = "\n\nImage Analyses:\n" + "\n".join(image_descriptions) if image_descriptions else ""
     
-    1. Overview of the study area and objectives
-    2. Data sources and methodology used
-    3. Key findings about groundwater properties and conditions
-    4. Statistical analysis of the groundwater parameters
-    5. Interpretation of visualizations and their significance
-    6. Main conclusions and recommendations
-    
-    {image_description if image_description else ""}
-    
-    Focus on providing an integrated analysis that connects all pieces of information.
-    """
+    analysis_prompt = f"""Please provide a comprehensive analysis of the {group_name} report by synthesizing all available information:
+
+1. Overview of the study area and objectives
+2. Data sources and methodology used
+3. Key findings and observations
+4. Statistical analysis of the parameters
+5. Interpretation of visualizations and their significance
+6. Main conclusions and recommendations{image_section}
+
+Focus on providing an integrated analysis that connects all pieces of information."""
     
     # Get the comprehensive analysis
     return agent.print_response(analysis_prompt, stream=True)
 
 if __name__ == "__main__":
-    response = combined_reader(recreate_db=True)
+    # Example: Analyze the latest report's groundwater group
+    response = combined_reader(group_name="groundwater", recreate_db=True)
+    print("\nAnalysis:")
     print(response)
+    
+    # To see available groups in a specific report:
+    # combined_reader("20250324_222749")

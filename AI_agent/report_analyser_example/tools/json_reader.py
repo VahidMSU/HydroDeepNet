@@ -27,7 +27,7 @@ def json_reader(json_path="/data/SWATGenXApp/Users/admin/Reports/20250324_222749
     logger.info("Agent created with JSON knowledge")
 
     # Load the knowledge base
-    agent.knowledge.load(recreate=False)
+    agent.knowledge.load(recreate=True)
     logger.info("Knowledge base loaded successfully")
 
     # Example query
