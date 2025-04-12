@@ -1,1 +1,1 @@
-/data/SWATGenXApp/codes/.venv/bin/python /data/SWATGenXApp/codes/ModelProcessing/main.py --username admin --name 05536265 --model-name SWAT_MODEL_Web_Application --sensitivity
+/data/SWATGenXApp/codes/.venv/bin/python /data/SWATGenXApp/codes/ModelProcessing/main.py --username swatmodels_v1 --name 05489000 --model-name SWAT_MODEL --calibration

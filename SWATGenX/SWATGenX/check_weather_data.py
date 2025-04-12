@@ -1,7 +1,7 @@
 import os
 import datetime
 
-def check_weather_station_files(directory, start_year=2000, end_year=2020):
+def check_weather_station_files(directory, start_year=1990, end_year=2022):
     errors = []
 
     # Define valid ranges for each variable type
@@ -161,4 +161,4 @@ def check_weather_station_files(directory, start_year=2000, end_year=2020):
 # Example usage:
 if __name__ == "__main__":
 
-    check_weather_station_files("/data/SWATGenXApp/Users/admin/SWATplus_by_VPUID/0406/huc12/04127200/PRISM")
+    check_weather_station_files("/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0107/huc12/01075000/PRISM/")

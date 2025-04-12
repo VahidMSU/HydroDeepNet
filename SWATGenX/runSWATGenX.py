@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
         print("Reading the station names from the camel_hydro.txt")
         #time.sleep(5)
-        #station_names = gauge_id = pd.read_csv(SWATGenXPaths.camel_hydro_path, sep=";", dtype={"gauge_id": str})['gauge_id'].values
+        station_names = pd.read_csv(SWATGenXPaths.camel_hydro_path, sep=";", dtype={"gauge_id": str})['gauge_id'].values
 
     elif LEVEL == "huc8":
         
@@ -72,10 +72,10 @@ if __name__ == "__main__":
         "landuse_epoch": "2021",
         "ls_resolution": "250",
         "dem_resolution": "30",
-        "station_name": ['04140000'],
+        "station_name": station_names,
         "MODEL_NAME": MODEL_NAME,
         "MAX_AREA": 1500,
-        "MIN_AREA": 500,
+        "MIN_AREA": 50,
         "GAP_percent": 10,
         "username": "pouyan",
     }
