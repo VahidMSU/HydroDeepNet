@@ -265,7 +265,7 @@ class SWATGenXCore:
 		self.extract_metereological_data()
 		try:
 			from SWATGenX.check_weather_data import check_weather_station_files
-			check_weather_station_files(self.paths.extracted_swat_prism_path)
+			check_weather_station_files(self.paths.extracted_swat_prism_path, start_year=2000, end_year=2020)
 		except Exception as e:
 			self.logger.error(f"Error in checking weather station files for {self.NAME}: {e}")
 			return None

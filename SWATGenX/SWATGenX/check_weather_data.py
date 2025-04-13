@@ -1,7 +1,7 @@
 import os
 import datetime
 
-def check_weather_station_files(directory, start_year=1990, end_year=2022):
+def check_weather_station_files(directory, start_year=2000, end_year=2020):
     errors = []
 
     # Define valid ranges for each variable type
