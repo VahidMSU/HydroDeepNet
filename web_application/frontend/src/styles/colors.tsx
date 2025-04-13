@@ -6,8 +6,8 @@ const colors = {
   surfaceDark: '#1d1d20',     // Adjusted darker surface for better layering
 
   // Accent colors - slightly refined for better harmony
-  accent: '#ff8500',          // Keeping primary orange accent 
-  accentHover: '#ffa64d',     // Slightly desaturated hover state for elegance
+  accent: '#ff5722',          // Keeping primary orange accent 
+  accentHover: '#ff5722',     // Slightly desaturated hover state for elegance
   accentAlt: '#ff6361',       // Alternative accent for alerts
 
   // Informational colors - maintained for consistency

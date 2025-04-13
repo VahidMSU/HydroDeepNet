@@ -65,7 +65,7 @@ const ControlButton = styled.button`
   }
 
   &.active {
-    background-color: #ff8500;
+    background-color: #ff5722;
     color: #fff;
   }
 

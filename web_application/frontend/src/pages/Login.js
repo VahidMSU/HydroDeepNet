@@ -249,7 +249,7 @@ const Login = () => {
                 }
                 label={<Typography sx={{ color: 'white' }}>Remember Me</Typography>}
               />
-              <Link to="/forgot-password" style={{ color: '#ff8500', textDecoration: 'none' }}>
+              <Link to="/forgot-password" style={{ color: '#ff5722', textDecoration: 'none' }}>
                 <Typography variant="body2">Forgot Password?</Typography>
               </Link>
             </Box>
@@ -257,7 +257,7 @@ const Login = () => {
               fullWidth
               type="submit"
               variant="contained"
-              sx={{ bgcolor: '#ff8500', color: 'white', mt: 2, '&:hover': { bgcolor: '#e67e00' } }}
+              sx={{ bgcolor: '#ff5722', color: 'white', mt: 2, '&:hover': { bgcolor: '#e67e00' } }}
             >
               Login
             </Button>
@@ -271,7 +271,7 @@ const Login = () => {
           {/* Sign Up Link */}
           <Typography variant="body2" sx={{ color: 'white', textAlign: 'center', mt: 3 }}>
             Don&apos;t have an account?{' '}
-            <Link to="/signup" style={{ color: '#ff8500' }}>
+            <Link to="/signup" style={{ color: '#ff5722' }}>
               Sign up
             </Link>
           </Typography>

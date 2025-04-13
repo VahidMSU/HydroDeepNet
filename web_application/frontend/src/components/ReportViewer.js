@@ -64,7 +64,7 @@ const ErrorOverlay = styled.div`
 
 const SpinnerIcon = styled(FontAwesomeIcon)`
   font-size: 2rem;
-  color: #ff8500;
+  color: #ff5722;
   animation: spin 1s linear infinite;
   
   @keyframes spin {

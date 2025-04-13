@@ -247,10 +247,10 @@ export const SubmitButton = styled.button`
 
 export const InfoCard = styled.div`
   background-color: ${colors.surface};
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 1.2rem;
   margin-bottom: 1.5rem;
-  border-left: 4px solid ${colors.info};
+  border-left: 2px solid ${colors.info};
   
   h3 {
     color: ${colors.text};

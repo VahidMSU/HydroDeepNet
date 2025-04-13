@@ -49,7 +49,7 @@ export const Label = styled.label`
   transition: color 0.2s ease;
   
   &:hover {
-    color: #ff8500;
+    color: #ff5722;
   }
 `;
 
@@ -65,7 +65,7 @@ export const Input = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #ff8500;
+    border-color: #ff5722;
     box-shadow: 0 0 0 4px rgba(255, 133, 0, 0.2);
     background-color: #222;
   }
@@ -94,7 +94,7 @@ export const TextArea = styled.textarea`
 
   &:focus {
     outline: none;
-    border-color: #ff8500;
+    border-color: #ff5722;
     box-shadow: 0 0 0 4px rgba(255, 133, 0, 0.2);
     background-color: #222;
   }
@@ -110,7 +110,7 @@ export const TextArea = styled.textarea`
 `;
 
 export const SubmitButton = styled.button`
-  background-color: #ff8500;
+  background-color: #ff5722;
   color: #ffffff;
   padding: 0.6rem 1.2rem;
   border: none;
@@ -159,6 +159,6 @@ export const Alert = styled.div<AlertProps>`
   margin-bottom: 1rem;
   border-radius: 8px;
   background-color: ${props => props.type === 'error' ? 'rgba(255, 0, 0, 0.1)' : 'rgba(0, 255, 0, 0.1)'};
-  color: ${props => props.type === 'error' ? '#ff8500' : '#00ff00'};
+  color: ${props => props.type === 'error' ? '#ff5722' : '#00ff00'};
   border: 1px solid currentColor;
 `;

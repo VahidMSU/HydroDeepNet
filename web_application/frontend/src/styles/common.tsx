@@ -95,7 +95,7 @@ export const ErrorMessage = styled.div`
 `;
 
 export const SectionHeader = styled.h3`
-  color: #ff8500;
+  color: #ff5722;
   font-size: 1.8rem;
   margin: 2rem 0 1rem;
 `;

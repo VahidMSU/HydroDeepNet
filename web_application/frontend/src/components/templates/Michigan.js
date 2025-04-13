@@ -29,7 +29,7 @@ const CardTitle = styled(Typography)({
   padding: '0.5rem',
   fontWeight: 600,
   backgroundColor: '#222',
-  borderBottom: '4px solid #ff8500', // Orange bottom border
+  borderBottom: '4px solid #ff5722', // Orange bottom border
   borderBottomLeftRadius: '8px',
   borderBottomRightRadius: '8px',
 });

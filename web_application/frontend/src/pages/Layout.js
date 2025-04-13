@@ -408,7 +408,7 @@ const Layout = ({ children }) => {
                       fontWeight: 'bold',
                     },
                     '&:hover': {
-                      color: '#ff8500',
+                      color: '#ff5722',
                     },
                   }}
                 >
@@ -424,7 +424,7 @@ const Layout = ({ children }) => {
             <List>
               <ListItemButton
                 onClick={handleLogout}
-                sx={{ color: 'white', '&:hover': { color: '#ff8500' } }}
+                sx={{ color: 'white', '&:hover': { color: '#ff5722' } }}
               >
                 <ListItemIcon>
                   <ExitToAppIcon sx={{ color: 'white' }} />

@@ -138,7 +138,7 @@ const ReportItemComponent = ({ report, onReportAction }) => {
             }
             style={{ 
               color: status === 'failed' ? '#ff5555' : 
-                     status === 'completed' ? '#4caf50' : '#ff8500'
+                     status === 'completed' ? '#4caf50' : '#ff5722'
             }}
             className={status === 'processing' ? 'fa-spin' : ''}
           />
@@ -477,7 +477,7 @@ const HydroGeoDataset = () => {
     <button 
       onClick={() => setActivePanel(panel)}
       style={{
-        background: activePanel === panel ? '#ff8500' : 'transparent',
+        background: activePanel === panel ? '#ff5722' : 'transparent',
         border: 'none',
         color: activePanel === panel ? 'white' : '#ccc',
         padding: '12px 18px',
@@ -500,7 +500,7 @@ const HydroGeoDataset = () => {
       case 'report':
         return (
           <div style={{ padding: '20px', backgroundColor: '#2b2b2c', borderRadius: '8px' }}>
-            <h2 style={{ fontSize: '1.3rem', marginBottom: '20px', color: '#ff8500' }}>
+            <h2 style={{ fontSize: '1.3rem', marginBottom: '20px', color: '#ff5722' }}>
               <FontAwesomeIcon icon={faFileAlt} style={{ marginRight: '10px' }} />
               Environmental Report Generator
           </h2>
@@ -613,7 +613,7 @@ const HydroGeoDataset = () => {
       case 'results':
         return data ? (
           <ResultsContainer>
-            <h2 style={{ fontSize: '1.3rem', marginBottom: '15px', color: '#ff8500' }}>
+            <h2 style={{ fontSize: '1.3rem', marginBottom: '15px', color: '#ff5722' }}>
               <FontAwesomeIcon icon={faChartBar} className="icon" style={{ marginRight: '10px' }} />
               Query Results
             </h2>
@@ -645,7 +645,7 @@ const HydroGeoDataset = () => {
               <button 
                 onClick={() => setActivePanel('report')}
                 style={{
-                  backgroundColor: '#ff8500',
+                  backgroundColor: '#ff5722',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
@@ -678,10 +678,6 @@ const HydroGeoDataset = () => {
           <ErrorBoundary>
             <Suspense fallback={<div>Loading form...</div>}>
               <div style={{ padding: '20px', backgroundColor: '#2b2b2c', borderRadius: '8px' }}>
-                <h2 style={{ fontSize: '1.3rem', marginBottom: '15px', color: '#ff8500' }}>
-                  <FontAwesomeIcon icon={faSearch} style={{ marginRight: '10px' }} />
-                  Query Dataset
-                </h2>
                 
                 <HydroGeoDatasetForm
                   formData={formData}
@@ -706,8 +702,8 @@ const HydroGeoDataset = () => {
                       onClick={() => setActivePanel('report')}
                       style={{
                         backgroundColor: 'transparent',
-                        color: '#ff8500',
-                        border: '1px solid #ff8500',
+                        color: '#ff5722',
+                        border: '1px solid #ff5722',
                         borderRadius: '4px',
                         padding: '8px 15px',
                         marginLeft: '10px',
@@ -741,7 +737,7 @@ const HydroGeoDataset = () => {
           alignItems: 'center',
           gap: '10px'
         }}>
-          <FontAwesomeIcon icon={faDatabase} style={{ color: '#ff8500' }} />
+          <FontAwesomeIcon icon={faDatabase} style={{ color: '#ff5722' }} />
           HydroGeoDataset Explorer
         </h1>
         <p style={{ fontSize: '0.9rem', marginTop: '8px', marginBottom: 0, color: '#aaa' }}>

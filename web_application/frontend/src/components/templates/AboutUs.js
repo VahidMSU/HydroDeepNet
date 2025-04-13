@@ -163,7 +163,7 @@ const AboutUsTemplate = () => {
       {/* Key Features */}
       <section>
         <h2
-          style={{ color: '#ff8500', textAlign: 'center', marginBottom: '2rem', fontSize: '2rem' }}
+          style={{ color: '#ff5722', textAlign: 'center', marginBottom: '2rem', fontSize: '2rem' }}
         >
           Key Features
         </h2>
@@ -185,7 +185,7 @@ const AboutUsTemplate = () => {
       <section>
         <h2
           style={{
-            color: '#ff8500',
+            color: '#ff5722',
             textAlign: 'center',
             marginTop: '4rem',
             marginBottom: '2rem',

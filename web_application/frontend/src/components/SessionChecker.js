@@ -10,7 +10,7 @@ const SessionWarning = styled.div`
   padding: 15px 20px;
   background-color: #2b2b2c;
   color: #ffd380;
-  border: 1px solid #ff8500;
+  border: 1px solid #ff5722;
   border-radius: 6px;
   z-index: 9999;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -41,7 +41,7 @@ const Button = styled.button`
   transition: background-color 0.2s;
   
   &.primary {
-    background-color: #ff8500;
+    background-color: #ff5722;
     color: #fff;
     
     &:hover {

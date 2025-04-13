@@ -114,23 +114,7 @@ const HydroGeoDatasetForm = ({
           )}
 
           {/* Selected Area Display */}
-          <FormGroup>
-            <label>
-              <FontAwesomeIcon icon={faSearchLocation} className="icon" />
-              Selected Area
-            </label>
-            <CoordinatesDisplay>
-              <div className="title">
-                <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" />
-                {hasSelectedArea ? 'Area Selected' : 'No Area Selected'}
-              </div>
-              <div className="value">
-                {hasSelectedArea
-                  ? `${formData.geometry_type || 'Area'} selected`
-                  : 'Use the map to draw a polygon or rectangle'}
-              </div>
-            </CoordinatesDisplay>
-          </FormGroup>
+
 
           {/* If bounds are defined, show them */}
           {hasSelectedArea && (
@@ -145,9 +129,9 @@ const HydroGeoDatasetForm = ({
                   Coordinate Bounds
                 </div>
                 <div className="value">
-                  Lat: {formData.min_latitude} to {formData.max_latitude}
+                  Lat: {parseFloat(formData.min_latitude).toFixed(2)} to {parseFloat(formData.max_latitude).toFixed(2)}
                   <br />
-                  Lon: {formData.min_longitude} to {formData.max_longitude}
+                  Lon: {parseFloat(formData.min_longitude).toFixed(2)} to {parseFloat(formData.max_longitude).toFixed(2)}
                 </div>
               </CoordinatesDisplay>
             </FormGroup>

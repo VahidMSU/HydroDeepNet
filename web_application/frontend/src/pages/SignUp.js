@@ -408,7 +408,7 @@ const SignUp = () => {
               fullWidth
               type="submit"
               variant="contained"
-              sx={{ bgcolor: '#ff8500', color: 'white', mt: 2, '&:hover': { bgcolor: '#e67e00' } }}
+              sx={{ bgcolor: '#ff5722', color: 'white', mt: 2, '&:hover': { bgcolor: '#e67e00' } }}
             >
               Sign Up
             </Button>
@@ -416,7 +416,7 @@ const SignUp = () => {
 
           <Typography variant="body2" sx={{ color: 'white', textAlign: 'center', mt: 3 }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: '#ff8500' }}>
+            <Link to="/login" style={{ color: '#ff5722' }}>
               Log in
             </Link>
           </Typography>

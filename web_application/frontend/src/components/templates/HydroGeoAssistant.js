@@ -233,7 +233,7 @@ const HydroGeoAssistant = () => {
     formattedContent = formattedContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
     
     // Convert links
-    formattedContent = formattedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color:#ff8500; text-decoration:underline;">$1</a>');
+    formattedContent = formattedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color:#ff5722; text-decoration:underline;">$1</a>');
     
     // Convert headings
     formattedContent = formattedContent.replace(/^# (.*?)$/gm, '<h1 style="font-size:1.5rem; margin:0.5rem 0;">$1</h1>');
@@ -254,10 +254,10 @@ const HydroGeoAssistant = () => {
   const CollapsibleSection = ({ title, icon, isExpanded, setExpanded, children }) => (
     <div style={{ 
       marginBottom: '0.5rem',
-      backgroundColor: '#2a2a2a',
+      backgroundColor: '#2b2b2c',
       borderRadius: '8px',
       overflow: 'hidden',
-      border: '1px solid #444'
+      border: '1px solid #3f3f45'
     }}>
       <div 
         style={{ 
@@ -267,12 +267,12 @@ const HydroGeoAssistant = () => {
           alignItems: 'center',
           cursor: 'pointer',
           backgroundColor: '#333',
-          borderBottom: isExpanded ? '1px solid #444' : 'none'
+          borderBottom: isExpanded ? '1px solid #3f3f45' : 'none'
         }}
         onClick={() => setExpanded(!isExpanded)}
       >
         <h3 style={{ margin: 0, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <FontAwesomeIcon icon={icon} style={{ color: '#ff8500' }} />
+          <FontAwesomeIcon icon={icon} style={{ color: '#ff5722' }} />
           {title}
         </h3>
         <FontAwesomeIcon 
@@ -290,16 +290,24 @@ const HydroGeoAssistant = () => {
 
   return (
     <HydroGeoContainer style={{ 
-      overflow: 'hidden'
+      overflow: 'hidden',
+      backgroundColor: '#1c1c1e',
+      padding: 0,
+      minHeight: '100vh',
+      maxHeight: '100vh'
     }}>
       <HydroGeoHeader style={{ 
         padding: '0.75rem', 
         marginBottom: '0.75rem', 
         flexShrink: 0,
-        minHeight: 'auto'
+        minHeight: 'auto',
+        background: '#2b2b2c',
+        borderRadius: '10px',
+        margin: '10px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
       }}>
         <h1 style={{ fontSize: '1.8rem', margin: 0 }}>
-          <FontAwesomeIcon icon={faRobot} style={{ marginRight: '0.8rem' }} />
+          <FontAwesomeIcon icon={faRobot} style={{ marginRight: '0.8rem', color: '#ff5722' }} />
           HydroGeo Assistant
           <span style={{ 
             fontSize: '0.7em', 
@@ -320,7 +328,8 @@ const HydroGeoAssistant = () => {
         gap: '1.5rem', 
         height: 'calc(100vh - 120px)',
         maxHeight: 'calc(100vh - 120px)',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        padding: '0 10px 10px 10px'
       }}>
         {/* Sidebar with collapsible elements */}
         <div style={{ 
@@ -331,7 +340,10 @@ const HydroGeoAssistant = () => {
           flexDirection: 'column',
           gap: '0.5rem',
           flexShrink: 0,
-          paddingRight: '0.5rem'
+          paddingRight: '0.5rem',
+          backgroundColor: '#2b2b2c',
+          borderRadius: '10px',
+          padding: '10px'
         }}>
           <CollapsibleSection 
             title="About the Assistant" 
@@ -339,7 +351,7 @@ const HydroGeoAssistant = () => {
             isExpanded={aboutExpanded} 
             setExpanded={setAboutExpanded}
           >
-            <p style={{ fontSize: '0.85rem', color: '#ccc', margin: 0 }}>
+            <p style={{ fontSize: '0.85rem', color: '#c5c5c8', margin: 0 }}>
               The HydroGeo Assistant is powered by <strong>Agno</strong> and <strong>Gemini</strong>, offering 
               advanced AI capabilities for environmental data analysis. You can ask questions about data 
               sources, methodologies, analysis techniques, and more.
@@ -374,7 +386,7 @@ const HydroGeoAssistant = () => {
             isExpanded={samplesExpanded} 
             setExpanded={setSamplesExpanded}
           >
-            <ul style={{ color: '#ccc', paddingLeft: '1.2rem', margin: '0', fontSize: '0.85rem' }}>
+            <ul style={{ color: '#c5c5c8', paddingLeft: '1.2rem', margin: '0', fontSize: '0.85rem' }}>
               <li>What climate data sources are available in the HydroGeo dataset?</li>
               <li>How can I interpret PRISM precipitation data?</li>
               <li>What is the difference between LOCA and CMIP climate projections?</li>
@@ -395,9 +407,9 @@ const HydroGeoAssistant = () => {
                   onChange={handleModelChange}
                   style={{ 
                     padding: '0.6rem 0.8rem',
-                    backgroundColor: '#2a2a2a',
+                    backgroundColor: '#26262a',
                     color: 'white',
-                    border: '1px solid #444',
+                    border: '1px solid #3f3f45',
                     borderRadius: '0.5rem',
                     width: '100%',
                     fontSize: '0.85rem'
@@ -410,7 +422,7 @@ const HydroGeoAssistant = () => {
                   ))}
                 </select>
               </InputField>
-              <p style={{ fontSize: '0.8rem', color: '#999', margin: '0.3rem 0 0 0' }}>
+              <p style={{ fontSize: '0.8rem', color: '#9e9e9e', margin: '0.3rem 0 0 0' }}>
                 Currently using: <strong>{selectedModel}</strong> by {availableModels.find(m => m.id === selectedModel)?.provider}
               </p>
             </FormGroup>
@@ -425,7 +437,9 @@ const HydroGeoAssistant = () => {
           flexDirection: 'column',
           height: '100%',
           maxHeight: '100%',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          backgroundColor: '#2b2b2c',
+          borderRadius: '10px'
         }}>
           <ChatHeader style={{ 
             padding: '0.8rem',

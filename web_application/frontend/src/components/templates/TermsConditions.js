@@ -21,7 +21,7 @@ const TermsTitle = styled(Typography)({
 const SectionHeader = styled(Typography)({
   fontSize: '1.8rem',
   fontWeight: 'bold',
-  color: '#ff8500',
+  color: '#ff5722',
   marginBottom: '1rem',
 });
 
@@ -97,22 +97,22 @@ const TermsAndConditionsTemplate = () => {
 
       {/* Buttons Section */}
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 1, mb: 4 }}>
-        <Button variant="contained" sx={{ bgcolor: '#ff8500' }} href="mailto:rafieiva@msu.edu">
+        <Button variant="contained" sx={{ bgcolor: '#ff5722' }} href="mailto:rafieiva@msu.edu">
           Contact Us
         </Button>
         <Button
           variant="contained"
-          sx={{ bgcolor: '#ff8500' }}
+          sx={{ bgcolor: '#ff5722' }}
           onClick={() => alert('Learn More clicked!')}
         >
           Learn More
         </Button>
-        <Button variant="contained" sx={{ bgcolor: '#ff8500' }} href="https://msu.edu/terms">
+        <Button variant="contained" sx={{ bgcolor: '#ff5722' }} href="https://msu.edu/terms">
           MSU Terms of Use
         </Button>
         <Button
           variant="contained"
-          sx={{ bgcolor: '#ff8500' }}
+          sx={{ bgcolor: '#ff5722' }}
           onClick={() => alert('Download Terms clicked!')}
         >
           Download Terms

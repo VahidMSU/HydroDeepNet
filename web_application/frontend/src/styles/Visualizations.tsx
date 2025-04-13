@@ -210,17 +210,17 @@ export const GifWrapper = styled.div`
 `;
 
 export const DownloadButton = styled.a`
-  color: #ff8500;
+  color: #ff5722;
   text-decoration: none;
   padding: 0.5rem 1rem;
-  border: 2px solid #ff8500;
+  border: 2px solid #ff5722;
   border-radius: 8px;
   margin-top: 1rem;
   display: inline-block;
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: #ff8500;
+    background-color: #ff5722;
     color: #ffffff;
   }
 `;
@@ -233,10 +233,10 @@ export const VisualizationContainer = styled.div`
 `;
 
 export const VisualizationTitle = styled.h2`
-  color: #ff8500;
+  color: #ff5722;
   font-size: 2.8rem;
   margin-bottom: 1.5rem;
-  border-bottom: 3px solid #ff8500;
+  border-bottom: 3px solid #ff5722;
   padding-bottom: 1.2rem;
   position: relative;
   text-align: center;

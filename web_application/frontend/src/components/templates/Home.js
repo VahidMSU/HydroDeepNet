@@ -124,7 +124,7 @@ const HomeTemplate = () => {
                   icon={faMap} 
                   style={{ 
                     fontSize: '5rem', 
-                    color: '#ff8500',
+                    color: '#ff5722',
                     opacity: 0.8
                   }} 
                 />
@@ -150,7 +150,7 @@ const HomeTemplate = () => {
                   icon={faChartLine} 
                   style={{ 
                     fontSize: '5rem', 
-                    color: '#ff8500',
+                    color: '#ff5722',
                     opacity: 0.8
                   }} 
                 />

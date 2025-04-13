@@ -51,7 +51,7 @@ const DownloadButton = styled(Button)({
   backgroundColor: '#e67500',
   color: 'white',
   '&:hover': {
-    backgroundColor: '#ff8500',
+    backgroundColor: '#ff5722',
   },
 });
 
@@ -187,7 +187,7 @@ const VisualizationsDashboardTemplate = () => {
       {/* Loading Indicator */}
       {loading && (
         <LoadingContainer>
-          <CircularProgress size={40} sx={{ color: '#ff8500' }} />
+          <CircularProgress size={40} sx={{ color: '#ff5722' }} />
         </LoadingContainer>
       )}
 

@@ -22,13 +22,13 @@ const ContactContainer = styled(Box)({
 });
 
 const ContactTitle = styled(Typography)({
-  color: '#ff8500',
+  color: '#ff5722',
   fontSize: '2.8rem',
   marginBottom: '1.5rem',
   paddingBottom: '1.2rem',
   position: 'relative',
   fontWeight: 'bold',
-  borderBottom: '3px solid #ff8500',
+  borderBottom: '3px solid #ff5722',
   '&:after': {
     content: '""',
     position: 'absolute',
@@ -37,7 +37,7 @@ const ContactTitle = styled(Typography)({
     transform: 'translateX(-50%)',
     width: '80px',
     height: '3px',
-    background: 'linear-gradient(90deg, #ff8500, #ffa64d)',
+    background: 'linear-gradient(90deg, #ff5722, #ff5722)',
     borderRadius: '3px',
   },
 });
@@ -58,12 +58,12 @@ const ContentWrapper = styled(Box)({
     left: '0',
     width: '100%',
     height: '4px',
-    background: 'linear-gradient(to right, #ff850080, transparent)'
+    background: 'linear-gradient(to right, #ff572280, transparent)'
   }
 });
 
 const SubmitButton = styled(Button)({
-  backgroundColor: '#ff8500',
+  backgroundColor: '#ff5722',
   color: '#ffffff',
   padding: '0.6rem 1.2rem',
   borderRadius: '8px',
@@ -72,7 +72,7 @@ const SubmitButton = styled(Button)({
   cursor: 'pointer',
   transition: 'all 0.3s ease',
   '&:hover': {
-    backgroundColor: '#ffa64d',
+    backgroundColor: '#ff5722',
     transform: 'translateY(-2px)',
     boxShadow: '0 5px 15px rgba(255, 133, 0, 0.3)',
   },
@@ -243,7 +243,7 @@ const ContactUsForm = ({ onSubmit }) => {
                 name="newsletter"
                 checked={formData.newsletter}
                 onChange={handleChange}
-                sx={{ color: '#ff8500' }}
+                sx={{ color: '#ff5722' }}
               />
             }
             label="Subscribe to our newsletter"

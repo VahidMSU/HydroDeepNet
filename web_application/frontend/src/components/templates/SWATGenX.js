@@ -689,7 +689,7 @@ const SWATGenXTemplate = () => {
                 DEM Resolution:
                 <FontAwesomeIcon
                   icon={faLock}
-                  style={{ marginLeft: '8px', fontSize: '12px', color: '#ff8500' }}
+                  style={{ marginLeft: '8px', fontSize: '12px', color: '#ff5722' }}
                   title="Fixed at 30m resolution"
                 />
               </InputLabel>
@@ -922,7 +922,7 @@ const SWATGenXTemplate = () => {
         alignItems: 'center',
         gap: '10px'
       }}>
-        <FontAwesomeIcon icon={faMap} style={{ color: '#ff8500', fontSize: '1.5rem' }} />
+        <FontAwesomeIcon icon={faMap} style={{ color: '#ff5722', fontSize: '1.5rem' }} />
         <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold' }}>
           SWATGenX: Automated Watershed Modeling Platform
         </Typography>
@@ -967,12 +967,12 @@ const SWATGenXTemplate = () => {
               sx={{ 
                 borderBottom: '1px solid #444',
                 '&.Mui-expanded': {
-                  borderBottom: '1px solid #ff8500',
+                  borderBottom: '1px solid #ff5722',
                 }
               }}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FontAwesomeIcon icon={faInfoCircle} style={{ color: '#ff8500' }} />
+                <FontAwesomeIcon icon={faInfoCircle} style={{ color: '#ff5722' }} />
                 <Typography>Description</Typography>
               </Box>
             </AccordionSummary>
@@ -1000,7 +1000,7 @@ const SWATGenXTemplate = () => {
               mb: 2, 
               display: 'flex', 
               alignItems: 'center', 
-              color: '#ff8500',
+              color: '#ff5722',
               gap: '8px',
               fontWeight: 'bold',
             }}>

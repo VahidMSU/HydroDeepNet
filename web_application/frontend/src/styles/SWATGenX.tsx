@@ -154,7 +154,7 @@ export const Header = styled.header`
   z-index: 100;
   width: 100%;
   box-sizing: border-box;
-  border-bottom: 1px solid #ff8500;
+  border-bottom: 1px solid #ff5722;
   flex: 0 0 auto; /* Prevent flexbox from stretching this element */
 `;
 
@@ -164,7 +164,7 @@ export const HeaderTitle = styled.h1`
   font-weight: 500;
   display: flex;
   align-items: center;
-  color: #ff8500;
+  color: #ff5722;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -174,7 +174,7 @@ export const HeaderTitle = styled.h1`
 export const TitleIcon = styled.span`
   margin-right: 12px;
   font-size: 1.4rem;
-  color: #ff8500;
+  color: #ff5722;
 `;
 
 // Content Layout - Fixed height calculation
@@ -247,7 +247,7 @@ export const PanelHeader = styled.div`
   font-weight: 600;
   color: #ffd380;
   transition: all 0.2s ease;
-  border-left: 4px solid #ff8500;
+  border-left: 4px solid #ff5722;
   
   &:hover {
     background-color: #3a3a3c;
@@ -257,13 +257,13 @@ export const PanelHeader = styled.div`
 
 export const PanelIcon = styled.span`
   margin-right: 10px;
-  color: #ff8500;
+  color: #ff5722;
   font-size: 1.1rem;
 `;
 
 export const ToggleIcon = styled.span<{ isOpen: boolean }>`
   margin-left: auto;
-  color: #ff8500;
+  color: #ff5722;
   transition: transform 0.3s ease;
   transform: ${props => props.isOpen ? 'rotate(180deg)' : 'rotate(0)'};
 `;
@@ -400,7 +400,7 @@ export const FormSection = styled.div`
 export const SectionTitle = styled.h3`
   font-size: 1.05rem;
   margin: 0 0 14px 0;
-  color: #ff8500;
+  color: #ff5722;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -409,7 +409,7 @@ export const SectionTitle = styled.h3`
 `;
 
 export const SectionIcon = styled.span`
-  color: #ff8500;
+  color: #ff5722;
 `;
 
 export const InputGroup = styled.div`
@@ -445,7 +445,7 @@ export const FormInput = styled.input`
   
   &:focus {
     outline: none;
-    border-color: #ff8500;
+    border-color: #ff5722;
     box-shadow: 0 0 0 2px rgba(255, 133, 0, 0.2);
     background-color: #333333;
   }
@@ -474,7 +474,7 @@ export const FormSelect = styled.select`
   
   &:focus {
     outline: none;
-    border-color: #ff8500;
+    border-color: #ff5722;
     box-shadow: 0 0 0 2px rgba(255, 133, 0, 0.2);
     background-color: #333333;
   }
@@ -515,8 +515,8 @@ export const CheckboxInput = styled.input`
 export const CheckboxCustom = styled.div<{ checked: boolean }>`
   width: 20px;
   height: 20px;
-  background-color: ${props => props.checked ? '#ff8500' : '#2b2b2c'};
-  border: 2px solid ${props => props.checked ? '#ff8500' : '#505050'};
+  background-color: ${props => props.checked ? '#ff5722' : '#2b2b2c'};
+  border: 2px solid ${props => props.checked ? '#ff5722' : '#505050'};
   border-radius: 4px;
   margin-right: 10px;
   display: flex;
@@ -548,7 +548,7 @@ export const SubmitButton = styled.button<{ isLoading: boolean, secondary?: bool
   background-color: ${props => {
     if (props.isLoading) return '#5c5c5e';
     if (props.secondary) return 'transparent';
-    return '#ff8500';
+    return '#ff5722';
   }};
   color: ${props => props.secondary ? '#bbbbbb' : '#1e1e1f'};
   padding: 12px 16px;
@@ -650,7 +650,7 @@ export const StationDetailsContainer = styled.div`
   border-radius: 8px;
   padding: 16px;
   margin-top: 16px;
-  border-left: 4px solid #ff8500;
+  border-left: 4px solid #ff5722;
   transition: all 0.3s ease;
   
   &:hover {
@@ -659,7 +659,7 @@ export const StationDetailsContainer = styled.div`
 `;
 
 export const StationName = styled.h4`
-  color: #ff8500;
+  color: #ff5722;
   margin: 0 0 12px 0;
   font-size: 1.1rem;
   font-weight: 600;
@@ -675,7 +675,7 @@ export const StationName = styled.h4`
 `;
 
 export const StationIcon = styled.span`
-  color: #ff8500;
+  color: #ff5722;
   font-size: 1rem;
 `;
 
@@ -689,7 +689,7 @@ export const StationInfoContainer = styled.div`
 
 export const StationToggleIcon = styled.span`
   margin-left: auto;
-  color: #ff8500;
+  color: #ff5722;
   transition: transform 0.3s ease, color 0.2s ease;
   
   &:hover {
@@ -740,7 +740,7 @@ export const SearchInputWrapper = styled.div`
 `;
 
 export const SearchButton = styled.button<{ disabled?: boolean }>`
-  background-color: ${props => props.disabled ? '#5c5c5e' : '#ff8500'};
+  background-color: ${props => props.disabled ? '#5c5c5e' : '#ff5722'};
   color: #1e1e1f;
   border: none;
   border-radius: 6px;
@@ -848,7 +848,7 @@ export const TabButton = styled.button<{ active: boolean }>`
   gap: 10px;
   font-weight: ${props => props.active ? '600' : '400'};
   transition: all 0.2s ease;
-  border-bottom: 2px solid ${props => props.active ? '#ff8500' : 'transparent'};
+  border-bottom: 2px solid ${props => props.active ? '#ff5722' : 'transparent'};
   
   &:hover {
     background-color: ${props => props.active ? '#3a3a3c' : 'rgba(255, 133, 0, 0.05)'};
@@ -880,7 +880,7 @@ export const StepCircle = styled.div<{ active: boolean, completed: boolean }>`
   font-size: 1.1rem;
   background-color: ${props => {
     if (props.completed) return '#4caf50';
-    if (props.active) return '#ff8500';
+    if (props.active) return '#ff5722';
     return '#3a3a3c';
   }};
   color: #1c1c1e;
