@@ -1,7 +1,15 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, createRoutesFromChildren, matchRoutes } from 'react-router-dom';
 import Layout from './pages/Layout';
 import PrivateRoute from './components/PrivateRoute';
+
+// Add future flags for React Router v7 warnings
+const router = {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true
+  }
+};
 
 const PRIVATE_MODE = process.env.REACT_APP_PRIVATE_MODE === 'true';
 
@@ -64,7 +72,7 @@ const ScrollStateCleanup = () => {
 
 const App = () => {
   return (
-    <Router>
+    <Router {...router}>
       <ScrollStateCleanup />
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
@@ -74,20 +82,6 @@ const App = () => {
           <Route path="/verify" element={<Verify />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-
-          {/* SWATGenX route - standalone with no Layout/sidebar */}
-          <Route
-            path="/model_settings"
-            element={
-              PRIVATE_MODE ? (
-                <PrivateRoute>
-                  <SWATGenX />
-                </PrivateRoute>
-              ) : (
-                <SWATGenX />
-              )
-            }
-          />
 
           {/* Private routes with Layout */}
           <Route
@@ -140,6 +134,18 @@ const App = () => {
                         </PrivateRoute>
                       ) : (
                         <VisionSystem />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/model_settings"
+                    element={
+                      PRIVATE_MODE ? (
+                        <PrivateRoute>
+                          <SWATGenX />
+                        </PrivateRoute>
+                      ) : (
+                        <SWATGenX />
                       )
                     }
                   />

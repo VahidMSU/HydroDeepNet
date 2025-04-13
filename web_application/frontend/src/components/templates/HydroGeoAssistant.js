@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faRobot,
@@ -23,7 +23,6 @@ import {
   MessageList,
   ChatInputContainer,
   ThinkingIndicator,
-  InfoCard,
   InputField,
   FormGroup,
 } from '../../styles/HydroGeoDataset.tsx';
@@ -37,6 +36,8 @@ const HydroGeoAssistant = () => {
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [samplesExpanded, setSamplesExpanded] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+  const initializedRef = useRef(false);
 
   // Models available for selection
   const availableModels = [
@@ -45,13 +46,14 @@ const HydroGeoAssistant = () => {
     { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet (Future)', provider: 'Anthropic', disabled: true },
   ];
 
-  useEffect(() => {
-    const initializeAgent = async () => {
-      try {
-        setIsLoading(true);
-        setAgnoStatus({ connected: false, error: null });
+  // Memoize the initializeAgent function to prevent infinite loops
+  const initializeAgent = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setAgnoStatus({ connected: false, error: null });
 
-        // First set a default welcome message in case the request fails
+      // Don't reset chat history if we're just checking connection
+      if (!sessionId) {
         setChatHistory([
           {
             type: 'bot',
@@ -59,23 +61,27 @@ const HydroGeoAssistant = () => {
               "Hello! I'm the HydroGeo Assistant powered by Agno and Gemini. I can help you understand environmental and hydrological data. What would you like to know?",
           },
         ]);
+      }
 
-        try {
-          const response = await fetch('/api/chatbot/initialize', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-              context: 'hydrogeo_dataset',
-              model: selectedModel,
-              use_agno: true
-            }),
-          });
+      try {
+        const response = await fetch('/api/chatbot/initialize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            context: 'hydrogeo_dataset',
+            model: selectedModel,
+            use_agno: true,
+            session_id: sessionId
+          }),
+        });
 
-          if (response.ok) {
-            const data = await response.json();
-            // Update with the server-provided message if available
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Only update chat history if it's a new session or we have a welcome message
+          if (!sessionId || data.welcome_message) {
             setChatHistory([
               {
                 type: 'bot',
@@ -84,24 +90,41 @@ const HydroGeoAssistant = () => {
                   "Hello! I'm the HydroGeo Assistant powered by Agno and Gemini. I can help you understand environmental and hydrological data. What would you like to know?",
               },
             ]);
-            setAgnoStatus({ connected: true, error: null });
-          } else {
-            console.warn('Server returned non-OK status for chatbot initialization');
-            // Keep the default message already set
-            setAgnoStatus({ connected: false, error: 'Connection failed' });
           }
-        } catch (error) {
-          console.error('Error initializing chatbot:', error);
-          setAgnoStatus({ connected: false, error: error.message });
+          
+          // Save the session ID
+          if (data.session_id) {
+            setSessionId(data.session_id);
+          }
+          
+          setAgnoStatus({ connected: true, error: null });
+        } else {
+          console.warn('Server returned non-OK status for chatbot initialization');
+          setAgnoStatus({ connected: false, error: 'Connection failed' });
         }
-      } finally {
-        setIsLoading(false);
+      } catch (error) {
+        console.error('Error initializing chatbot:', error);
+        setAgnoStatus({ connected: false, error: error.message });
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedModel, sessionId]);
 
-    // Initialize the agent when the component mounts or when model changes
-    initializeAgent();
-  }, [selectedModel]);
+  useEffect(() => {
+    // Only initialize once when component mounts
+    if (!initializedRef.current) {
+      initializeAgent();
+      initializedRef.current = true;
+    }
+  }, [initializeAgent]);
+  
+  // Only reinitialize when the model actually changes
+  useEffect(() => {
+    if (initializedRef.current && sessionId) {
+      initializeAgent();
+    }
+  }, [selectedModel, initializeAgent, sessionId]);
 
   const handleChatSubmit = async (e) => {
     e.preventDefault();
@@ -125,7 +148,8 @@ const HydroGeoAssistant = () => {
           message: currentMessage,
           context: 'hydrogeo_dataset',
           model: selectedModel,
-          use_agno: true
+          use_agno: true,
+          session_id: sessionId
         }),
       });
 
@@ -160,7 +184,13 @@ const HydroGeoAssistant = () => {
   };
 
   const handleModelChange = (e) => {
-    setSelectedModel(e.target.value);
+    const newModel = e.target.value;
+    if (newModel !== selectedModel) {
+      setSelectedModel(newModel);
+      // Clear session ID to force a new conversation
+      setSessionId(null);
+      setChatHistory([]);
+    }
   };
 
   // Helper function to determine if a message might contain markdown

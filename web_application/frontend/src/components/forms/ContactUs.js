@@ -14,42 +14,56 @@ import CloseIcon from '@mui/icons-material/Close';
 
 // Styled Components
 const ContactContainer = styled(Box)({
-  maxWidth: '800px',
+  maxWidth: '1000px',
   margin: '2rem auto',
   padding: '2rem',
-  color: '#ffffff',
+  color: '#ffda95',
   textAlign: 'center',
 });
 
 const ContactTitle = styled(Typography)({
-  color: 'white',
-  fontSize: '4rem',
+  color: '#ff8500',
+  fontSize: '2.8rem',
   marginBottom: '1.5rem',
   paddingBottom: '1.2rem',
   position: 'relative',
   fontWeight: 'bold',
+  borderBottom: '3px solid #ff8500',
   '&:after': {
     content: '""',
     position: 'absolute',
     bottom: '-3px',
     left: '50%',
     transform: 'translateX(-50%)',
-    width: '60px',
+    width: '80px',
     height: '3px',
-    backgroundColor: '#ffa533',
+    background: 'linear-gradient(90deg, #ff8500, #ffa64d)',
+    borderRadius: '3px',
   },
 });
 
 const ContentWrapper = styled(Box)({
-  backgroundColor: '#444e5e',
+  background: 'linear-gradient(145deg, #26262a 0%, #1d1d20 100%)',
   borderRadius: '16px',
-  padding: '2rem',
-  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+  padding: '2.2rem',
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
   textAlign: 'left',
+  border: '1px solid #3f3f45',
+  position: 'relative',
+  overflow: 'hidden',
+  '&:before': {
+    content: '""',
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '4px',
+    background: 'linear-gradient(to right, #ff850080, transparent)'
+  }
 });
 
 const SubmitButton = styled(Button)({
-  backgroundColor: '#e67500',
+  backgroundColor: '#ff8500',
   color: '#ffffff',
   padding: '0.6rem 1.2rem',
   borderRadius: '8px',
@@ -58,7 +72,7 @@ const SubmitButton = styled(Button)({
   cursor: 'pointer',
   transition: 'all 0.3s ease',
   '&:hover': {
-    backgroundColor: '#ff8500',
+    backgroundColor: '#ffa64d',
     transform: 'translateY(-2px)',
     boxShadow: '0 5px 15px rgba(255, 133, 0, 0.3)',
   },
@@ -66,7 +80,7 @@ const SubmitButton = styled(Button)({
 
 const CloseButton = styled(IconButton)({
   color: '#fff',
-  backgroundColor: '#000',
+  backgroundColor: '#18181a',
   padding: '4px',
   borderRadius: '4px',
   '&:hover': {
@@ -229,11 +243,11 @@ const ContactUsForm = ({ onSubmit }) => {
                 name="newsletter"
                 checked={formData.newsletter}
                 onChange={handleChange}
-                sx={{ color: '#ffa533' }}
+                sx={{ color: '#ff8500' }}
               />
             }
             label="Subscribe to our newsletter"
-            sx={{ color: '#ffffff' }}
+            sx={{ color: '#c5c5c8' }}
           />
         </Box>
 

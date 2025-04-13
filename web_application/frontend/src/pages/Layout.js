@@ -39,11 +39,13 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     // Check if we should hide the sidebar based on current route
-    if (location.pathname === '/hydrogeo-assistant') {
-      // For HydroGeoAssistant, we now want to keep the sidebar visible
+    if (location.pathname === '/hydrogeo-assistant' || 
+        location.pathname === '/hydro_geo_dataset' || 
+        location.pathname === '/model_settings') {
+      // For HydroGeoAssistant, HydroGeoDataset, and SWATGenX, we want to keep the sidebar visible
       setIsSidebarVisible(true);
     } else {
-      // Check if sidebar was previously hidden by HydroGeoAssistant
+      // Check if sidebar was previously hidden
       const shouldHideSidebar = sessionStorage.getItem('hideSidebar') === 'true';
       if (!shouldHideSidebar) {
         setIsSidebarVisible(true);
@@ -51,7 +53,7 @@ const Layout = ({ children }) => {
     }
   }, [location.pathname]);
 
-  // Listen for custom events from HydroGeoAssistant
+  // Listen for custom events from HydroGeoAssistant and HydroGeoDataset
   useEffect(() => {
     const handleHydroGeoAssistantLoaded = (event) => {
       if (event.detail && event.detail.hideSidebar) {
@@ -64,10 +66,18 @@ const Layout = ({ children }) => {
         setIsSidebarVisible(event.detail.showSidebar);
       }
     };
+    
+    // Listen for our own sidebar toggle event
+    const handleGlobalSidebarToggle = (event) => {
+      if (event.detail && event.detail.visible !== undefined) {
+        setIsSidebarVisible(event.detail.visible);
+      }
+    };
 
     // Add event listeners for the custom events
     window.addEventListener('hydrogeo-assistant-loaded', handleHydroGeoAssistantLoaded);
     window.addEventListener('hydrogeo-sidebar-toggle', handleSidebarToggle);
+    window.addEventListener('sidebar-toggle', handleGlobalSidebarToggle);
 
     // Check sessionStorage on component mount
     if (sessionStorage.getItem('hideSidebar') === 'true') {
@@ -78,6 +88,7 @@ const Layout = ({ children }) => {
     return () => {
       window.removeEventListener('hydrogeo-assistant-loaded', handleHydroGeoAssistantLoaded);
       window.removeEventListener('hydrogeo-sidebar-toggle', handleSidebarToggle);
+      window.removeEventListener('sidebar-toggle', handleGlobalSidebarToggle);
     };
   }, []);
 
@@ -224,6 +235,67 @@ const Layout = ({ children }) => {
     }
   };
 
+  // Add new effect to adjust DOM for specific pages
+  useEffect(() => {
+    // Special handling for pages that need specific layout adjustments
+    const isSpecialPage = location.pathname === '/hydro_geo_dataset' || 
+                         location.pathname === '/hydrogeo-assistant' ||
+                         location.pathname === '/model_settings';
+    
+    if (isSpecialPage) {
+      // Add specific class to the body for targeting with CSS
+      document.body.classList.add('hydrogeo-special-page');
+      
+      if (location.pathname === '/hydro_geo_dataset') {
+        document.body.classList.add('hydrogeo-dataset-page');
+      } else if (location.pathname === '/hydrogeo-assistant') {
+        document.body.classList.add('hydrogeo-assistant-page');
+      } else if (location.pathname === '/model_settings') {
+        document.body.classList.add('swatgenx-page');
+      }
+      
+      // Find the main content container and adjust it
+      const mainContent = document.querySelector('.MuiBox-root');
+      if (mainContent) {
+        mainContent.style.paddingLeft = '0';
+        mainContent.style.paddingRight = '0';
+        mainContent.style.paddingTop = '0';
+        mainContent.style.paddingBottom = '0';
+      }
+      
+      // Force sidebar to be visible
+      setIsSidebarVisible(true);
+    } else {
+      // Remove classes when navigating away
+      document.body.classList.remove('hydrogeo-special-page');
+      document.body.classList.remove('hydrogeo-dataset-page');
+      document.body.classList.remove('hydrogeo-assistant-page');
+      document.body.classList.remove('swatgenx-page');
+    }
+    
+    return () => {
+      // Cleanup
+      document.body.classList.remove('hydrogeo-special-page');
+      document.body.classList.remove('hydrogeo-dataset-page');
+      document.body.classList.remove('hydrogeo-assistant-page');
+      document.body.classList.remove('swatgenx-page');
+    };
+  }, [location.pathname]);
+
+  // Add specific CSS classes to body for targeting SWATGenX page
+  useEffect(() => {
+    // Add "using-main-sidebar" class to body for SWATGenX page
+    if (location.pathname === '/model_settings') {
+      document.body.classList.add('using-main-sidebar');
+    } else {
+      document.body.classList.remove('using-main-sidebar');
+    }
+    
+    return () => {
+      document.body.classList.remove('using-main-sidebar');
+    };
+  }, [location.pathname]);
+
   return (
     <Box
       sx={{
@@ -239,16 +311,40 @@ const Layout = ({ children }) => {
     >
       {localStorage.getItem('authToken') && <SessionChecker />}
 
-      {/* Only show the sidebar toggle button if not on the HydroGeoAssistant page */}
-      {location.pathname !== '/hydrogeo-assistant' && (
+      {/* Only show the sidebar toggle button if not on the special pages */}
+      {location.pathname !== '/hydrogeo-assistant' && 
+       location.pathname !== '/hydro_geo_dataset' &&
+       location.pathname !== '/model_settings' && (
         <IconButton
-          onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+          onClick={(e) => {
+            // Simple direct state update - clear and straightforward
+            const newState = !isSidebarVisible;
+            setIsSidebarVisible(newState);
+            
+            // Save state to session storage
+            sessionStorage.setItem('hideSidebar', (!newState).toString());
+            
+            // Dispatch a direct, simple event
+            window.dispatchEvent(new CustomEvent('sidebar-toggle-direct', { 
+              detail: { visible: newState } 
+            }));
+            
+            // Explicitly prevent event bubbling
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+          aria-label="close-sidebar"
+          id="sidebar-toggle-button"
           sx={{
             position: 'absolute',
             top: 16,
-            left: 16,
+            left: isSidebarVisible ? (location.pathname === '/model_settings' ? drawerWidth + 16 : 16) : 16,
             zIndex: 1201,
             color: 'white',
+            backgroundColor: 'rgba(43, 43, 44, 0.7)',
+            '&:hover': {
+              backgroundColor: 'rgba(43, 43, 44, 0.9)',
+            },
           }}
         >
           {isSidebarVisible ? <CloseIcon /> : <MenuIcon />}
@@ -270,6 +366,10 @@ const Layout = ({ children }) => {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
+              // Added to ensure sidebar is properly positioned for fixed content pages
+              position: 'fixed',
+              height: '100vh',
+              zIndex: 1200,
             },
           }}
         >
@@ -288,8 +388,6 @@ const Layout = ({ children }) => {
               {[
                 { text: 'Home', icon: <HomeIcon />, path: '/' },
                 { text: 'SWATGenX', icon: <SettingsIcon />, path: '/model_settings' },
-                { text: 'Visualizations', icon: <BarChartIcon />, path: '/visualizations' },
-                { text: 'Michigan', icon: <PlaceIcon />, path: '/michigan' },
                 { text: 'Vision System', icon: <VisibilityIcon />, path: '/vision_system' },
                 { text: 'HydroGeoDataset', icon: <StorageIcon />, path: '/hydro_geo_dataset' },
                 { text: 'HydroGeo Assistant', icon: <SmartToyIcon />, path: '/hydrogeo-assistant' },
@@ -361,13 +459,19 @@ const Layout = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3, // Keep consistent padding for all pages
+          p: (location.pathname === '/hydro_geo_dataset' || 
+              location.pathname === '/hydrogeo-assistant' || 
+              location.pathname === '/model_settings') ? 0 : 3, // No padding for special pages
           minHeight: '100vh',
           maxWidth: '100%',
           overflowX: 'hidden',
+          marginLeft: ((location.pathname === '/hydro_geo_dataset' || 
+                       location.pathname === '/hydrogeo-assistant' || 
+                       location.pathname === '/model_settings') && isSidebarVisible) ? `${drawerWidth}px` : 0,
         }}
       >
-        {location.pathname !== '/hydrogeo-assistant' && <Toolbar />}
+        {location.pathname !== '/hydrogeo-assistant' && 
+         location.pathname !== '/hydro_geo_dataset' && <Toolbar />}
         {children}
       </Box>
     </Box>

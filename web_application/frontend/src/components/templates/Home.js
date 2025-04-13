@@ -1,241 +1,182 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
+  faMap,
+  faChartLine,
+  faDiagramProject,
+  faWater,
+  faCloudSunRain
+} from '@fortawesome/free-solid-svg-icons';
+import {
+  HomeContainer,
+  HomeTitle,
+  ContentWrapper,
+  SectionHeader,
+  SectionText,
+  ImageContainer,
+  CardGrid,
+  Card,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+  ButtonContainer,
+  MediaModal,
+  MediaWrapper,
+  CloseButton
+} from '../../styles/Home.tsx';
 
 const HomeTemplate = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalImage, setModalImage] = useState('');
+  const [selectedMedia, setSelectedMedia] = useState(null);
 
-  const handleOpenModal = (imageSrc) => {
-    setModalImage(imageSrc);
-    setModalOpen(true);
+  const handleMediaClick = (src) => {
+    setSelectedMedia(src);
   };
 
   const handleCloseModal = () => {
-    setModalOpen(false);
+    setSelectedMedia(null);
   };
 
   return (
-    <Box sx={{ bgcolor: '#2b2b2c', minHeight: '100vh', px: 4, py: 3 }}>
-      <Typography
-        variant="h3"
-        align="center"
-        gutterBottom
-        sx={{ fontWeight: 'bold', color: 'white' }}
-      >
-        Hydrological Modeling and Deep Learning Framework
-      </Typography>
+    <HomeContainer>
+      <HomeTitle>Hydrological Modeling and Deep Learning Framework</HomeTitle>
 
-      {/* Overview Section */}
-      <Paper sx={{ bgcolor: '#444e5e', p: 3, my: 3, borderRadius: 2 }}>
-        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>
-          Overview
-        </Typography>
-        <Typography sx={{ color: 'white' }}>
-          This platform integrates advanced hydrological modeling, hierarchical data management, and
-          deep learning techniques. It leverages models such as SWAT+ and MODFLOW to predict
-          hydrological variables at high spatial and temporal resolutions.
-        </Typography>
-      </Paper>
+      <ContentWrapper>
+        <section>
+          <SectionHeader>Overview</SectionHeader>
+          <SectionText>
+            This platform integrates advanced hydrological modeling, hierarchical data management, and
+            deep learning techniques. It leverages models such as SWAT+ and MODFLOW to predict
+            hydrological variables at high spatial and temporal resolutions.
+          </SectionText>
+        </section>
 
-      {/* Key Components Section */}
-      <Paper sx={{ bgcolor: '#444e5e', p: 3, my: 3, borderRadius: 2 }}>
-        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>
-          Key Components
-        </Typography>
-
-        {/* Hydrological Modeling */}
-        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>
-          1. Hydrological Modeling with SWAT+
-        </Typography>
-        <Typography sx={{ color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>
-          SWAT+ serves as the core model for simulating surface and subsurface hydrological cycles.
-          Key highlights:
-        </Typography>
-        <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Simulates evapotranspiration, runoff, and groundwater recharge."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Uses hierarchical land classification for HRU-based analysis."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Employs Particle Swarm Optimization (PSO) for calibrating parameters."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-        </List>
-
-        {/* Hierarchical Data Management */}
-        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>
-          2. Hierarchical Data Management
-        </Typography>
-        <Typography sx={{ color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>
-          The platform uses a robust HDF5 database to manage multi-resolution data.
-        </Typography>
-        <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Land use and soil data (250m resolution)."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Groundwater hydraulic properties from 650k water wells."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Meteorological inputs from PRISM (4km) and NSRDB (2km, upsampled to 4km)."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-        </List>
-
-        {/* GeoNet Vision System */}
-        <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold', color: 'white' }}>
-          3. GeoNet Vision System
-        </Typography>
-        <Typography sx={{ color: 'white', fontStyle: 'italic', fontWeight: 'bold' }}>
-          GeoNet leverages hydrological data for spatiotemporal regression tasks, predicting
-          groundwater recharge and climate impacts.
-        </Typography>
-        <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Support for 4D spatiotemporal analysis at 250m resolution."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Efficient processing of hydrological data with specialized loss functions."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Modular design for hyperparameter tuning and model customization."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-        </List>
-      </Paper>
-
-      {/* Image Section */}
-      <Paper sx={{ bgcolor: '#444e5e', p: 3, my: 3, borderRadius: 2 }}>
-        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>
-          HydroDeepNet Workflow
-        </Typography>
-
-        {/* Centering the image and making it larger */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
-          <Paper sx={{ bgcolor: '#2b2b2c', p: 2, borderRadius: 2 }}>
+        <section>
+          <SectionHeader>Key Components</SectionHeader>
+          <SectionText>
+            <strong>1. Hydrological Modeling with SWAT+</strong><br />
+            SWAT+ serves as the core model for simulating surface and subsurface hydrological cycles.
+            Key highlights:
+            <ul>
+              <li>Simulates evapotranspiration, runoff, and groundwater recharge.</li>
+              <li>Uses hierarchical land classification for HRU-based analysis.</li>
+              <li>Employs Particle Swarm Optimization (PSO) for calibrating parameters.</li>
+            </ul>
+          </SectionText>
+          
+          <SectionText>
+            <strong>2. Hierarchical Data Management</strong><br />
+            The platform uses a robust HDF5 database to manage multi-resolution data.
+            <ul>
+              <li>Land use and soil data (250m resolution).</li>
+              <li>Groundwater hydraulic properties from 650k water wells.</li>
+              <li>Meteorological inputs from PRISM (4km) and NSRDB (2km, upsampled to 4km).</li>
+            </ul>
+          </SectionText>
+          
+          <SectionText>
+            <strong>3. GeoNet Vision System</strong><br />
+            GeoNet leverages hydrological data for spatiotemporal regression tasks, predicting
+            groundwater recharge and climate impacts.
+            <ul>
+              <li>Support for 4D spatiotemporal analysis at 250m resolution.</li>
+              <li>Efficient processing of hydrological data with specialized loss functions.</li>
+              <li>Modular design for hyperparameter tuning and model customization.</li>
+            </ul>
+          </SectionText>
+        </section>
+        
+        <section>
+          <SectionHeader>HydroDeepNet Workflow</SectionHeader>
+          <ImageContainer className="main-image" onClick={() => handleMediaClick('/static/images/SWATGenX_flowchart.jpg')}>
             <img
               src="/static/images/SWATGenX_flowchart.jpg"
               alt="SWATGenX Workflow"
-              style={{ width: '200%', maxWidth: '800px', borderRadius: 10, cursor: 'pointer' }}
-              onClick={() => handleOpenModal('/static/images/SWATGenX_flowchart.jpg')}
             />
-            <Typography variant="body1" sx={{ mt: 1, color: 'white', textAlign: 'center' }}>
-              SWATGenX Workflow
-            </Typography>
-          </Paper>
-        </Box>
-      </Paper>
-
-      {/* Applications Section */}
-      <Paper sx={{ bgcolor: '#444e5e', p: 3, my: 3, borderRadius: 2 }}>
-        <Typography variant="h4" sx={{ color: '#ff8500', mb: 2, fontWeight: 'bold' }}>
-          Applications
-        </Typography>
-        <List sx={{ pl: 3, color: 'white', listStyleType: 'disc' }}>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Predicting groundwater recharge in data-scarce regions."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Assessing climate change impacts on hydrological processes."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-          <ListItem sx={{ display: 'list-item', py: 0.3 }}>
-            <ListItemText
-              primary="Supporting scalable watershed-level hydrological modeling."
-              sx={{ color: 'white' }}
-              slotProps={{ primary: { sx: { fontWeight: 'medium' } } }}
-            />
-          </ListItem>
-        </List>
-      </Paper>
-
-      {/* Buttons Section */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 3 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ bgcolor: '#ff8500' }}
-          onClick={() => alert('Learn More clicked!')}
-        >
-          Learn More
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ bgcolor: '#ff8500' }}
-          onClick={() => alert('Download Data clicked!')}
-        >
-          Download Data
-        </Button>
-      </Box>
-
-      {/* Image Modal */}
-      <Dialog open={modalOpen} onClose={handleCloseModal} maxWidth="md" fullWidth>
-        <DialogTitle>
-          <IconButton edge="end" color="inherit" onClick={handleCloseModal} aria-label="close">
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <img src={modalImage} alt="Enlarged View" style={{ width: '100%', borderRadius: 5 }} />
-        </DialogContent>
-      </Dialog>
-    </Box>
+          </ImageContainer>
+        </section>
+        
+        <section>
+          <SectionHeader>Applications</SectionHeader>
+          <SectionText>
+            <ul>
+              <li>Predicting groundwater recharge in data-scarce regions.</li>
+              <li>Assessing climate change impacts on hydrological processes.</li>
+              <li>Supporting scalable watershed-level hydrological modeling.</li>
+            </ul>
+          </SectionText>
+        </section>
+        
+        <section>
+          <SectionHeader>Model Outputs & Visualizations</SectionHeader>
+          <SectionText>
+            Explore examples of our modeling system outputs and visualizations that showcase the capabilities of SWATGenX.
+          </SectionText>
+          
+          <CardGrid>
+            {/* Michigan Card - replaced with generic icon */}
+            <Card as={Link} to="/michigan" style={{ textDecoration: 'none' }}>
+              <div className="card-image" style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #26262a 0%, #1d1d20 100%)'
+              }}>
+                <FontAwesomeIcon 
+                  icon={faMap} 
+                  style={{ 
+                    fontSize: '5rem', 
+                    color: '#ff8500',
+                    opacity: 0.8
+                  }} 
+                />
+              </div>
+              <div className="card-content">
+                <div className="card-title">Michigan LP Modeling</div>
+                <div className="card-description">
+                  View hydrologic modeling coverage and performance metrics for Michigan's Lower Peninsula watersheds.
+                </div>
+                <Button as="span">Explore Models</Button>
+              </div>
+            </Card>
+            
+            {/* Visualizations Card - replaced with generic icon */}
+            <Card as={Link} to="/visualizations" style={{ textDecoration: 'none' }}>
+              <div className="card-image" style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #26262a 0%, #1d1d20 100%)'
+              }}>
+                <FontAwesomeIcon 
+                  icon={faChartLine} 
+                  style={{ 
+                    fontSize: '5rem', 
+                    color: '#ff8500',
+                    opacity: 0.8
+                  }} 
+                />
+              </div>
+              <div className="card-content">
+                <div className="card-title">SWAT+ Visualizations</div>
+                <div className="card-description">
+                  Generate custom visualizations from our calibrated SWAT+ models for various watersheds and parameters.
+                </div>
+                <Button as="span">Generate Visualizations</Button>
+              </div>
+            </Card>
+          </CardGrid>
+        </section>
+        
+        {/* Image Modal */}
+        {selectedMedia && (
+          <MediaModal onClick={handleCloseModal}>
+            <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+            <MediaWrapper onClick={(e) => e.stopPropagation()}>
+              <img src={selectedMedia} alt="Enlarged View" />
+            </MediaWrapper>
+          </MediaModal>
+        )}
+      </ContentWrapper>
+    </HomeContainer>
   );
 };
 

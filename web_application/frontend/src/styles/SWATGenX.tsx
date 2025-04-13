@@ -574,16 +574,16 @@ export const SubmitButton = styled.button<{ isLoading: boolean, secondary?: bool
   
   &:hover {
     background-color: ${props => {
-      if (props.isLoading) return '#5c5c5e';
-      if (props.secondary) return 'rgba(255, 255, 255, 0.05)';
-      return '#ffa733';
-    }};
+    if (props.isLoading) return '#5c5c5e';
+    if (props.secondary) return 'rgba(255, 255, 255, 0.05)';
+    return '#ffa733';
+  }};
     transform: ${props => props.isLoading ? 'none' : 'translateY(-2px)'};
     box-shadow: ${props => {
-      if (props.isLoading) return 'none';
-      if (props.secondary) return 'none';
-      return '0 4px 8px rgba(255, 133, 0, 0.3)';
-    }};
+    if (props.isLoading) return 'none';
+    if (props.secondary) return 'none';
+    return '0 4px 8px rgba(255, 133, 0, 0.3)';
+  }};
     border-color: ${props => props.secondary ? '#ffd380' : 'transparent'};
     color: ${props => props.secondary ? '#ffd380' : '#1e1e1f'};
   }
@@ -591,10 +591,10 @@ export const SubmitButton = styled.button<{ isLoading: boolean, secondary?: bool
   &:active {
     transform: ${props => props.isLoading ? 'none' : 'translateY(0)'};
     box-shadow: ${props => {
-      if (props.isLoading) return 'none';
-      if (props.secondary) return 'none';
-      return '0 2px 4px rgba(255, 133, 0, 0.3)';
-    }};
+    if (props.isLoading) return 'none';
+    if (props.secondary) return 'none';
+    return '0 2px 4px rgba(255, 133, 0, 0.3)';
+  }};
   }
 
   /* Media query for mobile devices */

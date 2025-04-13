@@ -4,7 +4,7 @@ import colors from './colors.tsx';
 
 export const DashboardContainer = styled.div`
   padding: 2rem;
-  background-color: ${colors.background};
+  background-color: ${colors.surface};
   min-height: 100vh;
   color: ${colors.text};
 `;

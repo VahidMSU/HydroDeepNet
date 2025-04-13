@@ -51,12 +51,6 @@ const LayoutTemplate = ({ children, handleLogout }) => {
                 <NavLink to="/model_settings">
                   <i className="fas fa-cogs"></i> SWATGenX
                 </NavLink>
-                <NavLink to="/visualizations">
-                  <i className="fas fa-chart-bar"></i> Visualizations
-                </NavLink>
-                <NavLink to="/michigan">
-                  <i className="fas fa-map-marker-alt"></i> Michigan
-                </NavLink>
                 <NavLink to="/vision_system">
                   <i className="fas fa-eye"></i> Vision System
                 </NavLink>

@@ -3,72 +3,101 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import HydroGeoDatasetTemplate from '../components/templates/HydroGeoDataset.js';
 import '../styles/Layout.tsx'; // Ensure the path is correct
 import '../styles/NoScroll.css'; // Import the no-scroll CSS
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+
+// Add this inline CSS to ensure it's applied regardless of other styles
+const inlineStyles = `
+  .hydrogeo-dataset-container {
+    left: 250px !important;
+    width: calc(100% - 250px) !important;
+    max-width: calc(100% - 250px) !important;
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    overflow: hidden !important;
+  }
+`;
 
 const HydroGeoDataset = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Force a clean state by adding a URL hash for loading
+  // REMOVED forced reload effect that caused double refresh
+
+  // Add the inline styles to the document head
   useEffect(() => {
-    if (!window.location.hash.includes('noscroll_loaded')) {
-      window.location.hash = 'noscroll_loaded';
-      window.location.reload();
-    }
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = inlineStyles;
+    document.head.appendChild(styleElement);
+    
+    return () => {
+      document.head.removeChild(styleElement);
+    };
   }, []);
 
-  // Add effect to manage scroll locking
+  // Add effect to prevent scrolling on body but ensure proper positioning with sidebar
   useEffect(() => {
     // Add the no-scroll classes
     document.documentElement.classList.add('no-scroll-page');
     document.body.classList.add('no-scroll-page');
-
-    // Store the previous path to restore it later
+    document.body.classList.add('hydrogeo-dataset-page');
+    
+    // Store that we're coming from a no-scroll page
     sessionStorage.setItem('came_from_noscroll', 'true');
+    
+    // Force sidebar to show
+    sessionStorage.removeItem('hideSidebar');
+    
+    // Dispatch event to explicitly show sidebar 
+    const event = new CustomEvent('hydrogeo-sidebar-toggle', { 
+      detail: { showSidebar: true } 
+    });
+    window.dispatchEvent(event);
+    
+    // Fix layout after a short delay - use direct DOM manipulation to ensure it works
+    const fixLayout = () => {
+      // Select the container element
+      const appContainer = document.querySelector('.hydrogeo-dataset-container');
+      if (appContainer) {
+        appContainer.style.left = '250px';
+        appContainer.style.width = 'calc(100% - 250px)';
+        appContainer.style.maxWidth = 'calc(100% - 250px)';
+        appContainer.style.top = '0';
+        appContainer.style.bottom = '0';
+        appContainer.style.right = '0';
+        appContainer.style.position = 'fixed';
+        appContainer.style.overflow = 'hidden';
+      }
+    };
+    
+    // Run the fix multiple times to ensure it applies after any React renders
+    fixLayout();
+    setTimeout(fixLayout, 100);
+    setTimeout(fixLayout, 500);
     
     // Cleanup function to restore original styles
     return () => {
       document.documentElement.classList.remove('no-scroll-page');
       document.body.classList.remove('no-scroll-page');
+      document.body.classList.remove('hydrogeo-dataset-page');
     };
   }, []);
 
-  const handleReturn = () => {
-    // Remove the noscroll marker before navigating
-    sessionStorage.removeItem('came_from_noscroll');
-    navigate('/');
-  };
-
-  // Return button to navigate back to home page
-  const ReturnButton = () => (
-    <button
-      onClick={handleReturn}
-      style={{
-        position: 'absolute',
-        top: '10px',
-        left: '60px', // Positioned to avoid overlap with sidebar toggle
-        zIndex: 1001,
-        padding: '8px 15px',
-        background: '#222222',
-        color: 'white',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+  return (
+    <div
+      className="hydrogeo-dataset-page-container" 
+      style={{ 
+        position: 'fixed',
+        left: '250px', 
+        width: 'calc(100% - 250px)',
+        height: '100vh',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden',
+        zIndex: 1
       }}
     >
-      <FontAwesomeIcon icon={faArrowLeft} />
-      Return to Home
-    </button>
-  );
-
-  return (
-    <div className="no-scroll-container no-scroll-with-sidebar">
-      <ReturnButton />
       <HydroGeoDatasetTemplate />
     </div>
   );

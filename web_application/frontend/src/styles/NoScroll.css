@@ -33,12 +33,89 @@ body.no-scroll-page {
   right: 0 !important;
   bottom: 0 !important;
   z-index: 1 !important; /* Ensure this is above other content */
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-/* Specific styles for pages with sidebars */
+/* 
+  IMPORTANT: The no-scroll-with-sidebar class is deprecated.
+  Use inline styles or the component approach for sidebar-aware layouts.
+*/
 .no-scroll-with-sidebar {
   margin-left: 250px !important; /* Match the sidebar width in Layout.js */
   width: calc(100vw - 250px) !important; /* Adjust width to account for sidebar */
+  left: 250px !important; /* Ensure it aligns with the sidebar edge */
+  padding-left: 0 !important; /* Remove any additional padding */
+  box-sizing: border-box !important; /* Ensure padding is included in width */
+  position: fixed !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+}
+
+/* For HydroGeoDataset page specifically */
+body.no-scroll-page .hydrogeo-dataset-container {
+  position: fixed !important;
+  left: 250px !important;
+  width: calc(100% - 250px) !important;
+  max-width: calc(100% - 250px) !important;
+  height: 100vh !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  overflow-y: auto !important; /* Allow vertical scrolling */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* For HydroGeoAssistant page specifically */
+body.no-scroll-page .hydrogeo-assistant-container {
+  position: fixed !important;
+  left: 250px !important;
+  width: calc(100% - 250px) !important;
+  max-width: calc(100% - 250px) !important;
+  height: 100vh !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  overflow-y: auto !important; /* Allow vertical scrolling */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* For SWATGenX page specifically */
+body.swatgenx-page .MuiBox-root,
+body.no-scroll-page.swatgenx-page .MuiBox-root {
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* Make sure the content doesn't overflow in SWATGenX page */
+body.swatgenx-page .MuiBox-root > div,
+body.no-scroll-page.swatgenx-page .MuiBox-root > div {
+  max-height: calc(100vh - 20px) !important; /* Account for any padding */
+  overflow: hidden !important;
+}
+
+/* Configure the sidebar specifically for SWATGenX */
+body.swatgenx-page .MuiBox-root [class*="MuiPaper-root"] {
+  max-height: calc(100vh - 140px) !important; /* Match the map container height */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Make the configuration panel scrollable while keeping the map visible */
+body.swatgenx-page .MuiBox-root [class*="MuiPaper-root"]:first-of-type {
+  overflow-y: auto !important;
+}
+
+/* Shared styles for all special pages */
+body.hydrogeo-dataset-page .MuiDrawer-root,
+body.hydrogeo-assistant-page .MuiDrawer-root,
+body.swatgenx-page .MuiDrawer-root {
+  position: fixed !important;
+  z-index: 1200 !important;
+  height: 100vh !important;
 }
 
 /* For scrollable areas within no-scroll containers */
@@ -48,6 +125,7 @@ body.no-scroll-page {
   height: 100% !important;
   width: 100% !important;
   -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+  flex: 1 !important; /* Allow container to expand */
 }
 
 /* When no-scroll is applied, make sure #root doesn't override */
@@ -56,6 +134,13 @@ body.no-scroll-page #root {
   height: 100% !important;
   width: 100% !important;
   overflow: hidden !important;
+}
+
+/* Ensure proper sidebar behavior when in no-scroll mode */
+html.no-scroll-page .MuiDrawer-root,
+body.no-scroll-page .MuiDrawer-root {
+  position: fixed !important;
+  z-index: 1200 !important;
 }
 
 /* For debugging and development */

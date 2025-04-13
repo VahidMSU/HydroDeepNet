@@ -1,0 +1,109 @@
+/* 
+  GlobalBackground.css
+  This file ensures consistent background colors across all pages and components
+*/
+
+/* Global page background */
+body, html, #root {
+  background-color: #2b2b2c !important;
+  color: #ffd380;
+}
+
+/* MUI components */
+.MuiBox-root,
+.MuiPaper-root,
+.MuiDrawer-paper {
+  background-color: #2b2b2c !important;
+}
+
+/* Report related components */
+.report-container,
+.report-generator-container,
+.report-viewer-container,
+.report-list-container {
+  background-color: #2b2b2c !important;
+}
+
+/* Form and info components */
+.form-container,
+.search-form-container,
+.info-box-container,
+.station-details-container {
+  background-color: #2b2b2c !important;
+}
+
+/* User related components */
+.user-info-container,
+.session-container,
+.auth-container {
+  background-color: #2b2b2c !important;
+}
+
+/* Any content containers */
+.content-container,
+.page-container,
+.component-container,
+.main-content,
+.sidebar-content {
+  background-color: #2b2b2c !important;
+}
+
+/* HydroGeoDataset specific components */
+.hydrogeo-dataset-container,
+.hydrogeo-assistant-container,
+.no-scroll-container,
+.hydrogeo-dataset-page-container,
+.HydroGeoHeader,
+.ContentLayout,
+.QuerySidebar,
+.QuerySidebarHeader,
+.QuerySidebarContent,
+.TabContainer,
+.TabContent,
+.ResultsContainer,
+.ReportList,
+.ReportItem {
+  background-color: #2b2b2c !important;
+}
+
+/* IMPORTANT: Exclude map elements from background color */
+.esri-view,
+.esri-map,
+.esri-view .esri-view-surface,
+.map-container,
+.map-container *,
+.MapContainer,
+.MapContainer *,
+.esri-popup,
+.esri-popup *,
+canvas,
+.esri-widget canvas,
+.esri-view canvas {
+  background-color: transparent !important;
+}
+
+/* Special overrides for specific widgets that might need background color */
+.esri-widget,
+.esri-widget--panel,
+.esri-popup__main-container,
+.esri-popup__footer {
+  background-color: #333 !important;
+  color: #fff !important;
+}
+
+/* Special overrides for tables and grids */
+table, tr, td, th {
+  background-color: #2b2b2c !important;
+  color: #ffd380 !important;
+}
+
+/* Removing the force all children rule that was affecting maps */
+/* REMOVED: .hydrogeo-dataset-container *,
+           .no-scroll-container * {
+             background-color: #2b2b2c !important;
+           } */
+
+/* Make sure canvas/svg elements don't get affected */
+canvas, svg {
+  background-color: transparent !important;
+} 

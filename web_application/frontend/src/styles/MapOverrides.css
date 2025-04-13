@@ -1,0 +1,133 @@
+/* 
+  MapOverrides.css
+  This file contains overrides for map components to ensure proper rendering
+*/
+
+/* IMPORTANT: These rules override any other styling to make maps work properly */
+
+/* Map container elements */
+.esri-map-container,
+.map-container,
+.MapContainer {
+  background-color: transparent !important;
+}
+
+/* Esri specific elements */
+.esri-view,
+.esri-view-surface,
+.esri-ui,
+.esri-ui-inner-container,
+.esri-ui-corner,
+.esri-component,
+.esri-widget,
+.esri-widget--panel,
+.esri-legend,
+.esri-legend__service,
+.esri-legend__layer,
+.esri-legend__layer-table,
+.esri-legend__layer-caption,
+.esri-legend__layer-body,
+.esri-legend__layer-row,
+.esri-legend__layer-cell,
+.esri-attribution,
+.esri-attribution__powered-by,
+.esri-attribution__sources,
+.esri-popup,
+.esri-popup__main-container,
+.esri-popup__content,
+.esri-popup__header,
+.esri-popup__button,
+.esri-sketch,
+.esri-sketch__panel {
+  background-color: transparent !important;
+}
+
+/* Ensure map canvas is never affected */
+.esri-view canvas,
+.esri-view .esri-view-surface canvas,
+canvas.esri-display-object {
+  background-color: transparent !important;
+}
+
+/* Fix any popup overlays */
+.esri-popup__content,
+.esri-popup__footer,
+.esri-popup__button,
+.esri-popup__main-container {
+  background-color: rgba(51, 51, 51, 0.9) !important;
+  color: white !important;
+}
+
+/* Make sure any widgets are properly styled */
+.esri-widget {
+  background-color: rgba(51, 51, 51, 0.9) !important;
+  color: white !important;
+}
+
+/* Ensure no other styles affect the map */
+.no-scroll-container .map-container,
+.hydrogeo-dataset-container .map-container,
+.hydrogeo-assistant-container .map-container {
+  background-color: transparent !important;
+}
+
+/* Explicitly set map parent containers to have transparent bg */
+.ContentLayout .MapContainer,
+.ContentLayout .map-container,
+[class*="MapContainer"],
+[class*="map-container"] {
+  background-color: transparent !important;
+}
+
+/* Targeting map elements with ID */
+#queryMap,
+#reportMap,
+[id$="Map"],
+[id*="map"],
+[id*="Map"] {
+  background-color: transparent !important;
+}
+
+/* Fix for any potential map view interference */
+.esri-view .esri-view-root,
+.esri-view .esri-view-root canvas {
+  background-color: transparent !important;
+}
+
+/* Add CSS rules to ensure proper handling of wheel events in map containers */
+.esri-map-container {
+  touch-action: pan-y;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent interaction with parent elements */
+.esri-view-surface {
+  touch-action: none;
+  -ms-touch-action: none;
+}
+
+/* Fix for Chrome/Safari scroll propagation */
+.esri-view-surface canvas {
+  pointer-events: auto !important;
+  touch-action: pan-x pan-y;
+}
+
+/* Prevent the rubber-band effect on Safari */
+html, body {
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+}
+
+/* Fix for Firefox */
+@-moz-document url-prefix() {
+  .esri-map-container {
+    scrollbar-width: none;
+  }
+}
+
+/* Specific styles for the wheel events in the map container */
+.map-container {
+  contain: strict;
+  isolation: isolate;
+} 

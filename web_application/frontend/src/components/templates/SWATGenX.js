@@ -31,8 +31,6 @@ import {
   HeaderTitle,
   TitleIcon,
   Content,
-  Sidebar,
-  InfoPanel,
   ConfigPanel,
   PanelHeader,
   PanelIcon,
@@ -60,6 +58,57 @@ import {
   InputGroup,
   InputLabel,
 } from '../../styles/SWATGenX.tsx';
+import { Box, Paper, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { spin } from '../../styles/common.tsx';
+import styled from '@emotion/styled';
+import { keyframes } from '@emotion/react';
+import colors from '../../styles/colors.tsx';
+
+// Add pulse animation
+const pulse = keyframes`
+  0% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.6; }
+`;
+
+// Add a map loading overlay
+const MapLoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(24, 24, 26, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  border-radius: 10px;
+  backdrop-filter: blur(3px);
+  animation: ${pulse} 1.8s ease-in-out infinite;
+  
+  .spinner {
+    color: ${colors.accent};
+    font-size: 2.5rem;
+    animation: ${spin} 1.5s linear infinite;
+  }
+  
+  .loading-text {
+    margin-top: 1rem;
+    color: ${colors.text};
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .loading-subtext {
+    margin-top: 0.5rem;
+    color: ${colors.textSecondary};
+    font-size: 0.9rem;
+  }
+`;
 
 const SWATGenXTemplate = () => {
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
@@ -87,11 +136,14 @@ const SWATGenXTemplate = () => {
   const [showWatershed, setShowWatershed] = useState(true);
   const [showStreams, setShowStreams] = useState(true);
   const [showLakes, setShowLakes] = useState(true);
+  const [initialPageLoading, setInitialPageLoading] = useState(true);
 
   const mapRefreshFunctionRef = useRef(null);
+  const loadingTimerRef = useRef(null);
 
   const lsResolutionOptions = ['30', '100', '250', '500', '1000'];
 
+  // Geometries cache
   const geometriesCache = {
     data: null,
     timestamp: null,
@@ -295,6 +347,21 @@ const SWATGenXTemplate = () => {
     },
     [mapSelectionLoading, feedbackType, feedbackMessage],
   );
+
+  // Add useEffect for initial page loading animation
+  useEffect(() => {
+    // Set minimum loading time of 2 seconds for initial page load
+    loadingTimerRef.current = setTimeout(() => {
+      setInitialPageLoading(false);
+    }, 2000);
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (loadingTimerRef.current) {
+        clearTimeout(loadingTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // If cached geometries exist, use them; if not, fetch once.
@@ -832,136 +899,207 @@ const SWATGenXTemplate = () => {
     );
   };
 
+  // Updated component layout that works with the main application sidebar
   return (
-    <Container>
-      <Header>
-        <HeaderTitle>
-          <TitleIcon>
-            <FontAwesomeIcon icon={faMap} />
-          </TitleIcon>
-          <span style={{ marginLeft: '500px', color: 'white' }}>
-            SWATGenX: Automated Watershed Modeling Platform
-          </span>
-        </HeaderTitle>
-      </Header>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      bgcolor: '#1c1c1e',
+      minHeight: '100vh',
+      color: 'white',
+      maxHeight: '100vh',
+      overflow: 'hidden'
+    }}
+    className="swatgenx-container">
+      {/* Header */}
+      <Box sx={{ 
+        padding: '15px 20px', 
+        bgcolor: '#2b2b2c',
+        borderRadius: '10px',
+        margin: '20px 20px 10px 20px', // Reduced bottom margin
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px'
+      }}>
+        <FontAwesomeIcon icon={faMap} style={{ color: '#ff8500', fontSize: '1.5rem' }} />
+        <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold' }}>
+          SWATGenX: Automated Watershed Modeling Platform
+        </Typography>
+      </Box>
 
-      <Content>
-        <Sidebar>
-          <InfoPanel>
-            <PanelHeader onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}>
-              <PanelIcon>
-                <FontAwesomeIcon icon={faInfoCircle} />
-              </PanelIcon>
-              <span>Description</span>
-              <ToggleIcon isOpen={isDescriptionOpen}>
-                <FontAwesomeIcon icon={isDescriptionOpen ? faChevronUp : faChevronDown} />
-              </ToggleIcon>
-            </PanelHeader>
+      {/* Main Content */}
+      <Box sx={{ 
+        display: 'flex', 
+        flex: 1, 
+        gap: '20px',
+        margin: '0 20px 20px 20px',
+        maxHeight: 'calc(100vh - 140px)', // Ensure content fits in viewport
+        overflow: 'hidden',
+        width: 'calc(100% - 40px)',
+        boxSizing: 'border-box'
+      }}>
+        {/* Configuration Panel */}
+        <Paper sx={{ 
+          bgcolor: '#2b2b2c', 
+          borderRadius: '10px', 
+          width: '350px',
+          minWidth: '300px',
+          maxWidth: '350px',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          flexShrink: 0
+        }}>
+          {/* Description Accordion */}
+          <Accordion 
+            sx={{ 
+              bgcolor: '#2b2b2c', 
+              color: 'white',
+              boxShadow: 'none',
+              '&:before': {
+                display: 'none',
+              },
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon sx={{ color: 'white' }} />}
+              sx={{ 
+                borderBottom: '1px solid #444',
+                '&.Mui-expanded': {
+                  borderBottom: '1px solid #ff8500',
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FontAwesomeIcon icon={faInfoCircle} style={{ color: '#ff8500' }} />
+                <Typography>Description</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography paragraph>
+                SWATGenX is an automated tool for creating SWAT+ models using USGS streamgage
+                stations. You can locate a station by searching its site number or name, or by
+                selecting it directly on the map.
+              </Typography>
+              <ul style={{ paddingLeft: '20px' }}>
+                <li>Configure Landuse/Soil and DEM resolution</li>
+                <li>Enable calibration, sensitivity analysis, and validation</li>
+                <li>Start automatic model generation</li>
+              </ul>
+              <Typography>
+                Once generated, your models will appear in the <strong>User Dashboard</strong>,
+                where you can download or visualize them.
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
 
-            {isDescriptionOpen && (
-              <PanelContent>
-                <p>
-                  SWATGenX is an automated tool for creating SWAT+ models using USGS streamgage
-                  stations. You can locate a station by searching its site number or name, or by
-                  selecting it directly on the map.
-                </p>
-                <ul>
-                  <li>Configure Landuse/Soil and DEM resolution</li>
-                  <li>Enable calibration, sensitivity analysis, and validation</li>
-                  <li>Start automatic model generation</li>
-                </ul>
-                <p>
-                  Once generated, your models will appear in the <strong>User Dashboard</strong>,
-                  where you can download or visualize them.
-                </p>
-              </PanelContent>
+          {/* Configuration Form */}
+          <Box sx={{ p: 2, flex: 1, overflowY: 'auto' }}>
+            <Typography variant="h6" sx={{ 
+              mb: 2, 
+              display: 'flex', 
+              alignItems: 'center', 
+              color: '#ff8500',
+              gap: '8px',
+              fontWeight: 'bold',
+            }}>
+              <FontAwesomeIcon icon={faGears} />
+              Model Configuration
+            </Typography>
+
+            <StepIndicator>
+              <StepCircle active={currentStep === 1} completed={currentStep > 1}>
+                <FontAwesomeIcon icon={faMapMarkedAlt} />
+              </StepCircle>
+              <StepConnector completed={currentStep > 1} />
+              <StepCircle active={currentStep === 2} completed={currentStep > 2}>
+                <FontAwesomeIcon icon={faLayerGroup} />
+              </StepCircle>
+            </StepIndicator>
+
+            {renderModelSettingsContent()}
+
+            {feedbackMessage && (
+              <FeedbackMessage type={feedbackType}>
+                <FeedbackIcon>
+                  <FontAwesomeIcon
+                    icon={feedbackType === 'success' ? faCheckCircle : faExclamationTriangle}
+                  />
+                </FeedbackIcon>
+                <span>{feedbackMessage}</span>
+              </FeedbackMessage>
             )}
-          </InfoPanel>
+          </Box>
+        </Paper>
 
-          <ConfigPanel>
-            <PanelHeader>
-              <PanelIcon>
-                <FontAwesomeIcon icon={faGears} />
-              </PanelIcon>
-              <span>Model Configuration</span>
-            </PanelHeader>
+        {/* Map Container */}
+        <Paper sx={{ 
+          flex: 1, 
+          bgcolor: 'transparent',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          position: 'relative',
+          height: 'calc(100vh - 140px)',
+          maxHeight: 'calc(100vh - 140px)',
+          maxWidth: 'calc(100% - 350px - 20px)', // Account for sidebar width and gap
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: 1,
+          flexShrink: 1
+        }}>
+          <MapControlsContainer>
+            <MapControlButton title="Station selection tool" className="active">
+              <FontAwesomeIcon icon={faMousePointer} />
+            </MapControlButton>
+            <MapControlButton
+              title={showStationPanel ? 'Hide station list' : 'Show station list'}
+              onClick={toggleStationPanel}
+              className={showStationPanel ? 'active' : ''}
+            >
+              <FontAwesomeIcon icon={faListUl} />
+            </MapControlButton>
+            <MapControlButton
+              title="Refresh station data"
+              onClick={refreshStationGeometries}
+              disabled={mapSelectionLoading}
+            >
+              <FontAwesomeIcon
+                icon={mapSelectionLoading ? faSpinner : faSyncAlt}
+                className={mapSelectionLoading ? 'fa-spin' : ''}
+              />
+            </MapControlButton>
+            <MapControlButton
+              title="Refresh map display"
+              onClick={handleMapRefresh}
+              disabled={mapSelectionLoading}
+            >
+              <FontAwesomeIcon icon={faRedoAlt} />
+            </MapControlButton>
+            <MapControlButton
+              title={`Switch to ${basemapType === 'streets' ? 'Google Aerial' : 'Streets'} Basemap`}
+              onClick={toggleBasemap}
+            >
+              <FontAwesomeIcon icon={faGears} />
+            </MapControlButton>
+          </MapControlsContainer>
 
-            <ConfigPanelContent>
-              <StepIndicator>
-                <StepCircle active={currentStep === 1} completed={currentStep > 1}>
-                  <FontAwesomeIcon icon={faMapMarkedAlt} />
-                </StepCircle>
-                <StepConnector completed={currentStep > 1} />
-                <StepCircle active={currentStep === 2} completed={currentStep > 2}>
-                  <FontAwesomeIcon icon={faLayerGroup} />
-                </StepCircle>
-              </StepIndicator>
+          {/* Show loading overlay when initializing or when map selections are loading */}
+          {(initialPageLoading || mapSelectionLoading) && (
+            <MapLoadingOverlay>
+              <FontAwesomeIcon icon={faSpinner} className="spinner" />
+              <div className="loading-text">
+                {initialPageLoading ? "Initializing SWATGenX..." : "Loading Map Data"}
+              </div>
+              <div className="loading-subtext">
+                {initialPageLoading ? "Preparing watershed modeling interface" : "Initializing station geometries..."}
+              </div>
+            </MapLoadingOverlay>
+          )}
 
-              {renderModelSettingsContent()}
+          <LayerControls />
 
-              {feedbackMessage && (
-                <FeedbackMessage type={feedbackType}>
-                  <FeedbackIcon>
-                    <FontAwesomeIcon
-                      icon={feedbackType === 'success' ? faCheckCircle : faExclamationTriangle}
-                    />
-                  </FeedbackIcon>
-                  <span>{feedbackMessage}</span>
-                </FeedbackMessage>
-              )}
-            </ConfigPanelContent>
-          </ConfigPanel>
-        </Sidebar>
-
-        <MapContainer>
-          <MapInnerContainer>
-            <MapControlsContainer>
-              <MapControlButton title="Station selection tool" className="active">
-                <FontAwesomeIcon icon={faMousePointer} />
-              </MapControlButton>
-              <MapControlButton
-                title={showStationPanel ? 'Hide station list' : 'Show station list'}
-                onClick={toggleStationPanel}
-                className={showStationPanel ? 'active' : ''}
-              >
-                <FontAwesomeIcon icon={faListUl} />
-              </MapControlButton>
-              <MapControlButton
-                title="Refresh station data"
-                onClick={refreshStationGeometries}
-                disabled={mapSelectionLoading}
-              >
-                <FontAwesomeIcon
-                  icon={mapSelectionLoading ? faSpinner : faSyncAlt}
-                  className={mapSelectionLoading ? 'fa-spin' : ''}
-                />
-              </MapControlButton>
-              <MapControlButton
-                title="Refresh map display"
-                onClick={handleMapRefresh}
-                disabled={mapSelectionLoading}
-              >
-                <FontAwesomeIcon icon={faRedoAlt} />
-              </MapControlButton>
-              <MapControlButton
-                title={`Switch to ${basemapType === 'streets' ? 'Google Aerial' : 'Streets'} Basemap`}
-                onClick={toggleBasemap}
-              >
-                <FontAwesomeIcon icon={faGears} />
-              </MapControlButton>
-            </MapControlsContainer>
-
-            {mapSelectionLoading && (
-              <LoadingOverlay>
-                <LoadingIcon>
-                  <FontAwesomeIcon icon={faSpinner} />
-                </LoadingIcon>
-                <span>Loading stream gauge stations...</span>
-              </LoadingOverlay>
-            )}
-
-            <LayerControls />
-
+          <Box sx={{ height: '100%', width: '100%' }}>
             <EsriMap
               geometries={stationData?.geometries || []}
               streamsGeometries={stationData?.streams_geometries || []}
@@ -979,12 +1117,12 @@ const SWATGenXTemplate = () => {
               showStreams={showStreams}
               showLakes={showLakes}
             />
-          </MapInnerContainer>
-        </MapContainer>
-      </Content>
-
+          </Box>
+        </Paper>
+      </Box>
+      
       {showDebugger && <MapLoadingDebugger />}
-    </Container>
+    </Box>
   );
 };
 

@@ -185,34 +185,32 @@ const VisionSystemTemplate = () => {
 
         <section>
           <SectionHeader>Overview of GeoCNN</SectionHeader>
-          <div>
-            {' '}
-            {/* Changed from SectionText to div */}
+          <SectionText>
             GeoCNN efficiently handles:
             <ul>
-              <li key="datasets">
+              <li>
                 <strong>Large Datasets:</strong> Fast loading/reloading of multi-year monthly data.
               </li>
-              <li key="inputs">
+              <li>
                 <strong>Multi-Scale Inputs:</strong> Incorporates MODIS, PRISM, soil, and land cover
                 info.
               </li>
-              <li key="architectures">
+              <li>
                 <strong>Powerful Architectures:</strong> CNN-Transformers and fully
                 Transformer-based models.
               </li>
-              <li key="flexibility">
+              <li>
                 <strong>Spatial & Temporal Flexibility:</strong> Custom skip connections, attention,
                 and advanced up/down-sampling.
               </li>
             </ul>
-          </div>
+          </SectionText>
         </section>
 
         <section>
           <SectionHeader>Data Pipeline</SectionHeader>
           <SectionText>
-            GeoCNN’s data pipeline handles monthly raster stacks spanning 2001–2021. Temporal
+            GeoCNN's data pipeline handles monthly raster stacks spanning 2001–2021. Temporal
             aggregation (summing precipitation, averaging temperature) ensures consistency. A
             70/20/10 split (train/validate/test) provides robust coverage for model development.
             Dynamic variables (e.g., NDVI, EVI, precipitation, temperature) and static features
@@ -223,24 +221,22 @@ const VisionSystemTemplate = () => {
 
         <section>
           <SectionHeader>Deep Learning Models</SectionHeader>
-          <div>
-            {' '}
-            {/* Changed from SectionText to div */}
+          <SectionText>
             <ul>
-              <li key="inception">
+              <li>
                 <strong>Inception-LSTM:</strong> Combines spatial feature extraction with LSTM-based
                 temporal modeling.
               </li>
-              <li key="cnn">
+              <li>
                 <strong>CNN-Transformers:</strong> Uses a CNN down-sampling path and a Transformer
                 encoder for time steps.
               </li>
-              <li key="transformer">
+              <li>
                 <strong>Fully Transformer-Based:</strong> Omits convolutional operations entirely,
                 focusing on spatiotemporal attention.
               </li>
             </ul>
-          </div>
+          </SectionText>
         </section>
 
         <section>
@@ -262,45 +258,41 @@ const VisionSystemTemplate = () => {
 
         <section>
           <SectionHeader>CNN-Transformer Architecture</SectionHeader>
-          <div>
-            {' '}
-            {/* Changed from SectionText to div */}
+          <SectionText>
             Our final CNN-Transformer processes inputs of shape [B, T, C, H, W]—batch, time steps,
             channels, height, width. Key elements include:
             <ul>
-              <li key="downsampling">
+              <li>
                 <strong>Down-Sampling Pathway:</strong> Deformable convolutions, SE blocks,
                 coordinate attention for hierarchical spatial features.
               </li>
-              <li key="encoder">
+              <li>
                 <strong>Transformer Encoder:</strong> Fourier-based positional encoding and
                 multi-head attention for temporal modeling.
               </li>
-              <li key="upsampling">
+              <li>
                 <strong>Up-Sampling Pathway:</strong> Sub-pixel convolution and skip connections to
                 restore spatial resolution.
               </li>
             </ul>
-          </div>
+          </SectionText>
         </section>
 
         <section>
           <SectionHeader>Specialized Loss Function</SectionHeader>
-          <div>
-            {' '}
-            {/* Changed from SectionText to div */}
+          <SectionText>
             GeoCNN uses a custom loss that evaluates:
             <ul>
-              <li key="spatial">
+              <li>
                 <strong>Spatial Dimensions:</strong> Penalizes boundary errors, outliers, and
                 no-value regions.
               </li>
-              <li key="temporal">
+              <li>
                 <strong>Temporal Dimensions:</strong> Seasonal performance in winter, spring,
                 summer, and fall.
               </li>
             </ul>
-          </div>
+          </SectionText>
         </section>
 
         {selectedMedia && (

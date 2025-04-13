@@ -22,6 +22,7 @@ echo "Log directory: $LOG_DIR"
 echo "Config directory: $CONFIG_DIR"
 echo "Systemd directory: $SYSTEMD_DIR"
 echo "Apache directory: $APACHE_DIR"
+
 # Define log file
 LOG_FILE="${LOG_DIR}/restart_services.log"
 mkdir -p "$LOG_DIR"
@@ -38,6 +39,10 @@ error() {
 warning() {
     echo -e "${YELLOW}[$(date '+%Y-%m-%d %H:%M:%S')] WARNING: $1${NC}" | tee -a "$LOG_FILE"
 }
+
+# Stop supervisor-managed nginx if it's running to avoid port conflicts
+log "Stopping supervisor-managed nginx if running..."
+sudo supervisorctl stop nginx 2>/dev/null || log "Supervisor-managed nginx was not running or not found"
 
 # Check if running as root
 if [[ $EUID -ne 0 ]]; then

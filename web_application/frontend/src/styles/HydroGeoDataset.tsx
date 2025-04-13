@@ -8,20 +8,39 @@ export const HydroGeoContainer = styled.div`
   padding: 2rem;
   background-color: ${colors.background};
   min-height: 100vh;
-  height: 100vh;
+  max-height: 100vh;
   color: ${colors.text};
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: auto;
+
+  /* Adjust for sidebar when in no-scroll mode */
+  .no-scroll-with-sidebar & {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    width: 100%;
+  }
 `;
 
 export const HydroGeoHeader = styled.div`
   text-align: center;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, ${colors.surfaceDark} 0%, ${colors.surface} 100%);
+  background: linear-gradient(145deg, ${colors.surface} 0%, ${colors.surfaceDark} 100%);
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  border-bottom: 3px solid ${colors.accent};
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  border: 1px solid ${colors.border};
+  position: relative;
+  
+  &:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, ${colors.accent}, transparent);
+    border-radius: 0 0 12px 12px;
+  }
   
   h1 {
     color: ${colors.accent};
@@ -52,9 +71,9 @@ export const ContentLayout = styled.div`
 export const QuerySidebar = styled.div`
   width: 30%;
   min-width: 350px;
-  background: linear-gradient(160deg, ${colors.surface} 0%, ${colors.surfaceDark} 100%);
+  background: linear-gradient(145deg, ${colors.surface} 0%, ${colors.surfaceDark} 100%);
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -68,9 +87,9 @@ export const QuerySidebar = styled.div`
 export const MapContainer = styled.div`
   flex: 1;
   min-height: 600px;
-  background-color: ${colors.surfaceDark};
+  background-color: transparent;
   border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   overflow: hidden;
   position: relative;
   border: 1px solid ${colors.border};
@@ -82,7 +101,8 @@ export const MapContainer = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(to right, ${colors.info}, ${colors.accent});
+    background: linear-gradient(to right, ${colors.accent}, ${colors.info}, transparent);
+    z-index: 2;
   }
   
   /* Add additional styles to ensure proper sizing */
@@ -93,11 +113,12 @@ export const MapContainer = styled.div`
   & > div {
     flex: 1;
     min-height: 400px;
+    background-color: transparent !important;
   }
 `;
 
 export const QuerySidebarHeader = styled.div`
-  background-color: ${colors.surfaceDark};
+  background-color: ${colors.surface};
   padding: 1.2rem;
   border-bottom: 1px solid ${colors.border};
   
@@ -119,6 +140,7 @@ export const QuerySidebarContent = styled.div`
   padding: 1.5rem;
   flex: 1;
   overflow-y: auto;
+  background-color: ${colors.surface};
 `;
 
 export const FormGroup = styled.div`
@@ -147,7 +169,7 @@ export const InputField = styled.div`
   select, input {
     width: 100%;
     padding: 0.8rem 1rem;
-    background-color: ${colors.inputBg};
+    background-color: ${colors.surface};
     border: 1px solid ${colors.border};
     border-radius: 8px;
     color: ${colors.inputText};
@@ -547,18 +569,15 @@ export const TabButton = styled.button`
 `;
 
 export const TabContent = styled.div`
-  padding: 1.5rem 0;
   display: none;
-  max-height: calc(100vh - 250px); /* Adjust based on header and navigation */
+  padding: 1rem;
+  background-color: ${colors.surface};
+  border-radius: 0 0 10px 10px;
+  overflow-y: auto;
+  height: calc(100vh - 250px);
   
   &.active {
     display: block;
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
   }
 `;
 
@@ -750,5 +769,77 @@ export const CheckboxContainer = styled.div`
     width: 18px;
     height: 18px;
     cursor: pointer;
+  }
+`;
+
+// Panel components for the Reports section
+export const PanelContainer = styled.div`
+  background-color: ${colors.surface};
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: 3px solid ${colors.accent};
+`;
+
+export const PanelHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: ${colors.surfaceDark};
+  border-bottom: 1px solid ${colors.border};
+  
+  h3 {
+    margin: 0;
+    color: ${colors.accent};
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  
+  .panel-close {
+    background: transparent;
+    border: none;
+    color: ${colors.textMuted};
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: ${colors.text};
+    }
+  }
+`;
+
+export const PanelContent = styled.div`
+  padding: 1.2rem;
+  background-color: ${colors.surface};
+  overflow-y: auto;
+  max-height: 70vh;
+  
+  h4 {
+    color: ${colors.textSecondary};
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  p {
+    color: ${colors.textSecondary};
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
 `;

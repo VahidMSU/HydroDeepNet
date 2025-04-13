@@ -2,6 +2,7 @@
 import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 import colors from './colors.tsx';
+import { css } from '@emotion/react';
 
 // Common animations that can be reused across components
 export const fadeIn = keyframes`
@@ -39,10 +40,23 @@ export const spin = keyframes`
 
 // Common UI elements shared across multiple components
 export const ContentWrapper = styled.div`
-  background-color: #444e5e;
+  background: linear-gradient(145deg, ${colors.surface} 0%, ${colors.surfaceDark} 100%);
   border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 2.2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border: 1px solid ${colors.border};
+  overflow: hidden;
+  position: relative;
+  
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, ${colors.accent}80, transparent);
+  }
 `;
 
 export const SectionTitle = styled.h2`
@@ -132,10 +146,10 @@ export const PageTitle = styled.h1`
 
 // Add title components used in multiple files (TermsConditions, Privacy, Visualizations, Michigan)
 export const TitleBase = styled.h2`
-  color: #ff8500;
+  color: ${colors.accent};
   font-size: 2.8rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 3px solid #ff8500;
+  margin-bottom: 1.8rem;
+  border-bottom: 3px solid ${colors.accent};
   padding-bottom: 1.2rem;
   position: relative;
   text-align: center;
@@ -146,9 +160,10 @@ export const TitleBase = styled.h2`
     bottom: -3px;
     left: 50%;
     transform: translateX(-50%);
-    width: 60px;
+    width: 80px;
     height: 3px;
-    background-color: #ffa533;
+    background: linear-gradient(90deg, ${colors.accent}, ${colors.accentHover});
+    border-radius: 3px;
   }
 `;
 
@@ -157,7 +172,10 @@ export const SectionContainer = styled.div`
   max-width: 1200px;
   margin: 2rem auto;
   padding: 2rem;
-  color: #ffffff;
+  color: ${colors.text};
+  background-color: ${colors.background};
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 `;
 
 // Unified link styling
@@ -168,16 +186,19 @@ export const StyledLinks = styled.div`
   margin-top: 1rem;
 
   a {
-    color: #ff8500;
+    color: ${colors.accent};
     text-decoration: none;
     padding: 0.5rem 1rem;
-    border: 2px solid #ff8500;
+    border: 2px solid ${colors.accent};
     border-radius: 8px;
     transition: all 0.3s ease;
+    background: linear-gradient(to right, transparent 50%, ${colors.accent} 50%);
+    background-size: 200% 100%;
+    background-position: 0 0;
 
     &:hover {
-      background-color: #ff8500;
-      color: #ffffff;
+      background-position: -100% 0;
+      color: ${colors.textInverse};
     }
   }
 `;
@@ -187,6 +208,11 @@ export const FormContainer = styled.form`
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
+  background: linear-gradient(145deg, ${colors.surface} 0%, ${colors.surfaceDark} 100%);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  border: 1px solid ${colors.border};
 `;
 
 export const FormGroup = styled.div`
@@ -198,13 +224,26 @@ export const FormLabel = styled.label`
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: ${colors.textSecondary};
+  position: relative;
+  padding-left: 0.5rem;
+  
+  &:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 25%;
+    height: 50%;
+    width: 3px;
+    background: ${colors.accent};
+    border-radius: 2px;
+  }
 `;
 
 export const FormInput = styled.input`
   width: 100%;
   padding: 0.75rem;
   border: 1px solid ${colors.border};
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: ${colors.inputBg};
   color: ${colors.inputText};
   transition: all 0.2s ease;
@@ -212,7 +251,11 @@ export const FormInput = styled.input`
   &:focus {
     outline: none;
     border-color: ${colors.accent};
-    box-shadow: 0 0 0 2px rgba(255, 133, 0, 0.15);
+    box-shadow: 0 0 0 3px ${colors.accent}25;
+  }
+  
+  &:hover:not(:focus) {
+    border-color: ${colors.borderLight};
   }
 `;
 
@@ -252,5 +295,58 @@ export const CloseButton = styled.button`
   
   &:hover {
     color: ${colors.accent};
+  }
+`;
+
+// Add a consistent background color for all pages matching the layout background
+export const globalStyles = css`
+  body, html {
+    background-color: ${colors.background};
+    color: ${colors.text};
+  }
+  
+  .MuiBox-root {
+    background-color: ${colors.background};
+  }
+  
+  // Make sure all components with background inherit this color
+  .map-container, 
+  .report-container, 
+  .form-container, 
+  .station-details-container,
+  .info-box-container,
+  .search-form-container,
+  .user-info-container,
+  .viewer-container {
+    background-color: ${colors.surface};
+  }
+`;
+
+// Add or update any component containers that need the background color
+export const PageContainer = styled.div`
+  background-color: ${colors.background};
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const ContentContainer = styled.div`
+  background-color: ${colors.background};
+  flex: 1;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+`;
+
+export const ComponentContainer = styled.div`
+  background: linear-gradient(145deg, ${colors.surface} 0%, ${colors.surfaceDark} 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid ${colors.border};
+  
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
 `;

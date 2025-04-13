@@ -68,7 +68,7 @@ export const AccordionItem = styled.div`
 `;
 
 export const AccordionHeader = styled.div<{ isOpen?: boolean }>`
-  background: ${props => props.isOpen 
+  background: ${props => props.isOpen
     ? `linear-gradient(135deg, ${colors.accent} 0%, #e67300 100%)`
     : `linear-gradient(135deg, ${colors.surfaceLight} 0%, ${colors.surface} 100%)`
   };
@@ -81,10 +81,10 @@ export const AccordionHeader = styled.div<{ isOpen?: boolean }>`
   border-left: 5px solid ${props => props.isOpen ? colors.accent : 'transparent'};
 
   &:hover {
-    background: ${props => props.isOpen 
-      ? `linear-gradient(135deg, ${colors.accent} 0%, #e67300 100%)`
-      : `linear-gradient(135deg, ${colors.surfaceLight} 30%, ${colors.surface} 100%)`
-    };
+    background: ${props => props.isOpen
+    ? `linear-gradient(135deg, ${colors.accent} 0%, #e67300 100%)`
+    : `linear-gradient(135deg, ${colors.surfaceLight} 30%, ${colors.surface} 100%)`
+  };
   }
   
   h3 {

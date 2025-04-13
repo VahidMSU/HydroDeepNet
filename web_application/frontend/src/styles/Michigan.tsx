@@ -4,15 +4,30 @@ import colors from './colors.tsx';
 import { TitleBase, SectionContainer, ContentWrapper } from './common.tsx';
 
 export const Container = styled.div`
-  padding: 20px;
+  padding: 2rem;
+  background-color: ${colors.background};
 `;
 
 export const HeaderTitle = styled.h1`
   text-align: center;
-  margin-bottom: 30px;
-  color: ${colors.text};
+  margin-bottom: 1.8rem;
+  color: ${colors.accent};
   font-size: 2.5rem;
   font-weight: bold;
+  position: relative;
+  padding-bottom: 1.2rem;
+  
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, ${colors.accent}, ${colors.accentHover});
+    border-radius: 3px;
+  }
 `;
 
 // Use common components
@@ -25,18 +40,22 @@ export { ContentWrapper };
 export const ImageGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  gap: 1.5rem;
   width: 100%;
 `;
 
 export const ImageCard = styled.div`
   border-radius: 12px;
   overflow: hidden;
-  background-color: rgba(255, 255, 255, 0.1);
-  transition: transform 0.3s ease;
+  background: linear-gradient(145deg, ${colors.surface} 0%, ${colors.surfaceDark} 100%);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid ${colors.border};
+  transition: all 0.3s ease;
 
   &:hover {
-    transform: translateY(-5px);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+    border-color: ${colors.borderLight};
   }
 `;
 
@@ -60,11 +79,24 @@ export const ModalClose = styled.span`
   color: ${colors.text};
   font-size: 2rem;
   cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: ${colors.accent};
+    color: ${colors.textInverse};
+  }
 `;
 
 export const CardTitle = styled.h4`
   padding: 1rem;
-  color: #ff8500;
+  color: ${colors.accent};
   font-size: 1.1rem;
   margin: 0;
   text-align: center;
@@ -73,10 +105,17 @@ export const CardTitle = styled.h4`
 export const ImageElement = styled.img`
   width: 100%;
   height: auto;
+  transition: transform 0.3s ease;
+  
+  ${ImageCard}:hover & {
+    transform: scale(1.05);
+  }
 `;
 
 export const ModalImage = styled.img`
   max-width: 90vw;
   max-height: 90vh;
   object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 `;

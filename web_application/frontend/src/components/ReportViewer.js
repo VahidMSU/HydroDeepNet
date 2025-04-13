@@ -4,26 +4,32 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faExclamationTriangle, faHome } from '@fortawesome/free-solid-svg-icons';
 import { useLocation } from 'react-router-dom';
 
-const ViewerContainer = styled.div`
-  width: 100%;
-  height: 100%;
+const ViewerWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: #2b2b2c;
+  color: #ffd380;
 `;
 
 const IframeContainer = styled.div`
   flex: 1;
+  border: 1px solid #444;
+  border-radius: 4px;
+  overflow: hidden;
   position: relative;
+  background-color: #2b2b2c;
 `;
 
-const StyledIframe = styled.iframe`
+const Iframe = styled.iframe`
+  border: none;
   width: 100%;
   height: 100%;
-  border: none;
-  border-radius: 4px;
+  background-color: #2b2b2c;
 `;
 
-const LoadingIndicator = styled.div`
+const LoadingOverlay = styled.div`
   position: absolute;
   top: 0;
   left: 0;
@@ -33,23 +39,43 @@ const LoadingIndicator = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #2b2b2c;
+  color: #ffd380;
+  gap: 1rem;
   z-index: 10;
 `;
 
-const ErrorMessage = styled.div`
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background-color: #fff3f3;
-  border-left: 5px solid #ff5252;
-  color: #d32f2f;
+const ErrorOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  background-color: #2b2b2c;
+  color: #f44336;
+  padding: 2rem;
+  gap: 1rem;
+  text-align: center;
+`;
+
+const SpinnerIcon = styled(FontAwesomeIcon)`
+  font-size: 2rem;
+  color: #ff8500;
+  animation: spin 1s linear infinite;
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 `;
 
 const ErrorIcon = styled(FontAwesomeIcon)`
-  margin-right: 0.5rem;
-  font-size: 1.2rem;
+  font-size: 2rem;
+  color: #f44336;
 `;
 
 const NavBar = styled.div`
@@ -314,12 +340,12 @@ const ReportViewer = ({ reportUrl, reportId }) => {
   };
 
   return (
-    <ViewerContainer>
+    <ViewerWrapper>
       {error && (
-        <ErrorMessage>
+        <ErrorOverlay>
           <ErrorIcon icon={faExclamationTriangle} />
           {error}
-        </ErrorMessage>
+        </ErrorOverlay>
       )}
 
       <NavBar>
@@ -329,7 +355,7 @@ const ReportViewer = ({ reportUrl, reportId }) => {
         </NavButton>
       </NavBar>
       <IframeContainer>
-        <StyledIframe
+        <Iframe
           ref={iframeRef}
           src={reportUrl}
           onLoad={handleIframeLoad}
@@ -337,13 +363,13 @@ const ReportViewer = ({ reportUrl, reportId }) => {
           sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
         />
         {loading && (
-          <LoadingIndicator>
-            <FontAwesomeIcon icon={faSpinner} spin size="3x" color="#2196f3" />
-            <p style={{ marginTop: '1rem' }}>Loading report...</p>
-          </LoadingIndicator>
+          <LoadingOverlay>
+            <SpinnerIcon icon={faSpinner} spin />
+            <p>Loading report...</p>
+          </LoadingOverlay>
         )}
       </IframeContainer>
-    </ViewerContainer>
+    </ViewerWrapper>
   );
 };
 

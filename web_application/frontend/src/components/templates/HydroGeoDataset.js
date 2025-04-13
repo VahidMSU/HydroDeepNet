@@ -1,23 +1,23 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faSearch,
   faDatabase,
-  faRobot,
   faChartBar,
   faFileAlt,
-  faExternalLinkAlt,
-  faFolderOpen,
   faClipboard,
+  faChevronDown,
+  faChevronUp,
+  faSpinner,
+  faTimesCircle,
+  faCheck,
   faDownload,
   faEye,
-  faSpinner,
-  faCheck,
-  faTimesCircle,
-  faTimes,
   faMapMarkerAlt,
+  faSearch,
+  faLayerGroup,
+  faInfoCircle,
+  faSync
 } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
 
 import MapComponent from '../MapComponent';
 import HydroGeoDatasetForm from '../forms/HydroGeoDataset';
@@ -30,21 +30,174 @@ import {
   QuerySidebar,
   MapContainer,
   ResultsContainer,
-  TabContainer,
-  TabNav,
-  TabButton,
-  TabContent,
-  InfoCard,
   ReportList,
   ReportItem,
   ReportProgressBar,
+  PanelContainer,
+  PanelHeader,
+  PanelContent
 } from '../../styles/HydroGeoDataset.tsx';
 
 import { debugLog, validatePolygonCoordinates } from '../../utils/debugUtils';
 import { downloadReport, viewReport, checkReportStatus } from '../../utils/reportDownloader';
 import ErrorBoundary from './ErrorBoundary';
 
+// Import NoScroll CSS
+import '../../styles/NoScroll.css';
+
+// Import loading animation styles from common
+import { spin } from '../../styles/common.tsx';
+import styled from '@emotion/styled';
+import { keyframes } from '@emotion/react';
+import colors from '../../styles/colors.tsx';
+
+// Add pulse animation
+const pulse = keyframes`
+  0% { opacity: 0.6; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.6; }
+`;
+
+// Add a map loading overlay
+const MapLoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(24, 24, 26, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  border-radius: 10px;
+  backdrop-filter: blur(3px);
+  animation: ${pulse} 1.8s ease-in-out infinite;
+  
+  .spinner {
+    color: ${colors.accent};
+    font-size: 2.5rem;
+    animation: ${spin} 1.5s linear infinite;
+  }
+  
+  .loading-text {
+    margin-top: 1rem;
+    color: ${colors.text};
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .loading-subtext {
+    margin-top: 0.5rem;
+    color: ${colors.textSecondary};
+    font-size: 0.9rem;
+  }
+`;
+
+/**
+ * Format timestamp for display
+ * @param {string} timestamp - Timestamp in format YYYYMMDD_HHMMSS
+ * @returns {string} - Formatted date string
+ */
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return 'Unknown date';
+  try {
+    const [date, time] = timestamp.split('_');
+    const year = date.substr(0, 4);
+    const month = date.substr(4, 2);
+    const day = date.substr(6, 2);
+    const hours = time.substr(0, 2);
+    const minutes = time.substr(2, 2);
+    const seconds = time.substr(4, 2);
+
+    return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+  } catch (e) {
+    return timestamp;
+  }
+};
+
+/**
+ * Report item component
+ */
+const ReportItemComponent = ({ report, onReportAction }) => {
+  const reportId = report.report_id || report.timestamp;
+  
+  // Handle potential missing status
+  const status = report.status || 'completed';
+  
+  return (
+    <ReportItem className={status}>
+      <div className="report-header">
+        <div className="report-title">
+          <FontAwesomeIcon
+            icon={
+              status === 'processing' ? faSpinner :
+              status === 'failed' ? faTimesCircle : faCheck
+            }
+            style={{ 
+              color: status === 'failed' ? '#ff5555' : 
+                     status === 'completed' ? '#4caf50' : '#ff8500'
+            }}
+            className={status === 'processing' ? 'fa-spin' : ''}
+          />
+          {report.report_type ? `${report.report_type.toUpperCase()} Report` : 'Environmental Report'}
+        </div>
+        <div className="report-date">
+          {formatTimestamp(report.timestamp)}
+        </div>
+      </div>
+
+      {status === 'processing' && (
+      <div className="report-details">
+            <div>Report is being generated...</div>
+            <ReportProgressBar>
+              <div className="progress-inner" style={{ width: '60%' }}></div>
+            </ReportProgressBar>
+        </div>
+      )}
+
+      {status === 'failed' && (
+        <div className="report-details" style={{ color: '#ff5555' }}>
+          Error: {report.error || 'Failed to generate report'}
+        </div>
+      )}
+
+      {status === 'completed' && (
+        <>
+          <div className="report-details">
+            {report.bounds && (
+              <div>
+                <FontAwesomeIcon icon={faMapMarkerAlt} style={{ marginRight: '8px' }} />
+                Area: Lat {report.bounds.min_lat?.toFixed(2) || '?'} to {report.bounds.max_lat?.toFixed(2) || '?'}, 
+                Lon {report.bounds.min_lon?.toFixed(2) || '?'} to {report.bounds.max_lon?.toFixed(2) || '?'}
+              </div>
+            )}
+            <div>Report completed with {report.reports?.length || 0} files</div>
+      </div>
+
+        <div className="report-actions">
+          <button onClick={() => onReportAction('download', reportId)}>
+            <FontAwesomeIcon icon={faDownload} className="icon" />
+            Download
+          </button>
+          <button onClick={() => onReportAction('view', reportId)}>
+            <FontAwesomeIcon icon={faEye} className="icon" />
+            View
+          </button>
+        </div>
+        </>
+      )}
+    </ReportItem>
+  );
+};
+
+/**
+ * Main HydroGeoDataset component
+ */
 const HydroGeoDataset = () => {
+  // Form and data state
   const [formData, setFormData] = useState({
     min_latitude: '',
     max_latitude: '',
@@ -54,87 +207,139 @@ const HydroGeoDataset = () => {
     subvariable: '',
     geometry: null,
   });
-  const [availableVariables, setAvailableVariables] = useState([]);
-  const [availableSubvariables, setAvailableSubvariables] = useState([]);
-  const [data, setData] = useState(null);
-  const [activeTab, setActiveTab] = useState('query');
-  const [mapRefreshKey, setMapRefreshKey] = useState(0); // Add a key to force map refresh
-  const [showHelpCard, setShowHelpCard] = useState(true);
   
-  // Report state
+  // UI state
+  const [activePanel, setActivePanel] = useState('query'); // query, report, results
   const [reports, setReports] = useState([]);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState(null);
-  const [sortOrder, setSortOrder] = useState('newest');
-
-  // Add refs for map instances
-  const queryMapRef = useRef(null);
-  const reportMapRef = useRef(null);
-
-  // Use a state to track if map should be shown for a tab
-  const [mapVisibility, setMapVisibility] = useState({
-    query: false,
-    report: false,
-    reports: false,
-  });
-
-  // Create a unified state for the selected geometry that's shared between tabs
+  
+  // Data state
+  const [availableVariables, setAvailableVariables] = useState([]);
+  const [availableSubvariables, setAvailableSubvariables] = useState([]);
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Map state
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const [selectedGeometry, setSelectedGeometry] = useState(null);
+  const [geometriesLoading, setGeometriesLoading] = useState(true); // Add state for geometry loading
 
-  // Keep track of active maps to prevent unnecessary re-renders
-  const activeMapRef = useRef(null);
-
-  // Track if we're switching tabs to prevent unnecessary geometry updates
-  const isTabSwitching = useRef(false);
-
-  // Fetch existing reports on component mount and when activeTab changes to 'reports'
+  // Refs
+  const queryMapRef = useRef(null);
+  const preventMapOperations = useRef(false);
+  
+  // Apply NoScroll class to document body when component mounts
   useEffect(() => {
-    if (activeTab === 'reports') {
-      fetchReports();
-    }
-  }, [activeTab]);
+    document.documentElement.classList.add('no-scroll-page');
+    document.body.classList.add('no-scroll-page');
+    
+    return () => {
+      document.documentElement.classList.remove('no-scroll-page');
+      document.body.classList.remove('no-scroll-page');
+    };
+  }, []);
 
-  // Fetch reports from the server
-  const fetchReports = async () => {
-    setReportsLoading(true);
-    setReportsError(null);
-    try {
-      const response = await fetch('/api/get_reports');
-      if (response.ok) {
+  // Fetch available variables on mount
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const response = await fetch('/hydro_geo_dataset');
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
         const data = await response.json();
-        setReports(data.reports || []);
-      } else {
-        console.error('Failed to fetch reports');
-        setReportsError('Failed to load reports. Please try again later.');
+        setAvailableVariables(data.variables || []);
+      } catch (error) {
+        console.error('Error fetching options:', error);
       }
+    };
+    fetchOptions();
+    fetchReports();
+  }, []);
+
+  // Fetch subvariables when variable changes
+  useEffect(() => {
+    if (!formData.variable) {
+      setAvailableSubvariables([]);
+      return;
+    }
+    
+    const fetchSubvariables = async () => {
+      try {
+        const response = await fetch(`/hydro_geo_dataset?variable=${formData.variable}`);
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setAvailableSubvariables(data.subvariables || []);
+      } catch (error) {
+        console.error('Error fetching subvariables:', error);
+      }
+    };
+    
+    fetchSubvariables();
+  }, [formData.variable]);
+
+  // Fetch reports
+  const fetchReports = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/get_reports');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch reports: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Fetched reports:', data);
+      
+      // Extract reports array from response - API returns { reports: [] }
+      const reportsArray = data.reports || [];
+      
+      // Ensure we have a consistent format with fallbacks for missing properties
+      const formattedReports = reportsArray.map(report => ({
+        report_id: report.report_id || report.timestamp || Date.now().toString(),
+        timestamp: report.timestamp || Date.now(),
+        status: report.status || 'completed',
+        report_type: report.report_type || 'environmental',
+        bounds: report.bounds || null,
+        reports: report.reports || [],
+        ...report // preserve any other properties
+      }));
+      
+      setReports(formattedReports);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching reports:', error);
-      setReportsError('Error connecting to server. Please check your network connection.');
-    } finally {
-      setReportsLoading(false);
+      setReports([]);
+      setIsLoading(false);
     }
   };
-
-  // Format timestamp for display
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return 'Unknown date';
-    try {
-      const [date, time] = timestamp.split('_');
-      const year = date.substr(0, 4);
-      const month = date.substr(4, 2);
-      const day = date.substr(6, 2);
-      const hours = time.substr(0, 2);
-      const minutes = time.substr(2, 2);
-      const seconds = time.substr(4, 2);
-
-      return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
-    } catch (e) {
-      return timestamp;
+  
+  // Auto-refresh reports when reports tab is active
+  useEffect(() => {
+    let autoRefreshInterval;
+    
+    if (activePanel === 'reports') {
+      // Initial fetch
+      fetchReports();
+      
+      // Set up auto-refresh every 30 seconds
+      autoRefreshInterval = setInterval(() => {
+        fetchReports();
+      }, 30000);
     }
-  };
+    
+    // Clean up interval when component unmounts or tab changes
+    return () => {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+      }
+    };
+  }, [activePanel]);
 
-  // Handle report actions
-  const handleReportAction = (action, reportId) => {
+  // Handle report actions (download, view)
+  const handleReportAction = useCallback((action, reportId) => {
     if (!reportId) {
       console.error('Report ID is required for', action);
       setReportsError(`Unable to ${action}: Report ID is missing`);
@@ -171,143 +376,63 @@ const HydroGeoDataset = () => {
       console.error(`Error in ${action} action:`, err);
       setReportsError(`An error occurred during ${action}: ${err.message}`);
     }
-  };
-
-  // Handle sorting reports
-  const handleSortChange = (e) => {
-    setSortOrder(e.target.value);
-  };
-
-  // Sort reports based on selected order
-  const getSortedReports = () => {
-    if (!reports || reports.length === 0) return [];
-    
-    const sortedReports = [...reports];
-    
-    switch (sortOrder) {
-      case 'newest':
-        return sortedReports.sort((a, b) => b.timestamp?.localeCompare(a.timestamp));
-      case 'oldest':
-        return sortedReports.sort((a, b) => a.timestamp?.localeCompare(b.timestamp));
-      case 'name':
-        return sortedReports.sort((a, b) => (a.report_type || '').localeCompare(b.report_type || ''));
-      case 'status':
-        return sortedReports.sort((a, b) => {
-          // Sort order: completed, processing, failed
-          const statusOrder = { 'completed': 0, 'processing': 1, 'failed': 2 };
-          return statusOrder[a.status] - statusOrder[b.status];
-        });
-      default:
-        return sortedReports;
-    }
-  };
-
-  // Update when component mounts to show initial map
-  useEffect(() => {
-    setMapVisibility({
-      query: activeTab === 'query',
-      report: activeTab === 'report',
-      reports: activeTab === 'reports',
-    });
-
-    // Set the active map ref
-    activeMapRef.current = activeTab === 'query' ? queryMapRef : reportMapRef;
-  }, [activeTab]);
-
-  useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const response = await fetch('/hydro_geo_dataset');
-        const data = await response.json();
-        setAvailableVariables(data.variables);
-      } catch (error) {
-        console.error('Error fetching options:', error);
-      }
-    };
-    fetchOptions();
   }, []);
 
-  useEffect(() => {
-    const fetchSubvariables = async () => {
-      if (!formData.variable) return;
-      try {
-        const response = await fetch(`/hydro_geo_dataset?variable=${formData.variable}`);
-        const data = await response.json();
-        setAvailableSubvariables(data.subvariables);
-      } catch (error) {
-        console.error('Error fetching subvariables:', error);
+  // Handle geometry changes from the map
+  const handleGeometryChange = useCallback((geom) => {
+    if (!geom || preventMapOperations.current) return;
+
+    debugLog('New geometry selected', geom);
+    setGeometriesLoading(false); // Set geometries as loaded when we get a change
+
+    // Validate polygon coordinates if present
+    if (geom.type === 'polygon' && formData.polygon_coordinates) {
+      const validation = validatePolygonCoordinates(formData.polygon_coordinates);
+      if (!validation.valid) {
+        console.warn('Polygon coordinate validation failed:', validation.message);
       }
-    };
-    fetchSubvariables();
-  }, [formData.variable]);
+    }
 
-  // Add effect to refresh map when tab changes
+    // Store the geometry for sharing between tabs
+    setSelectedGeometry(geom);
+  }, [formData.polygon_coordinates]);
+
+  // Reset geometry loading state when map refreshes
   useEffect(() => {
-    // Force map component to re-render when tab changes by updating the key
-    setMapRefreshKey((prev) => prev + 1);
+    setGeometriesLoading(true);
+    // Set a timeout to automatically clear the loading state after 10 seconds
+    // in case the geometry change event doesn't fire
+    const timeout = setTimeout(() => {
+      setGeometriesLoading(false);
+    }, 10000);
+    
+    return () => clearTimeout(timeout);
+  }, [mapRefreshKey]);
 
-    // Add a small delay to ensure DOM updates before map renders
-    const timer = setTimeout(() => {
-      const mapContainers = document.querySelectorAll('.map-container');
-      mapContainers.forEach((container) => {
-        console.log(`Map container ${container.id} visibility updated for tab: ${activeTab}`);
-      });
-    }, 100);
+  // Handle form changes
+  const handleChange = useCallback(({ target: { name, value } }) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }, []);
 
-    return () => clearTimeout(timer);
-  }, [activeTab]);
-
-  const handleChange = ({ target: { name, value } }) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Update handleGeometryChange to ensure proper geometry sharing
-  const handleGeometryChange = useCallback(
-    (geom) => {
-      if (!geom || isTabSwitching.current) return;
-
-      debugLog('New geometry selected', geom);
-
-      // Validate polygon coordinates if present
-      if (geom.type === 'polygon' && formData.polygon_coordinates) {
-        const validation = validatePolygonCoordinates(formData.polygon_coordinates);
-        if (!validation.valid) {
-          console.warn('Polygon coordinate validation failed:', validation.message);
-        }
-      }
-
-      // Store the geometry for sharing between tabs
-      setSelectedGeometry(geom);
-    },
-    [formData.polygon_coordinates],
-  );
-
-  const handleSubmit = async (e) => {
+  // Handle query submission
+  const handleQuery = useCallback(async (e) => {
     e.preventDefault();
 
-    // Debug log to see what's happening
-    console.log('Form submission triggered with data:', formData);
-
-    // Ensure we have all required data
     if (
       !formData.min_latitude ||
       !formData.max_latitude ||
       !formData.min_longitude ||
-      !formData.max_longitude
+      !formData.max_longitude ||
+      !formData.variable ||
+      !formData.subvariable
     ) {
-      console.error('Missing coordinate data for query');
-      return;
-    }
-
-    if (!formData.variable || !formData.subvariable) {
-      console.error('Missing variable or subvariable selection');
+      alert('Please complete all required fields and select an area on the map');
       return;
     }
 
     try {
       setIsLoading(true);
 
-      // Prepare the request payload with all necessary data
       const payload = {
         min_latitude: formData.min_latitude,
         max_latitude: formData.max_latitude,
@@ -316,11 +441,8 @@ const HydroGeoDataset = () => {
         variable: formData.variable,
         subvariable: formData.subvariable,
         geometry_type: formData.geometry_type || 'extent',
-        // Ensure polygon coordinates are passed correctly
         polygon_coordinates: formData.polygon_coordinates || null,
       };
-
-      console.log('Sending API request with payload:', payload);
 
       const response = await fetch('/hydro_geo_dataset', {
         method: 'POST',
@@ -334,434 +456,377 @@ const HydroGeoDataset = () => {
       }
 
       const result = await response.json();
-      console.log('Received API response:', result);
       setData(result);
+      setActivePanel('results');
     } catch (error) {
       console.error('Error fetching data:', error);
-      // Consider adding a UI notification here to inform the user
+      alert(`Error: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [formData]);
 
-  // Modified tab switching function for better reliability
-  const handleTabChange = (tabName) => {
-    // Skip if already on this tab or switch in progress
-    if (tabName === activeTab || isTabSwitching.current) return;
+  // Handle report generation
+  const handleReportGenerated = useCallback(() => {
+    fetchReports();
+    setActivePanel('reports');
+  }, [fetchReports]);
 
-    console.log(`Switching tab from ${activeTab} to ${tabName}`);
-
-    // Set flag to prevent concurrent operations
-    isTabSwitching.current = true;
-
-    // First hide maps
-    setMapVisibility({ query: false, report: false, reports: false });
-
-    // Change tab after a small delay
-    setTimeout(() => {
-      setActiveTab(tabName);
-      activeMapRef.current = tabName === 'query' ? queryMapRef : reportMapRef;
-
-      // Show the appropriate map
-      setTimeout(() => {
-        setMapVisibility({
-          query: tabName === 'query',
-          report: tabName === 'report',
-          reports: tabName === 'reports',
-        });
-
-        // Draw geometry after map is ready
-        setTimeout(() => {
-          redrawGeometry();
-          isTabSwitching.current = false;
-        }, 400);
-      }, 100);
-    }, 100);
-  };
-
-  // Simplified geometry redraw function
-  const redrawGeometry = useCallback(() => {
-    if (!selectedGeometry) return;
-
-    const activeMap = activeTab === 'query' ? queryMapRef.current : reportMapRef.current;
-    if (activeMap?.drawGeometry) {
-      activeMap.drawGeometry(selectedGeometry);
-    }
-  }, [selectedGeometry, activeTab]);
-
-  // Optimize MapComponent rendering with simplified memoization
-  const renderMapComponent = useCallback(
-    (type) => {
-      if (!mapVisibility[type]) return null;
-
-      return (
-        <MapComponent
-          key={`${type}-map-${mapRefreshKey}`}
-          setFormData={setFormData}
-          onGeometryChange={handleGeometryChange}
-          containerId={`${type}Map`}
-          initialGeometry={selectedGeometry}
-          ref={type === 'query' ? queryMapRef : reportMapRef}
-        />
-      );
-    },
-    [mapVisibility, mapRefreshKey, selectedGeometry, handleGeometryChange],
+  // Panel selection
+  const NavButton = ({ panel, icon, label }) => (
+    <button 
+      onClick={() => setActivePanel(panel)}
+      style={{
+        background: activePanel === panel ? '#ff8500' : 'transparent',
+        border: 'none',
+        color: activePanel === panel ? 'white' : '#ccc',
+        padding: '12px 18px',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        display: 'flex',
+          alignItems: 'center', 
+        gap: '8px',
+        fontWeight: activePanel === panel ? 'bold' : 'normal'
+      }}
+    >
+      <FontAwesomeIcon icon={icon} />
+      {label}
+    </button>
   );
 
-  // For loading state
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Render the reports tab
-  const renderReportsTab = () => {
-    return (
-      <div style={{ 
-        padding: '1rem', 
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          marginBottom: '1.5rem',
-          flexShrink: 0
-        }}>
-          <h2 style={{ margin: 0, fontSize: '1.6rem', color: '#e6e6e6' }}>
-            <FontAwesomeIcon icon={faClipboard} style={{ marginRight: '0.8rem', color: '#ff8500' }} />
-            Your Generated Reports
+  // Render appropriate panel content
+  const renderPanelContent = () => {
+    switch(activePanel) {
+      case 'report':
+        return (
+          <div style={{ padding: '20px', backgroundColor: '#2b2b2c', borderRadius: '8px' }}>
+            <h2 style={{ fontSize: '1.3rem', marginBottom: '20px', color: '#ff8500' }}>
+              <FontAwesomeIcon icon={faFileAlt} style={{ marginRight: '10px' }} />
+              Environmental Report Generator
           </h2>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <p style={{ marginBottom: '20px', color: '#ccc' }}>
+              Generate comprehensive environmental reports for your selected area. These reports include data analysis,
+              environmental assessments, and visualization of the selected variables.
+            </p>
+            <ReportGenerator 
+              formData={formData} 
+              onReportGenerated={handleReportGenerated}
+            />
+          </div>
+        );
+      
+      case 'reports':
+        console.log("Reports data in renderPanelContent:", reports);
+        return (
+          <PanelContainer>
+            <PanelHeader>
+              <h3>
+                <FontAwesomeIcon icon={faClipboard} style={{ marginRight: '8px' }} />
+                My Reports
+              </h3>
+              <div style={{ display: 'flex', gap: '10px' }}>
             <button 
-              onClick={fetchReports} 
+                  className="panel-action" 
+                  onClick={() => fetchReports()} 
+                  title="Refresh Reports"
               style={{ 
-                background: '#444',
-                color: 'white',
+                    background: 'transparent',
                 border: 'none',
-                borderRadius: '4px',
-                padding: '0.5rem',
+                    color: '#ccc',
+                    fontSize: '1rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                fontSize: '0.9rem'
-              }}
-            >
-              <FontAwesomeIcon icon={faSpinner} className={reportsLoading ? 'fa-spin' : ''} />
-              Refresh
+                    justifyContent: 'center',
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <FontAwesomeIcon 
+                    icon={faSync} 
+                    spin={isLoading} 
+                  />
             </button>
-            <select 
-              value={sortOrder}
-              onChange={handleSortChange}
+                <button className="panel-close" onClick={() => setActivePanel('query')}>×</button>
+              </div>
+            </PanelHeader>
+            <PanelContent>
+              <div style={{ padding: '10px 0' }}>
+                <button 
+                  onClick={() => setActivePanel('report')}
               style={{ 
-                padding: '0.5rem', 
-                background: '#333', 
+                    backgroundColor: '#4CAF50',
                 color: 'white', 
-                border: '1px solid #555',
-                borderRadius: '4px'
-              }}
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="name">Report Type</option>
-              <option value="status">By Status</option>
-            </select>
-          </div>
-        </div>
-
-        {reportsError && (
+                    border: 'none',
+                    padding: '10px 15px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '20px'
+                  }}
+                >
+                  <FontAwesomeIcon icon={faFileAlt} />
+                  Generate New Report
+                </button>
+                
           <div style={{
-            backgroundColor: 'rgba(255, 0, 0, 0.1)',
-            color: '#ff5555',
-            padding: '0.75rem',
-            borderRadius: '4px',
-            marginBottom: '1rem',
-            flexShrink: 0
-          }}>
-            <FontAwesomeIcon icon={faTimesCircle} style={{ marginRight: '0.5rem' }} />
-            {reportsError}
+                  marginBottom: '20px', 
+                  fontSize: '0.85rem', 
+                  color: '#888',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px' 
+                }}>
+                  <FontAwesomeIcon icon={faInfoCircle} />
+                  Reports auto-refresh every 30 seconds. Click <FontAwesomeIcon icon={faSync} /> to refresh manually.
           </div>
-        )}
-
-        {/* Scrollable container for reports */}
-        <div style={{
-          overflowY: 'auto',
-          flexGrow: 1,
-          height: 'calc(100vh - 330px)', // Adjusted to be more precise, accounting for all headers
-          padding: '0.5rem 0.5rem 0.5rem 0', // Only right padding for scrollbar
-          marginRight: '0', // No need for negative margin
-        }}>
-          {reportsLoading && !reports.length ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '2rem', color: '#ff8500', marginBottom: '1rem' }} />
-              <p>Loading your reports...</p>
+                
+                {isLoading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: '30px 0' }}>
+                    <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '24px' }} />
             </div>
           ) : reports.length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '3rem 1rem',
-              backgroundColor: '#2a2a2a',
+                  <div style={{ textAlign: 'center', padding: '30px 0', color: '#888' }}>
+                    <FontAwesomeIcon icon={faInfoCircle} style={{ fontSize: '24px', marginBottom: '15px' }} />
+                    <p>No reports found. Generate a new report to get started.</p>
+                  </div>
+                ) : (
+                  <div>
+                    {reports.map(report => (
+                      <ReportItemComponent
+                        key={report.report_id || report.timestamp}
+                        report={report}
+                        onReportAction={handleReportAction}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </PanelContent>
+          </PanelContainer>
+        );
+        
+      case 'results':
+        return data ? (
+          <ResultsContainer>
+            <h2 style={{ fontSize: '1.3rem', marginBottom: '15px', color: '#ff8500' }}>
+              <FontAwesomeIcon icon={faChartBar} className="icon" style={{ marginRight: '10px' }} />
+              Query Results
+            </h2>
+            <pre className="scroll-container" style={{ 
+              backgroundColor: '#333', 
+              padding: '15px', 
               borderRadius: '8px',
-              color: '#ccc'
+              maxHeight: '400px',
+              overflowY: 'auto'
             }}>
-              <FontAwesomeIcon icon={faFileAlt} style={{ fontSize: '2rem', color: '#555', marginBottom: '1rem' }} />
-              <h3>No Reports Yet</h3>
-              <p>Go to the Report Generator tab to create environmental reports for your areas of interest.</p>
+              {JSON.stringify(data, null, 2)}
+            </pre>
+            
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
               <button 
-                onClick={() => handleTabChange('report')}
+                onClick={() => setActivePanel('query')} 
+                style={{
+                  backgroundColor: '#444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '10px 15px',
+                  cursor: 'pointer'
+                }}
+              >
+                New Query
+              </button>
+              
+              <button 
+                onClick={() => setActivePanel('report')}
                 style={{
                   backgroundColor: '#ff8500',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  padding: '0.6rem 1.2rem',
+                  padding: '10px 15px',
                   cursor: 'pointer',
-                  fontWeight: 'bold',
-                  marginTop: '1rem'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
               >
-                Generate a Report
+                <FontAwesomeIcon icon={faFileAlt} />
+                Generate Report from Results
               </button>
             </div>
-          ) : (
-            <ReportList>
-              {getSortedReports().map((report) => {
-                const reportId = report.report_id || report.timestamp;
+          </ResultsContainer>
+        ) : (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px 0',
+            backgroundColor: '#333',
+            borderRadius: '8px'
+          }}>
+            <p>No query results available. Run a query to see data here.</p>
+          </div>
+        );
+        
+      case 'query':
+      default:
+        return (
+          <ErrorBoundary>
+            <Suspense fallback={<div>Loading form...</div>}>
+              <div style={{ padding: '20px', backgroundColor: '#2b2b2c', borderRadius: '8px' }}>
+                <h2 style={{ fontSize: '1.3rem', marginBottom: '15px', color: '#ff8500' }}>
+                  <FontAwesomeIcon icon={faSearch} style={{ marginRight: '10px' }} />
+                  Query Dataset
+                </h2>
                 
-                return (
-                  <ReportItem key={reportId} className={report.status}>
-                    <div className="report-header">
-                      <div className="report-title">
-                        <FontAwesomeIcon
-                          icon={
-                            report.status === 'processing'
-                              ? faSpinner
-                              : report.status === 'failed'
-                                ? faTimesCircle
-                                : faCheck
-                          }
-                          className={report.status === 'processing' ? 'fa-spin' : ''}
-                        />
-                        {report.report_type ? `${report.report_type.toUpperCase()} Report` : 'Environmental Report'}
-                      </div>
-                      <div className="report-date">{formatTimestamp(report.timestamp)}</div>
-                    </div>
-
-                    <div className="report-details">
-                      {report.status === 'processing' ? (
-                        <>
-                          <div>Report is being generated...</div>
-                          <ReportProgressBar>
-                            <div className="progress-inner" style={{ width: '60%' }}></div>
-                          </ReportProgressBar>
-                        </>
-                      ) : report.status === 'failed' ? (
-                        <div>Error: {report.error || 'Failed to generate report'}</div>
-                      ) : (
-                        <div>
-                          {report.bounds && (
-                            <div style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: '#ccc' }}>
-                              <FontAwesomeIcon icon={faMapMarkerAlt} style={{ marginRight: '0.5rem' }} />
-                              Area: Lat {report.bounds.min_lat.toFixed(2)} to {report.bounds.max_lat.toFixed(2)}, 
-                              Lon {report.bounds.min_lon.toFixed(2)} to {report.bounds.max_lon.toFixed(2)}
-                            </div>
-                          )}
-                          <div>
-                            Report completed successfully. Generated {report.reports?.length || 0} files.
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {report.status === 'completed' && (
-                      <div className="report-actions">
-                        <button onClick={() => handleReportAction('download', reportId)}>
-                          <FontAwesomeIcon icon={faDownload} className="icon" />
-                          Download
-                        </button>
-                        <button onClick={() => handleReportAction('view', reportId)}>
-                          <FontAwesomeIcon icon={faEye} className="icon" />
-                          View
-                        </button>
-                      </div>
-                    )}
-                  </ReportItem>
-                );
-              })}
-            </ReportList>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <HydroGeoContainer>
-      <HydroGeoHeader style={{ padding: '1rem', marginBottom: '1rem' }}>
-        <h1 style={{ fontSize: '1.8rem', margin: 0 }}>
-          <FontAwesomeIcon icon={faDatabase} style={{ marginRight: '0.8rem' }} />
-          HydroGeoDataset Explorer
-        </h1>
-        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', marginBottom: 0 }}>
-          Access high-resolution hydrological, environmental, and climate data including PRISM,
-          LOCA2, and Wellogic records.
-        </p>
-      </HydroGeoHeader>
-
-      {showHelpCard && (
-        <InfoCard style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          padding: '0.75rem 1.2rem',
-          marginBottom: '1rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <FontAwesomeIcon icon={faRobot} style={{ fontSize: '1.2rem', color: '#4299e1' }} />
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1rem' }}>Need help with your environmental data analysis?</h3>
-              <p style={{ margin: 0, fontSize: '0.8rem' }}>
-                Our AI assistant can guide you through using this tool and interpreting results.
-              </p>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Link 
-              to="/hydrogeo-assistant" 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                padding: '0.6rem 1rem', 
-                backgroundColor: '#FF8500', 
-                color: 'white', 
-                borderRadius: '6px', 
-                textDecoration: 'none',
-                fontWeight: 'bold',
-                fontSize: '0.9rem'
-              }}
-            >
-              <FontAwesomeIcon icon={faRobot} style={{ marginRight: '0.5rem' }} />
-              Open Assistant
-            </Link>
-            <button 
-              onClick={() => setShowHelpCard(false)}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: '#999',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                fontSize: '1rem'
-              }}
-            >
-              <FontAwesomeIcon icon={faTimes} />
-            </button>
-          </div>
-        </InfoCard>
-      )}
-
-      <TabContainer>
-        <TabNav>
-          <TabButton
-            className={activeTab === 'query' ? 'active' : ''}
-            onClick={() => handleTabChange('query')}
-          >
-            <FontAwesomeIcon icon={faSearch} className="icon" />
-            Query
-          </TabButton>
-          <TabButton
-            className={activeTab === 'report' ? 'active' : ''}
-            onClick={() => handleTabChange('report')}
-          >
-            <FontAwesomeIcon icon={faFileAlt} className="icon" />
-            Report Generator
-          </TabButton>
-          <TabButton
-            className={activeTab === 'reports' ? 'active' : ''}
-            onClick={() => handleTabChange('reports')}
-          >
-            <FontAwesomeIcon icon={faClipboard} className="icon" />
-            My Reports
-          </TabButton>
-        </TabNav>
-
-        <TabContent className={activeTab === 'query' ? 'active' : ''}>
-          <ContentLayout>
-            <QuerySidebar>
-              <ErrorBoundary>
                 <HydroGeoDatasetForm
                   formData={formData}
                   handleChange={handleChange}
-                  handleSubmit={handleSubmit}
+                  handleSubmit={handleQuery}
                   availableVariables={availableVariables}
                   availableSubvariables={availableSubvariables}
                   isLoading={isLoading}
                 />
-              </ErrorBoundary>
+                
+                <div style={{ 
+                  marginTop: '20px',
+                  display: 'flex',
+                  justifyContent: 'space-between'
+                }}>
+                  <p style={{ color: '#aaa', fontSize: '0.9rem', margin: 0 }}>
+                    Select an area on the map and configure query parameters above
+                  </p>
+                  
+                  <div>
+                    <button 
+                      onClick={() => setActivePanel('report')}
+                      style={{
+                        backgroundColor: 'transparent',
+                        color: '#ff8500',
+                        border: '1px solid #ff8500',
+                        borderRadius: '4px',
+                        padding: '8px 15px',
+                        marginLeft: '10px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Skip to Report Generator
+                    </button>
+                  </div>
+        </div>
+      </div>
+            </Suspense>
+          </ErrorBoundary>
+    );
+    }
+  };
+
+  return (
+    <HydroGeoContainer className="no-scroll-container hydrogeo-dataset-container" style={{ backgroundColor: '#1c1c1e' }}>
+      <HydroGeoHeader style={{ 
+        padding: '15px 20px', 
+        marginBottom: '20px', 
+        backgroundColor: '#2b2b2c',
+        borderRadius: '10px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      }}>
+        <h1 style={{ 
+          fontSize: '1.8rem', 
+          margin: 0,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <FontAwesomeIcon icon={faDatabase} style={{ color: '#ff8500' }} />
+          HydroGeoDataset Explorer
+        </h1>
+        <p style={{ fontSize: '0.9rem', marginTop: '8px', marginBottom: 0, color: '#aaa' }}>
+          Access PRISM, LOCA2, and Wellogic environmental data with advanced reporting
+        </p>
+      </HydroGeoHeader>
+
+      <div style={{ 
+          display: 'flex', 
+        gap: '20px',
+        marginBottom: '20px',
+        backgroundColor: '#2b2b2c',
+        padding: '10px',
+        borderRadius: '8px',
+        justifyContent: 'center'
+      }}>
+        <NavButton panel="query" icon={faSearch} label="Query Data" />
+        <NavButton panel="report" icon={faFileAlt} label="Generate Report" />
+        <NavButton panel="results" icon={faChartBar} label="View Results" />
+        <NavButton panel="reports" icon={faClipboard} label="My Reports" />
+      </div>
+
+      <ContentLayout style={{ 
+        backgroundColor: 'transparent',
+        gap: '20px',
+        alignItems: 'stretch'
+      }}>
+        <QuerySidebar style={{ 
+          backgroundColor: 'transparent',
+          border: 'none',
+          boxShadow: 'none'
+        }}>
+          {renderPanelContent()}
             </QuerySidebar>
 
             <MapContainer
-              className="map-container"
+          className="map-container esri-map-container"
               style={{
                 height: '600px',
-                visibility: mapVisibility.query ? 'visible' : 'hidden',
                 position: 'relative',
-              }}
-            >
-              {mapVisibility.query && renderMapComponent('query')}
-            </MapContainer>
-          </ContentLayout>
-
-          {data && (
-            <ResultsContainer>
-              <h2>
-                <FontAwesomeIcon icon={faChartBar} className="icon" />
-                Query Results
-              </h2>
-              <pre>{JSON.stringify(data, null, 2)}</pre>
-            </ResultsContainer>
+            backgroundColor: 'transparent',
+            borderRadius: '10px',
+            overflow: 'hidden',
+            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)'
+          }}
+        >
+          {geometriesLoading && (
+            <MapLoadingOverlay>
+              <FontAwesomeIcon icon={faSpinner} className="spinner" />
+              <div className="loading-text">Loading Map Data</div>
+              <div className="loading-subtext">Initializing geographic features...</div>
+            </MapLoadingOverlay>
           )}
-        </TabContent>
-
-        <TabContent className={activeTab === 'report' ? 'active' : ''}>
-          <ContentLayout>
-            <QuerySidebar>
-              <ErrorBoundary>
-                <ReportGenerator 
-                  formData={formData} 
-                  onReportGenerated={() => {
-                    // When a report is generated, update the reports list
-                    // and switch to the Reports tab
-                    fetchReports();
-                    setTimeout(() => handleTabChange('reports'), 500);
-                  }}
-                />
-              </ErrorBoundary>
-            </QuerySidebar>
-
-            <MapContainer
-              className="map-container"
-              style={{
-                height: '600px',
-                visibility: mapVisibility.report ? 'visible' : 'hidden',
-                position: 'relative',
-              }}
-            >
-              {mapVisibility.report && renderMapComponent('report')}
+          
+          <div style={{ 
+            position: 'absolute', 
+            top: '10px', 
+            left: '10px', 
+            zIndex: 10,
+            backgroundColor: 'rgba(43, 43, 44, 0.8)',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            color: 'white',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <FontAwesomeIcon icon={faLayerGroup} />
+            <span>Google Aerial Imagery</span>
+          </div>
+          
+          <div className="map-wrapper" style={{ backgroundColor: 'transparent', height: '100%', width: '100%' }}>
+            <MapComponent
+              key={`query-map-${mapRefreshKey}`}
+              setFormData={setFormData}
+              onGeometryChange={handleGeometryChange}
+              containerId="queryMap"
+              initialGeometry={selectedGeometry}
+              ref={queryMapRef}
+              onLoadingChange={setGeometriesLoading}
+            />
+          </div>
             </MapContainer>
           </ContentLayout>
-        </TabContent>
-
-        <TabContent className={activeTab === 'reports' ? 'active' : ''}>
-          {renderReportsTab()}
-        </TabContent>
-      </TabContainer>
     </HydroGeoContainer>
   );
 };
