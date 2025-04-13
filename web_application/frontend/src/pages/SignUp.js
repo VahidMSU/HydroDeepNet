@@ -157,7 +157,7 @@ const SignUp = () => {
   return (
     <Box
       sx={{
-        bgcolor: '#444e5e',
+        bgcolor: '#2a2a2a',
         height: '100vh',
         width: '100vw',
         display: 'flex',
@@ -170,11 +170,24 @@ const SignUp = () => {
         left: 0,
       }}
     >
-      <Card sx={{ bgcolor: '#2b2b2c', p: 3, borderRadius: 2, maxWidth: 500, width: '100%', my: 4 }}>
+      <Card sx={{ 
+        bgcolor: '#f5f5f5',
+        p: 3.5, 
+        borderRadius: 2, 
+        maxWidth: 450, 
+        width: '100%', 
+        my: 4,
+        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)'
+      }}>
         <CardContent>
           <Typography
             variant="h4"
-            sx={{ color: 'white', textAlign: 'center', fontWeight: 'bold', mb: 3 }}
+            sx={{ 
+              color: '#ffffff', 
+              textAlign: 'center', 
+              fontWeight: 'bold', 
+              mb: 3 
+            }}
           >
             Sign Up
           </Typography>
@@ -197,17 +210,18 @@ const SignUp = () => {
             onClick={handleGoogleSignUp}
             sx={{
               bgcolor: '#ffffff',
-              color: '#757575',
+              color: '#000000',
+              border: '1px solid #dddddd',
               mb: 2,
-              '&:hover': { bgcolor: '#f5f5f5' },
+              '&:hover': { bgcolor: '#eeeeee' },
               fontWeight: 'bold',
             }}
           >
             Sign up with Google
           </Button>
 
-          <Divider sx={{ my: 2, color: 'white' }}>
-            <Typography variant="body2" sx={{ color: 'white', px: 1 }}>
+          <Divider sx={{ my: 2, color: '#777777' }}>
+            <Typography variant="body2" sx={{ color: '#777777', px: 1 }}>
               OR
             </Typography>
           </Divider>
@@ -225,18 +239,28 @@ const SignUp = () => {
               helperText={errors.username || 'Username can only contain letters and numbers'}
               onFocus={() => setShowUsernameRequirements(true)}
               sx={{
-                bgcolor: 'white',
-                borderRadius: 1,
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: '#ffffff',
+                  '& fieldset': {
+                    borderColor: '#cccccc',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                },
                 '& .MuiInputLabel-root': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                  color: '#555555',
                 },
-                '& .MuiInputLabel-shrink': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                '& .MuiInputBase-input': {
+                  color: '#333333',
                 },
+                '& .MuiFormHelperText-root': {
+                  color: errors.username ? '#f44336' : '#666666',
+                }
               }}
             />
 
@@ -247,34 +271,27 @@ const SignUp = () => {
                   p: 1,
                   mt: 1,
                   mb: 2,
-                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  bgcolor: 'rgba(255, 107, 0, 0.1)',
+                  border: '1px solid rgba(255, 107, 0, 0.2)',
                   borderRadius: 1,
                 }}
               >
-                <Typography variant="subtitle2" sx={{ color: 'white', mb: 1 }}>
-                  Username requirements:
-                </Typography>
                 <List dense disablePadding>
-                  {usernameRequirements.map((requirement, index) => (
-                    <ListItem key={index} dense disablePadding sx={{ py: 0.5 }}>
+                  {usernameRequirements.map((req, idx) => (
+                    <ListItem key={idx} disablePadding disableGutters sx={{ py: 0.5 }}>
                       <ListItemIcon sx={{ minWidth: 30 }}>
-                        {requirement.valid ? (
-                          <CheckCircleOutlineIcon color="success" fontSize="small" />
+                        {req.valid ? (
+                          <CheckCircleOutlineIcon fontSize="small" color="success" />
                         ) : (
-                          <CancelOutlinedIcon color="error" fontSize="small" />
+                          <CancelOutlinedIcon fontSize="small" color="error" />
                         )}
                       </ListItemIcon>
                       <ListItemText
-                        primary={
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: requirement.valid ? '#4caf50' : '#f44336',
-                            }}
-                          >
-                            {requirement.label}
-                          </Typography>
-                        }
+                        primary={req.label}
+                        primaryTypographyProps={{
+                          fontSize: '0.85rem',
+                          color: '#555555',
+                        }}
                       />
                     </ListItem>
                   ))}
@@ -285,54 +302,112 @@ const SignUp = () => {
             <TextField
               fullWidth
               label="Email"
-              type="email"
               variant="outlined"
               margin="dense"
               name="email"
+              type="email"
               value={formData.email}
               onChange={handleChange}
               error={Boolean(errors.email)}
               helperText={errors.email}
               sx={{
-                bgcolor: 'white',
-                borderRadius: 1,
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: '#ffffff',
+                  '& fieldset': {
+                    borderColor: '#cccccc',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                },
                 '& .MuiInputLabel-root': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                  color: '#555555',
                 },
-                '& .MuiInputLabel-shrink': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                '& .MuiInputBase-input': {
+                  color: '#333333',
                 },
+                '& .MuiFormHelperText-root': {
+                  color: errors.email ? '#f44336' : '#666666',
+                }
               }}
             />
+
             <TextField
               fullWidth
               label="Password"
-              type="password"
               variant="outlined"
               margin="dense"
               name="password"
+              type="password"
               value={formData.password}
               onChange={handleChange}
               error={Boolean(errors.password)}
               helperText={errors.password}
               onFocus={() => setShowPasswordRequirements(true)}
               sx={{
-                bgcolor: 'white',
-                borderRadius: 1,
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: '#ffffff',
+                  '& fieldset': {
+                    borderColor: '#cccccc',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                },
                 '& .MuiInputLabel-root': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                  color: '#555555',
                 },
-                '& .MuiInputLabel-shrink': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                '& .MuiInputBase-input': {
+                  color: '#333333',
                 },
+                '& .MuiFormHelperText-root': {
+                  color: errors.password ? '#f44336' : '#666666',
+                }
+              }}
+            />
+
+            <TextField
+              fullWidth
+              label="Confirm Password"
+              variant="outlined"
+              margin="dense"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              error={Boolean(errors.confirmPassword)}
+              helperText={errors.confirmPassword}
+              sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: '#ffffff',
+                  '& fieldset': {
+                    borderColor: '#cccccc',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#555555',
+                },
+                '& .MuiInputBase-input': {
+                  color: '#333333',
+                },
+                '& .MuiFormHelperText-root': {
+                  color: errors.confirmPassword ? '#f44336' : '#666666',
+                }
               }}
             />
 
@@ -343,34 +418,27 @@ const SignUp = () => {
                   p: 1,
                   mt: 1,
                   mb: 2,
-                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  bgcolor: 'rgba(255, 107, 0, 0.1)',
+                  border: '1px solid rgba(255, 107, 0, 0.2)',
                   borderRadius: 1,
                 }}
               >
-                <Typography variant="subtitle2" sx={{ color: 'white', mb: 1 }}>
-                  Password must:
-                </Typography>
                 <List dense disablePadding>
-                  {passwordRequirements.map((requirement, index) => (
-                    <ListItem key={index} dense disablePadding sx={{ py: 0.5 }}>
+                  {passwordRequirements.map((req, idx) => (
+                    <ListItem key={idx} disablePadding disableGutters sx={{ py: 0.5 }}>
                       <ListItemIcon sx={{ minWidth: 30 }}>
-                        {requirement.valid ? (
-                          <CheckCircleOutlineIcon color="success" fontSize="small" />
+                        {req.valid ? (
+                          <CheckCircleOutlineIcon fontSize="small" color="success" />
                         ) : (
-                          <CancelOutlinedIcon color="error" fontSize="small" />
+                          <CancelOutlinedIcon fontSize="small" color="error" />
                         )}
                       </ListItemIcon>
                       <ListItemText
-                        primary={
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: requirement.valid ? '#4caf50' : '#f44336',
-                            }}
-                          >
-                            {requirement.label}
-                          </Typography>
-                        }
+                        primary={req.label}
+                        primaryTypographyProps={{
+                          fontSize: '0.85rem',
+                          color: '#555555',
+                        }}
                       />
                     </ListItem>
                   ))}
@@ -378,48 +446,33 @@ const SignUp = () => {
               </Paper>
             )}
 
-            <TextField
-              fullWidth
-              label="Confirm Password"
-              type="password"
-              variant="outlined"
-              margin="dense"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              error={Boolean(errors.confirmPassword)}
-              helperText={errors.confirmPassword}
-              sx={{
-                bgcolor: 'white',
-                borderRadius: 1,
-                '& .MuiInputLabel-root': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
-                },
-                '& .MuiInputLabel-shrink': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
-                },
-              }}
-            />
             <Button
               fullWidth
               type="submit"
               variant="contained"
-              sx={{ bgcolor: '#ff5722', color: 'white', mt: 2, '&:hover': { bgcolor: '#e67e00' } }}
+              sx={{
+                bgcolor: '#ff6b00',
+                color: '#ffffff',
+                p: '10px',
+                fontWeight: 'bold',
+                '&:hover': {
+                  bgcolor: '#e06000',
+                },
+                mt: 1,
+              }}
             >
-              Sign Up
+              Create Account
             </Button>
-          </form>
 
-          <Typography variant="body2" sx={{ color: 'white', textAlign: 'center', mt: 3 }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: '#ff5722' }}>
-              Log in
-            </Link>
-          </Typography>
+            <Box sx={{ textAlign: 'center', mt: 3 }}>
+              <Typography sx={{ color: '#555555' }}>
+                Already have an account?{' '}
+                <Link to="/login" style={{ color: '#ff6b00', fontWeight: 500, textDecoration: 'none' }}>
+                  Login
+                </Link>
+              </Typography>
+            </Box>
+          </form>
         </CardContent>
       </Card>
     </Box>

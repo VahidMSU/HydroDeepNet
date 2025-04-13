@@ -126,7 +126,7 @@ const Login = () => {
   return (
     <Box
       sx={{
-        bgcolor: '#444e5e',
+        bgcolor: '#2a2a2a', // Dark gray background
         height: '100vh',
         width: '100vw',
         display: 'flex',
@@ -139,11 +139,23 @@ const Login = () => {
         left: 0,
       }}
     >
-      <Card sx={{ bgcolor: '#2b2b2c', p: 3, borderRadius: 2, maxWidth: 400, width: '100%' }}>
+      <Card sx={{ 
+        bgcolor: '#f5f5f5', // Light gray card background
+        p: 3.5, 
+        borderRadius: 2, 
+        maxWidth: 420, 
+        width: '100%',
+        boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)' // Darker shadow
+      }}>
         <CardContent>
           <Typography
             variant="h4"
-            sx={{ color: 'white', textAlign: 'center', fontWeight: 'bold', mb: 3 }}
+            sx={{ 
+              color: '#ffffff', 
+              textAlign: 'center', 
+              fontWeight: 'bold', 
+              mb: 3 
+            }}
           >
             Login
           </Typography>
@@ -163,17 +175,18 @@ const Login = () => {
             onClick={handleGoogleLogin}
             sx={{
               bgcolor: '#ffffff',
-              color: '#757575',
+              color: '#000000',
+              border: '1px solid #dddddd',
               mb: 2,
-              '&:hover': { bgcolor: '#f5f5f5' },
+              '&:hover': { bgcolor: '#eeeeee' },
               fontWeight: 'bold',
             }}
           >
             Sign in with Google
           </Button>
 
-          <Divider sx={{ my: 2, color: 'white' }}>
-            <Typography variant="body2" sx={{ color: 'white', px: 1 }}>
+          <Divider sx={{ my: 2, color: '#777777' }}>
+            <Typography variant="body2" sx={{ color: '#777777', px: 1 }}>
               OR
             </Typography>
           </Divider>
@@ -194,18 +207,28 @@ const Login = () => {
                 autoComplete: 'username',
               }}
               sx={{
-                bgcolor: 'white',
-                borderRadius: 1,
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: '#ffffff',
+                  '& fieldset': {
+                    borderColor: '#cccccc',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                },
                 '& .MuiInputLabel-root': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                  color: '#555555',
                 },
-                '& .MuiInputLabel-shrink': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                '& .MuiInputBase-input': {
+                  color: '#333333',
                 },
+                '& .MuiFormHelperText-root': {
+                  color: errors.username ? '#f44336' : '#666666',
+                }
               }}
             />
             <TextField
@@ -223,58 +246,81 @@ const Login = () => {
                 autoComplete: 'current-password',
               }}
               sx={{
-                bgcolor: 'white',
-                borderRadius: 1,
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: '#ffffff',
+                  '& fieldset': {
+                    borderColor: '#cccccc',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#ff6b00',
+                  },
+                },
                 '& .MuiInputLabel-root': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                  color: '#555555',
                 },
-                '& .MuiInputLabel-shrink': {
-                  bgcolor: 'white',
-                  px: 1,
-                  borderRadius: 1,
+                '& .MuiInputBase-input': {
+                  color: '#333333',
                 },
+                '& .MuiFormHelperText-root': {
+                  color: errors.password ? '#f44336' : '#666666',
+                }
               }}
             />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <FormControlLabel
                 control={
                   <Checkbox
                     checked={formData.remember_me}
                     onChange={handleChange}
                     name="remember_me"
-                    sx={{ color: 'white' }}
+                    sx={{ 
+                      color: '#777777',
+                      '&.Mui-checked': {
+                        color: '#ff6b00',
+                      } 
+                    }}
                   />
                 }
-                label={<Typography sx={{ color: 'white' }}>Remember Me</Typography>}
+                label={<Typography sx={{ color: '#555555' }}>Remember Me</Typography>}
               />
-              <Link to="/forgot-password" style={{ color: '#ff5722', textDecoration: 'none' }}>
-                <Typography variant="body2">Forgot Password?</Typography>
+              <Link
+                to="/forgot-password"
+                style={{ textDecoration: 'none', color: '#ff6b00', fontWeight: 500 }}
+              >
+                Forgot Password?
               </Link>
             </Box>
+
             <Button
-              fullWidth
               type="submit"
+              fullWidth
               variant="contained"
-              sx={{ bgcolor: '#ff5722', color: 'white', mt: 2, '&:hover': { bgcolor: '#e67e00' } }}
+              sx={{
+                bgcolor: '#ff6b00', // Orange button
+                color: '#ffffff',
+                p: '10px',
+                fontWeight: 'bold',
+                '&:hover': {
+                  bgcolor: '#e06000', // Darker orange on hover
+                },
+              }}
             >
               Login
             </Button>
+
+            <Box sx={{ textAlign: 'center', mt: 3 }}>
+              <Typography sx={{ color: '#555555' }}>
+                Don't have an account?{' '}
+                <Link to="/signup" style={{ color: '#ff6b00', fontWeight: 500, textDecoration: 'none' }}>
+                  Sign Up
+                </Link>
+              </Typography>
+            </Box>
           </form>
-
-          <Typography variant="body1" sx={{ color: 'white', textAlign: 'center', my: 2 }}>
-            - or -
-          </Typography>
-
-
-          {/* Sign Up Link */}
-          <Typography variant="body2" sx={{ color: 'white', textAlign: 'center', mt: 3 }}>
-            Don&apos;t have an account?{' '}
-            <Link to="/signup" style={{ color: '#ff5722' }}>
-              Sign up
-            </Link>
-          </Typography>
         </CardContent>
       </Card>
     </Box>

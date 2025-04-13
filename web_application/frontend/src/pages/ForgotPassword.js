@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Container,
   Box,
   Typography,
   TextField,
@@ -60,79 +59,175 @@ const ForgotPassword = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
+    <Box
+      sx={{
+        bgcolor: '#2a2a2a', // Dark gray background
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        px: 3,
+        overflow: 'hidden',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+      }}
+    >
+      <Paper
+        elevation={3}
         sx={{
-          mt: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          bgcolor: '#f5f5f5', // Light gray paper background
+          p: 3.5,
+          borderRadius: 2,
+          maxWidth: 420,
+          width: '100%',
+          boxShadow: '0 6px 18px rgba(0, 0, 0, 0.2)', // Darker shadow
         }}
       >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            width: '100%',
-            borderRadius: 2,
+        <Typography 
+          component="h1" 
+          variant="h4" 
+          align="center" 
+          gutterBottom
+          sx={{ 
+            color: '#ffffff', 
+            fontWeight: 'bold',
+            mb: 3 
           }}
         >
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Forgot Password
-          </Typography>
+          Forgot Password
+        </Typography>
 
-          <Typography variant="body2" align="center" gutterBottom sx={{ mb: 3 }}>
-            Enter your email address below, and we'll send you instructions to reset your password.
-          </Typography>
+        <Typography 
+          variant="body2" 
+          align="center" 
+          gutterBottom 
+          sx={{ 
+            mb: 3,
+            color: '#555555' 
+          }}
+        >
+          Enter your email address below, and we'll send you instructions to reset your password.
+        </Typography>
 
-          {message.text && (
-            <Alert
-              severity={message.type}
-              sx={{ mb: 3 }}
-              onClose={() => setMessage({ type: '', text: '' })}
+        {message.text && (
+          <Alert
+            severity={message.type}
+            sx={{ 
+              mb: 3,
+              ...(message.type === 'error' && {
+                bgcolor: 'rgba(244, 67, 54, 0.1)',
+                color: '#d32f2f',
+                '& .MuiAlert-icon': {
+                  color: '#d32f2f'
+                }
+              }),
+              ...(message.type === 'success' && {
+                bgcolor: 'rgba(76, 175, 80, 0.1)',
+                color: '#388e3c',
+                '& .MuiAlert-icon': {
+                  color: '#388e3c'
+                }
+              })
+            }}
+            onClose={() => setMessage({ type: '', text: '' })}
+          >
+            {message.text}
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+            sx={{
+              mb: 2,
+              '& .MuiOutlinedInput-root': {
+                bgcolor: '#ffffff',
+                '& fieldset': {
+                  borderColor: '#cccccc',
+                },
+                '&:hover fieldset': {
+                  borderColor: '#ff6b00',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#ff6b00',
+                },
+              },
+              '& .MuiInputLabel-root': {
+                color: '#555555',
+              },
+              '& .MuiInputBase-input': {
+                color: '#333333',
+              },
+            }}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ 
+              bgcolor: '#ff6b00', // Orange button
+              color: '#ffffff',
+              p: '10px',
+              fontWeight: 'bold',
+              '&:hover': {
+                bgcolor: '#e06000', // Darker orange on hover
+              },
+              mb: 2,
+            }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Send Reset Instructions'}
+          </Button>
+
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+            <Link 
+              href="#" 
+              variant="body2" 
+              onClick={() => navigate('/login')}
+              sx={{
+                color: '#ff6b00',
+                textDecoration: 'none',
+                fontWeight: 500,
+                '&:hover': {
+                  textDecoration: 'underline',
+                }
+              }}
             >
-              {message.text}
-            </Alert>
-          )}
+              Remember your password? Sign in
+            </Link>
 
-          <Box component="form" onSubmit={handleSubmit} noValidate>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={loading}
-            />
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
+            <Link 
+              href="#" 
+              variant="body2" 
+              onClick={() => navigate('/signup')}
+              sx={{
+                color: '#ff6b00',
+                textDecoration: 'none',
+                fontWeight: 500,
+                '&:hover': {
+                  textDecoration: 'underline',
+                }
+              }}
             >
-              {loading ? <CircularProgress size={24} /> : 'Send Reset Instructions'}
-            </Button>
-
-            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-              <Link href="#" variant="body2" onClick={() => navigate('/login')}>
-                Remember your password? Sign in
-              </Link>
-
-              <Link href="#" variant="body2" onClick={() => navigate('/signup')}>
-                Don't have an account? Sign up
-              </Link>
-            </Box>
+              Don't have an account? Sign up
+            </Link>
           </Box>
-        </Paper>
-      </Box>
-    </Container>
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 
