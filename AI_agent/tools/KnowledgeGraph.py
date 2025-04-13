@@ -9,16 +9,19 @@ import re
 from datetime import datetime
 import spacy
 
+# Import the config loader
+from config_loader import get_config
+
 class KnowledgeGraph:
     """
     Manages a graph of concepts and relationships extracted from report data.
     This helps the agent understand connections between different environmental factors.
     """
     
-    def __init__(self, 
-                 storage_path: str = "knowledge_graph.json", 
+    def __init__(self,
+                 storage_path: Optional[str] = None,
                  use_spacy: bool = True,
-                 spacy_model: str = "en_core_web_sm",
+                 spacy_model: Optional[str] = None,
                  logger=None):
         """
         Initialize the knowledge graph.
@@ -29,9 +32,14 @@ class KnowledgeGraph:
             spacy_model: spaCy model to use
             logger: Logger instance to use
         """
-        self.storage_path = storage_path
+        # Get config values
+        config = get_config()
+        kg_path_config = config.get('knowledge_graph_json', 'knowledge_graph.json')
+        spacy_model_config = config.get('spacy_model', 'en_core_web_sm')
+
+        self.storage_path = storage_path or kg_path_config
         self.use_spacy = use_spacy
-        self.spacy_model = spacy_model
+        self.spacy_model = spacy_model or spacy_model_config
         
         # Set up logging
         self.logger = logger or logging.getLogger(__name__)
@@ -39,14 +47,19 @@ class KnowledgeGraph:
         # Initialize the graph
         self.graph = nx.DiGraph()
         
+        # Ensure the directory for the graph exists if it's not in the current dir
+        graph_dir = Path(self.storage_path).parent
+        if graph_dir != Path('.'):
+            os.makedirs(graph_dir, exist_ok=True)
+        
         # Load spaCy model if requested
         self.nlp = None
-        if use_spacy:
+        if self.use_spacy:
             try:
-                self.nlp = spacy.load(spacy_model)
-                self.logger.info(f"Loaded spaCy model: {spacy_model}")
+                self.nlp = spacy.load(self.spacy_model)
+                self.logger.info(f"Loaded spaCy model: {self.spacy_model}")
             except Exception as e:
-                self.logger.warning(f"Could not load spaCy model: {str(e)}")
+                self.logger.warning(f"Could not load spaCy model '{self.spacy_model}': {str(e)}. Disabling spaCy features.")
                 self.use_spacy = False
         
         # Define domains and their related terms

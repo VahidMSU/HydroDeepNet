@@ -43,7 +43,7 @@ def image_reader(image_path, logger=None):
     result = agent.print_response(
         "what do u see?",
         images=[Image(filepath=image_path)],
-        stream=True
+        stream=False
     )
     
     log.info("Image analysis completed")

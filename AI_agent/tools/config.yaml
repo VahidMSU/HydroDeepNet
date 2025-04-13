@@ -1,0 +1,53 @@
+# Central configuration for the AI Agent
+
+# --- General Settings ---
+agent_name: "HydroInsight" # Used in InteractiveReportAgent instructions
+debug_mode: True
+show_tool_calls: True
+
+# --- Paths ---
+# Default base directory for user reports
+base_report_dir: "/data/SWATGenXApp/Users/admin/Reports/"
+# Directory for agent logs
+log_dir: "/data/SWATGenXApp/codes/AI_agent/logs"
+# Path for ContextMemory SQLite database
+context_memory_db: "memory_store.db"
+# Path for KnowledgeGraph JSON file
+knowledge_graph_json: "knowledge_graph.json"
+# Path for saved report structure JSON
+report_structure_json: "report_structure.json" # Implicitly created in dir_discover.py
+
+# --- Database Settings ---
+# PostgreSQL connection URL for PgVector
+# Consider using environment variable PGVECTOR_CONNECTION for production
+database_url: "postgresql+psycopg://ai:ai@localhost:5432/ai"
+
+# Table names for different knowledge bases
+db_tables:
+  csv: "csv_documents"
+  json: "json_documents"
+  text: "text_documents"
+  website: "website_documents"
+  config: "config_documents" # Used in combine_reader.py
+  combined: "combined_documents"
+
+# --- LLM Settings ---
+# Default model for general agent tasks
+default_model: "gpt-4o"
+# Model for image analysis agent
+image_model: "gpt-4o"
+# Model for query analysis agent
+query_analyzer_model: "gpt-4o"
+# Model for text analysis agent
+text_analyzer_model: "gpt-4o"
+
+# --- Website Reader Specific ---
+default_website_url: "https://docs.agno.com/introduction"
+max_website_links: 5
+max_website_depth: 1
+
+# --- Text Reader Specific ---
+text_analysis_truncate_chars: 5000 # Set to -1 or 0 to disable truncation
+
+# --- spaCy Settings (for KnowledgeGraph) ---
+spacy_model: "en_core_web_sm"

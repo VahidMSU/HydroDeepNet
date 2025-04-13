@@ -1,5 +1,7 @@
 import logging
 import os
+# Import the config loader
+from config_loader import get_config
 
 
 class LoggerSetup:
@@ -21,7 +23,12 @@ class LoggerSetup:
             rewrite (bool): Whether to overwrite existing log file. Defaults to False.
             verbose (bool): Whether to print logs to console. Defaults to False.
         """
-        self.report_path = report_path or "/data/SWATGenXApp/codes/AI_agent/logs"
+        # Get log directory from config, fallback to provided path or default
+        config = get_config()
+        log_dir_config = config.get('log_dir', '/data/SWATGenXApp/codes/AI_agent/logs')
+        self.report_path = report_path or log_dir_config
+        # Ensure the directory exists
+        os.makedirs(self.report_path, exist_ok=True)
         self.logger = None
         self.rewrite = rewrite
         self.verbose = verbose

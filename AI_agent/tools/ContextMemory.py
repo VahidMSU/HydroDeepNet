@@ -6,6 +6,9 @@ import logging
 import sqlite3
 from pathlib import Path
 
+# Import the config loader
+from config_loader import get_config
+
 class ContextMemory:
     """
     Provides persistent storage for agent context, including:
@@ -19,7 +22,7 @@ class ContextMemory:
     ContextMemory classes into a single unified interface.
     """
     
-    def __init__(self, storage_path: str = "memory_store.db", max_history: int = 10, logger=None):
+    def __init__(self, storage_path: Optional[str] = None, max_history: int = 10, logger=None):
         """
         Initialize context memory with storage path.
         
@@ -28,9 +31,17 @@ class ContextMemory:
             max_history: Maximum number of conversation entries to keep in memory
             logger: Logger instance to use
         """
-        self.storage_path = storage_path
+        # Get storage path from config, fallback to provided path or default
+        config = get_config()
+        db_path_config = config.get('context_memory_db', 'memory_store.db')
+        self.storage_path = storage_path or db_path_config
         self.logger = logger or logging.getLogger(__name__)
         self.max_history = max_history
+        
+        # Ensure the directory for the DB exists if it's not in the current dir
+        db_dir = Path(self.storage_path).parent
+        if db_dir != Path('.'):
+            os.makedirs(db_dir, exist_ok=True)
         
         # Initialize database
         self._init_database()

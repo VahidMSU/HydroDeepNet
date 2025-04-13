@@ -2,42 +2,61 @@ from agno.knowledge.csv import CSVKnowledgeBase
 from agno.vectordb.pgvector import PgVector
 import logging
 import pandas as pd
+# Use relative import if dir_discover is in the same package
 from dir_discover import discover_reports
+# Import config loader
+from config_loader import get_config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def csv_reader(csv_path, recreate_db=False, logger=None):
+def csv_reader(csv_path, recreate_db_str="false", logger=None):
     """
     Analyzes CSV files using vector database and AI.
-    
+
     Args:
         csv_path: Path to the CSV file
-        recreate_db: If True, drops and recreates the database table. Use this when getting duplicate key errors.
+        recreate_db_str: If 'true', drops and recreates the database table. Use this when getting duplicate key errors.
         logger: Logger instance to use
     """
     # Use provided logger or default to module logger
     log = logger or logging.getLogger(__name__)
-    
+
+    # Convert recreate_db_str to boolean
+    recreate_db = (recreate_db_str.lower() == "true")
+
+    # Get config
+    config = get_config()
+    db_url = config.get('database_url', 'postgresql+psycopg://ai:ai@localhost:5432/ai')
+    table_name = config.get('db_tables', {}).get('csv', 'csv_documents')
+
     # First read the CSV directly to get basic info
-    df = pd.read_csv(csv_path)
-    log.info(f"CSV file contains {len(df)} rows and {len(df.columns)} columns")
+    try:
+        df = pd.read_csv(csv_path)
+        log.info(f"CSV file contains {len(df)} rows and {len(df.columns)} columns")
+    except Exception as e:
+        log.error(f"Error reading CSV file {csv_path}: {e}")
+        return f"Error: Could not read CSV file {csv_path}."
 
     # Create vector database connection with table recreation option
-    vector_db = PgVector(
-        table_name="csv_documents",
-        db_url="postgresql+psycopg://ai:ai@localhost:5432/ai",
-    )
-    
+    try:
+        vector_db = PgVector(
+            table_name=table_name,
+            db_url=db_url,
+        )
+    except Exception as e:
+        log.error(f"Error connecting to vector database: {e}")
+        return "Error: Could not connect to the vector database."
+
     # If recreate_db is True, drop the existing table
     if recreate_db:
-        log.info("Recreating database table...")
+        log.info(f"Recreating database table '{table_name}'...")
         try:
             vector_db.drop_table()
-            log.info("Existing table dropped successfully")
+            log.info(f"Existing table '{table_name}' dropped successfully")
         except Exception as e:
-            log.warning(f"Error dropping table (this is normal if it doesn't exist): {e}")
+            log.warning(f"Error dropping table '{table_name}' (this is normal if it doesn't exist): {e}")
 
     # Create CSV knowledge base
     knowledge_base = CSVKnowledgeBase(
@@ -59,7 +78,7 @@ def csv_reader(csv_path, recreate_db=False, logger=None):
         agent.knowledge.load(recreate=recreate_db)
         log.info("Knowledge base loaded successfully")
     except Exception as e:
-        log.error(f"Error loading knowledge base: {e}")
+        log.error(f"Error loading knowledge base for {csv_path}: {e}")
         log.info("Trying to proceed with analysis anyway...")
 
     # Create a more specific prompt with CSV context
@@ -83,14 +102,23 @@ def csv_reader(csv_path, recreate_db=False, logger=None):
     return response
 
 if __name__ == "__main__":
-    reports_dict = discover_reports()
-    report_timestamp = sorted(reports_dict.keys())[-1]
-    print(report_timestamp)
-    
-    # Find the cdl_data.csv file in the nsrdb group
-    csv_path = reports_dict[report_timestamp]["groups"]["cdl"]["files"]['.csv']['cdl_data.csv']['path']
+    # Note: This example might fail if config isn't loaded correctly
+    #       or if the default report structure doesn't exist.
+    cfg = get_config()
+    reports_dict = discover_reports(base_dir=cfg.get('base_report_dir'))
+    if not reports_dict:
+        print("No reports found in the configured directory.")
+    else:
+        report_timestamp = sorted(reports_dict.keys())[-1]
+        print(f"Latest Report: {report_timestamp}")
 
-    print(csv_path)
-    # Note: Set recreate_db=True if getting duplicate key errors
-    response = csv_reader(csv_path, recreate_db=True)
-    print(response)
+        # Find the cdl_data.csv file in the nsrdb group (adjust as needed)
+        try:
+            csv_path = reports_dict[report_timestamp]["groups"]["cdl"]["files"]['.csv']['cdl_data.csv']['path']
+            print(f"Analyzing CSV: {csv_path}")
+            # Note: Set recreate_db_str="true" if getting duplicate key errors
+            response = csv_reader(csv_path, recreate_db_str="true")
+            print(response)
+        except KeyError as e:
+            print(f"Error: Could not find the example CSV file. Key not found: {e}")
+            print("Please check the discover_reports() output and update the path accordingly.")

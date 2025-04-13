@@ -8,13 +8,13 @@ from datetime import datetime
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
 from agno.media import Image
-from dir_discover import discover_reports
+from tools.dir_discover import discover_reports
 import text_reader
-import tools.json_reader
-import tools.image_reader
-import tools.csv_reader
-import tools.website_reader as website_reader
-import tools.combine_reader
+import json_reader
+import image_reader
+import csv_reader
+import website_reader as website_reader
+import combine_reader
 
 # Import ContextMemory as the unified context management solution
 from ContextMemory import ContextMemory
@@ -398,11 +398,11 @@ class InteractiveReportAgent:
     
     def _read_json(self, file_path: str) -> str:
         """Process JSON files using the JSON reader"""
-        return tools.json_reader.json_reader(file_path)
+        return json_reader.json_reader(file_path)
     
     def _read_image(self, file_path: str) -> str:
         """Process image files using the image reader"""
-        response = tools.image_reader.image_reader(file_path)
+        response = image_reader.image_reader(file_path)
         if response:
             # Extract key insights
             self._extract_and_save_insights(response, f"image:{os.path.basename(file_path)}")
@@ -410,7 +410,7 @@ class InteractiveReportAgent:
     
     def _read_csv(self, file_path: str) -> str:
         """Process CSV files using the CSV reader"""
-        response = tools.csv_reader.csv_reader(file_path, recreate_db=True)
+        response = csv_reader.csv_reader(file_path, recreate_db=True)
         if response:
             # Extract key insights
             self._extract_and_save_insights(response, f"csv:{os.path.basename(file_path)}")
@@ -418,11 +418,11 @@ class InteractiveReportAgent:
     
     def _read_website(self, url: str) -> str:
         """Process websites using the website reader"""
-        return tools.website_reader.website_reader(url)
+        return website_reader.website_reader(url)
     
     def _read_combined(self, report: str, group: str) -> str:
         """Process entire group using the combined reader"""
-        response = tools.combine_reader.combined_reader(self.reports_dict, report, group, recreate_db=True)
+        response = combine_reader.combined_reader(self.reports_dict, report, group, recreate_db=True)
         if response:
             # Extract key insights
             self._extract_and_save_insights(response, f"group:{group}")
@@ -543,19 +543,28 @@ class InteractiveReportAgent:
                        
             elif clarification_type == "file_type_selection":
                 # Handle file type selection clarification
-                file_types = [".csv", ".txt", ".md", ".json", "xlsx", "pdf"]
+                # Dynamically get available types for the relevant group
+                available_types = list(self.list_files_by_type(clarification_group).keys())
+                if not available_types:
+                    return f"No files found in group '{clarification_group}'. Cannot select a file type."
+
                 selected_type = None
-                
-                for file_type in file_types:
-                    if file_type in query.lower() or file_type[1:] in query.lower():
+                query_lower = query.lower()
+
+                # Check against dynamically fetched types
+                for file_type in available_types:
+                    # Check for '.ext' or 'ext'
+                    if file_type in query_lower or (file_type.startswith('.') and file_type[1:] in query_lower):
                         selected_type = file_type
                         break
-                
+
                 if selected_type:
                     self.set_selected_file_type(selected_type)
                     return self.filter_and_display_files(clarification_group, selected_type)
                 else:
-                    return "I couldn't identify a valid file type from your response. Could you specify if you're looking for CSV, text, markdown, or another file type?"
+                    # Improved error message listing actual available types
+                    type_list = ", ".join(available_types)
+                    return f"I couldn't identify a valid file type from your response. Available types in '{clarification_group}' are: {type_list}. Please specify one."
             
             elif clarification_type == "analysis_target":
                 # Handle clarifying what the user wants to analyze
@@ -570,23 +579,34 @@ class InteractiveReportAgent:
             
             # Handle file selection
             if self.current_group:
-                files = self.list_files_in_group(self.current_group)
-                
+                files_in_group = self.list_files_in_group(self.current_group)
+
                 # Check if the query contains a file name
                 matching_files = []
-                for file in files:
-                    if file.lower() in query.lower():
+                for file in files_in_group:
+                    # Use case-insensitive matching against the base filename (without extension)
+                    file_base = os.path.splitext(file)[0].lower()
+                    # Also check against the full filename
+                    if file.lower() in query.lower() or file_base in query.lower():
                         matching_files.append(file)
-                
+
                 if len(matching_files) == 1:
-                    selected_file = matching_files[0]
-                    return self.analyze_file(os.path.join(self.current_group, selected_file))
+                    selected_file_name = matching_files[0]
+                    # Get the file type (extension)
+                    file_ext = os.path.splitext(selected_file_name)[1].lower()
+                    if not file_ext:
+                        self.logger.warning(f"Could not determine file type for '{selected_file_name}'. Skipping analysis.")
+                        return f"Could not determine file type for '{selected_file_name}'."
+
+                    # Use process_file to call the appropriate reader
+                    return self.process_file(selected_file_name, file_ext, self.current_group)
+
                 elif len(matching_files) > 1:
                     file_list = "\n".join([f"- {file}" for file in matching_files])
                     return f"I found multiple matching files. Please specify which one you'd like to analyze:\n{file_list}"
                 else:
-                    return f"I couldn't find a file matching '{query}' in the group '{self.current_group}'. Please try again with one of these files: " + \
-                           ", ".join(files)
+                    # Improved error message if no file matches
+                    return f"I couldn't find a file matching '{query}' in the group '{self.current_group}'. Please try again with one of these files: \n- " + "\n- ".join(files_in_group)
         
         # For normal query handling, first check if this is a system command
         if query.lower().startswith(("list reports", "list groups", "set report", "set group", "help", "exit", "quit")):
@@ -1458,12 +1478,7 @@ class InteractiveReportAgent:
         # Store the file type for later
         self.set_selected_file_type(file_type)
         
-        # If we have only one file, analyze it directly
-        if len(files_by_type[file_type]) == 1:
-            file_path = os.path.join(group, files_by_type[file_type][0])
-            return self.analyze_file(file_path)
-        
-        # If multiple files, set the state to awaiting selection and display files
+        # Always set the state to awaiting selection and display files, even if there's only one match
         self.set_awaiting_file_selection(True)
         
         # Format the list of files for display

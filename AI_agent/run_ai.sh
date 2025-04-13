@@ -9,6 +9,7 @@ NC='\033[0m' # No Color
 
 # Get the directory of the script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="${SCRIPT_DIR}/tools"
 
 # Add the current directory to PYTHONPATH
 export PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH}"

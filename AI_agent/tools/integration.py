@@ -9,7 +9,7 @@ from pathlib import Path
 from interactive_agent import InteractiveReportAgent
 from ContextMemory import ContextMemory
 from KnowledgeGraph import KnowledgeGraph
-from utils.ai_logger import LoggerSetup
+from tools.ai_logger import LoggerSetup
 
 # Define log path
 LOG_PATH = "/data/SWATGenXApp/codes/AI_agent/logs"
