@@ -187,7 +187,10 @@ def combined_reader(reports_dict: Dict, report_timestamp: Optional[str] = None, 
         model=OpenAIChat(id=agent_model_id),
         knowledge=combined_kb,
         search_knowledge=True,
-        markdown=True
+        markdown=True,
+        debug_mode=False,
+        show_tool_calls=False,
+        reasoning=False
     )
     log.info("Agent created with combined knowledge")
     print("Agent created with combined knowledge")
@@ -213,7 +216,10 @@ def combined_reader(reports_dict: Dict, report_timestamp: Optional[str] = None, 
                     f"You are analyzing {group_name} visualizations.",
                     "Provide detailed analysis of the charts and plots.",
                     "Focus on trends, patterns, and relationships in the data."
-                ]
+                ],
+                debug_mode=False,
+                show_tool_calls=False,
+                reasoning=False
             )
         except Exception as e:
             log.error(f"Failed to initialize image agent: {e}")
@@ -228,7 +234,8 @@ def combined_reader(reports_dict: Dict, report_timestamp: Optional[str] = None, 
                     try:
                         description = image_agent.print_response(
                             "What does this visualization show? Provide a detailed analysis.",
-                            images=[Image(filepath=file_path)]
+                            images=[Image(filepath=file_path)],
+                            stream=False
                         )
                         image_descriptions.append(f"Analysis of {filename}:\n{description}")
                     except Exception as e:
@@ -252,7 +259,7 @@ Focus on providing an integrated analysis that connects all pieces of informatio
 
     log.info("Generating comprehensive analysis")
     # Get the comprehensive analysis
-    return agent.print_response(analysis_prompt, stream=True)
+    return agent.generate(analysis_prompt)
 
 if __name__ == "__main__":
     cfg = get_config()

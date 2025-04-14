@@ -35,8 +35,8 @@ def text_reader(text_path, logger=None):
         agent_id="text-analyzer",
         name="Text Analysis Agent",
         markdown=True,
-        debug_mode=True,
-        show_tool_calls=True,
+        debug_mode=False,
+        show_tool_calls=False,
         instructions=[
             "Your Name is HydroLinguist",
             "You are an AI agent that analyzes text content, particularly reports.",
@@ -44,7 +44,7 @@ def text_reader(text_path, logger=None):
             "Provide a structured summary of the key information, findings, and any data presented in the text.",
             "Identify the main topics and conclusions.",
         ],
-        reasoning=True
+        reasoning=False
     )
 
     log.info("Sending text content for analysis")
@@ -68,7 +68,7 @@ def text_reader(text_path, logger=None):
 
     result = agent.print_response(
         analysis_prompt,
-        stream=True # Set to False if streaming is not desired or causes issues
+        stream=False
     )
 
     log.info("Text analysis completed")

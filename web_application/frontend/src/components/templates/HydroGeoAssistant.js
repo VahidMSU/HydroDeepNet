@@ -31,7 +31,7 @@ const HydroGeoAssistant = () => {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
+  const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [agnoStatus, setAgnoStatus] = useState({ connected: false, error: null });
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [samplesExpanded, setSamplesExpanded] = useState(false);
@@ -41,7 +41,8 @@ const HydroGeoAssistant = () => {
 
   // Models available for selection
   const availableModels = [
-    { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Google)', provider: 'Google' },
+    { id: 'gpt-4o', name: 'GPT-4o (OpenAI)', provider: 'OpenAI' },
+    { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Google)', provider: 'Google', disabled: true },
     { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro (Google)', provider: 'Google', disabled: true },
     { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet (Future)', provider: 'Anthropic', disabled: true },
   ];
@@ -58,7 +59,7 @@ const HydroGeoAssistant = () => {
           {
             type: 'bot',
             content:
-              "Hello! I'm the HydroGeo Assistant powered by Agno and Gemini. I can help you understand environmental and hydrological data. What would you like to know?",
+              "Hello! I'm the HydroGeo Assistant powered by Agno and GPT-4o. I can help you understand environmental and hydrological data. What would you like to know?",
           },
         ]);
       }
@@ -71,7 +72,7 @@ const HydroGeoAssistant = () => {
           },
           body: JSON.stringify({ 
             context: 'hydrogeo_dataset',
-            model: selectedModel,
+            model: 'gpt-4o',
             use_agno: true,
             session_id: sessionId
           }),
@@ -87,7 +88,7 @@ const HydroGeoAssistant = () => {
                 type: 'bot',
                 content:
                   data.welcome_message ||
-                  "Hello! I'm the HydroGeo Assistant powered by Agno and Gemini. I can help you understand environmental and hydrological data. What would you like to know?",
+                  "Hello! I'm the HydroGeo Assistant powered by Agno and GPT-4o. I can help you understand environmental and hydrological data. What would you like to know?",
               },
             ]);
           }
@@ -147,7 +148,7 @@ const HydroGeoAssistant = () => {
         body: JSON.stringify({
           message: currentMessage,
           context: 'hydrogeo_dataset',
-          model: selectedModel,
+          model: 'gpt-4o',
           use_agno: true,
           session_id: sessionId
         }),
@@ -184,13 +185,8 @@ const HydroGeoAssistant = () => {
   };
 
   const handleModelChange = (e) => {
-    const newModel = e.target.value;
-    if (newModel !== selectedModel) {
-      setSelectedModel(newModel);
-      // Clear session ID to force a new conversation
-      setSessionId(null);
-      setChatHistory([]);
-    }
+    // Model change is disabled as we're always using gpt-4o
+    return;
   };
 
   // Helper function to determine if a message might contain markdown
@@ -352,7 +348,7 @@ const HydroGeoAssistant = () => {
             setExpanded={setAboutExpanded}
           >
             <p style={{ fontSize: '0.85rem', color: '#c5c5c8', margin: 0 }}>
-              The HydroGeo Assistant is powered by <strong>Agno</strong> and <strong>Gemini</strong>, offering 
+              The HydroGeo Assistant is powered by <strong>Agno</strong> and <strong>GPT-4o</strong>, offering 
               advanced AI capabilities for environmental data analysis. You can ask questions about data 
               sources, methodologies, analysis techniques, and more.
             </p>
@@ -401,29 +397,11 @@ const HydroGeoAssistant = () => {
             setExpanded={setSettingsExpanded}
           >
             <FormGroup style={{ margin: 0 }}>
-              <InputField style={{ marginBottom: '0.5rem' }}>
-                <select 
-                  value={selectedModel} 
-                  onChange={handleModelChange}
-                  style={{ 
-                    padding: '0.6rem 0.8rem',
-                    backgroundColor: '#26262a',
-                    color: 'white',
-                    border: '1px solid #3f3f45',
-                    borderRadius: '0.5rem',
-                    width: '100%',
-                    fontSize: '0.85rem'
-                  }}
-                >
-                  {availableModels.map((model) => (
-                    <option key={model.id} value={model.id} disabled={model.disabled}>
-                      {model.name} {model.disabled ? '(Coming Soon)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </InputField>
-              <p style={{ fontSize: '0.8rem', color: '#9e9e9e', margin: '0.3rem 0 0 0' }}>
-                Currently using: <strong>{selectedModel}</strong> by {availableModels.find(m => m.id === selectedModel)?.provider}
+              <p style={{ fontSize: '0.85rem', color: '#c5c5c8', margin: 0 }}>
+                This assistant is powered by <strong>GPT-4o</strong>, OpenAI's most advanced model, to provide the highest quality responses for environmental data analysis.
+              </p>
+              <p style={{ fontSize: '0.8rem', color: '#9e9e9e', margin: '0.8rem 0 0 0' }}>
+                Currently using: <strong>GPT-4o</strong> by OpenAI
               </p>
             </FormGroup>
           </CollapsibleSection>

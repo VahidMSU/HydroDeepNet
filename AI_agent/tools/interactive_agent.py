@@ -15,13 +15,19 @@ import image_reader
 import csv_reader
 import website_reader as website_reader
 import combine_reader
+import ollama # Added ollama import
+import traceback  # Add traceback for detailed error logging
 
 # Import ContextMemory as the unified context management solution
 from ContextMemory import ContextMemory
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Import the AI logger
+from ai_logger import LoggerSetup
+
+# Configure logging using the AI logger
+LOG_PATH = '/data/SWATGenXApp/codes/AI_agent/logs'
+logger_setup = LoggerSetup(report_path=LOG_PATH, verbose=True)
+logger = logger_setup.setup_logger("interactive_agent")
 
 class InteractiveReportAgent:
     """
@@ -93,96 +99,15 @@ class InteractiveReportAgent:
         )
         
         # Initialize the query analysis agent for more sophisticated intent recognition
-        self.query_analyzer = Agent(
-            model=OpenAIChat(id="gpt-4o"),
-            markdown=True,
-            instructions=[
-                "You analyze user queries to determine their intent and information needs.",
-                "You identify which report groups, file types, and specific files are most relevant to their query.",
-                "You specialize in understanding hydrology, groundwater, climate, and environmental science terminology.",
-                "Your goal is to accurately interpret what the user is asking for, even when their query is ambiguous."
-            ],
-        )
+        # REMOVED self.query_analyzer Agent
+        # self.query_analyzer = Agent(...)
         
         self.logger.info(f"Initialized with {len(self.reports_dict)} reports")
         self.logger.info(f"Current report set to: {self.current_report}")
         
         # Enhanced keyword mapping with more specific subcategories
-        self.keyword_to_group = {
-            # Climate-related keywords
-            "climate": "climate_change",
-            "temperature": "climate_change", 
-            "precipitation": "climate_change",
-            "weather": "climate_change",
-            "rainfall": "climate_change",
-            "drought": "climate_change",
-            "warming": "climate_change",
-            "cooling": "climate_change",
-            "humidity": "climate_change",
-            "climate change": "climate_change",
-            "climate data": "climate_change",
-            
-            # Groundwater-related keywords
-            "groundwater": "groundwater",
-            "aquifer": "groundwater",
-            "well": "groundwater",
-            "water table": "groundwater",
-            "water level": "groundwater",
-            "piezometric": "groundwater",
-            "drawdown": "groundwater",
-            "recharge": "groundwater",
-            "pumping": "groundwater",
-            "hydraulic conductivity": "groundwater",
-            "transmissivity": "groundwater",
-            "porosity": "groundwater",
-            
-            # Crop/land use related keywords
-            "crop": "cdl",
-            "land use": "cdl",
-            "agriculture": "cdl",
-            "farming": "cdl",
-            "cdl": "cdl",
-            "cropland": "cdl",
-            "rotation": "cdl",
-            "corn": "cdl",
-            "soybeans": "cdl",
-            "wheat": "cdl",
-            "land cover": "cdl",
-            
-            # Soil-related keywords
-            "soil": "soil",
-            "erosion": "soil",
-            "texture": "soil",
-            "fertility": "soil",
-            "drainage": "soil",
-            "infiltration": "soil",
-            "compaction": "soil",
-            "organic matter": "soil",
-            "soil moisture": "soil",
-            "soil type": "soil",
-            
-            # PRISM-related keywords
-            "prism": "prism",
-            "elevation": "prism",
-            "slope": "prism",
-            "aspect": "prism",
-            "topography": "prism",
-            "terrain": "prism",
-            "dem": "prism",
-            "digital elevation": "prism",
-            
-            # MODIS-related keywords
-            "modis": "modis",
-            "satellite": "modis",
-            "vegetation": "modis",
-            "ndvi": "modis",
-            "evi": "modis",
-            "remote sensing": "modis",
-            "leaf area": "modis",
-            "phenology": "modis",
-            "biomass": "modis",
-            "land surface temperature": "modis",
-        }
+        # REMOVED self.keyword_to_group dictionary
+        # self.keyword_to_group = { ... }
         
         # Map of file types to readers with additional metadata
         self.filetype_to_reader = {
@@ -313,84 +238,9 @@ class InteractiveReportAgent:
             return True
         return False
     
-    def find_best_matching_report(self, query: str) -> str:
-        """Find the best matching report based on user query."""
-        reports = self.list_reports()
-        
-        # First check if query contains a date that matches a report timestamp
-        date_patterns = [
-            r'(\d{8}_\d{6})',  # 20250324_222749 format
-            r'(\d{4}-\d{2}-\d{2})',  # 2025-03-24 format
-            r'(\d{2}/\d{2}/\d{4})'   # 03/24/2025 format
-        ]
-        
-        for pattern in date_patterns:
-            matches = re.findall(pattern, query)
-            for match in matches:
-                for report in reports:
-                    if match in report:
-                        return report
-        
-        # If no direct date match, use the most recent report
-        return sorted(reports)[-1]
-    
-    def find_best_matching_group(self, query: str) -> Optional[str]:
-        """Find the best matching group based on user query using keyword matching."""
-        # Check if query directly mentions a group name
-        available_groups = self.list_groups()
-        
-        for group in available_groups:
-            if group.lower() in query.lower():
-                return group
-        
-        # Check for keywords that map to groups
-        for keyword, group in self.keyword_to_group.items():
-            if keyword.lower() in query.lower() and group in available_groups:
-                return group
-                
-        # If no matching group is found, return None
-        return None
-    
-    def find_best_matching_file(self, query: str, group: str, file_type: Optional[str] = None) -> Optional[Tuple[str, str]]:
-        """Find the best matching file based on user query."""
-        files_by_type = self.list_files_by_type(group=group)
-        
-        if not files_by_type:
-            return None
-            
-        # If file_type is specified, only search that type
-        if file_type and file_type in files_by_type:
-            search_types = {file_type: files_by_type[file_type]}
-        else:
-            search_types = files_by_type
-            
-        # Look for file name mentions in the query
-        for ext, files in search_types.items():
-            for file in files:
-                # Remove extension for matching
-                file_base = os.path.splitext(file)[0].lower()
-                # Check if file name is in query
-                if file_base in query.lower():
-                    return (file, ext)
-        
-        # If no direct match found, return the first file of the appropriate type
-        # Prioritize markdown files, then csv, then images
-        priority_types = ['.md', '.txt', '.csv', '.png', '.jpg', '.jpeg']
-        
-        for type_ext in priority_types:
-            if type_ext in search_types and search_types[type_ext]:
-                return (search_types[type_ext][0], type_ext)
-                
-        # If still no match, return first file of any type
-        for ext, files in search_types.items():
-            if files:
-                return (files[0], ext)
-                
-        return None
-    
     def _read_text(self, file_path: str) -> str:
         """Process text files using the text reader"""
-        response = text_reader.analyze_report(file_path)
+        response = text_reader.text_reader(file_path)
         if response:
             # Extract key insights
             self._extract_and_save_insights(response, f"text:{os.path.basename(file_path)}")
@@ -410,7 +260,7 @@ class InteractiveReportAgent:
     
     def _read_csv(self, file_path: str) -> str:
         """Process CSV files using the CSV reader"""
-        response = csv_reader.csv_reader(file_path, recreate_db=True)
+        response = csv_reader.csv_reader(file_path, recreate_db_str="false")
         if response:
             # Extract key insights
             self._extract_and_save_insights(response, f"csv:{os.path.basename(file_path)}")
@@ -422,7 +272,7 @@ class InteractiveReportAgent:
     
     def _read_combined(self, report: str, group: str) -> str:
         """Process entire group using the combined reader"""
-        response = combine_reader.combined_reader(self.reports_dict, report, group, recreate_db=True)
+        response = combine_reader.combined_reader(self.reports_dict, report, group)
         if response:
             # Extract key insights
             self._extract_and_save_insights(response, f"group:{group}")
@@ -488,356 +338,634 @@ class InteractiveReportAgent:
             # Record this group view in context
             self.context.record_file_view("all_files", "combined", group_id, report_id)
             
-            result = self._read_combined(report_id, group_id)
-            # Ensure we return a string even if _read_combined returns None
-            if result is None:
-                return f"Analysis completed for {group_id}, but no results were returned."
-            return result
+            try:
+                # More robust error handling
+                result = self._read_combined(report_id, group_id)
+                
+                # Ensure we return a string even if _read_combined returns None
+                if result is None:
+                    return f"Analysis completed for {group_id}, but no results were returned."
+                    
+                return result
+            except Exception as e:
+                self.logger.error(f"Error analyzing group {group_id}: {str(e)}", exc_info=True)
+                
+                # Check for common errors
+                error_str = str(e).lower()
+                if "database" in error_str or "connection" in error_str:
+                    return f"I encountered a database connection issue when analyzing the {group_id} group. This might be due to configuration issues with the database. Please try again later or try a different group."
+                elif "file not found" in error_str or "no such file" in error_str:
+                    return f"Some files in the {group_id} group could not be found. This might be due to file permission issues or missing files."
+                else:
+                    # For cdl group specifically, provide a more helpful message
+                    if group_id == "cdl":
+                        return f"The Crop Data Layer (CDL) analysis encountered an issue. Would you like me to analyze just one of the csv files in the cdl group instead of the entire group? This is often more reliable."
+                    else:
+                        return f"I encountered an issue while analyzing the {group_id} group. Would you like to try looking at individual files within this group instead?"
         
         return f"Group {group_id} not found in report {report_id}"
     
     def process_query(self, query: str) -> str:
         """
-        Process a user query and return the appropriate response.
-        This is the main entry point for handling all user interactions.
-        
+        Process a user query conversationally, attempting autonomous analysis.
+
         Args:
             query: The user's query/question
-            
+
         Returns:
             Response text to the user
         """
-        # First, log the user query and add to conversation history
+        # 1. Log and Save Query
         self.logger.info(f"Processing user query: {query}")
-        
-        # Use the appropriate method depending on what's available in the context object
         if hasattr(self.context, 'add_user_message'):
             self.context.add_user_message(query)
         elif hasattr(self.context, 'add_message'):
             self.context.add_message("user", query)
-        
-        # Check if we're in a clarification flow
-        if self.get_awaiting_clarification():
-            clarification_type = self.get_clarification_type()
-            clarification_group = self.get_clarification_group()
-            
-            self.logger.info(f"Handling clarification. Type: {clarification_type}, Group: {clarification_group}")
-            
-            # Reset the clarification state
-            self.set_awaiting_clarification(False)
-            self.set_clarification_type(None)
-            self.set_clarification_group(None)
-            
-            # Handle different types of clarifications
-            if clarification_type == "group_selection":
-                groups = self.list_groups()
-                for group in groups:
-                    if group.lower() in query.lower():
-                        self.current_group = group
-                        self.logger.info(f"Group selected from clarification: {group}")
-                        return self.handle_group_selection(group)
-                
-                # If no valid group was found, offer suggestions again
-                return "I couldn't identify a valid group from your response. Here are the available groups: " + \
-                       ", ".join(groups) + ". Please select one."
-                       
-            elif clarification_type == "file_type_selection":
-                # Handle file type selection clarification
-                # Dynamically get available types for the relevant group
-                available_types = list(self.list_files_by_type(clarification_group).keys())
-                if not available_types:
-                    return f"No files found in group '{clarification_group}'. Cannot select a file type."
 
-                selected_type = None
-                query_lower = query.lower()
+        try:
+            # --- ADD THIS CHECK --- 
+            # Handle simple greetings directly before complex routing
+            if query.strip().lower() in ["hi", "hello", "hey", "greetings"]:
+                self.logger.info("Handling simple greeting directly.")
+                final_response = "Hello! How can I help you analyze your hydrology reports today?"
+                if hasattr(self.context, 'add_assistant_message'):
+                    self.context.add_assistant_message(final_response)
+                elif hasattr(self.context, 'add_message'):
+                    self.context.add_message("assistant", final_response)
+                return final_response
+            # --- END ADDED CHECK --- 
 
-                # Check against dynamically fetched types
-                for file_type in available_types:
-                    # Check for '.ext' or 'ext'
-                    if file_type in query_lower or (file_type.startswith('.') and file_type[1:] in query_lower):
-                        selected_type = file_type
-                        break
-
-                if selected_type:
-                    self.set_selected_file_type(selected_type)
-                    return self.filter_and_display_files(clarification_group, selected_type)
+            # 2. Handle History Request (Simple Keyword Check)
+            history_keywords = ["what did we talk about", "conversation history", "show history", "history please"]
+            if any(keyword in query.lower() for keyword in history_keywords):
+                history = self.context.get_formatted_history(num_entries=10)
+                if not history:
+                    response = "We haven't talked about anything yet in this session."
                 else:
-                    # Improved error message listing actual available types
-                    type_list = ", ".join(available_types)
-                    return f"I couldn't identify a valid file type from your response. Available types in '{clarification_group}' are: {type_list}. Please specify one."
-            
-            elif clarification_type == "analysis_target":
-                # Handle clarifying what the user wants to analyze
-                return self.determine_analysis_target_from_clarification(query, clarification_group)
-        
-        # Check if we're in a file selection flow
-        if self.get_awaiting_file_selection():
-            self.logger.info(f"Handling file selection. File type: {self.get_selected_file_type()}")
-            
-            # Reset the file selection state
-            self.set_awaiting_file_selection(False)
-            
-            # Handle file selection
+                    response = "Here is the recent conversation history:\n\n" + history
+                if hasattr(self.context, 'add_assistant_message'):
+                    self.context.add_assistant_message(response)
+                elif hasattr(self.context, 'add_message'):
+                    self.context.add_message("assistant", response)
+                return response
+
+            # 3. Handle System Commands (Simple Keyword Check)
+            system_commands = ["list reports", "list groups", "set report", "set group", "help", "exit", "quit"]
+            if any(query.lower().startswith(cmd) for cmd in system_commands):
+               response = self.handle_system_command(query)
+               if hasattr(self.context, 'add_assistant_message'):
+                     self.context.add_assistant_message(response)
+               elif hasattr(self.context, 'add_message'):
+                     self.context.add_message("assistant", response)
+               return response
+
+            # 4. Gather Context for LLM
+            available_reports = self.list_reports()
+            current_report_id = self.current_report or "None"
+            available_groups = self.list_groups() # Defaults to current report if set
+            current_group_id = self.current_group or "None"
+            files_in_current_group = []
             if self.current_group:
-                files_in_group = self.list_files_in_group(self.current_group)
+                files_in_current_group = self.list_files_in_group(self.current_group)
+            conversation_history = self.context.get_recent_history(num_entries=5)
 
-                # Check if the query contains a file name
-                matching_files = []
-                for file in files_in_group:
-                    # Use case-insensitive matching against the base filename (without extension)
-                    file_base = os.path.splitext(file)[0].lower()
-                    # Also check against the full filename
-                    if file.lower() in query.lower() or file_base in query.lower():
-                        matching_files.append(file)
+            # 5. Construct *Modified* Ollama Prompt
+            prompt_messages = [
+                {
+                    'role': 'system',
+                    'content': f"""
+You are HydroInsight Router, an AI assistant routing requests for a hydrology report analysis system.
+Your goal is to understand the user's request and determine the MOST relevant data and the type of analysis needed. Avoid asking clarifying questions unless absolutely necessary.
 
-                if len(matching_files) == 1:
-                    selected_file_name = matching_files[0]
-                    # Get the file type (extension)
-                    file_ext = os.path.splitext(selected_file_name)[1].lower()
-                    if not file_ext:
-                        self.logger.warning(f"Could not determine file type for '{selected_file_name}'. Skipping analysis.")
-                        return f"Could not determine file type for '{selected_file_name}'."
+Available reports (timestamps): {available_reports}
+Available groups in the current report ('{current_report_id}'): {available_groups}
+Available files in the current group ('{current_group_id}'): {files_in_current_group}
 
-                    # Use process_file to call the appropriate reader
-                    return self.process_file(selected_file_name, file_ext, self.current_group)
+Current selected report: '{current_report_id}'
+Current selected group: '{current_group_id}'
 
-                elif len(matching_files) > 1:
-                    file_list = "\n".join([f"- {file}" for file in matching_files])
-                    return f"I found multiple matching files. Please specify which one you'd like to analyze:\n{file_list}"
-                else:
-                    # Improved error message if no file matches
-                    return f"I couldn't find a file matching '{query}' in the group '{self.current_group}'. Please try again with one of these files: \n- " + "\n- ".join(files_in_group)
-        
-        # For normal query handling, first check if this is a system command
-        if query.lower().startswith(("list reports", "list groups", "set report", "set group", "help", "exit", "quit")):
-            return self.handle_system_command(query)
-        
-        # Analyze the query intent
-        intent_analysis = self.analyze_query_intent(query)
-        intent_type = intent_analysis.get("intent_type", "unknown")
-        action = intent_analysis.get("action", "")
-        confidence = intent_analysis.get("confidence", 0)
-        
-        self.logger.info(f"Query intent analysis: {intent_type} (confidence: {confidence})")
-        
-        # Handle query based on intent type
-        if intent_type == "information":
-            if action == "suggest_groups":
-                groups = self.list_groups()
-                if not groups:
-                    return "No data groups are currently available."
-                
-                # Set clarification state for group selection
-                self.set_awaiting_clarification(True)
-                self.set_clarification_type("group_selection")
-                
-                if len(groups) == 1:
-                    # Only one group available, automatically select it
-                    self.current_group = groups[0]
-                    self.logger.info(f"Auto-selected the only available group: {groups[0]}")
-                    return self.handle_group_selection(groups[0])
-                else:
-                    group_list = ", ".join(groups)
-                    return f"I have data available in the following groups: {group_list}. Which one would you like to explore?"
-                    
-            elif action == "list_files":
-                target_group = intent_analysis.get("target_group")
-                if not target_group and self.current_group:
-                    target_group = self.current_group
-                
-                if target_group:
-                    self.current_group = target_group
-                    return self.display_group_files(target_group)
-                else:
-                    groups = self.list_groups()
-                    # Set up clarification state
-                    self.set_awaiting_clarification(True)
-                    self.set_clarification_type("group_selection")
-                    return f"Which data group would you like to see files for? Available groups: {', '.join(groups)}"
-                    
-            elif action == "explain_capabilities":
-                return self.explain_capabilities()
-        
-        elif intent_type == "analysis":
-            target_group = intent_analysis.get("target_group")
-            target_file_type = intent_analysis.get("target_file_type")
+Based on the user query and conversation history, determine the action and target data.
+
+Possible actions:
+- 'perform_analysis': User wants analysis, insights, trends, summaries, or answers about the data.
+- 'select_group': User explicitly wants to switch focus to a specific group.
+- 'select_report': User explicitly wants to switch focus to a specific report.
+- 'list_data_summary': User wants to know what kind of data is available (summary, not raw list).
+- 'general_conversation': A general question or comment not specific to data actions.
+
+Respond ONLY with a JSON object containing:
+- 'action': (string) One of the possible actions listed above.
+- 'target_report': (string or null) The most relevant report timestamp (use current if unsure or not specified).
+- 'target_group': (string or null) The most relevant data group (use current if unsure or not specified).
+- 'target_file': (string or null) A *specific relevant* filename if the query clearly points to one. Often null.
+- 'analysis_focus': (string or null) Keywords indicating the analysis type (e.g., "trends", "summary", "comparison", "rainfall data", "well levels"). Only relevant for 'perform_analysis'.
+- 'explanation': (string) Brief reasoning.
+
+Prioritize the current report/group if not specified. If the query asks for analysis or information, lean towards 'perform_analysis'.
+If the user asks "what data do you have about X", use 'list_data_summary'.
+Only use 'select_group' or 'select_report' if the user explicitly uses 'set', 'switch to', 'focus on', etc.
+If unsure about the target group/file for analysis, provide the best guess based on context and keywords.
+"""
+                }
+            ]
+            # Add conversation history...
+            for msg in conversation_history:
+                 prompt_messages.append({'role': msg['role'], 'content': msg['content']})
+            # Add the current user query...
+            prompt_messages.append({'role': 'user', 'content': query})
+
+            # 6. Call Ollama
+            try:
+                self.logger.info(f"Sending request to Ollama. Model: mistral:latest") # Specify model
+                response_ollama = ollama.chat(
+                    model='mistral:latest', # Use your desired model
+                    messages=prompt_messages,
+                    format='json' # Request JSON output
+                )
+                llm_output_str = response_ollama['message']['content']
+                self.logger.info(f"Ollama response content: {llm_output_str}")
+                parsed_response = json.loads(llm_output_str)
+                self.logger.info(f"Ollama parsed response: {parsed_response}")
+            except Exception as e:
+                self.logger.error(f"Error calling Ollama: {str(e)}")
+                self.logger.error(traceback.format_exc())
+                final_response = "I'm having trouble connecting to my language model. This might be a temporary issue. Could you try again?"
+                if hasattr(self.context, 'add_assistant_message'):
+                    self.context.add_assistant_message(final_response)
+                elif hasattr(self.context, 'add_message'):
+                    self.context.add_message("assistant", final_response)
+                return final_response
+
+            # 7. *Revised* Route Based on LLM Response
+            action = parsed_response.get('action')
+            target_report = parsed_response.get('target_report')
+            target_group = parsed_response.get('target_group')
+            target_file = parsed_response.get('target_file')
+            analysis_focus = parsed_response.get('analysis_focus') # New field
             
-            if action == "analyze_group" and target_group:
-                self.current_group = target_group
-                return self.handle_group_selection(target_group)
-                
-            elif action == "find_and_analyze_file" and target_file_type:
-                if not self.current_group:
-                    groups = self.list_groups()
-                    if len(groups) == 1:
-                        self.current_group = groups[0]
+            self.logger.info(f"Taking action: {action}")
+            self.logger.info(f"Target report: {target_report}")
+            self.logger.info(f"Target group: {target_group}")
+            self.logger.info(f"Target file: {target_file}")
+            self.logger.info(f"Analysis focus: {analysis_focus}")
+
+            # --- Auto-select Report/Group based on LLM suggestion or context ---
+            # If LLM suggested a report, try to set it.
+            if target_report and target_report != "None" and target_report != self.current_report:
+                if self.set_current_report(target_report):
+                    self.logger.info(f"LLM suggested report change. Set current report to: {target_report}")
+                    # Reset group if report changes, let LLM/heuristics find the new target group
+                    self.current_group = None
+                    target_group = parsed_response.get('target_group') # Re-evaluate suggested group
+                else:
+                    self.logger.warning(f"LLM suggested invalid report '{target_report}'. Keeping '{self.current_report}'.")
+                    target_report = self.current_report # Use current if suggestion invalid
+
+            # If LLM suggested a group, try to set it.
+            if target_group and target_group != "None" and target_group != self.current_group:
+                if self.set_current_group(target_group):
+                     self.logger.info(f"LLM suggested group change. Set current group to: {target_group}")
+                else:
+                    # If LLM's group suggestion was invalid for the *current* report, keep the current group (or None)
+                    self.logger.warning(f"LLM suggested invalid group '{target_group}' for report '{self.current_report}'. Keeping group as '{self.current_group}'.")
+                    target_group = self.current_group # Fallback to current group
+
+            # If no group is targeted/set by now, and an action needs one, try to infer
+            if not target_group and action in ['perform_analysis', 'list_data_summary']:
+                 target_group = self._infer_group(query) # Add a helper to infer group
+                 if target_group:
+                     self.set_current_group(target_group)
+                     self.logger.info(f"Inferred and set current group to: {target_group}")
+                 else:
+                     # If we still can't determine a group, we HAVE to ask (last resort)
+                     final_response = self.ask_for_group_clarification()
+                     # Save and Return Response
+                     if final_response is None:
+                        final_response = "I received an empty response from the action handler. Please check the logs."
+                     if hasattr(self.context, 'add_assistant_message'):
+                         self.context.add_assistant_message(final_response)
+                     elif hasattr(self.context, 'add_message'):
+                         self.context.add_message("assistant", final_response)
+                     return final_response
+
+            # --- Execute Revised Actions ---
+            final_response = ""
+            try:
+                if action == 'perform_analysis':
+                    if not self.current_group:
+                        # This case should be rare after inference, but handle it.
+                        final_response = self.ask_for_group_clarification()
                     else:
-                        # Set up clarification state
-                        self.set_awaiting_clarification(True)
-                        self.set_clarification_type("group_selection")
-                        self.set_clarification_group(None)  # No specific group yet
-                        return f"Which data group would you like to explore {target_file_type} files in? Available groups: {', '.join(groups)}"
-                
-                return self.filter_and_display_files(self.current_group, target_file_type)
-                
-            elif action == "determine_analysis_target":
-                if not self.current_group:
-                    groups = self.list_groups()
-                    if len(groups) == 1:
-                        self.current_group = groups[0]
-                        # Continue to analysis with the only available group
-                        return self.handle_analysis_request(query, groups[0])
-                    else:
-                        # Set up clarification state
-                        self.set_awaiting_clarification(True)
-                        self.set_clarification_type("group_selection")
-                        self.set_clarification_group(None)
-                        return f"Which data group would you like to analyze? Available groups: {', '.join(groups)}"
-                else:
-                    return self.handle_analysis_request(query, self.current_group)
-        
-        elif intent_type == "conversation":
-            topic = intent_analysis.get("topic", "")
-            target_group = intent_analysis.get("target_group")
-            
-            if target_group:
-                self.current_group = target_group
-            
-            # Check if we're discussing a specific topic with enough context
-            if topic and self.current_group:
-                # Add to viewed groups if not already there
-                if self.current_group not in self.context.session_data["viewed_groups"]:
-                    self.context.session_data["viewed_groups"].append(self.current_group)
-                
-                # Generate a more conversational response about the topic in the current group
-                return self.generate_conversation_response(topic, self.current_group)
-            
-            elif topic and not self.current_group:
-                # Need to determine which group to discuss
-                groups = self.list_groups()
-                if len(groups) == 1:
-                    self.current_group = groups[0]
-                    return self.generate_conversation_response(topic, groups[0])
-                else:
-                    # Set up clarification state
-                    self.set_awaiting_clarification(True)
-                    self.set_clarification_type("group_selection")
-                    self.set_clarification_group(None)
-                    return f"Which data group would you like to discuss {topic} in? Available groups: {', '.join(groups)}"
-            
-            else:
-                # Generic conversation without specific topic or group
-                if self.context.session_data["viewed_groups"]:
-                    recent_group = self.context.session_data["viewed_groups"][-1]
-                    return self.generate_generic_response(query, recent_group)
-                else:
-                    return self.generate_generic_response(query)
-                    
-        elif intent_type == "command":
-            command = intent_analysis.get("command", "")
-            return self.handle_system_command(query)
-        
-        # Fall back to generic response if intent is unknown or low confidence
-        return self.generate_generic_response(query)
+                        self.logger.info(f"Performing analysis on group: {self.current_group}")
+                        final_response = self._handle_analysis_request(
+                            self.current_group,
+                            target_file,      # Specific file hint from LLM
+                            analysis_focus    # Analysis keywords hint from LLM
+                        )
+                        self.logger.info(f"Analysis complete. Response length: {len(final_response) if final_response else 0}")
 
-    def generate_response(self, query: str, analysis: Dict[str, Any]) -> str:
-        """
-        Generate a response based on query analysis.
-        Enhanced to include clarification steps.
-        
-        Args:
-            query: User query
-            analysis: Query analysis results
+                elif action == 'list_data_summary':
+                     if not self.current_group:
+                         final_response = self.ask_for_group_clarification()
+                     else:
+                         self.logger.info(f"Generating data summary for group: {self.current_group}")
+                         final_response = self._summarize_group_content(self.current_group, query)
+
+                elif action == 'select_group':
+                     # Group should have been set above if valid and different from current
+                     if self.current_group == target_group and target_group is not None:
+                         final_response = f"Okay, focusing on group '{self.current_group}'."
+                         # Optional: Proactively provide a summary after selection
+                         final_response += "\n" + self._summarize_group_content(self.current_group, query)
+                     elif target_group is None: # Invalid group suggested
+                          final_response = self.ask_for_group_clarification() # Fallback if selection failed
+                     # If group was set successfully but wasn't the target_group initially, no extra message needed.
+
+                elif action == 'select_report':
+                     # Report should have been set above if valid
+                     if self.current_report == target_report and target_report is not None:
+                         final_response = f"Okay, focusing on report '{self.current_report}'. Available groups: {', '.join(self.list_groups())}"
+                     elif target_report is None:
+                          final_response = self.ask_for_report_clarification() # Fallback if selection failed
+
+                elif action == 'general_conversation':
+                    # Use a more general approach for simple chat
+                    if query.strip().lower() in ["hi", "hello", "hey", "greetings"]:
+                        final_response = "Hello! How can I help you analyze your hydrology reports today?"
+                    # Handle identity questions directly without using the main agent
+                    elif any(identity_q in query.strip().lower() for identity_q in ["who are you", "who are u", "what are you", "what is your name", "introduce yourself"]):
+                        final_response = "I'm HydroInsight, an AI assistant specialized in analyzing environmental and water resources data. I can help you explore and understand groundwater, climate, land use, and other environmental reports. How can I assist you today?"
+                    else:
+                        # Fallback to the main reasoning agent for more complex general queries
+                        try:
+                            self.logger.info("Handling as general query with the main HydroInsight agent.")
+                            final_response = self.agent.print_response(query) # Pass query to the base agent
+                        except Exception as e:
+                            self.logger.error(f"Error using main agent for general conversation: {e}")
+                            self.logger.error(traceback.format_exc())
+                            # Fallback response if main agent fails
+                            final_response = "I'm HydroInsight, an assistant specialized in environmental and water data analysis. I can help you explore reports, analyze data, and understand hydrology information. What specific aspect of your data would you like to explore?"
+
+                else: # Unknown action
+                     self.logger.warning(f"LLM returned unknown action: {action}. Treating as general conversation.")
+                     # Also use the general approach here for unknown actions
+                     if query.strip().lower() in ["hi", "hello", "hey", "greetings"]:
+                        final_response = "Hello! How can I help you with your reports?"
+                     # Handle identity questions directly without using the main agent
+                     elif any(identity_q in query.strip().lower() for identity_q in ["who are you", "who are u", "what are you", "what is your name", "introduce yourself"]):
+                        final_response = "I'm HydroInsight, an AI assistant specialized in analyzing environmental and water resources data. I can help you explore and understand groundwater, climate, land use, and other environmental reports. How can I assist you today?"
+                     else:
+                        self.logger.info("Handling unknown action as general query with the main HydroInsight agent.")
+                        try:
+                            final_response = self.agent.print_response(query) # Fallback
+                        except Exception as e:
+                            self.logger.error(f"Error using main agent for unknown action: {e}")
+                            self.logger.error(traceback.format_exc())
+                            # Fallback response if main agent fails
+                            final_response = "I'm HydroInsight, an assistant specialized in environmental and water data analysis. I can help you explore reports, analyze data, and understand hydrology information. What specific aspect of your data would you like to explore?"
+
+            except Exception as e:
+                # Log the full stack trace for debugging
+                self.logger.error(f"Error executing action '{action}': {str(e)}")
+                self.logger.error(traceback.format_exc())
+                final_response = f"Sorry, I encountered an error while trying to perform the action: {action}. Please try again."
+
+            # 8. Save and Return Response
+            if final_response is None:
+                 self.logger.error("Received None response from action handler")
+                 final_response = "I received an empty response from the action handler. Please check the logs."
+                 
+            if hasattr(self.context, 'add_assistant_message'):
+                self.context.add_assistant_message(final_response)
+            elif hasattr(self.context, 'add_message'):
+                self.context.add_message("assistant", final_response)
+                
+            return final_response
             
-        Returns:
-            Response text
-        """
-        # Handle clarification needs first
-        if analysis.get("needs_clarification", False):
-            clarification_type = analysis.get("clarification_type")
-            options = analysis.get("clarification_options", [])
+        except Exception as e:
+            # Catch-all exception handler to prevent crashes
+            self.logger.error(f"Unexpected error in process_query: {str(e)}")
+            self.logger.error(traceback.format_exc())
+            error_response = "I encountered an unexpected error. This has been logged for investigation. Please try again or try a different question."
             
-            if clarification_type == "intent":
-                return (
-                    "I'm not entirely sure what you're asking for. Would you like to:\n" +
-                    "\n".join(f"- {option}" for option in options)
-                )
+            # Try to save to context if possible
+            try:
+                if hasattr(self.context, 'add_assistant_message'):
+                    self.context.add_assistant_message(error_response)
+                elif hasattr(self.context, 'add_message'):
+                    self.context.add_message("assistant", error_response)
+            except:
+                pass
                 
-            elif clarification_type == "group":
-                group_options = "\n".join(f"- {group}" for group in options)
-                return (
-                    f"{analysis.get('clarification_message', 'Which data group are you interested in?')}\n" +
-                    f"Available groups:\n{group_options}"
-                )
-                
-            elif clarification_type == "file_type":
-                type_options = "\n".join(f"- {ftype}" for ftype in options)
-                return (
-                    f"{analysis.get('clarification_message', 'Which type of files would you like to work with?')}\n" +
-                    f"Available file types:\n{type_options}"
-                )
-                
-            elif clarification_type == "specific_file":
-                file_options = "\n".join(f"- {file}" for file in options[:5])
-                additional = f" (showing 5 of {len(options)})" if len(options) > 5 else ""
-                return (
-                    f"{analysis.get('clarification_message', 'Which specific file would you like to analyze?')}\n" +
-                    f"Available files{additional}:\n{file_options}"
-                )
-        
-        # Command handling
-        if analysis["intent_type"] == "command":
-            # Handle command in the existing process_command method
-            return None  # Let the command handler generate the response
-            
-        # Information intent - show what data is available
-        elif analysis["intent_type"] == "information":
-            if "target_group" in analysis:
-                group = analysis["target_group"]
-                files = analysis.get("available_files", self.list_files_in_group(group))
-                file_types = analysis.get("file_types", self.get_file_types_in_group(group))
-                
-                type_summary = ""
-                if file_types:
-                    type_counts = {}
-                    for file in files:
-                        ext = os.path.splitext(file)[1]
-                        type_counts[ext] = type_counts.get(ext, 0) + 1
-                        
-                    type_summary = "\n".join(f"- {count} {ftype} files" for ftype, count in type_counts.items())
-                    
-                files_preview = "\n".join(f"- {file}" for file in files[:5])
-                additional = f" (showing 5 of {len(files)})" if len(files) > 5 else ""
-                
-                return (
-                    f"Here's information about the {group} data group:\n\n"
-                    f"Summary of available files:\n{type_summary}\n\n"
-                    f"Sample files{additional}:\n{files_preview}\n\n"
-                    f"Would you like to analyze any specific files or file types from this group?"
-                )
+            return error_response
+
+    # --- New/Modified Helper Methods ---
+
+    def _infer_group(self, query: str) -> Optional[str]:
+        """Try to infer the target group based on query keywords and available groups."""
+        if not self.current_report: return None # Cannot infer without a report
+
+        available_groups = self.list_groups()
+        if not available_groups: return None
+
+        query_lower = query.lower()
+        possible_matches = []
+        for group in available_groups:
+            # Simple keyword matching (can be improved with fuzzy matching or embeddings)
+            if group.lower() in query_lower:
+                possible_matches.append(group)
+
+        if len(possible_matches) == 1:
+            return possible_matches[0]
+        # TODO: Add more sophisticated matching if needed
+        return None # Cannot confidently infer
+
+    def _summarize_group_content(self, group: str, query: str) -> str:
+         """Provide a summary of the types of data available in the group."""
+         files_by_type = self.list_files_by_type(group)
+         if not files_by_type:
+             return f"Group '{group}' exists but seems to be empty."
+
+         summary_lines = [f"In the '{group}' group, I have the following types of data:"]
+         file_type_descriptions = {
+             ".csv": "CSV data files, likely containing tabular data (e.g., time series, statistics).",
+             ".md": "Markdown reports, usually containing narrative descriptions, analysis, and summaries.",
+             ".txt": "Plain text files, which could contain logs, notes, or simple data.",
+             ".png": "PNG image files, typically visualizations like plots, maps, or charts.",
+             ".jpg": "JPG image files, similar to PNGs, used for visualizations.",
+             ".jpeg": "JPEG image files, similar to PNGs, used for visualizations.",
+             "config.json": "JSON configuration files detailing settings used for generating the report.",
+             # Add other common types if needed
+         }
+
+         for ftype, flist in files_by_type.items():
+             desc = file_type_descriptions.get(ftype, f"{ftype} files.")
+             summary_lines.append(f"- {len(flist)} {desc}")
+
+         # Optional: Analyze the most relevant file based on the original query
+         # This makes 'list_data_summary' more proactive
+         focus = query # Use original user query to find relevant file
+         relevant_file_summary = self._find_and_analyze_most_relevant(group, focus)
+         if relevant_file_summary:
+              summary_lines.append("\nBased on your query, here's an analysis of the most relevant item:")
+              summary_lines.append(relevant_file_summary)
+         else:
+              summary_lines.append("\nWhat specific aspect of this group would you like me to analyze?")
+
+
+         return "\n".join(summary_lines)
+
+    def _find_most_relevant_file(self, group: str, analysis_focus: Optional[str]) -> Optional[Tuple[str, str]]:
+        """Find the most relevant file in a group based on focus keywords."""
+        if not analysis_focus: return None # Cannot find relevance without focus
+
+        files = self.list_files_in_group(group)
+        if not files: return None
+
+        focus_terms = set(analysis_focus.lower().split())
+        best_match = None
+        max_score = -1
+
+        for filename in files:
+             # Score based on matching terms in filename
+             score = sum(1 for term in focus_terms if term in filename.lower())
+             # Optional: Boost score based on file type relevance (e.g., CSV for 'data', PNG for 'plot')
+             ext = os.path.splitext(filename)[1].lower()
+             if ext == ".csv" and any(t in focus_terms for t in ["data", "table", "stats", "statistics", "csv"]):
+                 score += 2
+             if ext in [".png", ".jpg", ".jpeg"] and any(t in focus_terms for t in ["plot", "chart", "map", "figure", "visualization", "image", "png"]):
+                 score += 2
+             if ext in [".md", ".txt"] and any(t in focus_terms for t in ["report", "summary", "text", "narrative", "md", "document"]):
+                 score += 1
+
+
+             if score > max_score:
+                 max_score = score
+                 best_match = (filename, ext)
+
+        if max_score > 0:
+            self.logger.info(f"Most relevant file for focus '{analysis_focus}' in group '{group}' determined to be: {best_match[0]}")
+            return best_match
+        else:
+             self.logger.warning(f"Could not determine a relevant file for focus '{analysis_focus}' in group '{group}'.")
+             return None # No relevant file found based on score
+
+    def _find_and_analyze_most_relevant(self, group: str, analysis_focus: Optional[str]) -> Optional[str]:
+         """Helper to find the most relevant file and analyze it."""
+         relevant_file_info = self._find_most_relevant_file(group, analysis_focus)
+         if relevant_file_info:
+             file_name, file_type = relevant_file_info
+             # Check it actually exists in our structure before processing
+             file_path = self.get_file_path(group, file_name)
+             if file_path:
+                  self.logger.info(f"Analyzing most relevant file: {file_name}")
+                  # Call process_file directly (which uses the specific readers)
+                  return self.process_file(file_name, file_type, group)
+         return None
+
+
+    def _handle_analysis_request(self, group: str, target_file_hint: Optional[str], analysis_focus: Optional[str]) -> str:
+         """Handle the 'perform_analysis' action."""
+         # Special handling for cdl group which often has issues with combined analysis
+         if group == "cdl" and not target_file_hint:
+             self.logger.info("Using special handling for cdl group - analyzing individual files instead of whole group")
+             # Try to find a CSV file in the cdl group to analyze
+             files_by_type = self.list_files_by_type(group)
+             if '.csv' in files_by_type and files_by_type['.csv']:
+                 cdl_csv = files_by_type['.csv'][0]  # Get the first CSV file
+                 self.logger.info(f"Automatically selecting {cdl_csv} from cdl group for analysis")
+                 file_path = self.get_file_path(group, cdl_csv)
+                 if file_path:
+                     result = self.process_file(cdl_csv, '.csv', group)
+                     return result + "\n\nNote: I analyzed this specific file because it's often more reliable than analyzing the entire CDL group at once."
+         
+         # Priority 1: Analyze specific file if hinted by LLM and it exists
+         if target_file_hint:
+             file_path = self.get_file_path(group, target_file_hint)
+             if file_path:
+                 self.logger.info(f"LLM suggested specific file: {target_file_hint}. Analyzing.")
+                 file_ext = os.path.splitext(target_file_hint)[1].lower()
+                 try:
+                     return self.process_file(target_file_hint, file_ext, group)
+                 except Exception as e:
+                     self.logger.error(f"Error processing file {target_file_hint}: {str(e)}", exc_info=True)
+                     return f"I encountered an issue analyzing {target_file_hint}. Error: {str(e)}"
+             else:
+                 self.logger.warning(f"LLM suggested file '{target_file_hint}' but it was not found in group '{group}'.")
+
+         # Priority 2: Find and analyze the *most relevant* file based on analysis_focus
+         try:
+             relevant_analysis = self._find_and_analyze_most_relevant(group, analysis_focus)
+             if relevant_analysis:
+                 # For broad queries, add follow-up suggestions
+                 if analysis_focus and len(analysis_focus.split()) < 5:
+                     # This is likely a broad query
+                     files_by_type = self.list_files_by_type(group)
+                     sample_files = []
+                     
+                     # Get a sample of other relevant files (up to 3)
+                     for ext, file_list in files_by_type.items():
+                         if ext in ['.csv', '.md', '.txt', '.png', '.jpg', '.jpeg'] and file_list:
+                             for file in file_list[:1]:  # Take just 1 from each type
+                                 sample_files.append((file, ext))
+                                 if len(sample_files) >= 3:
+                                     break
+                         if len(sample_files) >= 3:
+                             break
+                     
+                     # Add suggestions for follow-up questions
+                     if sample_files:
+                         follow_up = "\n\nTo explore this topic further, you could ask about:"
+                         for file, ext in sample_files:
+                             if ext == '.csv':
+                                 follow_up += f"\n- Trends or patterns in the data from {file}"
+                             elif ext in ['.png', '.jpg', '.jpeg']:
+                                 follow_up += f"\n- Details about the visualization in {file}"
+                             elif ext in ['.md', '.txt']:
+                                 follow_up += f"\n- Key findings from the report {file}"
+                         
+                         follow_up += "\n\nOr you could ask a more specific question about this topic."
+                         return relevant_analysis + follow_up
+                 
+                 return relevant_analysis
+         except Exception as e:
+             self.logger.error(f"Error finding relevant file for analysis: {str(e)}", exc_info=True)
+             # Continue to next approach if this fails
+
+         # Priority 3: For broad queries, analyze a SAMPLE of files instead of the whole group
+         try:
+             if analysis_focus:
+                 self.logger.info(f"Broad query detected. Analyzing a representative sample for '{analysis_focus}'.")
+                 
+                 # Get available file types in this group
+                 files_by_type = self.list_files_by_type(group)
+                 if not files_by_type:
+                     return f"Group '{group}' exists but seems to be empty."
+                 
+                 # First, provide an overview of available data
+                 summary = f"I found several files related to '{analysis_focus}' in the '{group}' group. "
+                 summary += "Here's what I can tell you based on a sample of the data:\n\n"
+                 
+                 # Analyze up to 3 representative files of different types
+                 analyzed_files = []
+                 insights = []
+                 
+                 # Prioritize CSV and text files for initial analysis
+                 for priority_ext in ['.csv', '.md', '.txt', '.png']:
+                     if priority_ext in files_by_type and files_by_type[priority_ext]:
+                         # Take the first file of this type
+                         file = files_by_type[priority_ext][0]
+                         file_path = self.get_file_path(group, file)
+                         if file_path:
+                             try:
+                                 # Process the file but don't return yet
+                                 result = self.process_file(file, priority_ext, group)
+                                 if result:
+                                     # Extract a shorter summary for the combined response
+                                     short_summary = f"From {file} ({priority_ext}): " + result.split('\n\n')[0]
+                                     insights.append(short_summary)
+                                     analyzed_files.append(file)
+                             except Exception as e:
+                                 self.logger.error(f"Error processing sample file {file}: {str(e)}", exc_info=True)
+                                 # Continue with other files even if one fails
+                         
+                         if len(analyzed_files) >= 2:  # Limit to 2 files for brevity
+                             break
+                 
+                 # Add the insights to the summary
+                 if insights:
+                     summary += "\n\n".join(insights)
+                     
+                     # Add suggestions for more specific questions
+                     summary += "\n\nTo get more specific insights, you could ask about:"
+                     for file in analyzed_files:
+                         file_name = os.path.splitext(file)[0]
+                         summary += f"\n- More details about {file}"
+                     
+                     # Suggest analyzing the whole group if needed
+                     summary += f"\n- A comprehensive analysis of all data in the {group} group"
+                     summary += f"\n- Specific trends or patterns related to {analysis_focus}"
+                     
+                     return summary
+         except Exception as e:
+             self.logger.error(f"Error analyzing sample files: {str(e)}", exc_info=True)
+             # Continue to next approach if this fails
+         
+         # Priority 4: Last resort - analyze the whole group
+         self.logger.info(f"No specific file focus determined and partial analysis not applicable. Analyzing the whole group '{group}'.")
+         try:
+             return self.analyze_group(group) # analyze_group calls combine_reader
+         except Exception as e:
+             self.logger.error(f"Error in last resort whole group analysis: {str(e)}", exc_info=True)
+             return f"I encountered an issue analyzing the {group} group. I recommend trying to look at specific files within this group instead of the entire group at once."
+
+    # --- Helper methods for clarification (used as fallback) ---
+    def ask_for_group_clarification(self) -> str:
+        """Asks the user to clarify which group they want."""
+        groups = self.list_groups()
+        if not groups:
+            return "No data groups are currently available in this report."
+        group_list = ", ".join(groups)
+        return f"Which data group are you interested in? Available groups: {group_list}."
+
+    def ask_for_file_clarification(self, group: str) -> str:
+        """Asks the user to clarify which file they want."""
+        files = self.list_files_in_group(group)
+        if not files:
+            return f"Group '{group}' doesn't seem to contain any files."
+
+        # Maybe list by type for clarity?
+        files_by_type = self.list_files_by_type(group)
+        response_lines = [f"Which file in group '{group}' would you like to analyze?"]
+        for ftype, flist in files_by_type.items():
+            response_lines.append(f"  {ftype} files:")
+            for fname in flist[:5]: # Show max 5 per type
+                response_lines.append(f"    - {fname}")
+            if len(flist) > 5:
+                 response_lines.append(f"    ... ({len(flist) - 5} more)")
+        return "\n".join(response_lines)
+
+    def ask_for_report_clarification(self) -> str:
+        """Asks the user to clarify which report they want."""
+        reports = self.list_reports()
+        if not reports:
+             return "No reports have been found."
+        report_list = ", ".join(reports)
+        return f"Which report would you like to work with? Available reports: {report_list}."
+
+    def handle_system_command(self, query: str) -> str:
+        """Handle system commands like list, set, help, exit."""
+        query_lower = query.lower()
+        parts = query.split()
+
+        if query_lower.startswith("list reports"):
+            return f"Available reports: {', '.join(self.list_reports())}"
+        elif query_lower.startswith("list groups"):
+            groups = self.list_groups()
+            if not groups:
+                 return f"No groups found in the current report ('{self.current_report}')."
+            return f"Available groups in '{self.current_report}': {', '.join(groups)}"
+        elif query_lower.startswith("set report") and len(parts) > 2:
+            report_id = parts[2]
+            if self.set_current_report(report_id):
+                self.current_group = None # Reset group when report changes
+                return f"Current report set to '{report_id}'. Available groups: {', '.join(self.list_groups())}"
             else:
-                groups = analysis.get("available_groups", self.list_groups())
-                groups_list = "\n".join(f"- {group}" for group in groups)
-                
-                return (
-                    "Here are the available data groups:\n\n"
-                    f"{groups_list}\n\n"
-                    "Which group would you like to explore?"
-                )
-                
-        # Analysis intent - analyze data
-        elif analysis["intent_type"] == "analysis":
-            # If we've passed all clarification steps, we can proceed with analysis
-            # This part would be handled by process_query in the existing implementation
-            return None
-            
-        # Conversation intent - discuss data
-        elif analysis["intent_type"] == "conversation":
-            # This is handled by process_query in existing implementation
-            return None
-            
-        # Fallback for unexpected cases
-        return "I'm not sure how to respond to that. Can you try rephrasing your question?"
+                return f"Report '{report_id}' not found. Available reports: {', '.join(self.list_reports())}"
+        elif query_lower.startswith("set group") and len(parts) > 2:
+            group_id = parts[2]
+            if not self.current_report:
+                return "Please set a report first using 'set report [report_id]'."
+            if self.set_current_group(group_id):
+                return f"Current group set to '{group_id}' within report '{self.current_report}'."
+            else:
+                return f"Group '{group_id}' not found in report '{self.current_report}'. Available groups: {', '.join(self.list_groups())}"
+        elif query_lower.startswith("help"):
+             return self.explain_capabilities() # Use existing method for help
+        elif query_lower.startswith(("exit", "quit")):
+             return "Exiting... (Use the interactive shell's exit command)"
+        else:
+            return f"Unknown command: {query}"
 
     def get_file_types_in_group(self, group: str) -> List[str]:
         """
@@ -919,687 +1047,6 @@ class InteractiveReportAgent:
                 all_files.add(file_name)
                 
         return sorted(list(all_files))
-        
-    def analyze_query(self, query: str) -> Dict[str, Any]:
-        """
-        Analyze the user query to determine intent, target data, and optimal processing approach.
-        
-        Args:
-            query: The user's query text
-            
-        Returns:
-            Dictionary containing analysis results
-        """
-        # First, check if this is a direct command
-        command_patterns = {
-            r"(?i)^\s*list\s+reports\s*$": {"command": "list_reports"},
-            r"(?i)^\s*list\s+groups\s*$": {"command": "list_groups"},
-            r"(?i)^\s*set\s+report\s+(\S+)\s*$": {"command": "set_report", "param": lambda m: m.group(1)},
-            r"(?i)^\s*set\s+group\s+(\S+)\s*$": {"command": "set_group", "param": lambda m: m.group(1)},
-            r"(?i)^\s*help\s*$": {"command": "help"},
-            r"(?i)^\s*exit\s*$": {"command": "exit"}
-        }
-        
-        import re
-        for pattern, action in command_patterns.items():
-            match = re.match(pattern, query)
-            if match:
-                result = {"intent_type": "command", "command": action["command"]}
-                if "param" in action:
-                    result["param"] = action["param"](match)
-                return result
-        
-        # Otherwise, get a more detailed analysis using the intent classifier
-        intent_analysis = self.analyze_query_intent(query)
-        
-        # If specific file types mentioned, add them
-        file_type_patterns = {
-            r"(?i)(csv|spreadsheet|table|excel)": ".csv",
-            r"(?i)(image|png|jpg|jpeg|picture|graph|chart|plot|visualization)": ".png",
-            r"(?i)(text|txt|markdown|md|report|document)": ".md"
-        }
-        
-        mentioned_file_types = []
-        for pattern, file_type in file_type_patterns.items():
-            if re.search(pattern, query):
-                mentioned_file_types.append(file_type)
-        
-        if mentioned_file_types:
-            intent_analysis["file_types"] = mentioned_file_types
-        
-        # Check for specific report group mentions
-        group_patterns = {}
-        for group in self.list_groups():
-            # Create a regex pattern for each group name
-            pattern = f"(?i)\\b{re.escape(group)}\\b"
-            group_patterns[pattern] = group
-        
-        # Find matching groups
-        matching_groups = []
-        for pattern, group in group_patterns.items():
-            if re.search(pattern, query):
-                matching_groups.append(group)
-        
-        # If we have matching groups, add the first one as the target
-        if matching_groups:
-            intent_analysis["target_group"] = matching_groups[0]
-            intent_analysis["multiple_groups"] = len(matching_groups) > 1
-            intent_analysis["all_matching_groups"] = matching_groups
-            
-        # Check if we need clarification
-        needs_clarification = False
-        clarification_type = None
-        clarification_options = []
-        
-        # Case: Intent is information/analysis but no group specified
-        if intent_analysis["intent_type"] in ["information", "analysis"] and "target_group" not in intent_analysis:
-            needs_clarification = True
-            clarification_type = "group"
-            clarification_options = self.list_groups()
-            clarification_message = "Which data group would you like to explore?"
-            
-        # Case: Intent is analysis but no specific file type
-        elif intent_analysis["intent_type"] == "analysis" and "target_group" in intent_analysis and "file_types" not in intent_analysis:
-            group = intent_analysis["target_group"]
-            available_types = self.get_file_types_in_group(group)
-            
-            if len(available_types) > 1:
-                needs_clarification = True
-                clarification_type = "file_type"
-                clarification_options = available_types
-                clarification_message = f"What type of files from the {group} group would you like to analyze?"
-            
-        # Case: Intent ambiguous
-        elif intent_analysis["intent_type"] == "unknown" or intent_analysis["confidence"] < 0.6:
-            needs_clarification = True
-            clarification_type = "intent"
-            clarification_options = ["Show available data", "Analyze a specific file", "Explain a concept"]
-            clarification_message = "I'm not sure what you're asking for. What would you like to do?"
-        
-        # Add clarification info if needed
-        if needs_clarification:
-            intent_analysis["needs_clarification"] = True
-            intent_analysis["clarification_type"] = clarification_type
-            intent_analysis["clarification_options"] = clarification_options
-            intent_analysis["clarification_message"] = clarification_message
-        
-        return intent_analysis
-
-    def get_available_groups(self):
-        """Get the available data groups from current report"""
-        if self.current_report and self.current_report in self.reports_dict:
-            return sorted(self.reports_dict[self.current_report]["groups"].keys())
-        return []
-
-    def get_files_by_type(self, group, file_type):
-        """Get files of a specific type in a group"""
-        if self.current_report and group in self.reports_dict[self.current_report]["groups"]:
-            if file_type in self.reports_dict[self.current_report]["groups"][group]["files"]:
-                return sorted(list(self.reports_dict[self.current_report]["groups"][group]["files"][file_type].keys()))
-        return []
-        
-    def get_file_path(self, group, file_name):
-        """Get the full path to a specific file"""
-        if not self.current_report or not group:
-            return None
-            
-        file_ext = os.path.splitext(file_name)[1]
-        
-        if (self.current_report in self.reports_dict and 
-            group in self.reports_dict[self.current_report]["groups"] and
-            file_ext in self.reports_dict[self.current_report]["groups"][group]["files"] and
-            file_name in self.reports_dict[self.current_report]["groups"][group]["files"][file_ext]):
-            
-            return self.reports_dict[self.current_report]["groups"][group]["files"][file_ext][file_name]["path"]
-            
-        return None
-        
-    def needs_clarification(self, analysis):
-        """Check if query analysis indicates we need clarification"""
-        return analysis.get("needs_clarification", False)
-
-    def analyze_query_intent(self, query: str) -> Dict[str, Any]:
-        """
-        Analyze the user's query to determine its intent type and relevant details.
-        
-        Intent types:
-        - information: User is asking what data exists
-        - analysis: User is requesting analysis of data
-        - conversation: User is having a discussion about existing data
-        - command: User is issuing a system command
-        
-        Args:
-            query: The user query string
-            
-        Returns:
-            Dictionary with intent type and details
-        """
-        # First check if this is a system command
-        if any(query.lower().startswith(cmd) for cmd in [
-            "list reports", "list groups", "set report", "set group", "help", "exit", "quit"
-        ]):
-            return {
-                "intent_type": "command",
-                "command": query.lower().split()[0],
-                "confidence": 0.95
-            }
-        
-        # Enhanced information query patterns - user asking about what data exists
-        info_patterns = [
-            r"what (data|files|information|reports|datasets) (are|is|do you have) (in|about|on|for) (.+)",
-            r"show me (what|the) (data|files|information|reports|datasets) (in|about|on|for) (.+)",
-            r"(list|show) (all |the )?(data|files|information|reports|datasets) (in|about|on|for) (.+)",
-            r"what (is|are) (available|there) (in|about|on|for) (.+)",
-            r"tell me what (data|files|information|reports|datasets) (are|is) (in|about|on|for) (.+)",
-            r"do you have (any |some )?(data|files|information|reports|datasets) (in|about|on|for) (.+)",
-            r"what (kind of|types of) (data|files|information|reports|datasets) (are|is) (in|about|on|for) (.+)",
-            r"(describe|summarize) (the |available )?(data|files|information|reports|datasets) (in|about|on|for) (.+)",
-            r"(what|which) (groups|categories|types) (of data|of reports|of information) (are|do you have) (available|)",
-            r"(can you|could you) (list|tell me|show me) (what|which) (files|reports|data) (you have|are available)",
-            r"(show|list|get) (me )?available (data|files|reports)",
-            r"what can I (analyze|look at) (here|)",
-            r"(what|which) (reports|data sets|files) (can|should) I (look at|view|examine)"
-        ]
-        
-        # Enhanced analysis request patterns - user asking for conclusions or insights
-        analysis_patterns = [
-            r"(analyze|analyse|study|examine|investigate) (.+)",
-            r"(show|tell) me (about|the) (.+) (analysis|results|findings|trends|patterns|conclusions)",
-            r"(what|how) (is|are|does|do) (.+) (affect|impact|influence|relate|correlate|mean)",
-            r"(compare|contrast|evaluate|assess) (.+)",
-            r"(generate|create|produce|provide) (a|an) (analysis|report|summary|overview) (of|on|about) (.+)",
-            r"what (can you|do you) (tell|see|find|conclude) (about|from|in) (.+)",
-            r"what (insights|conclusions|results) (can you show|do you have|are there) (for|from|about) (.+)",
-            r"(calculate|compute|determine) (the|any) (statistics|metrics|measures|values) (for|of|from) (.+)",
-            r"(find|identify|discover|detect) (patterns|trends|anomalies|outliers|relationships) (in|from|within) (.+)",
-            r"(run|perform|conduct|do) (a|an) (full|complete|comprehensive|detailed) (analysis|assessment|examination) (of|on) (.+)",
-            r"(deep dive|in-depth look) (into|at) (.+)",
-            r"(what's|what is) (happening|going on) (in|with) (.+)",
-            r"(visualize|plot|graph|chart) (.+)",
-            r"(summarize|breakdown) the (data|information|metrics|statistics|findings) (in|for|about) (.+)",
-            r"(process|mine|extract insights from) (.+)"
-        ]
-        
-        # Enhanced conversational patterns - user wants to discuss or learn about data
-        conversation_patterns = [
-            r"(tell me more|elaborate|explain) (about|on) (.+)",
-            r"(why|how) (is|are|does|do|can|would|should|might) (.+)",
-            r"(can|could) you (explain|describe|clarify|help me understand) (.+)",
-            r"(what|who|when|where) (is|are|was|were) (.+)",
-            r"(i'm interested in|i want to know about|i'd like to learn|i'm curious about) (.+)",
-            r"(what does|could you explain what) (.+) (mean|imply|suggest|indicate)",
-            r"(can you|would you) (tell|explain to) me (why|how|what) (.+)",
-            r"(is|are) there (any|some) (relationship|connection|correlation) between (.+)",
-            r"(in your opinion|what do you think|do you believe) (.+)",
-            r"(can|could) you (interpret|translate|decode) (.+)",
-            r"(help me|assist me) (understand|interpret|grasp) (.+)",
-            r"(I don't understand|I'm confused by|I'm not sure about) (.+)",
-            r"(give me context|provide background|explain the significance) (about|of|for) (.+)",
-            r"(how would you|how do you) (interpret|understand|approach) (.+)",
-            r"let's (talk|discuss|chat) about (.+)",
-            r"(I'd like your|give me your) (thoughts|perspective|take|opinion) on (.+)"
-        ]
-        
-        # Check context for recently viewed data
-        has_context = False
-        if self.context.session_data["viewed_files"] or self.context.session_data["viewed_groups"]:
-            has_context = True
-        
-        # Check for information intent with high specificity patterns first
-        for pattern in info_patterns:
-            match = re.search(pattern, query.lower())
-            if match:
-                # Try to extract the group or topic
-                # In most patterns, the last capture group contains the target
-                target = match.groups()[-1] if match.groups() else ""
-                
-                # Look for group mentions
-                groups = self.list_groups()
-                for group in groups:
-                    if group.lower() in target.lower():
-                        return {
-                            "intent_type": "information",
-                            "target_group": group,
-                            "confidence": 0.9,  # Higher confidence for exact group match
-                            "action": "list_files"
-                        }
-                
-                # Information query without specific group
-                return {
-                    "intent_type": "information",
-                    "confidence": 0.85,
-                    "action": "suggest_groups"
-                }
-        
-        # Check for analysis intent
-        for pattern in analysis_patterns:
-            match = re.search(pattern, query.lower())
-            if match:
-                # Try to extract what to analyze
-                to_analyze = match.groups()[-1] if match.groups() else ""
-                
-                # Look for group mentions
-                groups = self.list_groups()
-                for group in groups:
-                    if group.lower() in query.lower():
-                        return {
-                            "intent_type": "analysis",
-                            "target_group": group,
-                            "confidence": 0.9,
-                            "action": "analyze_group"
-                        }
-                
-                # Check for file type mentions
-                file_types = [".csv", ".txt", ".json", ".xlsx", ".md", ".pdf"]
-                for file_type in file_types:
-                    if file_type in query.lower() or file_type[1:] in query.lower():
-                        return {
-                            "intent_type": "analysis",
-                            "target_file_type": file_type,
-                            "confidence": 0.85,
-                            "action": "find_and_analyze_file"
-                        }
-                
-                # If we have context (viewed files/groups), more likely to be analysis
-                if has_context:
-                    return {
-                        "intent_type": "analysis",
-                        "confidence": 0.82,
-                        "action": "determine_analysis_target"
-                    }
-                
-                # Generic analysis request
-                return {
-                    "intent_type": "analysis",
-                    "confidence": 0.75,
-                    "action": "determine_analysis_target"
-                }
-        
-        # Check for conversation intent
-        for pattern in conversation_patterns:
-            match = re.search(pattern, query.lower())
-            if match:
-                topic = match.groups()[-1] if match.groups() else ""
-                
-                # Check if the conversation is about a specific group
-                groups = self.list_groups()
-                for group in groups:
-                    if group.lower() in query.lower():
-                        return {
-                            "intent_type": "conversation",
-                            "topic": topic,
-                            "target_group": group,
-                            "confidence": 0.88,
-                            "action": "discuss_topic"
-                        }
-                
-                # If we have context, more likely to be conversation about viewed data
-                if has_context:
-                    recent_groups = self.context.session_data["viewed_groups"][-1] if self.context.session_data["viewed_groups"] else None
-                    
-                    return {
-                        "intent_type": "conversation",
-                        "topic": topic,
-                        "target_group": recent_groups,
-                        "confidence": 0.86,
-                        "action": "discuss_topic",
-                        "context_based": True
-                    }
-                
-                # Generic conversation
-                return {
-                    "intent_type": "conversation",
-                    "topic": topic,
-                    "confidence": 0.8,
-                    "action": "discuss_topic"
-                }
-        
-        # Simple group name detection - treat as analysis intent if it's just the group name
-        groups = self.list_groups()
-        for group in groups:
-            if group.lower() == query.lower() or f"{group} group".lower() == query.lower():
-                return {
-                    "intent_type": "analysis",
-                    "target_group": group,
-                    "confidence": 0.95,  # Very high confidence for exact group name match
-                    "action": "analyze_group"
-                }
-        
-        # Detect simple information queries about the system
-        system_info_keywords = ["what can you do", "capabilities", "what are you able to", "how do you work", 
-                               "what can i ask", "how can you help", "what are your functions"]
-        if any(keyword in query.lower() for keyword in system_info_keywords):
-            return {
-                "intent_type": "information",
-                "confidence": 0.9,
-                "action": "explain_capabilities",
-                "system_query": True
-            }
-        
-        # Check for follow-up questions without context
-        followup_indicators = ["and", "also", "in addition", "further", "more", "what about", "how about"]
-        if any(query.lower().startswith(indicator) for indicator in followup_indicators) and has_context:
-            # Get the most recent query intent
-            if len(self.context.conversation_history) >= 2:
-                # This is likely a follow-up query, continue with previous intent type but lower confidence
-                last_user_query = None
-                for msg in reversed(self.context.conversation_history):
-                    if msg["role"] == "user":
-                        last_user_query = msg["content"]
-                        break
-                
-                if last_user_query:
-                    # Default to conversation intent for follow-ups with context
-                    followup_result = {
-                        "intent_type": "conversation",
-                        "confidence": 0.7,
-                        "action": "discuss_topic",
-                        "is_followup": True
-                    }
-                    
-                    # Try to determine a group from context
-                    if self.context.session_data["viewed_groups"]:
-                        recent_group = self.context.session_data["viewed_groups"][-1]
-                        followup_result["target_group"] = recent_group
-                    
-                    return followup_result
-        
-        # If we reach here, use a combined approach: first check for specific group mentions
-        for group in self.list_groups():
-            if group.lower() in query.lower():
-                # Group is mentioned but intent is unclear
-                # Decide based on query length and complexity
-                
-                # Short queries mentioning a group are likely analysis requests
-                if len(query.split()) < 5:
-                    return {
-                        "intent_type": "analysis", 
-                        "target_group": group,
-                        "confidence": 0.75,
-                        "action": "analyze_group"
-                    }
-                
-                # Queries with question words are more likely to be information or conversation
-                question_words = ["what", "how", "why", "when", "where", "who", "which", "can", "do", "is", "are"]
-                if any(query.lower().split()[0] == word for word in question_words):
-                    # Distinguish between information and conversation based on context
-                    if has_context and group in self.context.session_data["viewed_groups"]:
-                        return {
-                            "intent_type": "conversation",
-                            "target_group": group,
-                            "confidence": 0.72,
-                            "action": "discuss_topic"
-                        }
-                    else:
-                        return {
-                            "intent_type": "information",
-                            "target_group": group,
-                            "confidence": 0.7,
-                            "action": "list_files"
-                        }
-                
-                # Default to analysis for unclear but group-specific queries
-                return {
-                    "intent_type": "analysis", 
-                    "target_group": group,
-                    "confidence": 0.68,
-                    "action": "analyze_group"
-                }
-        
-        # If we still haven't determined intent, use a more direct approach with the query_analyzer
-        prompt = f"""
-        Analyze the following user query and determine the most likely intent:
-        
-        Query: "{query}"
-        
-        Available groups: {", ".join(self.list_groups())}
-        
-        Respond with a JSON object with these fields:
-        - intent_type: "information", "analysis", or "conversation"
-        - confidence: a value between 0 and 1
-        - target_group: any group the query seems focused on (if applicable)
-        - explanation: brief reason for this classification
-        """
-        
-        # Get direct analysis from the query analyzer
-        try:
-            # Use a direct call to the agent instead of going through analyze_query
-            llm_analysis = self.query_analyzer.print_response(prompt)
-            
-            # Try to parse the response as JSON
-            try:
-                import json
-                llm_result = json.loads(llm_analysis)
-                
-                # Add default action based on intent type
-                if "intent_type" in llm_result:
-                    if llm_result["intent_type"] == "information":
-                        llm_result["action"] = "suggest_groups" if not llm_result.get("target_group") else "list_files"
-                    elif llm_result["intent_type"] == "analysis":
-                        llm_result["action"] = "determine_analysis_target"
-                    elif llm_result["intent_type"] == "conversation":
-                        llm_result["action"] = "discuss_topic"
-                        
-                    # Set a default confidence if not provided
-                    if "confidence" not in llm_result:
-                        llm_result["confidence"] = 0.6
-                        
-                    return llm_result
-            except:
-                # If parsing fails, fall back to default
-                pass
-        except:
-            # If LLM call fails, continue to fallback
-            pass
-            
-        # Simple fallback - look for key terms to classify intent
-        conversation_indicators = ["explain", "discuss", "tell me about", "share", "what is", "what are", 
-                                 "meaning of", "significance of", "importance of"]
-        if any(indicator in query.lower() for indicator in conversation_indicators):
-            return {
-                "intent_type": "conversation",
-                "confidence": 0.62,
-                "action": "discuss_topic",
-                "explanation": "Query appears conversational in nature"
-            }
-            
-        # Check if it might be an information query
-        info_indicators = ["show", "list", "available", "do you have", "what data", "what files"]
-        if any(indicator in query.lower() for indicator in info_indicators):
-            return {
-                "intent_type": "information",
-                "confidence": 0.61,
-                "action": "suggest_groups",
-                "explanation": "Query appears to be asking about available data"
-            }
-        
-        # Default to analysis for remaining cases
-        return {
-            "intent_type": "analysis",
-            "confidence": 0.6,
-            "action": "determine_analysis_target",
-            "explanation": "Default to analysis for ambiguous queries"
-        }
-
-    def handle_group_selection(self, group: str) -> str:
-        """
-        Handle when a user selects a specific data group.
-        
-        Args:
-            group: The selected group name
-            
-        Returns:
-            Response with information about the group
-        """
-        if not self.current_group:
-            self.current_group = group
-            
-        files = self.list_files_in_group(group)
-        if not files:
-            return f"The group '{group}' exists but doesn't contain any files yet."
-            
-        # Record this group in viewed groups
-        if group not in self.context.session_data["viewed_groups"]:
-            self.context.session_data["viewed_groups"].append(group)
-            
-        # Group summary and file count by type
-        file_types = {}
-        for file in files:
-            ext = os.path.splitext(file)[1].lower()
-            if ext not in file_types:
-                file_types[ext] = 0
-            file_types[ext] += 1
-            
-        type_summary = ", ".join([f"{count} {ext} files" for ext, count in file_types.items()])
-        
-        return f"Group '{group}' contains {len(files)} files ({type_summary}). Would you like to see all files or a specific type?"
-        
-    def filter_and_display_files(self, group: str, file_type: str) -> str:
-        """
-        Filter files by type and prepare them for display/selection.
-        
-        Args:
-            group: The group to filter files in
-            file_type: The file type to filter by
-            
-        Returns:
-            A formatted list of files of the specified type
-        """
-        self.logger.info(f"Filtering files in {group} by type: {file_type}")
-        
-        # Get all files of the specified type in the group
-        files_by_type = self.list_files_by_type(group)
-        
-        # Check if we have files of this type
-        if file_type not in files_by_type or not files_by_type[file_type]:
-            all_types = ", ".join(files_by_type.keys())
-            return f"No {file_type} files found in the {group} group. Available file types: {all_types}"
-        
-        # Store the file type for later
-        self.set_selected_file_type(file_type)
-        
-        # Always set the state to awaiting selection and display files, even if there's only one match
-        self.set_awaiting_file_selection(True)
-        
-        # Format the list of files for display
-        file_list = "\n".join([f"- {f}" for f in files_by_type[file_type]])
-        
-        return f"Found {len(files_by_type[file_type])} {file_type} files in the {group} group. Which one would you like to analyze?\n\n{file_list}"
-        
-    def determine_analysis_target_from_clarification(self, query: str, group: str) -> str:
-        """
-        Process a clarification about what to analyze based on user's response.
-        
-        Args:
-            query: The user's clarification response
-            group: The group context for this clarification
-            
-        Returns:
-            Response with analysis results or further questions
-        """
-        # Extract potential analysis targets from the query
-        analysis_keywords = ["trends", "summary", "statistics", "compare", "analyze", "data", 
-                             "overview", "insights", "patterns", "anomalies"]
-                             
-        file_types = [".csv", ".txt", ".json", ".xlsx", ".md", ".pdf"]
-        
-        # Check if user mentioned a specific file type
-        mentioned_file_type = None
-        for file_type in file_types:
-            if file_type in query.lower() or file_type[1:] in query.lower():
-                mentioned_file_type = file_type
-                break
-                
-        if mentioned_file_type:
-            return self.filter_and_display_files(group, mentioned_file_type)
-            
-        # Check if user mentioned a specific analysis goal
-        for keyword in analysis_keywords:
-            if keyword in query.lower():
-                return self.handle_analysis_request(query, group)
-                
-        # If we can't determine a specific action, ask about file types
-        self.set_awaiting_clarification(True)
-        self.set_clarification_type("file_type_selection")
-        self.set_clarification_group(group)
-        
-        return f"What type of files from '{group}' would you like to work with? (CSV, text, markdown, etc.)"
-        
-    def handle_analysis_request(self, query: str, group: str) -> str:
-        """
-        Handle a request to analyze data, checking if specific files or types are mentioned.
-        
-        Args:
-            query: The user's query
-            group: The current group to analyze
-            
-        Returns:
-            Response text to the user
-        """
-        self.logger.info(f"Handling analysis request for group: {group}")
-        
-        # Get available file types in the group
-        file_types = self.get_file_types_in_group(group)
-        
-        # Check if a specific file type is mentioned
-        mentioned_file_type = None
-        for file_type in file_types:
-            if file_type in query.lower() or (file_type.startswith('.') and file_type[1:] in query.lower()):
-                mentioned_file_type = file_type
-                break
-        
-        if mentioned_file_type:
-            # User mentioned a specific file type
-            self.logger.info(f"User mentioned file type: {mentioned_file_type}")
-            return self.filter_and_display_files(group, mentioned_file_type)
-        else:
-            # No specific file type mentioned, ask for clarification
-            self.set_awaiting_clarification(True)
-            self.set_clarification_type("file_type_selection")
-            self.set_clarification_group(group)
-            
-            file_type_options = ", ".join([f"{ft}" for ft in file_types])
-            return f"What type of data would you like to analyze in the {group} group? Available formats: {file_type_options}"
-        
-    def display_group_files(self, group: str) -> str:
-        """
-        Display all files in a group categorized by type.
-        
-        Args:
-            group: The group to display files for
-            
-        Returns:
-            Formatted string with file information
-        """
-        files = self.list_files_in_group(group)
-        if not files:
-            return f"The group '{group}' doesn't contain any files."
-            
-        # Record this group in viewed groups
-        if group not in self.context.session_data["viewed_groups"]:
-            self.context.session_data["viewed_groups"].append(group)
-            
-        # Organize files by type
-        files_by_type = {}
-        for file in files:
-            ext = os.path.splitext(file)[1].lower()
-            if not ext:
-                ext = "(no extension)"
-                
-            if ext not in files_by_type:
-                files_by_type[ext] = []
-                
-            files_by_type[ext].append(file)
-            
-        # Format the response
-        response = [f"Files in group '{group}':"]
-        
-        for ext, file_list in files_by_type.items():
-            response.append(f"\n{ext} files ({len(file_list)}):")
-            for file in file_list:
-                response.append(f"- {file}")
-                
-        return "\n".join(response)
         
     def analyze_file(self, file_path: str) -> str:
         """
@@ -1738,3 +1185,33 @@ class InteractiveReportAgent:
     def get_selected_file_type(self) -> str:
         """Get the file type for the current file selection process."""
         return self._selected_file_type
+
+    def get_file_path(self, group: str, file_name: str) -> Optional[str]:
+        """Get the full path to a specific file within the current report and group."""
+        if not self.current_report or not group:
+            self.logger.warning("Attempted get_file_path without current report or group set.")
+            return None
+            
+        # Ensure group exists in the current report
+        if group not in self.reports_dict.get(self.current_report, {}).get("groups", {}):
+             self.logger.warning(f"Group '{group}' not found in report '{self.current_report}' during get_file_path.")
+             return None
+
+        file_ext = os.path.splitext(file_name)[1].lower()
+        if not file_ext:
+            # Try finding file without extension (might happen if LLM omits it)
+             for ext, files_data in self.reports_dict[self.current_report]["groups"][group]["files"].items():
+                 if file_name in files_data:
+                     self.logger.info(f"Found path for '{file_name}' under extension '{ext}'.")
+                     return files_data[file_name].get("path")
+             self.logger.warning(f"Could not determine extension or find file '{file_name}' in group '{group}'.")
+             return None
+
+        # Standard lookup by extension and filename
+        if file_ext in self.reports_dict[self.current_report]["groups"][group].get("files", {}) and \
+           file_name in self.reports_dict[self.current_report]["groups"][group]["files"].get(file_ext, {}):
+            
+            return self.reports_dict[self.current_report]["groups"][group]["files"][file_ext][file_name].get("path")
+            
+        self.logger.warning(f"File '{file_name}' with extension '{file_ext}' not found in group '{group}'.")
+        return None

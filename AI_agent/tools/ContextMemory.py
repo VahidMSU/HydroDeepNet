@@ -453,13 +453,22 @@ class ContextMemory:
         return self.conversation_history[-num_entries:]
     
     def get_formatted_history(self, num_entries: int = 5) -> str:
-        """Get formatted conversation history for context (ConversationContext compatibility)."""
-        recent = self.get_recent_history(num_entries)
+        """
+        Get formatted conversation history for context.
+        
+        Args:
+            num_entries: Maximum number of entries to retrieve
+            
+        Returns:
+            Formatted conversation history as a string
+        """
+        recent = self.get_conversation_history(num_entries)
         formatted = []
         
         for entry in recent:
-            role = "User" if entry["role"] == "user" else "Assistant"
-            formatted.append(f"{role}: {entry['content']}")
+            role = "User" if entry.get("role") == "user" else "Assistant"
+            content = entry.get("content", "")
+            formatted.append(f"{role}: {content}")
             
         return "\n".join(formatted)
     

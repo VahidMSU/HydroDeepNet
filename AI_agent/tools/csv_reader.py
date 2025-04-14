@@ -70,6 +70,9 @@ def csv_reader(csv_path, recreate_db_str="false", logger=None):
     agent = Agent(
         knowledge=knowledge_base,
         search_knowledge=True,
+        debug_mode=False,
+        show_tool_calls=False,
+        reasoning=False
     )
     log.info("Agent created with CSV knowledge")
 

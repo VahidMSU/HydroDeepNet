@@ -28,15 +28,15 @@ def image_reader(image_path, logger=None):
         agent_id="image-to-text",
         name="Image to Text Agent",
         markdown=True,
-        debug_mode=True,
-        show_tool_calls=True,
+        debug_mode=False,
+        show_tool_calls=False,
         instructions=[
             "Your Name is HydroDeepNet",
             "You are an AI agent that can generate text descriptions based on an image.",
             "You analyse the image and provide a detailed description of the image and your key findings.",
             "The context of the images are related to various environmental and water resources parameters",
         ],
-        reasoning=True
+        reasoning=False
     )
     
     log.info("Sending image for analysis")

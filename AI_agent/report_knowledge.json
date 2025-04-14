@@ -42,7 +42,7 @@
       "domain": "groundwater",
       "added_at": "2025-04-13T14:09:10.754096",
       "is_domain": true,
-      "source": "user_query"
+      "source": "agent_response"
     },
     "aquifer": {
       "domain": "groundwater",
@@ -218,7 +218,7 @@
     "the data": {
       "domain": "unknown",
       "added_at": "2025-04-13T14:09:17.171970",
-      "source": "user_query"
+      "source": "agent_response"
     },
     "gssurgo": {
       "domain": "unknown",
@@ -268,7 +268,7 @@
     "data": {
       "domain": "unknown",
       "added_at": "2025-04-13T14:09:17.179661",
-      "source": "agent_response"
+      "source": "user_query"
     },
     "nsrdb": {
       "domain": "unknown",
@@ -588,7 +588,7 @@
     "what type": {
       "domain": "unknown",
       "added_at": "2025-04-13T14:16:18.973399",
-      "source": "agent_response"
+      "source": "user_query"
     },
     ".csv": {
       "domain": "unknown",
@@ -649,6 +649,291 @@
       "domain": "unknown",
       "added_at": "2025-04-13T14:19:22.506213",
       "source": "user_query"
+    },
+    "24 files": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:30:30.865445",
+      "source": "agent_response"
+    },
+    "group 'modis": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:30:30.865460",
+      "source": "agent_response"
+    },
+    "4 .csv files": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:30:30.865465",
+      "source": "agent_response"
+    },
+    "18 .png files": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:30:30.865478",
+      "source": "agent_response"
+    },
+    "the modis group": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:30:41.670356",
+      "source": "agent_response"
+    },
+    "mod16a2_et_spatial.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:30:49.955736",
+      "source": "agent_response"
+    },
+    "mod15a2h_lai_500m_timeseries.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:30:49.955753",
+      "source": "agent_response"
+    },
+    "mod13q1_evi_anomaly.png\n- mod13q1_evi_seasonal.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:30:49.955765",
+      "source": "agent_response"
+    },
+    "mod16a2_et_anomaly.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:31:14.303120",
+      "source": "user_query"
+    },
+    "list climate_change": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:32:28.565100",
+      "source": "user_query"
+    },
+    "list climate_change data": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:32:28.565119",
+      "source": "user_query"
+    },
+    "seasonal_pr.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:33:40.794867",
+      "source": "user_query"
+    },
+    "what": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:34:21.399538",
+      "source": "user_query"
+    },
+    "multiple matching files": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:34:53.842963",
+      "source": "agent_response"
+    },
+    "- spatial_tmin.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:34:53.842987",
+      "source": "agent_response"
+    },
+    "spatial_tmean.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:35:16.751873",
+      "source": "user_query"
+    },
+    "- spatial_tmean.csv\n- spatial_tmean.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:35:16.757046",
+      "source": "agent_response"
+    },
+    "- groundwater_stats.csv\n- groundwater_stats_percentiles.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:40:24.183446",
+      "source": "agent_response"
+    },
+    "groundwater_stats_percentiles.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:40:37.256908",
+      "source": "user_query"
+    },
+    "- groundwater_stats_percentiles.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:40:37.262042",
+      "source": "agent_response"
+    },
+    "analyse groundwater_stats_percentiles.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:40:56.958772",
+      "source": "user_query"
+    },
+    "your question": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:55:27.025220",
+      "source": "agent_response"
+    },
+    "the available data groups": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:55:27.025237",
+      "source": "agent_response"
+    },
+    "the list": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:56:42.873304",
+      "source": "user_query"
+    },
+    "prism data": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:56:42.873324",
+      "source": "user_query"
+    },
+    "prism_spatial.png\n- prism_timeseries.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:56:42.882133",
+      "source": "agent_response"
+    },
+    "1):\n- prism_stats.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:56:42.882144",
+      "source": "agent_response"
+    },
+    "the action": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:57:10.824737",
+      "source": "agent_response"
+    },
+    "an error": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:57:10.824775",
+      "source": "agent_response"
+    },
+    "list modis data": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:58:28.019279",
+      "source": "user_query"
+    },
+    "product_correlations.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:58:28.035033",
+      "source": "agent_response"
+    },
+    "- products_comparison.png\n\n.csv files": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:58:28.035048",
+      "source": "agent_response"
+    },
+    "- mod15a2h_lai_500m_anomaly.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:58:28.035062",
+      "source": "agent_response"
+    },
+    "- mod16a2_et_stats.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:58:28.035065",
+      "source": "agent_response"
+    },
+    ".png files": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:58:28.035071",
+      "source": "agent_response"
+    },
+    "1):\n- modis_comprehensive_report.md": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:58:28.035074",
+      "source": "agent_response"
+    },
+    "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:58:28.035079",
+      "source": "agent_response"
+    },
+    "the report": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:59:15.035788",
+      "source": "user_query"
+    },
+    "the landcover": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:59:15.035848",
+      "source": "user_query"
+    },
+    "the logs": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:59:15.040387",
+      "source": "agent_response"
+    },
+    "the action handler": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:59:15.040398",
+      "source": "agent_response"
+    },
+    "an empty response": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:59:15.040403",
+      "source": "agent_response"
+    },
+    "list climate data": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:59:42.485606",
+      "source": "user_query"
+    },
+    "climate impact": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:59:59.414442",
+      "source": "user_query"
+    },
+    "what images": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T14:59:59.414463",
+      "source": "user_query"
+    },
+    "a different group": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:00:26.113999",
+      "source": "agent_response"
+    },
+    "the enhanced hydrology report analyzer": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:05:38.222087",
+      "source": "user_query"
+    },
+    "what data": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:10:06.867285",
+      "source": "user_query"
+    },
+    "list cdl data": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:10:19.866460",
+      "source": "user_query"
+    },
+    "- cdl_composition.png\n    - cdl_diversity.png\n    - cdl_rotation.png\n    - cdl_trends.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:10:41.074921",
+      "source": "agent_response"
+    },
+    "cdl_report.md\n  .csv files": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:10:41.074958",
+      "source": "agent_response"
+    },
+    "which file": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:10:41.074972",
+      "source": "agent_response"
+    },
+    "- cdl_data.csv": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:10:41.074976",
+      "source": "agent_response"
+    },
+    "cdl_report.html": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:10:41.074982",
+      "source": "agent_response"
+    },
+    "analyse cdl_changes.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:11:02.805080",
+      "source": "user_query"
+    },
+    "list climate change data": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:11:30.958886",
+      "source": "user_query"
+    },
+    "the seasonal_pr.png": {
+      "domain": "unknown",
+      "added_at": "2025-04-13T15:12:05.390918",
+      "source": "user_query"
     }
   },
   "edges": [
@@ -656,7 +941,7 @@
       "source": "climate",
       "target": "temperature",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754045"
       }
@@ -665,7 +950,7 @@
       "source": "climate",
       "target": "precipitation",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754056"
       }
@@ -674,7 +959,7 @@
       "source": "climate",
       "target": "rainfall",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754062"
       }
@@ -683,7 +968,7 @@
       "source": "climate",
       "target": "drought",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754067"
       }
@@ -692,7 +977,7 @@
       "source": "climate",
       "target": "humidity",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754073"
       }
@@ -701,7 +986,7 @@
       "source": "climate",
       "target": "weather",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754082"
       }
@@ -710,7 +995,7 @@
       "source": "climate",
       "target": "climate change",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754087"
       }
@@ -719,7 +1004,7 @@
       "source": "climate",
       "target": "global warming",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754093"
       }
@@ -728,7 +1013,7 @@
       "source": "temperature",
       "target": "evapotranspiration",
       "type": "increases",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754341"
       }
@@ -737,7 +1022,7 @@
       "source": "temperature",
       "target": "soil moisture",
       "type": "decreases",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754390"
       }
@@ -746,7 +1031,7 @@
       "source": "precipitation",
       "target": "recharge",
       "type": "increases",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754335"
       }
@@ -755,7 +1040,7 @@
       "source": "precipitation",
       "target": "soil moisture",
       "type": "increases",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754387"
       }
@@ -764,7 +1049,7 @@
       "source": "rainfall",
       "target": "water table",
       "type": "raises",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754347"
       }
@@ -773,7 +1058,7 @@
       "source": "rainfall",
       "target": "erosion",
       "type": "can cause",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754393"
       }
@@ -782,7 +1067,7 @@
       "source": "drought",
       "target": "water level",
       "type": "decreases",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754344"
       }
@@ -791,7 +1076,7 @@
       "source": "drought",
       "target": "soil moisture",
       "type": "decreases",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754396"
       }
@@ -817,10 +1102,20 @@
       }
     },
     {
+      "source": "climate change",
+      "target": "list climate change data",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:30.958908",
+        "source": "user_query"
+      }
+    },
+    {
       "source": "groundwater",
       "target": "aquifer",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754102"
       }
@@ -829,7 +1124,7 @@
       "source": "groundwater",
       "target": "water table",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754108"
       }
@@ -838,7 +1133,7 @@
       "source": "groundwater",
       "target": "water level",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754113"
       }
@@ -847,7 +1142,7 @@
       "source": "groundwater",
       "target": "drawdown",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754119"
       }
@@ -856,7 +1151,7 @@
       "source": "groundwater",
       "target": "recharge",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754124"
       }
@@ -865,7 +1160,7 @@
       "source": "groundwater",
       "target": "well",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754129"
       }
@@ -874,7 +1169,7 @@
       "source": "groundwater",
       "target": "pumping",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754134"
       }
@@ -883,7 +1178,7 @@
       "source": "groundwater",
       "target": "hydraulic conductivity",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754139"
       }
@@ -892,7 +1187,7 @@
       "source": "groundwater",
       "target": "transmissivity",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754147"
       }
@@ -901,7 +1196,7 @@
       "source": "groundwater",
       "target": "agriculture",
       "type": "supports",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754384"
       }
@@ -910,7 +1205,7 @@
       "source": "groundwater",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.5000000000000002,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627899",
         "source": "agent_response"
@@ -920,7 +1215,7 @@
       "source": "groundwater",
       "target": "prism",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627902",
         "source": "agent_response"
@@ -930,7 +1225,7 @@
       "source": "groundwater",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627906",
         "source": "agent_response"
@@ -940,7 +1235,7 @@
       "source": "groundwater",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627909",
         "source": "agent_response"
@@ -960,7 +1255,7 @@
       "source": "groundwater",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875381",
         "source": "agent_response"
@@ -970,7 +1265,7 @@
       "source": "groundwater",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875388",
         "source": "agent_response"
@@ -990,7 +1285,7 @@
       "source": "groundwater",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:15:59.841095",
         "source": "agent_response"
@@ -1000,9 +1295,39 @@
       "source": "groundwater",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:15:59.841101",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "groundwater",
+      "target": "available groups",
+      "type": "co_occurs_with",
+      "weight": 0.8999999999999999,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:11.284121",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "groundwater",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:11.284145",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "groundwater",
+      "target": "which data group",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:11.284155",
         "source": "agent_response"
       }
     },
@@ -1010,7 +1335,7 @@
       "source": "aquifer",
       "target": "pumping",
       "type": "supplies",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754374"
       }
@@ -1019,7 +1344,7 @@
       "source": "water table",
       "target": "crop yield",
       "type": "affects",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754381"
       }
@@ -1028,7 +1353,7 @@
       "source": "water level",
       "target": "irrigation",
       "type": "limits",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754371"
       }
@@ -1037,7 +1362,7 @@
       "source": "agriculture",
       "target": "crop",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754155"
       }
@@ -1046,7 +1371,7 @@
       "source": "agriculture",
       "target": "farming",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754161"
       }
@@ -1055,7 +1380,7 @@
       "source": "agriculture",
       "target": "irrigation",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754167"
       }
@@ -1064,7 +1389,7 @@
       "source": "agriculture",
       "target": "yield",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754173"
       }
@@ -1073,7 +1398,7 @@
       "source": "agriculture",
       "target": "harvest",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754180"
       }
@@ -1082,7 +1407,7 @@
       "source": "agriculture",
       "target": "corn",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754186"
       }
@@ -1091,7 +1416,7 @@
       "source": "agriculture",
       "target": "soybean",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754191"
       }
@@ -1100,7 +1425,7 @@
       "source": "agriculture",
       "target": "wheat",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754196"
       }
@@ -1109,7 +1434,7 @@
       "source": "agriculture",
       "target": "rotation",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754201"
       }
@@ -1118,7 +1443,7 @@
       "source": "crop",
       "target": "soil fertility",
       "type": "affects",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754353"
       }
@@ -1127,7 +1452,7 @@
       "source": "farming",
       "target": "erosion",
       "type": "can cause",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754368"
       }
@@ -1136,7 +1461,7 @@
       "source": "irrigation",
       "target": "soil moisture",
       "type": "increases",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754360"
       }
@@ -1145,7 +1470,7 @@
       "source": "soil",
       "target": "fertility",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754210"
       }
@@ -1154,7 +1479,7 @@
       "source": "soil",
       "target": "texture",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754217"
       }
@@ -1163,7 +1488,7 @@
       "source": "soil",
       "target": "erosion",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754222"
       }
@@ -1172,7 +1497,7 @@
       "source": "soil",
       "target": "drainage",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754227"
       }
@@ -1181,7 +1506,7 @@
       "source": "soil",
       "target": "infiltration",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754232"
       }
@@ -1190,7 +1515,7 @@
       "source": "soil",
       "target": "organic matter",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754238"
       }
@@ -1199,7 +1524,7 @@
       "source": "soil",
       "target": "compaction",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754265"
       }
@@ -1208,7 +1533,7 @@
       "source": "soil",
       "target": "moisture",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754271"
       }
@@ -1217,7 +1542,7 @@
       "source": "hydrology",
       "target": "runoff",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754280"
       }
@@ -1226,7 +1551,7 @@
       "source": "hydrology",
       "target": "streamflow",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754286"
       }
@@ -1235,7 +1560,7 @@
       "source": "hydrology",
       "target": "river",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754293"
       }
@@ -1244,7 +1569,7 @@
       "source": "hydrology",
       "target": "discharge",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754302"
       }
@@ -1253,7 +1578,7 @@
       "source": "hydrology",
       "target": "flood",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754308"
       }
@@ -1262,7 +1587,7 @@
       "source": "hydrology",
       "target": "watershed",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754313"
       }
@@ -1271,7 +1596,7 @@
       "source": "hydrology",
       "target": "basin",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754319"
       }
@@ -1280,7 +1605,7 @@
       "source": "hydrology",
       "target": "flow",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754324"
       }
@@ -1289,7 +1614,7 @@
       "source": "hydrology",
       "target": "evapotranspiration",
       "type": "includes",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754331"
       }
@@ -1298,9 +1623,39 @@
       "source": "crop rotation",
       "target": "soil fertility",
       "type": "improves",
-      "weight": 1.5000000000000004,
+      "weight": 2.100000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:10.754365"
+      }
+    },
+    {
+      "source": "the data",
+      "target": "a different group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:00:26.114024",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the data",
+      "target": "modis",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:00:26.114031",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the data",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T15:00:26.114035",
+        "source": "agent_response"
       }
     },
     {
@@ -1317,7 +1672,7 @@
       "source": "gssurgo",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179683",
         "source": "agent_response"
@@ -1327,7 +1682,7 @@
       "source": "gssurgo",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179687",
         "source": "agent_response"
@@ -1337,7 +1692,7 @@
       "source": "gssurgo",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179690",
         "source": "agent_response"
@@ -1347,7 +1702,7 @@
       "source": "gssurgo",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179693",
         "source": "agent_response"
@@ -1357,7 +1712,7 @@
       "source": "gssurgo",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179696",
         "source": "agent_response"
@@ -1367,7 +1722,7 @@
       "source": "gssurgo",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179700",
         "source": "agent_response"
@@ -1377,7 +1732,7 @@
       "source": "gssurgo",
       "target": "prism",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179703",
         "source": "agent_response"
@@ -1397,7 +1752,7 @@
       "source": "gssurgo",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179713",
         "source": "agent_response"
@@ -1417,9 +1772,29 @@
       "source": "gssurgo",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179720",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "gssurgo",
+      "target": "which data group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:11.284259",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "gssurgo",
+      "target": "available groups",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:28.515410",
         "source": "agent_response"
       }
     },
@@ -1427,7 +1802,7 @@
       "source": "which one",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.9999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179724",
         "source": "agent_response"
@@ -1587,7 +1962,7 @@
       "source": "which one",
       "target": "the climate_change group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:14:31.523128",
         "source": "agent_response"
@@ -1634,6 +2009,76 @@
       }
     },
     {
+      "source": "which one",
+      "target": "mod13q1_evi_anomaly.png\n- mod13q1_evi_seasonal.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955842",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which one",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955846",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which one",
+      "target": "- seasonal_cycle_tmin.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874197",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which one",
+      "target": "- spatial_change_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874201",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which one",
+      "target": "- seasonal_cycle_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874204",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which one",
+      "target": "- spatial_change_tmean.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874208",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which one",
+      "target": "- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:34:53.843024",
+        "source": "agent_response"
+      }
+    },
+    {
       "source": "you",
       "target": "gov_units",
       "type": "co_occurs_with",
@@ -1657,7 +2102,7 @@
       "source": "you",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179767",
         "source": "agent_response"
@@ -1667,7 +2112,7 @@
       "source": "you",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179772",
         "source": "agent_response"
@@ -1677,7 +2122,7 @@
       "source": "you",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179776",
         "source": "agent_response"
@@ -1707,7 +2152,7 @@
       "source": "you",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179785",
         "source": "agent_response"
@@ -1727,7 +2172,7 @@
       "source": "you",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.9999999999999999,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179791",
         "source": "agent_response"
@@ -1747,7 +2192,7 @@
       "source": "you",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627867",
         "source": "agent_response"
@@ -1777,7 +2222,7 @@
       "source": "you",
       "target": "which one",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:33.294802",
         "source": "agent_response"
@@ -1787,7 +2232,7 @@
       "source": "you",
       "target": "which data group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875317",
         "source": "agent_response"
@@ -1797,7 +2242,7 @@
       "source": "you",
       "target": "1 .md files",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:43.854952",
         "source": "agent_response"
@@ -1807,7 +2252,7 @@
       "source": "you",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:12:43.854955",
         "source": "agent_response"
@@ -1857,7 +2302,7 @@
       "source": "you",
       "target": "the climate_change group",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:14:31.523148",
         "source": "agent_response"
@@ -1877,7 +2322,7 @@
       "source": "you",
       "target": "1 .html files",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619506",
         "source": "agent_response"
@@ -1887,7 +2332,7 @@
       "source": "you",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619510",
         "source": "agent_response"
@@ -1947,7 +2392,7 @@
       "source": "you",
       "target": ".csv",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973459",
         "source": "agent_response"
@@ -2017,7 +2462,7 @@
       "source": "you",
       "target": "8 .png files",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691708",
         "source": "agent_response"
@@ -2074,10 +2519,160 @@
       }
     },
     {
+      "source": "you",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865616",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "available formats",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670474",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "mod13q1_evi_anomaly.png\n- mod13q1_evi_seasonal.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955836",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "- seasonal_cycle_tmin.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874178",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "- spatial_change_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874182",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "- seasonal_cycle_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874186",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "- spatial_change_tmean.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874189",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:34:53.843019",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "multiple matching files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:35:16.757084",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "your question",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:55:27.025247",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "the available data groups",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:55:27.025254",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "what",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.035873",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "you",
+      "target": "the report",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.035898",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "you",
+      "target": "the landcover",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.035902",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "you",
+      "target": "available groups",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:00:16.014858",
+        "source": "agent_response"
+      }
+    },
+    {
       "source": "gov_units",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179794",
         "source": "agent_response"
@@ -2087,7 +2682,7 @@
       "source": "gov_units",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179797",
         "source": "agent_response"
@@ -2097,7 +2692,7 @@
       "source": "gov_units",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179801",
         "source": "agent_response"
@@ -2107,7 +2702,7 @@
       "source": "gov_units",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179804",
         "source": "agent_response"
@@ -2117,7 +2712,7 @@
       "source": "gov_units",
       "target": "prism",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179807",
         "source": "agent_response"
@@ -2137,7 +2732,7 @@
       "source": "gov_units",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.4000000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179813",
         "source": "agent_response"
@@ -2157,7 +2752,7 @@
       "source": "gov_units",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179820",
         "source": "agent_response"
@@ -2177,7 +2772,7 @@
       "source": "gov_units",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627720",
         "source": "agent_response"
@@ -2187,9 +2782,29 @@
       "source": "gov_units",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627731",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "gov_units",
+      "target": "which data group",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:11.284233",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "gov_units",
+      "target": "available groups",
+      "type": "co_occurs_with",
+      "weight": 0.7999999999999999,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:28.515381",
         "source": "agent_response"
       }
     },
@@ -2197,7 +2812,7 @@
       "source": "modis",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179823",
         "source": "agent_response"
@@ -2207,7 +2822,7 @@
       "source": "modis",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179826",
         "source": "agent_response"
@@ -2217,7 +2832,7 @@
       "source": "modis",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179830",
         "source": "agent_response"
@@ -2227,7 +2842,7 @@
       "source": "modis",
       "target": "prism",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179833",
         "source": "agent_response"
@@ -2247,7 +2862,7 @@
       "source": "modis",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.4000000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179839",
         "source": "agent_response"
@@ -2267,7 +2882,7 @@
       "source": "modis",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.4000000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179845",
         "source": "agent_response"
@@ -2277,7 +2892,7 @@
       "source": "modis",
       "target": "available groups",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875196",
         "source": "agent_response"
@@ -2287,7 +2902,7 @@
       "source": "modis",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875204",
         "source": "agent_response"
@@ -2297,7 +2912,7 @@
       "source": "modis",
       "target": "which data group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875208",
         "source": "agent_response"
@@ -2307,7 +2922,7 @@
       "source": "modis",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.5000000000000002,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875215",
         "source": "agent_response"
@@ -2317,7 +2932,7 @@
       "source": "modis",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875222",
         "source": "agent_response"
@@ -2337,7 +2952,7 @@
       "source": "snodas",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179851",
         "source": "agent_response"
@@ -2347,7 +2962,7 @@
       "source": "snodas",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179855",
         "source": "agent_response"
@@ -2397,7 +3012,7 @@
       "source": "snodas",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179873",
         "source": "agent_response"
@@ -2417,7 +3032,7 @@
       "source": "snodas",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:15:59.841072",
         "source": "agent_response"
@@ -2427,7 +3042,7 @@
       "source": "snodas",
       "target": "which data group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297678",
         "source": "agent_response"
@@ -2437,7 +3052,7 @@
       "source": "snodas",
       "target": "available groups",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297700",
         "source": "agent_response"
@@ -2447,7 +3062,7 @@
       "source": "snodas",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297706",
         "source": "agent_response"
@@ -2467,7 +3082,7 @@
       "source": "cdl",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179876",
         "source": "agent_response"
@@ -2477,7 +3092,7 @@
       "source": "cdl",
       "target": "prism",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179879",
         "source": "agent_response"
@@ -2497,7 +3112,7 @@
       "source": "cdl",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179885",
         "source": "agent_response"
@@ -2517,7 +3132,7 @@
       "source": "cdl",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179892",
         "source": "agent_response"
@@ -2527,7 +3142,7 @@
       "source": "cdl",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627883",
         "source": "agent_response"
@@ -2537,7 +3152,7 @@
       "source": "cdl",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627889",
         "source": "agent_response"
@@ -2547,7 +3162,7 @@
       "source": "cdl",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627892",
         "source": "agent_response"
@@ -2557,7 +3172,7 @@
       "source": "cdl",
       "target": "available groups",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875235",
         "source": "agent_response"
@@ -2567,7 +3182,7 @@
       "source": "cdl",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875239",
         "source": "agent_response"
@@ -2577,7 +3192,7 @@
       "source": "cdl",
       "target": "which data group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875243",
         "source": "agent_response"
@@ -2587,7 +3202,7 @@
       "source": "cdl",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875254",
         "source": "agent_response"
@@ -2597,7 +3212,7 @@
       "source": "climate_change",
       "target": "prism",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179897",
         "source": "agent_response"
@@ -2617,7 +3232,7 @@
       "source": "climate_change",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.4000000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179904",
         "source": "agent_response"
@@ -2637,7 +3252,7 @@
       "source": "climate_change",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179910",
         "source": "agent_response"
@@ -2647,7 +3262,7 @@
       "source": "climate_change",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627812",
         "source": "agent_response"
@@ -2657,7 +3272,7 @@
       "source": "climate_change",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.5000000000000002,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627815",
         "source": "agent_response"
@@ -2667,7 +3282,7 @@
       "source": "climate_change",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.6000000000000003,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627821",
         "source": "agent_response"
@@ -2677,7 +3292,7 @@
       "source": "climate_change",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627827",
         "source": "agent_response"
@@ -2687,7 +3302,7 @@
       "source": "climate_change",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627830",
         "source": "agent_response"
@@ -2697,7 +3312,7 @@
       "source": "climate_change",
       "target": "available groups",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875263",
         "source": "agent_response"
@@ -2707,7 +3322,7 @@
       "source": "climate_change",
       "target": "which data group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875271",
         "source": "agent_response"
@@ -2717,7 +3332,7 @@
       "source": "climate_change",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875281",
         "source": "agent_response"
@@ -2730,6 +3345,26 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:18:46.273910",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_change",
+      "target": "a different group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:16:35.682748",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_change",
+      "target": "the data",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:16:35.682764",
         "source": "agent_response"
       }
     },
@@ -2747,7 +3382,7 @@
       "source": "prism",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179916",
         "source": "agent_response"
@@ -2767,7 +3402,7 @@
       "source": "prism",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179923",
         "source": "agent_response"
@@ -2777,7 +3412,7 @@
       "source": "prism",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627926",
         "source": "agent_response"
@@ -2787,7 +3422,7 @@
       "source": "prism",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627929",
         "source": "agent_response"
@@ -2797,7 +3432,7 @@
       "source": "prism",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.6000000000000003,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875356",
         "source": "agent_response"
@@ -2807,7 +3442,7 @@
       "source": "prism",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875363",
         "source": "agent_response"
@@ -2817,7 +3452,7 @@
       "source": "prism",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:15:59.840931",
         "source": "agent_response"
@@ -2827,7 +3462,7 @@
       "source": "prism",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:15:59.840960",
         "source": "agent_response"
@@ -2837,7 +3472,7 @@
       "source": "prism",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.5000000000000002,
       "attributes": {
         "added_at": "2025-04-13T14:15:59.840967",
         "source": "agent_response"
@@ -2850,6 +3485,26 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:18:46.274024",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "prism",
+      "target": "which data group",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:11.284247",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "prism",
+      "target": "available groups",
+      "type": "co_occurs_with",
+      "weight": 0.7999999999999999,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:07.016023",
         "source": "agent_response"
       }
     },
@@ -2947,7 +3602,7 @@
       "source": "data",
       "target": ".html",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973479",
         "source": "agent_response"
@@ -2957,7 +3612,7 @@
       "source": "data",
       "target": "the climate_change group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973483",
         "source": "agent_response"
@@ -2967,7 +3622,7 @@
       "source": "data",
       "target": "what type",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973486",
         "source": "agent_response"
@@ -2977,9 +3632,39 @@
       "source": "data",
       "target": ".csv",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973490",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "data",
+      "target": "the modis group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670416",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "data",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670423",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "data",
+      "target": "available formats",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670426",
         "source": "agent_response"
       }
     },
@@ -2997,7 +3682,7 @@
       "source": "nsrdb",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:17.179941",
         "source": "agent_response"
@@ -3007,7 +3692,7 @@
       "source": "nsrdb",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627837",
         "source": "agent_response"
@@ -3017,7 +3702,7 @@
       "source": "nsrdb",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.5000000000000002,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627840",
         "source": "agent_response"
@@ -3027,7 +3712,7 @@
       "source": "nsrdb",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 1.4000000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627846",
         "source": "agent_response"
@@ -3037,7 +3722,7 @@
       "source": "nsrdb",
       "target": "prism",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627849",
         "source": "agent_response"
@@ -3047,7 +3732,7 @@
       "source": "nsrdb",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627852",
         "source": "agent_response"
@@ -3057,7 +3742,7 @@
       "source": "nsrdb",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:20.627855",
         "source": "agent_response"
@@ -3077,7 +3762,7 @@
       "source": "nsrdb",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:15:59.841083",
         "source": "agent_response"
@@ -3097,9 +3782,29 @@
       "source": "nsrdb",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:18:46.274008",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "nsrdb",
+      "target": "which data group",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:11.284274",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "nsrdb",
+      "target": "available groups",
+      "type": "co_occurs_with",
+      "weight": 0.7999999999999999,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:07.016064",
         "source": "agent_response"
       }
     },
@@ -3317,7 +4022,7 @@
       "source": "1 .html files",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.4000000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:09:21.679679",
         "source": "agent_response"
@@ -3337,7 +4042,7 @@
       "source": "1 .html files",
       "target": "1 .md files",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:21.679686",
         "source": "agent_response"
@@ -3347,7 +4052,7 @@
       "source": "1 .html files",
       "target": "a specific type",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:21.679689",
         "source": "agent_response"
@@ -3357,7 +4062,7 @@
       "source": "1 .html files",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:21.679693",
         "source": "agent_response"
@@ -3407,7 +4112,7 @@
       "source": "1 .html files",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619529",
         "source": "agent_response"
@@ -3457,7 +4162,7 @@
       "source": "1 .html files",
       "target": "8 .png files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691759",
         "source": "agent_response"
@@ -3467,7 +4172,7 @@
       "source": "1 .html files",
       "target": "group 'groundwater",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691763",
         "source": "agent_response"
@@ -3480,6 +4185,16 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691766",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "1 .html files",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865625",
         "source": "agent_response"
       }
     },
@@ -3557,7 +4272,7 @@
       "source": "all files",
       "target": "1 .md files",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:21.679724",
         "source": "agent_response"
@@ -3667,7 +4382,7 @@
       "source": "all files",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299613",
         "source": "agent_response"
@@ -3680,6 +4395,16 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299619",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "all files",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865631",
         "source": "agent_response"
       }
     },
@@ -3737,7 +4462,7 @@
       "source": "1 .md files",
       "target": "a specific type",
       "type": "co_occurs_with",
-      "weight": 0.8999999999999999,
+      "weight": 1.2,
       "attributes": {
         "added_at": "2025-04-13T14:09:21.679751",
         "source": "agent_response"
@@ -3747,7 +4472,7 @@
       "source": "1 .md files",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:21.679754",
         "source": "agent_response"
@@ -3777,7 +4502,7 @@
       "source": "1 .md files",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:11:25.201555",
         "source": "agent_response"
@@ -3837,7 +4562,7 @@
       "source": "1 .md files",
       "target": "1 .html files",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691725",
         "source": "agent_response"
@@ -3857,7 +4582,7 @@
       "source": "1 .md files",
       "target": "8 .png files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691736",
         "source": "agent_response"
@@ -3867,7 +4592,7 @@
       "source": "1 .md files",
       "target": "group 'groundwater",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691739",
         "source": "agent_response"
@@ -3887,7 +4612,7 @@
       "source": "1 .md files",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691746",
         "source": "agent_response"
@@ -3897,7 +4622,7 @@
       "source": "a specific type",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:09:21.679761",
         "source": "agent_response"
@@ -3947,7 +4672,7 @@
       "source": "a specific type",
       "target": "1 .html files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619476",
         "source": "agent_response"
@@ -3957,7 +4682,7 @@
       "source": "a specific type",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619482",
         "source": "agent_response"
@@ -3977,7 +4702,7 @@
       "source": "a specific type",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619491",
         "source": "agent_response"
@@ -3997,7 +4722,7 @@
       "source": "a specific type",
       "target": "1 .md files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619498",
         "source": "agent_response"
@@ -4017,7 +4742,7 @@
       "source": "a specific type",
       "target": "8 .png files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691798",
         "source": "agent_response"
@@ -4027,7 +4752,7 @@
       "source": "a specific type",
       "target": "group 'groundwater",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691802",
         "source": "agent_response"
@@ -4050,6 +4775,16 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299651",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "a specific type",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865604",
         "source": "agent_response"
       }
     },
@@ -5517,7 +6252,7 @@
       "source": "available groups",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875290",
         "source": "agent_response"
@@ -5527,7 +6262,7 @@
       "source": "available groups",
       "target": "which data group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875294",
         "source": "agent_response"
@@ -5537,7 +6272,7 @@
       "source": "available groups",
       "target": "prism",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875297",
         "source": "agent_response"
@@ -5547,7 +6282,7 @@
       "source": "available groups",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.4000000000000001,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875300",
         "source": "agent_response"
@@ -5557,7 +6292,7 @@
       "source": "available groups",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875303",
         "source": "agent_response"
@@ -5567,7 +6302,7 @@
       "source": "available groups",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875307",
         "source": "agent_response"
@@ -5577,7 +6312,7 @@
       "source": "available groups",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875310",
         "source": "agent_response"
@@ -5587,7 +6322,7 @@
       "source": "available groups",
       "target": "nsrdb",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 1.0999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875313",
         "source": "agent_response"
@@ -5597,7 +6332,7 @@
       "source": "available groups",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297774",
         "source": "agent_response"
@@ -5607,7 +6342,7 @@
       "source": "available groups",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.9999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297777",
         "source": "agent_response"
@@ -5617,7 +6352,7 @@
       "source": "available groups",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 1.3,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297784",
         "source": "agent_response"
@@ -5637,7 +6372,7 @@
       "source": "which data group",
       "target": "gssurgo",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875340",
         "source": "agent_response"
@@ -5647,7 +6382,7 @@
       "source": "which data group",
       "target": "groundwater",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875343",
         "source": "agent_response"
@@ -5657,7 +6392,7 @@
       "source": "which data group",
       "target": "gov_units",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875346",
         "source": "agent_response"
@@ -5667,7 +6402,7 @@
       "source": "which data group",
       "target": "snodas",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:12:35.875350",
         "source": "agent_response"
@@ -5687,7 +6422,7 @@
       "source": "which data group",
       "target": "available groups",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297737",
         "source": "agent_response"
@@ -5697,7 +6432,7 @@
       "source": "which data group",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297740",
         "source": "agent_response"
@@ -5707,7 +6442,7 @@
       "source": "which data group",
       "target": "climate_change",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297747",
         "source": "agent_response"
@@ -5717,7 +6452,7 @@
       "source": "which data group",
       "target": "modis",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297751",
         "source": "agent_response"
@@ -5727,7 +6462,7 @@
       "source": "which data group",
       "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:17:48.297757",
         "source": "agent_response"
@@ -5747,7 +6482,7 @@
       "source": "group 'cdl",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:12:43.854902",
         "source": "agent_response"
@@ -5810,6 +6545,46 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:12:43.854924",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'cdl",
+      "target": "which file",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075058",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'cdl",
+      "target": "- cdl_data.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075062",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'cdl",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075065",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'cdl",
+      "target": "cdl_report.html",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075069",
         "source": "agent_response"
       }
     },
@@ -5977,7 +6752,7 @@
       "source": "- seasonal_cycle_tmax.png",
       "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831560",
         "source": "agent_response"
@@ -6007,7 +6782,7 @@
       "source": "- seasonal_cycle_tmax.png",
       "target": "files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831575",
         "source": "agent_response"
@@ -6027,7 +6802,7 @@
       "source": "- seasonal_cycle_tmax.png",
       "target": "- seasonal_cycle_pr.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831582",
         "source": "agent_response"
@@ -6127,7 +6902,7 @@
       "source": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
       "target": "- seasonal_cycle_pr.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831618",
         "source": "agent_response"
@@ -6187,7 +6962,7 @@
       "source": "- climate_timeseries.png",
       "target": "- spatial_change_pr.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831638",
         "source": "agent_response"
@@ -6197,7 +6972,7 @@
       "source": "- climate_timeseries.png",
       "target": "files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831641",
         "source": "agent_response"
@@ -6217,7 +6992,7 @@
       "source": "- climate_timeseries.png",
       "target": "- seasonal_cycle_pr.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831648",
         "source": "agent_response"
@@ -6237,7 +7012,7 @@
       "source": "- climate_timeseries.png",
       "target": "- spatial_change_tmean.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831655",
         "source": "agent_response"
@@ -6274,10 +7049,30 @@
       }
     },
     {
+      "source": "- climate_timeseries.png",
+      "target": "- seasonal_cycle_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943134",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- climate_timeseries.png",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943140",
+        "source": "agent_response"
+      }
+    },
+    {
       "source": "- spatial_change_pr.png",
       "target": "files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831670",
         "source": "agent_response"
@@ -6297,7 +7092,7 @@
       "source": "- spatial_change_pr.png",
       "target": "- seasonal_cycle_pr.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831677",
         "source": "agent_response"
@@ -6317,7 +7112,7 @@
       "source": "- spatial_change_pr.png",
       "target": "- spatial_change_tmean.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831684",
         "source": "agent_response"
@@ -6354,6 +7149,36 @@
       }
     },
     {
+      "source": "- spatial_change_pr.png",
+      "target": "the climate_change group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874236",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- spatial_change_pr.png",
+      "target": "- seasonal_cycle_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943148",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- spatial_change_pr.png",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943154",
+        "source": "agent_response"
+      }
+    },
+    {
       "source": "files",
       "target": "- seasonal_cycle_tmin.png",
       "type": "co_occurs_with",
@@ -6367,7 +7192,7 @@
       "source": "files",
       "target": "- seasonal_cycle_pr.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831702",
         "source": "agent_response"
@@ -6434,10 +7259,110 @@
       }
     },
     {
+      "source": "files",
+      "target": "- mod15a2h_lai_500m_anomaly.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035152",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": "- mod16a2_et_stats.csv",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035156",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": "mod15a2h_lai_500m_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035160",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": ".png files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035163",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": "1):\n- modis_comprehensive_report.md",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035167",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035170",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035173",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": "cdl_report.html",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075109",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075112",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "files",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943183",
+        "source": "agent_response"
+      }
+    },
+    {
       "source": "- seasonal_cycle_tmin.png",
       "target": "- seasonal_cycle_pr.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831723",
         "source": "agent_response"
@@ -6457,7 +7382,7 @@
       "source": "- seasonal_cycle_tmin.png",
       "target": "- spatial_change_tmean.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831730",
         "source": "agent_response"
@@ -6467,7 +7392,7 @@
       "source": "- seasonal_cycle_tmin.png",
       "target": "- seasonal_tmax.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831733",
         "source": "agent_response"
@@ -6487,9 +7412,69 @@
       "source": "- seasonal_cycle_tmin.png",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831739",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_cycle_tmin.png",
+      "target": "- spatial_change_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874216",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_cycle_tmin.png",
+      "target": "the climate_change group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874226",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_cycle_tmin.png",
+      "target": "- climate_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943054",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_cycle_tmin.png",
+      "target": "- seasonal_cycle_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943062",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_cycle_tmin.png",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943065",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_cycle_tmin.png",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943069",
         "source": "agent_response"
       }
     },
@@ -6507,7 +7492,7 @@
       "source": "- seasonal_cycle_pr.png",
       "target": "- spatial_change_tmean.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831746",
         "source": "agent_response"
@@ -6544,10 +7529,20 @@
       }
     },
     {
+      "source": "- seasonal_cycle_pr.png",
+      "target": "the climate_change group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874243",
+        "source": "agent_response"
+      }
+    },
+    {
       "source": "':\n\n.html files",
       "target": "- spatial_change_tmean.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831759",
         "source": "agent_response"
@@ -6557,7 +7552,7 @@
       "source": "':\n\n.html files",
       "target": "- seasonal_tmax.png",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831763",
         "source": "agent_response"
@@ -6577,9 +7572,79 @@
       "source": "':\n\n.html files",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:14:10.831769",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "':\n\n.html files",
+      "target": "- seasonal_cycle_tmin.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943014",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "':\n\n.html files",
+      "target": "- climate_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943024",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "':\n\n.html files",
+      "target": "- spatial_change_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943028",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "':\n\n.html files",
+      "target": "- seasonal_cycle_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943033",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "':\n\n.html files",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943037",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "':\n\n.html files",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943040",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "':\n\n.html files",
+      "target": "- seasonal_cycle_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943044",
         "source": "agent_response"
       }
     },
@@ -6614,6 +7679,56 @@
       }
     },
     {
+      "source": "- spatial_change_tmean.png",
+      "target": "the climate_change group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874248",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- spatial_change_tmean.png",
+      "target": "- seasonal_cycle_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943160",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- spatial_change_tmean.png",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943163",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- spatial_change_tmean.png",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943167",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- spatial_change_tmean.png",
+      "target": "- seasonal_cycle_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943170",
+        "source": "agent_response"
+      }
+    },
+    {
       "source": "- seasonal_tmax.png",
       "target": "climate_timeseries_comparison.png",
       "type": "co_occurs_with",
@@ -6634,12 +7749,182 @@
       }
     },
     {
-      "source": "climate_timeseries_comparison.png",
-      "target": "group",
+      "source": "- seasonal_tmax.png",
+      "target": "- climate_timeseries.png",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
+        "added_at": "2025-04-13T15:11:43.943105",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_tmax.png",
+      "target": "- spatial_change_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943108",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_tmax.png",
+      "target": "- spatial_change_tmean.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943112",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_tmax.png",
+      "target": "- seasonal_cycle_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943115",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_tmax.png",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943119",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_tmax.png",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943122",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- seasonal_tmax.png",
+      "target": "- seasonal_cycle_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943125",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "group",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
         "added_at": "2025-04-13T14:14:10.831789",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "':\n\n.html files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.942961",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "- seasonal_cycle_tmin.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.942972",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "- seasonal_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.942984",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "- climate_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.942988",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "- spatial_change_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.942992",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "- spatial_change_tmean.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.942996",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "- seasonal_cycle_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.942999",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943002",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943006",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate_timeseries_comparison.png",
+      "target": "- seasonal_cycle_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943009",
         "source": "agent_response"
       }
     },
@@ -6657,7 +7942,7 @@
       "source": "group",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619552",
         "source": "agent_response"
@@ -6677,7 +7962,7 @@
       "source": "group",
       "target": "1 .md files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619559",
         "source": "agent_response"
@@ -6697,7 +7982,7 @@
       "source": "group",
       "target": "a specific type",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299644",
         "source": "agent_response"
@@ -6710,6 +7995,116 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299647",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865580",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "1 .html files",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865583",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865590",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "- seasonal_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943076",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "- climate_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943080",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "- spatial_change_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943083",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "- spatial_change_tmean.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943086",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "- seasonal_cycle_tmax.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943090",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943093",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943097",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group",
+      "target": "- seasonal_cycle_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.943101",
         "source": "agent_response"
       }
     },
@@ -6727,7 +8122,7 @@
       "source": "- multi_scenario_climate_change_summary.csv\n- spatial_pr.csv\n- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:14:31.523136",
         "source": "agent_response"
@@ -6737,7 +8132,7 @@
       "source": "- multi_scenario_climate_change_summary.csv\n- spatial_pr.csv\n- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
       "target": "the climate_change group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:14:31.523141",
         "source": "agent_response"
@@ -6747,9 +8142,19 @@
       "source": "- multi_scenario_climate_change_summary.csv\n- spatial_pr.csv\n- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
       "target": "5 .csv files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:14:31.523144",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- multi_scenario_climate_change_summary.csv\n- spatial_pr.csv\n- spatial_tmax.csv\n- spatial_tmean.csv\n- spatial_tmin.csv",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:34:32.840063",
         "source": "agent_response"
       }
     },
@@ -6780,6 +8185,86 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973506",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "5 .csv files",
+      "target": "group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572193",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "5 .csv files",
+      "target": "a specific type",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572196",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "5 .csv files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572199",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "5 .csv files",
+      "target": "1 .html files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572204",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "5 .csv files",
+      "target": "all files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572207",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "5 .csv files",
+      "target": "1 .md files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572211",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "5 .csv files",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:34:32.840087",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "5 .csv files",
+      "target": "the climate_change group",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:34:32.840096",
         "source": "agent_response"
       }
     },
@@ -6817,7 +8302,7 @@
       "source": "26 files",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619566",
         "source": "agent_response"
@@ -6837,7 +8322,7 @@
       "source": "26 files",
       "target": "1 .md files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619573",
         "source": "agent_response"
@@ -6847,9 +8332,49 @@
       "source": "26 files",
       "target": "5 .csv files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619577",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "26 files",
+      "target": "group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572173",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "26 files",
+      "target": "a specific type",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572176",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "26 files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572180",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "26 files",
+      "target": "1 .html files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572183",
         "source": "agent_response"
       }
     },
@@ -6857,7 +8382,7 @@
       "source": "19 .png files",
       "target": "1 .md files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619590",
         "source": "agent_response"
@@ -6867,9 +8392,129 @@
       "source": "19 .png files",
       "target": "5 .csv files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:16:06.619593",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "26 files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572124",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572141",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "a specific type",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572146",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572151",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "1 .html files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572156",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "all files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.572161",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874136",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "- seasonal_cycle_tmin.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874152",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "- spatial_change_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874157",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "- seasonal_cycle_pr.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874161",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "- spatial_change_tmean.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874165",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "19 .png files",
+      "target": "the climate_change group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:13.874169",
         "source": "agent_response"
       }
     },
@@ -6917,7 +8562,7 @@
       "source": "available formats",
       "target": "the climate_change group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973427",
         "source": "agent_response"
@@ -6937,7 +8582,7 @@
       "source": "available formats",
       "target": ".csv",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973435",
         "source": "agent_response"
@@ -6947,7 +8592,7 @@
       "source": ".md",
       "target": "data",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973463",
         "source": "agent_response"
@@ -6957,7 +8602,7 @@
       "source": ".md",
       "target": ".html",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973466",
         "source": "agent_response"
@@ -6967,7 +8612,7 @@
       "source": ".md",
       "target": "the climate_change group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973469",
         "source": "agent_response"
@@ -6977,7 +8622,7 @@
       "source": ".md",
       "target": "what type",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973472",
         "source": "agent_response"
@@ -6987,9 +8632,49 @@
       "source": ".md",
       "target": ".csv",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973476",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".md",
+      "target": "the modis group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670391",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".md",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670401",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".md",
+      "target": "available formats",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670405",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".md",
+      "target": "group 'prism",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.882177",
         "source": "agent_response"
       }
     },
@@ -6997,7 +8682,7 @@
       "source": ".html",
       "target": "the climate_change group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973493",
         "source": "agent_response"
@@ -7017,9 +8702,29 @@
       "source": ".html",
       "target": ".csv",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973499",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".html",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670464",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".html",
+      "target": "available formats",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670467",
         "source": "agent_response"
       }
     },
@@ -7027,9 +8732,79 @@
       "source": "what type",
       "target": ".csv",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:16:18.973510",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "what type",
+      "target": "the modis group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670433",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "what type",
+      "target": ".html",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670436",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "what type",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670440",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "what type",
+      "target": "available formats",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670443",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "what type",
+      "target": "the climate_change group",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:04.410654",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "what type",
+      "target": "data",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:28.509048",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": ".csv",
+      "target": "the climate_change group",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:33:04.410701",
         "source": "agent_response"
       }
     },
@@ -7127,7 +8902,7 @@
       "source": "12 files",
       "target": "a specific type",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691776",
         "source": "agent_response"
@@ -7137,7 +8912,7 @@
       "source": "12 files",
       "target": "8 .png files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691780",
         "source": "agent_response"
@@ -7147,7 +8922,7 @@
       "source": "12 files",
       "target": "group 'groundwater",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691783",
         "source": "agent_response"
@@ -7157,7 +8932,7 @@
       "source": "12 files",
       "target": "2 .csv files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691787",
         "source": "agent_response"
@@ -7167,7 +8942,7 @@
       "source": "12 files",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691790",
         "source": "agent_response"
@@ -7177,9 +8952,39 @@
       "source": "12 files",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691794",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "12 files",
+      "target": "1 .md files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:14.096779",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "12 files",
+      "target": "1 .html files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:14.096797",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "12 files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:14.096808",
         "source": "agent_response"
       }
     },
@@ -7207,7 +9012,7 @@
       "source": "8 .png files",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691822",
         "source": "agent_response"
@@ -7217,7 +9022,7 @@
       "source": "8 .png files",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691825",
         "source": "agent_response"
@@ -7277,7 +9082,7 @@
       "source": "group 'groundwater",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691832",
         "source": "agent_response"
@@ -7287,7 +9092,7 @@
       "source": "group 'groundwater",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691835",
         "source": "agent_response"
@@ -7314,10 +9119,30 @@
       }
     },
     {
+      "source": "group 'groundwater",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:14.096886",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'groundwater",
+      "target": "8 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:14.096890",
+        "source": "agent_response"
+      }
+    },
+    {
       "source": "2 .csv files",
       "target": "group",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691839",
         "source": "agent_response"
@@ -7327,7 +9152,7 @@
       "source": "2 .csv files",
       "target": "all files",
       "type": "co_occurs_with",
-      "weight": 0.6,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:17:52.691842",
         "source": "agent_response"
@@ -7337,7 +9162,7 @@
       "source": "2 .csv files",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.8999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299497",
         "source": "agent_response"
@@ -7347,7 +9172,7 @@
       "source": "2 .csv files",
       "target": "8 .png files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299512",
         "source": "agent_response"
@@ -7357,7 +9182,7 @@
       "source": "2 .csv files",
       "target": "1 .md files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299518",
         "source": "agent_response"
@@ -7367,7 +9192,7 @@
       "source": "2 .csv files",
       "target": "1 .html files",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299528",
         "source": "agent_response"
@@ -7377,7 +9202,7 @@
       "source": "2 .csv files",
       "target": "group 'groundwater",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299532",
         "source": "agent_response"
@@ -7387,7 +9212,7 @@
       "source": "2 .csv files",
       "target": "a specific type",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.7999999999999999,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299538",
         "source": "agent_response"
@@ -7400,6 +9225,26 @@
       "weight": 0.5,
       "attributes": {
         "added_at": "2025-04-13T14:18:52.299542",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "2 .csv files",
+      "target": "the groundwater group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:24.183506",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "2 .csv files",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:24.183510",
         "source": "agent_response"
       }
     },
@@ -7427,7 +9272,7 @@
       "source": "the groundwater group",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:19:00.794157",
         "source": "agent_response"
@@ -7437,7 +9282,7 @@
       "source": "the groundwater group",
       "target": "which one",
       "type": "co_occurs_with",
-      "weight": 0.5,
+      "weight": 0.6,
       "attributes": {
         "added_at": "2025-04-13T14:19:00.794171",
         "source": "agent_response"
@@ -7471,6 +9316,1426 @@
       "attributes": {
         "added_at": "2025-04-13T14:19:00.794187",
         "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865486",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "4 .csv files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865492",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865496",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "a specific type",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865500",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865504",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "1 .html files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865507",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "all files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865511",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865514",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "24 files",
+      "target": "1 .md files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865518",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "4 .csv files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865522",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865525",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "a specific type",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865529",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865533",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "1 .html files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865536",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "all files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865540",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865543",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "1 .md files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865546",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "group 'modis",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035257",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "4 .csv files",
+      "target": "group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865550",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "4 .csv files",
+      "target": "a specific type",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865554",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "4 .csv files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865557",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "4 .csv files",
+      "target": "1 .html files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865560",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "4 .csv files",
+      "target": "all files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865563",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "4 .csv files",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865567",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "4 .csv files",
+      "target": "1 .md files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865571",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "18 .png files",
+      "target": "1 .md files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:30.865637",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the modis group",
+      "target": ".html",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670450",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the modis group",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670454",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the modis group",
+      "target": "available formats",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670457",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the modis group",
+      "target": ".csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:41.670460",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the modis group",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955821",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the modis group",
+      "target": "mod13q1_evi_anomaly.png\n- mod13q1_evi_seasonal.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955825",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the modis group",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955829",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod16a2_et_spatial.png",
+      "target": "mod15a2h_lai_500m_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955774",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod16a2_et_spatial.png",
+      "target": "the modis group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955781",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod16a2_et_spatial.png",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955785",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod16a2_et_spatial.png",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955789",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod16a2_et_spatial.png",
+      "target": "mod13q1_evi_anomaly.png\n- mod13q1_evi_seasonal.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955792",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod16a2_et_spatial.png",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955796",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": "the modis group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955800",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955804",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955807",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": "mod13q1_evi_anomaly.png\n- mod13q1_evi_seasonal.png",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955810",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955813",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": ".png files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035215",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": "1):\n- modis_comprehensive_report.md",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035219",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035222",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod15a2h_lai_500m_timeseries.png",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035226",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "mod13q1_evi_anomaly.png\n- mod13q1_evi_seasonal.png",
+      "target": "18 .png files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:30:49.955850",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "list climate_change",
+      "target": "list climate_change data",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:32:28.565151",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "list climate_change data",
+      "target": "list climate_change",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:43.926976",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "what",
+      "target": "the report",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.035906",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "what",
+      "target": "the landcover",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.035910",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "multiple matching files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:34:53.842996",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "multiple matching files",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:34:53.843004",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "multiple matching files",
+      "target": "- spatial_tmin.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:34:53.843009",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- spatial_tmean.csv\n- spatial_tmean.png",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:35:16.757069",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- spatial_tmean.csv\n- spatial_tmean.png",
+      "target": "multiple matching files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:35:16.757077",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- groundwater_stats.csv\n- groundwater_stats_percentiles.csv",
+      "target": "2 .csv files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:24.183484",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- groundwater_stats.csv\n- groundwater_stats_percentiles.csv",
+      "target": "the groundwater group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:24.183493",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- groundwater_stats.csv\n- groundwater_stats_percentiles.csv",
+      "target": "which one",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:24.183498",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- groundwater_stats.csv\n- groundwater_stats_percentiles.csv",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:24.183502",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- groundwater_stats_percentiles.csv",
+      "target": "multiple matching files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:37.262065",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- groundwater_stats_percentiles.csv",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:40:37.262074",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "your question",
+      "target": "the available data groups",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:55:27.025258",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "your question",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:18.492471",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the available data groups",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:18.492488",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the available data groups",
+      "target": "your question",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:12.217699",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the list",
+      "target": "prism data",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.873337",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "the list",
+      "target": "what",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.873343",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "prism data",
+      "target": "what",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.873347",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "prism_spatial.png\n- prism_timeseries.png",
+      "target": "1):\n- prism_stats.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.882156",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "prism_spatial.png\n- prism_timeseries.png",
+      "target": ".md",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.882161",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "prism_spatial.png\n- prism_timeseries.png",
+      "target": "group 'prism",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.882166",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "1):\n- prism_stats.csv",
+      "target": ".md",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.882170",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "1):\n- prism_stats.csv",
+      "target": "group 'prism",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:56:42.882173",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the action",
+      "target": "an error",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:57:10.824791",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "an error",
+      "target": "the action",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:24.291540",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": "- products_comparison.png\n\n.csv files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035086",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035092",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": "- mod15a2h_lai_500m_anomaly.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035097",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": "- mod16a2_et_stats.csv",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035100",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": "mod15a2h_lai_500m_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035104",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": ".png files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035108",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": "1):\n- modis_comprehensive_report.md",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035112",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035115",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "product_correlations.png",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035120",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- products_comparison.png\n\n.csv files",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035124",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- products_comparison.png\n\n.csv files",
+      "target": "- mod15a2h_lai_500m_anomaly.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035128",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- products_comparison.png\n\n.csv files",
+      "target": "- mod16a2_et_stats.csv",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035132",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- products_comparison.png\n\n.csv files",
+      "target": "mod15a2h_lai_500m_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035135",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- products_comparison.png\n\n.csv files",
+      "target": ".png files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035138",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- products_comparison.png\n\n.csv files",
+      "target": "1):\n- modis_comprehensive_report.md",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035141",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- products_comparison.png\n\n.csv files",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035145",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- products_comparison.png\n\n.csv files",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035148",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod15a2h_lai_500m_anomaly.png",
+      "target": "- mod16a2_et_stats.csv",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035177",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod15a2h_lai_500m_anomaly.png",
+      "target": "mod15a2h_lai_500m_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035181",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod15a2h_lai_500m_anomaly.png",
+      "target": ".png files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035184",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod15a2h_lai_500m_anomaly.png",
+      "target": "1):\n- modis_comprehensive_report.md",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035187",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod15a2h_lai_500m_anomaly.png",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035190",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod15a2h_lai_500m_anomaly.png",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035194",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod16a2_et_stats.csv",
+      "target": "mod15a2h_lai_500m_timeseries.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035197",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod16a2_et_stats.csv",
+      "target": ".png files",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035201",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod16a2_et_stats.csv",
+      "target": "1):\n- modis_comprehensive_report.md",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035204",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod16a2_et_stats.csv",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035208",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- mod16a2_et_stats.csv",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035211",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".png files",
+      "target": "1):\n- modis_comprehensive_report.md",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035239",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".png files",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035242",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": ".png files",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035245",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "1):\n- modis_comprehensive_report.md",
+      "target": "group 'modis",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035249",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "1):\n- modis_comprehensive_report.md",
+      "target": "mod16a2_et_seasonal.png\n- mod16a2_et_spatial.png",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:58:28.035253",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the report",
+      "target": "the landcover",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.035914",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "the logs",
+      "target": "the action handler",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.040408",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the logs",
+      "target": "an empty response",
+      "type": "co_occurs_with",
+      "weight": 0.7,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.040414",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the action handler",
+      "target": "an empty response",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:15.040418",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "an empty response",
+      "target": "the action handler",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T15:11:02.809862",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "climate impact",
+      "target": "what images",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T14:59:59.414473",
+        "source": "user_query"
+      }
+    },
+    {
+      "source": "a different group",
+      "target": "modis",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:00:26.114040",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "a different group",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.6,
+      "attributes": {
+        "added_at": "2025-04-13T15:00:26.114043",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "a different group",
+      "target": "the data",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:16:35.682777",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_composition.png\n    - cdl_diversity.png\n    - cdl_rotation.png\n    - cdl_trends.png",
+      "target": "cdl_report.md\n  .csv files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.074998",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_composition.png\n    - cdl_diversity.png\n    - cdl_rotation.png\n    - cdl_trends.png",
+      "target": "group 'cdl",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075010",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_composition.png\n    - cdl_diversity.png\n    - cdl_rotation.png\n    - cdl_trends.png",
+      "target": "which file",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075015",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_composition.png\n    - cdl_diversity.png\n    - cdl_rotation.png\n    - cdl_trends.png",
+      "target": "- cdl_data.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075019",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_composition.png\n    - cdl_diversity.png\n    - cdl_rotation.png\n    - cdl_trends.png",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075022",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_composition.png\n    - cdl_diversity.png\n    - cdl_rotation.png\n    - cdl_trends.png",
+      "target": "cdl_report.html",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075027",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_composition.png\n    - cdl_diversity.png\n    - cdl_rotation.png\n    - cdl_trends.png",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075031",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "cdl_report.md\n  .csv files",
+      "target": "group 'cdl",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075036",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "cdl_report.md\n  .csv files",
+      "target": "which file",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075039",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "cdl_report.md\n  .csv files",
+      "target": "- cdl_data.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075043",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "cdl_report.md\n  .csv files",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075046",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "cdl_report.md\n  .csv files",
+      "target": "cdl_report.html",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075050",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "cdl_report.md\n  .csv files",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075053",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which file",
+      "target": "- cdl_data.csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075083",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which file",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075087",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which file",
+      "target": "cdl_report.html",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075091",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "which file",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075094",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_data.csv",
+      "target": "files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075098",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_data.csv",
+      "target": "cdl_report.html",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075101",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "- cdl_data.csv",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075105",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "cdl_report.html",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:10:41.075117",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the seasonal_pr.png",
+      "target": "what",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-13T15:12:05.390951",
+        "source": "user_query"
       }
     }
   ]

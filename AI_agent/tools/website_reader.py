@@ -87,7 +87,10 @@ def website_reader(url: Optional[str] = None, max_links: Optional[int] = None, m
     from agno.agent import Agent
     agent = Agent(
         knowledge=knowledge_base,
-        search_knowledge=True
+        search_knowledge=True,
+        debug_mode=False,
+        show_tool_calls=False,
+        reasoning=False
     )
     log.info("Agent created with website knowledge")
 

@@ -136,11 +136,12 @@ run_reader_single_file() {
             print_color $BLUE "Running text reader for $filename..."
             python3 -c "
 import dir_discover
-from text_reader import analyze_report
+from text_reader import text_reader
 try:
     reports = dir_discover.discover_reports(silent=True, recursive=True)
     file_info = reports['$report']['groups']['$group']['files']['$ext']['$filename']
-    analyze_report(file_info['path'])
+    response = text_reader(file_info['path'])
+    print(response)
 except Exception as e:
     print(f'Error: {str(e)}')
 "
@@ -199,7 +200,7 @@ run_reader_group() {
             print_color $BLUE "Running text reader for all text files..."
             python3 -c "
 import dir_discover
-from text_reader import analyze_report
+from text_reader import text_reader
 try:
     reports = dir_discover.discover_reports(silent=True, recursive=True)
     report_data = reports['$report']['groups']['$group']['files']
@@ -207,7 +208,8 @@ try:
         if ext in report_data:
             for filename, file_info in report_data[ext].items():
                 print(f'\nAnalyzing {filename}...')
-                analyze_report(file_info['path'])
+                response = text_reader(file_info['path'])
+                print(response)
 except Exception as e:
     print(f'Error: {str(e)}')
 "

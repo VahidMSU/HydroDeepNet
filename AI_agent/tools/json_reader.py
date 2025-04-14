@@ -92,6 +92,9 @@ def json_reader(json_path: Optional[str] = None, recreate_db_str: str = "false",
     agent = Agent(
         knowledge=knowledge_base,
         search_knowledge=True,
+        debug_mode=False,
+        show_tool_calls=False,
+        reasoning=False
     )
     log.info("Agent created with JSON knowledge")
 
