@@ -10,7 +10,10 @@ from collections import defaultdict
 import re
 import time
 import shutil
-from Logger import LoggerSetup
+try:
+    from .Logger import LoggerSetup
+except ImportError:
+    from Logger import LoggerSetup
 import uuid
 import copy
 

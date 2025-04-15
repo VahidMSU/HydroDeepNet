@@ -2,7 +2,10 @@ import re
 import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime
-from Logger import LoggerSetup
+try:
+    from .Logger import LoggerSetup
+except ImportError:
+    from Logger import LoggerSetup
 
 class QueryUnderstanding:
     """

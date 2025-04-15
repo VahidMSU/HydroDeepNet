@@ -1,6 +1,10 @@
-import os
+
 import re
-from utils import summarize_csv, describe_image, describe_markdown
+import os
+try:
+    from .utils import summarize_csv, describe_image, describe_markdown
+except ImportError:
+    from utils import summarize_csv, describe_image, describe_markdown
 import ollama
 
 

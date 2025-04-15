@@ -2,7 +2,10 @@ from typing import Dict, List, Any, Optional
 import os
 import json
 import re
-from Logger import LoggerSetup
+try:
+    from .Logger import LoggerSetup
+except ImportError:
+    from Logger import LoggerSetup
 
 class ResponseGenerator:
     """

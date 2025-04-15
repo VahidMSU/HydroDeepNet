@@ -1,7 +1,10 @@
 import os
 import json
 from pathlib import Path
-from Logger import LoggerSetup
+try:
+    from .Logger import LoggerSetup
+except ImportError:
+    from Logger import LoggerSetup
 def discover_reports(base_dir):
     """
     Discovers all files in the base directory and organizes them in a structured dictionary.

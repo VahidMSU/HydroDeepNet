@@ -5,20 +5,26 @@ from llama_index.core.schema import TextNode
 from pathlib import Path
 import json
 import os
-from Logger import LoggerSetup
-from memory_system import MemorySystem
-from query_understanding import QueryUnderstanding
-from response_generator import ResponseGenerator
 import concurrent.futures
 import multiprocessing
 import uuid
-from UserQueryAgent import UserQueryAgent
-from utils import describe_markdown, describe_image, summarize_csv
-import os
-import multiprocessing
-from discover_reports import discover_reports
-import re
-from llama_index.core.schema import TextNode
+try:
+    from .Logger import LoggerSetup
+    from .memory_system import MemorySystem
+    from .query_understanding import QueryUnderstanding
+    from .response_generator import ResponseGenerator
+    from .UserQueryAgent import UserQueryAgent
+    from .utils import describe_markdown, describe_image, summarize_csv
+    from .discover_reports import discover_reports
+except ImportError:
+    from Logger import LoggerSetup
+    from memory_system import MemorySystem
+    from query_understanding import QueryUnderstanding
+    from response_generator import ResponseGenerator
+    from UserQueryAgent import UserQueryAgent
+    from utils import describe_markdown, describe_image, summarize_csv
+    from discover_reports import discover_reports
+
 
 # ==== FILE INDEXING WITH PARALLEL PROCESSING ====
 def load_all_documents(report_dir, logger, only_md_files=True, max_workers=4):

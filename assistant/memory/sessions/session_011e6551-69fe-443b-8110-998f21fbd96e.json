@@ -1,0 +1,40 @@
+{
+  "id": "011e6551-69fe-443b-8110-998f21fbd96e",
+  "start_time": "2025-04-15T14:12:39.566640",
+  "interactions": [
+    {
+      "id": "d4408b9d-6b74-4258-ad4c-31f7d37f65d5",
+      "timestamp": "2025-04-15T14:12:39.567648",
+      "query": "list all files",
+      "query_analysis": "Listed 74 all files from the report.",
+      "response": {
+        "keywords": [
+          "list",
+          "all",
+          "files"
+        ],
+        "intent": "search"
+      },
+      "relevant_files": []
+    },
+    {
+      "id": "e9a31635-f3ef-48f1-971d-a4dec0bb76b1",
+      "timestamp": "2025-04-15T14:12:39.567890",
+      "query": "list all files",
+      "query_analysis": "Listed files files",
+      "response": {
+        "keywords": [
+          "list",
+          "files",
+          "files"
+        ],
+        "intent": "search"
+      },
+      "relevant_files": []
+    }
+  ],
+  "user_preferences": {},
+  "mentioned_files": [],
+  "mentioned_datasets": [],
+  "context": {}
+}
