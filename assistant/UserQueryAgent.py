@@ -1,4 +1,3 @@
-
 import re
 import os
 try:
@@ -172,9 +171,9 @@ class UserQueryAgent:
         
         Args:
             file_type: Type of files to list ('csv', 'image', 'markdown', 'all')
-            report_structure: Dictionary containing report file structure
-            memory: MemorySystem instance
-            logger: Logger instance
+            
+        Returns:
+            str: Formatted string with the list of files
         """
         self.logger.info(f"list_files function called with file_type: '{file_type}'")
         
@@ -208,9 +207,12 @@ class UserQueryAgent:
         extensions = type_to_extensions.get(file_type)
         if extensions is None and file_type.lower() != 'all':
             self.logger.warning(f"Unknown file type: {file_type}. Falling back to 'all'")
-            print(f"I'm not familiar with '{file_type}' files. Showing all files instead.")
+            file_type_message = f"I'm not familiar with '{file_type}' files. Showing all files instead."
+            print(file_type_message)  # Still print for console users
             extensions = None
             file_type = 'all'
+        else:
+            file_type_message = ""
         
         # Collect files matching the criteria
         matching_files = []
@@ -246,7 +248,7 @@ class UserQueryAgent:
         # If no files found
         if not matching_files:
             message = f"No {file_type} files found in the report."
-            print(message)
+            print(message)  # Still print for console users
             
             # Store in memory
             query_info = {
@@ -254,7 +256,7 @@ class UserQueryAgent:
                 "intent": "search"
             }
             self.memory.store_interaction(f"list {file_type} files", message, query_info, [])
-            return
+            return message
         
         # Group files by their group (folder)
         files_by_group = {}
@@ -265,7 +267,9 @@ class UserQueryAgent:
         
         # Format output message
         output_lines = [f"Found {len(matching_files)} {file_type} files:"]
-        
+        if file_type_message:
+            output_lines.insert(0, file_type_message)
+            
         for group, files in files_by_group.items():
             output_lines.append(f"\n{group} ({len(files)} files):")
             
@@ -296,9 +300,9 @@ class UserQueryAgent:
                 output_lines.append(f"  • ...and {len(analyzed_files) - 5} more")
             output_lines.append("\nYou can ask me about these files directly.")
         
-        # Get document status
+        # Create the final output message
         output_message = "\n".join(output_lines)
-        print(output_message)
+        print(output_message)  # Still print for console users
         
         # Save to memory
         query_info = {
@@ -307,10 +311,12 @@ class UserQueryAgent:
         }
         self.memory.store_interaction(
             f"list {file_type} files", 
-            f"Listed {len(matching_files)} {file_type} files from the report.",
+            output_message,
             query_info,
             []
         )
+        
+        return output_message
 
     def process_query(self, user_input, query_engine=None):
         """
@@ -450,6 +456,10 @@ class UserQueryAgent:
         self.logger.info("No command pattern matched, treating as general query")
         return None
         
+    def _extract_keywords(self, query):
+        """Extract keywords from a query using the query understanding module"""
+        return self.query_understanding._extract_keywords(query)
+        
     def _handle_command(self, command_type, command_args, original_query):
         """Handle a matched command"""
         self.logger.info(f"Handling command: {command_type} with args: {command_args}")
@@ -464,17 +474,17 @@ class UserQueryAgent:
                 self.logger.info(f"Processing 'list all' command for file type: {file_type}")
             
             self.logger.info(f"Listing files of type: {file_type}")
-            self.list_files(file_type)
+            response = self.list_files(file_type)
             
             # Store command in memory with appropriate intent
             query_info = {
                 "keywords": ["list", file_type, "files"],
                 "intent": "search"
             }
-            self.memory.store_interaction(original_query, f"Listed {file_type} files", query_info, [])
+            self.memory.store_interaction(original_query, response, query_info, [])
             
-            # The list_files function already prints output, so we return None
-            return None
+            # Return the response from list_files
+            return response
             
         elif command_type in ["analyze", "show"]:
             # For analysis commands, process with analyze intent
@@ -492,22 +502,66 @@ class UserQueryAgent:
             lower_args = command_args.lower()
             
             # Check against dataset names first
-            for dataset in self.query_understanding.known_datasets:
-                print(f"dataset: {dataset}")
-                print(f"lower_args: {lower_args}")
-                print(f"known_datasets: {self.query_understanding.known_datasets[dataset]}")
-                if dataset in lower_args or any(term in lower_args for term in self.query_understanding.known_datasets[dataset][:3]):
-                    query_info = {
-                        "intent": "dataset_inquiry",
-                        "target_dataset": dataset,
-                        "keywords": lower_args.split()
-                    }
-                    enhanced_query = self.query_understanding.enhance_query(original_query, query_info, self.memory)
-                    return self._handle_dataset_inquiry(enhanced_query, original_query)
+            for dataset_name in self.query_understanding.known_datasets:
+                if isinstance(self.query_understanding.known_datasets, list):
+                    # Handle the case where known_datasets is a list
+                    dataset_terms = []
+                    if dataset_name in lower_args:
+                        query_info = {
+                            "intent": "dataset_inquiry",
+                            "target_dataset": dataset_name,
+                            "keywords": lower_args.split()
+                        }
+                        enhanced_query = self.query_understanding.enhance_query(original_query, query_info, self.memory)
+                        result = self._handle_dataset_inquiry(enhanced_query, original_query)
+                        if result:
+                            return result
+                else:
+                    # Handle the case where known_datasets is a dict
+                    dataset_terms = self.query_understanding.known_datasets.get(dataset_name, [])[:3]
+                    if dataset_name in lower_args or any(term in lower_args for term in dataset_terms):
+                        query_info = {
+                            "intent": "dataset_inquiry",
+                            "target_dataset": dataset_name,
+                            "keywords": lower_args.split()
+                        }
+                        enhanced_query = self.query_understanding.enhance_query(original_query, query_info, self.memory)
+                        result = self._handle_dataset_inquiry(enhanced_query, original_query)
+                        if result:
+                            return result
             
-            # Not a dataset, treat as general query
-            return None
+            # Not a dataset, treat as general query with query engine
+            query_engine = getattr(self, 'query_engine', None)
+            try:
+                # Process through regular query understanding pipeline
+                query_info = self.query_understanding.analyze_query(original_query)
+                enhanced_query = self.query_understanding.enhance_query(original_query, query_info, self.memory)
+                
+                # Get RAG response for general questions if query_engine is available
+                if query_engine:
+                    rag_response, history = ask_query(
+                        query_engine, 
+                        original_query, 
+                        self.conversation_history, 
+                        self.memory, 
+                        self.DEFAULT_MODEL
+                    )
+                    self.conversation_history = history
+                    
+                    # Polish with completion agent
+                    polished_answer = completion_agent(rag_response, original_query, self.DEFAULT_MODEL, self.logger)
+                    
+                    # Store in memory
+                    self.memory.store_interaction(original_query, polished_answer, query_info, [])
+                    
+                    return polished_answer
+            except Exception as e:
+                self.logger.warning(f"Error using query engine: {str(e)}")
             
+            # Fallback message if no query engine or it fails
+            fallback_response = f"I don't have specific information about '{command_args}'. Try asking about available datasets or files, or use the 'list' command to see what's available."
+            return completion_agent(fallback_response, original_query, self.DEFAULT_MODEL, self.logger)
+        
         elif command_type == "help":
             help_response = (
                 "I can help you with the following:\n"
@@ -522,7 +576,9 @@ class UserQueryAgent:
             query_info = {"intent": "help", "keywords": ["help"]}
             self.memory.store_interaction(original_query, help_response, query_info, [])
             
-            return help_response
+            # Polish the response with completion agent for consistency
+            polished_response = completion_agent(help_response, original_query, self.DEFAULT_MODEL, self.logger)
+            return polished_response
         
         # If no command matched or not handled, return None to fall back to standard processing
         return None
@@ -650,7 +706,6 @@ class UserQueryAgent:
                                 self.logger.info(f"Found exact match: {file_path}")
                                 file_paths.append(file_path)
                                 has_explicit_file_reference = True
-                                file_found = True
                 
                 # If no exact match, try partial match
                 if not file_found:
@@ -663,7 +718,6 @@ class UserQueryAgent:
                                     self.logger.info(f"Found partial match: {file_path}")
                                     file_paths.append(file_path)
                                     has_explicit_file_reference = True
-                                    file_found = True
                 
                 # If still no match, log it
                 if not file_found:
