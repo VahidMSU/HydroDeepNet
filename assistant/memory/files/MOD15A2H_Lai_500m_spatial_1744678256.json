@@ -1,0 +1,10 @@
+{
+  "original_path": "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_spatial.png",
+  "file_name": "MOD15A2H_Lai_500m_spatial.png",
+  "file_type": "image",
+  "content": "The image presents a leaf area index (LAI) map, which is a measure of the amount of leaf tissue per unit ground surface area. The LAI values are represented by different shades of green, with darker greens indicating higher LAI values.\n\n*   **Title**: \"Leaf Area Index - Image 1\"\n*   **Color Key**:\n    *   Dark Green: High LAI (2.00)\n    *   Light Green: Medium LAI (0.75-1.50)\n    *   Yellowish-Green: Low LAI (<0.75)\n*   **Image Description**: The image shows a square-shaped area with varying shades of green, indicating different LAI values.\n*   **Statistics**:\n    *   Maximum LAI value: 2.00\n    *   Minimum LAI value: Not specified\n\nThe leaf area index map provides valuable information about the spatial distribution of vegetation cover and its potential impact on local ecosystems. The varying shades of green allow for easy identification of areas with high, medium, or low LAI values, making it a useful tool for land use planning, conservation efforts, and environmental monitoring.",
+  "added_timestamp": "2025-04-14T20:50:56.818074",
+  "metadata": {
+    "prompt": "Analyze the image and describe it in detail"
+  }
+}

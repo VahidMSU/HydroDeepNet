@@ -1,0 +1,25 @@
+{
+  "session_id": "20250414_220255",
+  "interaction_id": "20250414_220255_12",
+  "timestamp": "2025-04-14T22:03:28.527704",
+  "query": "list all markdown",
+  "response": "I found 5 relevant files:\n1. MOD16A2_ET_spatial.png (image): The image presents a visual representation of evapotranspiration data, with the title \"Evapotranspir...\n2. MOD13Q1_EVI_stats.csv (csv): The provided CSV file contains summary statistics for the Enhanced Vegetation Index (EVI) data from ...\n3. MOD13Q1_NDVI_stats.csv (csv): This is a summary statistics report for the NDVI (Normalized Difference Vegetation Index) values fro...\n4. MOD15A2H_Lai_500m_spatial.png (image): The image presents a leaf area index (LAI) map, which is a measure of the amount of leaf tissue per ...\n5. MOD15A2H_Lai_500m_stats.csv (csv): The CSV file contains summary statistics for a dataset of MODIS (Moderate Resolution Imaging Spectro...",
+  "query_info": {
+    "original_query": "list all markdown",
+    "keywords": [
+      "list",
+      "all",
+      "markdown"
+    ],
+    "length": 17,
+    "intent": "search",
+    "entities": []
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD16A2_ET/MOD16A2_ET_spatial.png",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_EVI/MOD13Q1_EVI_stats.csv",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_NDVI/MOD13Q1_NDVI_stats.csv",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_spatial.png",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_stats.csv"
+  ]
+}

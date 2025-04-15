@@ -1,0 +1,17 @@
+{
+  "session_id": "20250414_205502",
+  "interaction_id": "20250414_205502_17",
+  "timestamp": "2025-04-14T20:56:02.043837",
+  "query": "can u analyze MOD13Q1_NDVI_spatial.png?",
+  "response": "The image presents a map that displays variations in vegetation health and density across an area.",
+  "query_info": {
+    "keywords": [
+      "can",
+      "u",
+      "analyze",
+      "mod13q1_ndvi_spatial.png?"
+    ],
+    "intent": "general"
+  },
+  "files_accessed": []
+}

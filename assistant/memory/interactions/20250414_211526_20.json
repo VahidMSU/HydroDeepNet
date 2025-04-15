@@ -1,0 +1,14 @@
+{
+  "session_id": "20250414_211526",
+  "interaction_id": "20250414_211526_20",
+  "timestamp": "2025-04-14T21:17:10.738109",
+  "query": "hi",
+  "response": "Hello! It's nice to meet you. How can I assist you today?",
+  "query_info": {
+    "keywords": [
+      "hi"
+    ],
+    "intent": "general"
+  },
+  "files_accessed": []
+}

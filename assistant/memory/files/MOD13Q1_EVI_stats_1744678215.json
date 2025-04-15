@@ -1,0 +1,56 @@
+{
+  "original_path": "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_EVI/MOD13Q1_EVI_stats.csv",
+  "file_name": "MOD13Q1_EVI_stats.csv",
+  "file_type": "csv",
+  "content": "The provided CSV file contains summary statistics for the Enhanced Vegetation Index (EVI) data from MODIS (Moderate Resolution Imaging Spectroradiometer) satellite imagery.\n\nHere's a brief summary of the key points:\n\n1. **Data**: The EVI values range from -0.199 to 0.8913, with an average value of 0.2787.\n2. **Distribution**:\n\t* Mean: 0.2787\n\t* Standard Deviation (StdDev): 0.1290\n\t* Minimum (Min): -0.0887\n\t* Maximum (Max): 0.6360\n3. **Yearly and Monthly Distribution**:\n\t* Year: The data spans from 2015 to 2018, with an average year of 2016.\n\t* Month: The data spans from January (1) to December (12), with an average month of June (6).\n4. **Key Statistics**: The provided JSON object contains the mean, min, max, and standard deviation values for each statistic.\n\nSome interesting observations:\n\n* The EVI values are generally positive, indicating healthy vegetation.\n* The highest EVI value is 0.8913, while the lowest value is -0.199.\n* The data spans three years (2015-2018), with an average year of 2016.\n* The distribution of EVI values is relatively narrow, with a standard deviation of around 0.13.\n\nOverall, this summary provides an overview of the statistical properties of the MODIS EVI data, which can be useful for further analysis or interpretation.",
+  "added_timestamp": "2025-04-14T20:50:15.767046",
+  "metadata": {
+    "statistics": {
+      "Mean": {
+        "mean": 0.2786934609722222,
+        "min": 0.09554399,
+        "max": 0.516616,
+        "std": 0.12900620179792613
+      },
+      "Min": {
+        "mean": -0.08866735991666667,
+        "min": -0.199,
+        "max": -0.0346,
+        "std": 0.032478444516367826
+      },
+      "Max": {
+        "mean": 0.6360215159722222,
+        "min": 0.37965,
+        "max": 0.89129996,
+        "std": 0.13551598084205943
+      },
+      "StdDev": {
+        "mean": 0.09513771575,
+        "min": 0.04864111,
+        "max": 0.1538919,
+        "std": 0.0296544514626454
+      },
+      "Year": {
+        "mean": 2016.0833333333333,
+        "min": 2015.0,
+        "max": 2018.0,
+        "std": 0.8999217493368952
+      },
+      "Month": {
+        "mean": 6.208333333333333,
+        "min": 1.0,
+        "max": 12.0,
+        "std": 3.5876843329980184
+      }
+    },
+    "columns": [
+      "Date",
+      "Mean",
+      "Min",
+      "Max",
+      "StdDev",
+      "Year",
+      "Month"
+    ]
+  }
+}

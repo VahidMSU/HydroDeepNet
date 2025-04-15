@@ -1,0 +1,15 @@
+{
+  "session_id": "20250414_212537",
+  "interaction_id": "20250414_212537_24",
+  "timestamp": "2025-04-14T22:02:48.438519",
+  "query": "/data/SWATGenXApp/codes/.venv/bin/python /data/SWATGenXApp/codes/assistant/interactive_agent.py",
+  "response": "Hello! It's nice to assist you today. How can I help?",
+  "query_info": {
+    "keywords": [
+      "/data/swatgenxapp/codes/.venv/bin/python",
+      "/data/swatgenxapp/codes/assistant/interactive_agent.py"
+    ],
+    "intent": "general"
+  },
+  "files_accessed": []
+}

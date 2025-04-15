@@ -1,0 +1,23 @@
+{
+  "session_id": "20250414_212537",
+  "interaction_id": "20250414_212537_12",
+  "timestamp": "2025-04-14T21:27:00.457906",
+  "query": "what is nsrdb?",
+  "response": "I found 1 relevant files:\n1. modis_comprehensive_report.md (markdown): It appears that the text you provided is a detailed report about an analysis of MODIS (Moderate Reso...",
+  "query_info": {
+    "original_query": "what is nsrdb?",
+    "keywords": [
+      "what",
+      "nsrdb"
+    ],
+    "length": 14,
+    "intent": "search",
+    "entities": [],
+    "geographic_entities": [
+      " nsrdb"
+    ]
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/modis_comprehensive_report.md"
+  ]
+}

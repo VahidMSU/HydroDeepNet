@@ -1,0 +1,19 @@
+{
+  "session_id": "20250414_204952",
+  "interaction_id": "20250414_204952_13",
+  "timestamp": "2025-04-14T20:51:38.925233",
+  "query": "what do u see in MOD13Q1_EVI_timeseries.png",
+  "response": "The image MOD13Q1_EVI_timeseries.png presents a vegetation health index (EVI) timeseries, which shows the fluctuation of plant life and photosynthesis throughout time.",
+  "query_info": {
+    "keywords": [
+      "what",
+      "do",
+      "u",
+      "see",
+      "in",
+      "mod13q1_evi_timeseries.png"
+    ],
+    "intent": "general"
+  },
+  "files_accessed": []
+}

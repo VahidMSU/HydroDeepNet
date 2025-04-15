@@ -1,0 +1,19 @@
+{
+  "session_id": "20250414_222349",
+  "interaction_id": "20250414_222349_3",
+  "timestamp": "2025-04-14T22:24:05.070473",
+  "query": "What data is in MOD13Q1_NDVI_stats.csv?",
+  "response": "The file MOD13Q1_NDVI_stats.csv in comprehensive contains statistical data: This is a summary statistics report for the NDVI (Normalized Difference Vegetation Index) values from MODIS satellite data, covering a specific period of time.\n\nHere's a concise summary:\n\n**Statistics...",
+  "query_info": {
+    "keywords": [
+      "file",
+      "csv",
+      "MOD13Q1_NDVI_stats.csv",
+      "comprehensive"
+    ],
+    "intent": "search"
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_NDVI/MOD13Q1_NDVI_stats.csv"
+  ]
+}

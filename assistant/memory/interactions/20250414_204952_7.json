@@ -1,0 +1,18 @@
+{
+  "session_id": "20250414_204952",
+  "interaction_id": "20250414_204952_7",
+  "timestamp": "2025-04-14T20:50:45.315626",
+  "query": "What does the image MOD13Q1_NDVI_spatial.png show?",
+  "response": "The image MOD13Q1_NDVI_spatial.png in comprehensive shows: The image presents a heatmap titled \"Normalized Difference Vegetation Index - Image 1,\" which appears to be a visual representation of vegetation health or density. The heatmap is divided into two mai...",
+  "query_info": {
+    "keywords": [
+      "image",
+      "MOD13Q1_NDVI_spatial.png",
+      "comprehensive"
+    ],
+    "intent": "search"
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_NDVI/MOD13Q1_NDVI_spatial.png"
+  ]
+}

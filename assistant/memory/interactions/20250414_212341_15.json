@@ -1,0 +1,16 @@
+{
+  "session_id": "20250414_212341",
+  "interaction_id": "20250414_212341_15",
+  "timestamp": "2025-04-14T21:24:33.435193",
+  "query": "list csv files",
+  "response": "Listed 4 csv files from the report.",
+  "query_info": {
+    "keywords": [
+      "list",
+      "csv",
+      "files"
+    ],
+    "intent": "search"
+  },
+  "files_accessed": []
+}

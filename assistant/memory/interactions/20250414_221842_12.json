@@ -1,0 +1,35 @@
+{
+  "session_id": "20250414_221842",
+  "interaction_id": "20250414_221842_12",
+  "timestamp": "2025-04-14T22:19:16.832971",
+  "query": "list prism data",
+  "response": "**PRISM Data Overview**\n\nI've identified two relevant files containing PRISM data. Here's a brief summary of each:\n\n1. **MODIS Comprehensive Report**: This document provides an in-depth analysis of MODIS (Moderate Resolution Imaging Spectroradiometer) data products, covering aspects such as methodology and results.\n2. **Normalized Difference Vegetation Index (NDVI) Heatmap (MOD13Q1_NDVI_spatial.png)**: This image presents a visual representation of vegetation health or density, using a heatmap titled \"Normalized Difference Vegetation Index - Image 1\". The heatmap is divided into two main sections.\n\nPlease let me know if you'd like me to provide more information on either of these files!",
+  "query_info": {
+    "original_query": "list prism data",
+    "keywords": [
+      "list",
+      "prism",
+      "data"
+    ],
+    "length": 15,
+    "intent": "dataset_inquiry",
+    "entities": [],
+    "target_dataset": "prism",
+    "dataset_terms": [
+      "prism",
+      "climate",
+      "temperature",
+      "precipitation",
+      "rainfall",
+      "weather",
+      "drought",
+      "historical climate",
+      "climate data",
+      "meteorology"
+    ]
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/modis_comprehensive_report.md",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_NDVI/MOD13Q1_NDVI_spatial.png"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "session_id": "20250414_222349",
+  "interaction_id": "20250414_222349_21",
+  "timestamp": "2025-04-14T22:28:38.488141",
+  "query": "list images files",
+  "response": "Listed 52 images files from the report.",
+  "query_info": {
+    "keywords": [
+      "list",
+      "images",
+      "files"
+    ],
+    "intent": "search"
+  },
+  "files_accessed": []
+}

@@ -1,0 +1,16 @@
+{
+  "session_id": "20250414_222117",
+  "interaction_id": "20250414_222117_12",
+  "timestamp": "2025-04-14T22:21:56.809984",
+  "query": "list prims data",
+  "response": "The file MOD15A2H_Lai_500m_stats.csv contains statistical data. The provided CSV file appears to contain summary statistics for Leaf Area Index (LAI) data, specifically at a resolution of 500 meters, collected by the Moderate Resolution Imaging Spectroradiometer (MODIS).",
+  "query_info": {
+    "keywords": [
+      "list",
+      "prims",
+      "data"
+    ],
+    "intent": "general"
+  },
+  "files_accessed": []
+}

@@ -1,0 +1,18 @@
+{
+  "session_id": "20250414_221202",
+  "interaction_id": "20250414_221202_8",
+  "timestamp": "2025-04-14T22:12:18.776443",
+  "query": "What does the image products_comparison.png show?",
+  "response": "The image products_comparison.png in comprehensive shows: The image presents a line graph comparing four MODIS (Moderate Resolution Imaging Spectroradiometer) products: Normalized Difference Vegetation Index (NDVI), Enhanced Vegetation Index (EVI), Leaf Area...",
+  "query_info": {
+    "keywords": [
+      "image",
+      "products_comparison.png",
+      "comprehensive"
+    ],
+    "intent": "search"
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/cross_product/products_comparison.png"
+  ]
+}

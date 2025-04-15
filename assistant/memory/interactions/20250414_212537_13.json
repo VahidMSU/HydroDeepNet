@@ -1,0 +1,20 @@
+{
+  "session_id": "20250414_212537",
+  "interaction_id": "20250414_212537_13",
+  "timestamp": "2025-04-14T21:27:25.137396",
+  "query": "give me some analyses about solar radiation",
+  "response": "It's been observed that solar radiation plays a crucial role in various environmental and climatic phenomena. The amount of solar radiation received by an area can significantly impact temperature, evapotranspiration rates, and ultimately affect energy production from renewable sources.\n\nIn some regions, high levels of solar radiation have led to increased crop yields due to the enhanced photosynthesis process. Conversely, areas with limited sunlight experience reduced agricultural productivity, emphasizing the importance of adequate solar radiation for sustaining ecosystems.\n\nThe interaction between solar radiation and atmospheric conditions can also result in significant impacts on local climate patterns.",
+  "query_info": {
+    "keywords": [
+      "give",
+      "me",
+      "some",
+      "analyses",
+      "about",
+      "solar",
+      "radiation"
+    ],
+    "intent": "general"
+  },
+  "files_accessed": []
+}

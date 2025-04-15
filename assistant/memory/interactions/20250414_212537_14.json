@@ -1,0 +1,27 @@
+{
+  "session_id": "20250414_212537",
+  "interaction_id": "20250414_212537_14",
+  "timestamp": "2025-04-14T21:27:25.139804",
+  "query": "give me some analyses about solar radiation",
+  "response": "Based on my analysis of the relevant files:\n- MOD13Q1_NDVI_stats.csv contains numerical data with statistics: {'Mean': {'mean': 0.5190027198611111, 'min': 0.1309559, 'max': 0.7858908, 'std': 0.2125515222485392}, 'Min': {'mean': -0.17109027231944443, 'min': -0.19999999, 'max': -0.0387, 'std': 0.04458527501869893}, 'Max': {'mean': 0.8859763700000001, 'min': 0.5719, 'max': 0.99539995, 'std': 0.0850747070987761}, 'StdDev': {'mean': 0.15286317848611108, 'min': 0.08331195, 'max': 0.19448973, 'std': 0.01997914631775888}, 'Year': {'mean': 2016.0833333333333, 'min': 2015.0, 'max': 2018.0, 'std': 0.8999217493368952}, 'Month': {'mean': 6.208333333333333, 'min': 1.0, 'max': 12.0, 'std': 3.5876843329980184}}\n- modis_comprehensive_report.md contains information that may help with your analysis.\n- MOD13Q1_NDVI_spatial.png shows: The image presents a heatmap titled \"Normalized Difference Vegetation Index - Image 1,\" which appears to be a visual representation of vegetation heal...\n- MOD16A2_ET_spatial.png shows: The image presents a visual representation of evapotranspiration data, with the title \"Evapotranspiration - Image 1\" at the top. The graph is divided ...\n- MOD13Q1_EVI_stats.csv contains numerical data with statistics: {'Mean': {'mean': 0.2786934609722222, 'min': 0.09554399, 'max': 0.516616, 'std': 0.12900620179792613}, 'Min': {'mean': -0.08866735991666667, 'min': -0.199, 'max': -0.0346, 'std': 0.032478444516367826}, 'Max': {'mean': 0.6360215159722222, 'min': 0.37965, 'max': 0.89129996, 'std': 0.13551598084205943}, 'StdDev': {'mean': 0.09513771575, 'min': 0.04864111, 'max': 0.1538919, 'std': 0.0296544514626454}, 'Year': {'mean': 2016.0833333333333, 'min': 2015.0, 'max': 2018.0, 'std': 0.8999217493368952}, 'Month': {'mean': 6.208333333333333, 'min': 1.0, 'max': 12.0, 'std': 3.5876843329980184}}",
+  "query_info": {
+    "original_query": "give me some analyses about solar radiation",
+    "keywords": [
+      "give",
+      "some",
+      "analyses",
+      "solar",
+      "radiation"
+    ],
+    "length": 43,
+    "intent": "analyze",
+    "entities": []
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_NDVI/MOD13Q1_NDVI_stats.csv",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/modis_comprehensive_report.md",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_NDVI/MOD13Q1_NDVI_spatial.png",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD16A2_ET/MOD16A2_ET_spatial.png",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_EVI/MOD13Q1_EVI_stats.csv"
+  ]
+}

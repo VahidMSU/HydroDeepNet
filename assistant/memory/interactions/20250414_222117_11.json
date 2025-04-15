@@ -1,0 +1,15 @@
+{
+  "session_id": "20250414_222117",
+  "interaction_id": "20250414_222117_11",
+  "timestamp": "2025-04-14T22:21:40.974276",
+  "query": "hi",
+  "response": "Hello! What kind of assistance are you looking for regarding the report data? Are you trying to find a specific insight, or would you like me to guide you through some analysis options?",
+  "query_info": {
+    "original_query": "hi",
+    "keywords": [],
+    "length": 2,
+    "intent": "search",
+    "entities": []
+  },
+  "files_accessed": []
+}

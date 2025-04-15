@@ -1,0 +1,16 @@
+{
+  "session_id": "20250414_222349",
+  "interaction_id": "20250414_222349_12",
+  "timestamp": "2025-04-14T22:24:29.640834",
+  "query": "list climate files",
+  "response": "Listed 1 climate files from the report.",
+  "query_info": {
+    "keywords": [
+      "list",
+      "climate",
+      "files"
+    ],
+    "intent": "search"
+  },
+  "files_accessed": []
+}

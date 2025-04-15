@@ -1,0 +1,22 @@
+{
+  "session_id": "20250414_212341",
+  "interaction_id": "20250414_212341_14",
+  "timestamp": "2025-04-14T21:24:27.019614",
+  "query": "lsit csv files",
+  "response": "Analyzed the following CSV files: MOD13Q1_EVI_stats.csv, MOD16A2_ET_stats.csv, MOD13Q1_NDVI_stats.csv",
+  "query_info": {
+    "original_query": "lsit csv files",
+    "keywords": [
+      "lsit",
+      "csv"
+    ],
+    "length": 14,
+    "intent": "search",
+    "entities": []
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_EVI/MOD13Q1_EVI_stats.csv",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD16A2_ET/MOD16A2_ET_stats.csv",
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_NDVI/MOD13Q1_NDVI_stats.csv"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "session_id": "20250414_220255",
+  "interaction_id": "20250414_220255_5",
+  "timestamp": "2025-04-14T22:03:12.033099",
+  "query": "What does the image MOD13Q1_EVI_spatial.png show?",
+  "response": "The image MOD13Q1_EVI_spatial.png in comprehensive shows: The image presents a color-coded map of Enhanced Vegetation Index (EVI) values, with a title that reads \"Enhanced Vegetation Index - Image 1\" at the top. The map is divided into two main sections: a l...",
+  "query_info": {
+    "keywords": [
+      "image",
+      "MOD13Q1_EVI_spatial.png",
+      "comprehensive"
+    ],
+    "intent": "search"
+  },
+  "files_accessed": [
+    "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD13Q1_EVI/MOD13Q1_EVI_spatial.png"
+  ]
+}

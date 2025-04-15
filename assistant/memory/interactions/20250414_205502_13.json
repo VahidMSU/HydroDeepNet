@@ -1,0 +1,17 @@
+{
+  "session_id": "20250414_205502",
+  "interaction_id": "20250414_205502_13",
+  "timestamp": "2025-04-14T20:55:50.197594",
+  "query": "what is in MOD13Q1_NDVI_spatial.png?",
+  "response": "The image in comprehensive shows: A Normalized Difference Vegetation Index (NDVI) map, which is a measure of vegetation health and density. The NDVI values are represented by different shades of green, with darker greens indicating healthier and more densely vegetated areas, while browns and grays may indicate sparse or barren land.",
+  "query_info": {
+    "keywords": [
+      "what",
+      "is",
+      "in",
+      "mod13q1_ndvi_spatial.png?"
+    ],
+    "intent": "general"
+  },
+  "files_accessed": []
+}

@@ -2,321 +2,271 @@
   "nodes": {
     "climate": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581564",
+      "added_at": "2025-04-14T22:20:18.111941",
       "is_domain": true
     },
     "temperature": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581593"
+      "added_at": "2025-04-14T22:20:18.111965"
     },
     "precipitation": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581608"
+      "added_at": "2025-04-14T22:20:18.111978"
     },
     "rainfall": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581614"
+      "added_at": "2025-04-14T22:20:18.111985"
     },
     "drought": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581620"
+      "added_at": "2025-04-14T22:20:18.111991"
     },
     "humidity": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581625"
+      "added_at": "2025-04-14T22:20:18.112000"
     },
     "weather": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581634"
+      "added_at": "2025-04-14T22:20:18.112005"
     },
     "climate change": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581640"
+      "added_at": "2025-04-14T22:20:18.112011"
     },
     "global warming": {
       "domain": "climate",
-      "added_at": "2025-04-13T15:58:50.581646"
+      "added_at": "2025-04-14T22:20:18.112016"
     },
     "groundwater": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581651",
-      "is_domain": true,
-      "source": "agent_response"
+      "added_at": "2025-04-14T22:20:18.112021",
+      "is_domain": true
     },
     "aquifer": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581654"
+      "added_at": "2025-04-14T22:20:18.112025"
     },
     "water table": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581660"
+      "added_at": "2025-04-14T22:20:18.112031"
     },
     "water level": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581668"
+      "added_at": "2025-04-14T22:20:18.112036"
     },
     "drawdown": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581673"
+      "added_at": "2025-04-14T22:20:18.112041"
     },
     "recharge": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581678"
+      "added_at": "2025-04-14T22:20:18.112047"
     },
     "well": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581688"
+      "added_at": "2025-04-14T22:20:18.112052"
     },
     "pumping": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581693"
+      "added_at": "2025-04-14T22:20:18.112058"
     },
     "hydraulic conductivity": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581699"
+      "added_at": "2025-04-14T22:20:18.112063"
     },
     "transmissivity": {
       "domain": "groundwater",
-      "added_at": "2025-04-13T15:58:50.581704"
+      "added_at": "2025-04-14T22:20:18.112068"
     },
     "agriculture": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581710",
+      "added_at": "2025-04-14T22:20:18.112074",
       "is_domain": true
     },
     "crop": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581713"
+      "added_at": "2025-04-14T22:20:18.112077",
+      "source": "agent_response"
     },
     "farming": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581719"
+      "added_at": "2025-04-14T22:20:18.112082"
     },
     "irrigation": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581725"
+      "added_at": "2025-04-14T22:20:18.112088"
     },
     "yield": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581730"
+      "added_at": "2025-04-14T22:20:18.112096"
     },
     "harvest": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581737"
+      "added_at": "2025-04-14T22:20:18.112101"
     },
     "corn": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581742"
+      "added_at": "2025-04-14T22:20:18.112106"
     },
     "soybean": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581748"
+      "added_at": "2025-04-14T22:20:18.112112"
     },
     "wheat": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581753"
+      "added_at": "2025-04-14T22:20:18.112117"
     },
     "rotation": {
       "domain": "agriculture",
-      "added_at": "2025-04-13T15:58:50.581758"
+      "added_at": "2025-04-14T22:20:18.112122"
     },
     "soil": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581764",
+      "added_at": "2025-04-14T22:20:18.112130",
       "is_domain": true
     },
     "fertility": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581766"
+      "added_at": "2025-04-14T22:20:18.112133"
     },
     "texture": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581774"
+      "added_at": "2025-04-14T22:20:18.112139"
     },
     "erosion": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581779"
+      "added_at": "2025-04-14T22:20:18.112145"
     },
     "drainage": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581784"
+      "added_at": "2025-04-14T22:20:18.112151"
     },
     "infiltration": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581792"
+      "added_at": "2025-04-14T22:20:18.112156"
     },
     "organic matter": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581798"
+      "added_at": "2025-04-14T22:20:18.112165"
     },
     "compaction": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581806"
+      "added_at": "2025-04-14T22:20:18.112170"
     },
     "moisture": {
       "domain": "soil",
-      "added_at": "2025-04-13T15:58:50.581813"
+      "added_at": "2025-04-14T22:20:18.112175"
     },
     "hydrology": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581838",
+      "added_at": "2025-04-14T22:20:18.112201",
       "is_domain": true
     },
     "runoff": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581841"
+      "added_at": "2025-04-14T22:20:18.112204"
     },
     "streamflow": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581847"
+      "added_at": "2025-04-14T22:20:18.112210"
     },
     "river": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581852"
+      "added_at": "2025-04-14T22:20:18.112217"
     },
     "discharge": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581857"
+      "added_at": "2025-04-14T22:20:18.112225"
     },
     "flood": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581866"
+      "added_at": "2025-04-14T22:20:18.112231"
     },
     "watershed": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581871"
+      "added_at": "2025-04-14T22:20:18.112237"
     },
     "basin": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581876"
+      "added_at": "2025-04-14T22:20:18.112242"
     },
     "flow": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581882"
+      "added_at": "2025-04-14T22:20:18.112248"
     },
     "evapotranspiration": {
       "domain": "hydrology",
-      "added_at": "2025-04-13T15:58:50.581889"
+      "added_at": "2025-04-14T22:20:18.112255"
     },
     "soil fertility": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:58:50.581910"
+      "added_at": "2025-04-14T22:20:18.112274"
     },
     "soil moisture": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:58:50.581915"
+      "added_at": "2025-04-14T22:20:18.112280"
     },
     "crop rotation": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:58:50.581920"
+      "added_at": "2025-04-14T22:20:18.112287"
     },
     "crop yield": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:58:50.581937"
+      "added_at": "2025-04-14T22:20:18.112304"
     },
     "you": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:58:57.115180",
+      "added_at": "2025-04-14T22:20:21.100358",
       "source": "agent_response"
     },
-    "the available data groups": {
+    "your hydrology": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:58:57.115200",
+      "added_at": "2025-04-14T22:20:21.100374",
       "source": "agent_response"
     },
-    "your question": {
+    "what data": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:58:57.115205",
-      "source": "agent_response"
-    },
-    "data": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.233864",
+      "added_at": "2025-04-14T22:20:37.016641",
       "source": "user_query"
     },
-    "what type": {
+    "this": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.233886",
-      "source": "user_query"
-    },
-    "modis": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.241286",
+      "added_at": "2025-04-14T22:20:37.024209",
       "source": "agent_response"
     },
-    "prism": {
+    "the cdl group": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.241310",
+      "added_at": "2025-04-14T22:20:37.024221",
+      "source": "agent_response"
+    },
+    "the crop data layer": {
+      "domain": "unknown",
+      "added_at": "2025-04-14T22:20:37.024226",
+      "source": "agent_response"
+    },
+    "an issue": {
+      "domain": "unknown",
+      "added_at": "2025-04-14T22:20:37.024230",
       "source": "agent_response"
     },
     "cdl": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.241314",
+      "added_at": "2025-04-14T22:20:37.024238",
       "source": "agent_response"
     },
-    "nsrdb": {
+    "the crop data layer (cdl) analysis": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.241318",
+      "added_at": "2025-04-14T22:20:37.024247",
       "source": "agent_response"
     },
-    "available groups": {
+    "the csv files": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.241321",
+      "added_at": "2025-04-14T22:20:37.024252",
       "source": "agent_response"
     },
-    "gov_units": {
+    "csv": {
       "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.241324",
-      "source": "agent_response"
-    },
-    "climate_change": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.241327",
-      "source": "agent_response"
-    },
-    "gssurgo": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:13.241329",
-      "source": "agent_response"
-    },
-    "what": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:21.097232",
-      "source": "user_query"
-    },
-    "- climate_correlations.png": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:21.107320",
-      "source": "agent_response"
-    },
-    "solar_energy_potential.png": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:21.107333",
-      "source": "agent_response"
-    },
-    "nsrdb_stats.csv": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:21.107337",
-      "source": "agent_response"
-    },
-    "1):\n- nsrdb_report.md\n\n.csv files": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:21.107341",
-      "source": "agent_response"
-    },
-    "group": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:21.107347",
-      "source": "agent_response"
-    },
-    "1):\n- nsrdb_stats.csv": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:21.107350",
-      "source": "agent_response"
-    },
-    ".png files": {
-      "domain": "unknown",
-      "added_at": "2025-04-13T15:59:21.107353",
+      "added_at": "2025-04-14T22:20:37.024255",
       "source": "agent_response"
     }
   },
@@ -325,1230 +275,990 @@
       "source": "climate",
       "target": "temperature",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581601"
+        "added_at": "2025-04-14T22:20:18.111972"
       }
     },
     {
       "source": "climate",
       "target": "precipitation",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581611"
+        "added_at": "2025-04-14T22:20:18.111982"
       }
     },
     {
       "source": "climate",
       "target": "rainfall",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581617"
+        "added_at": "2025-04-14T22:20:18.111988"
       }
     },
     {
       "source": "climate",
       "target": "drought",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581623"
+        "added_at": "2025-04-14T22:20:18.111997"
       }
     },
     {
       "source": "climate",
       "target": "humidity",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581629"
+        "added_at": "2025-04-14T22:20:18.112003"
       }
     },
     {
       "source": "climate",
       "target": "weather",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581637"
+        "added_at": "2025-04-14T22:20:18.112008"
       }
     },
     {
       "source": "climate",
       "target": "climate change",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581643"
+        "added_at": "2025-04-14T22:20:18.112013"
       }
     },
     {
       "source": "climate",
       "target": "global warming",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581648"
+        "added_at": "2025-04-14T22:20:18.112018"
       }
     },
     {
       "source": "temperature",
       "target": "evapotranspiration",
       "type": "increases",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581901"
+        "added_at": "2025-04-14T22:20:18.112265"
       }
     },
     {
       "source": "temperature",
       "target": "soil moisture",
       "type": "decreases",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581950"
+        "added_at": "2025-04-14T22:20:18.112315"
       }
     },
     {
       "source": "precipitation",
       "target": "recharge",
       "type": "increases",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581898"
+        "added_at": "2025-04-14T22:20:18.112262"
       }
     },
     {
       "source": "precipitation",
       "target": "soil moisture",
       "type": "increases",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581945"
+        "added_at": "2025-04-14T22:20:18.112312"
       }
     },
     {
       "source": "rainfall",
       "target": "water table",
       "type": "raises",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581907"
+        "added_at": "2025-04-14T22:20:18.112271"
       }
     },
     {
       "source": "rainfall",
       "target": "erosion",
       "type": "can cause",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581952"
+        "added_at": "2025-04-14T22:20:18.112318"
       }
     },
     {
       "source": "drought",
       "target": "water level",
       "type": "decreases",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581903"
+        "added_at": "2025-04-14T22:20:18.112268"
       }
     },
     {
       "source": "drought",
       "target": "soil moisture",
       "type": "decreases",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581955"
+        "added_at": "2025-04-14T22:20:18.112321"
       }
     },
     {
       "source": "groundwater",
       "target": "aquifer",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581658"
+        "added_at": "2025-04-14T22:20:18.112028"
       }
     },
     {
       "source": "groundwater",
       "target": "water table",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581663"
+        "added_at": "2025-04-14T22:20:18.112034"
       }
     },
     {
       "source": "groundwater",
       "target": "water level",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581670"
+        "added_at": "2025-04-14T22:20:18.112039"
       }
     },
     {
       "source": "groundwater",
       "target": "drawdown",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581675"
+        "added_at": "2025-04-14T22:20:18.112044"
       }
     },
     {
       "source": "groundwater",
       "target": "recharge",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581681"
+        "added_at": "2025-04-14T22:20:18.112050"
       }
     },
     {
       "source": "groundwater",
       "target": "well",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581691"
+        "added_at": "2025-04-14T22:20:18.112055"
       }
     },
     {
       "source": "groundwater",
       "target": "pumping",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581696"
+        "added_at": "2025-04-14T22:20:18.112060"
       }
     },
     {
       "source": "groundwater",
       "target": "hydraulic conductivity",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581701"
+        "added_at": "2025-04-14T22:20:18.112065"
       }
     },
     {
       "source": "groundwater",
       "target": "transmissivity",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581707"
+        "added_at": "2025-04-14T22:20:18.112071"
       }
     },
     {
       "source": "groundwater",
       "target": "agriculture",
       "type": "supports",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581942"
-      }
-    },
-    {
-      "source": "groundwater",
-      "target": "prism",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241367",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "groundwater",
-      "target": "cdl",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241371",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "groundwater",
-      "target": "nsrdb",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241375",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "groundwater",
-      "target": "available groups",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241378",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "groundwater",
-      "target": "gov_units",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241381",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "groundwater",
-      "target": "climate_change",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241384",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "groundwater",
-      "target": "gssurgo",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241387",
-        "source": "agent_response"
+        "added_at": "2025-04-14T22:20:18.112309"
       }
     },
     {
       "source": "aquifer",
       "target": "pumping",
       "type": "supplies",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581934"
+        "added_at": "2025-04-14T22:20:18.112301"
       }
     },
     {
       "source": "water table",
       "target": "crop yield",
       "type": "affects",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581939"
+        "added_at": "2025-04-14T22:20:18.112306"
       }
     },
     {
       "source": "water level",
       "target": "irrigation",
       "type": "limits",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581929"
+        "added_at": "2025-04-14T22:20:18.112298"
       }
     },
     {
       "source": "agriculture",
       "target": "crop",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581716"
+        "added_at": "2025-04-14T22:20:18.112079"
       }
     },
     {
       "source": "agriculture",
       "target": "farming",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581722"
+        "added_at": "2025-04-14T22:20:18.112085"
       }
     },
     {
       "source": "agriculture",
       "target": "irrigation",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581727"
+        "added_at": "2025-04-14T22:20:18.112093"
       }
     },
     {
       "source": "agriculture",
       "target": "yield",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581733"
+        "added_at": "2025-04-14T22:20:18.112098"
       }
     },
     {
       "source": "agriculture",
       "target": "harvest",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581740"
+        "added_at": "2025-04-14T22:20:18.112104"
       }
     },
     {
       "source": "agriculture",
       "target": "corn",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581745"
+        "added_at": "2025-04-14T22:20:18.112109"
       }
     },
     {
       "source": "agriculture",
       "target": "soybean",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581750"
+        "added_at": "2025-04-14T22:20:18.112114"
       }
     },
     {
       "source": "agriculture",
       "target": "wheat",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581756"
+        "added_at": "2025-04-14T22:20:18.112120"
       }
     },
     {
       "source": "agriculture",
       "target": "rotation",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581761"
+        "added_at": "2025-04-14T22:20:18.112128"
       }
     },
     {
       "source": "crop",
       "target": "soil fertility",
       "type": "affects",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581912"
+        "added_at": "2025-04-14T22:20:18.112277"
+      }
+    },
+    {
+      "source": "crop",
+      "target": "the csv files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024419",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "crop",
+      "target": "csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024422",
+        "source": "agent_response"
       }
     },
     {
       "source": "farming",
       "target": "erosion",
       "type": "can cause",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581926"
+        "added_at": "2025-04-14T22:20:18.112295"
       }
     },
     {
       "source": "irrigation",
       "target": "soil moisture",
       "type": "increases",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581918"
+        "added_at": "2025-04-14T22:20:18.112284"
       }
     },
     {
       "source": "soil",
       "target": "fertility",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581771"
+        "added_at": "2025-04-14T22:20:18.112136"
       }
     },
     {
       "source": "soil",
       "target": "texture",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581776"
+        "added_at": "2025-04-14T22:20:18.112141"
       }
     },
     {
       "source": "soil",
       "target": "erosion",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581782"
+        "added_at": "2025-04-14T22:20:18.112148"
       }
     },
     {
       "source": "soil",
       "target": "drainage",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581787"
+        "added_at": "2025-04-14T22:20:18.112153"
       }
     },
     {
       "source": "soil",
       "target": "infiltration",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581795"
+        "added_at": "2025-04-14T22:20:18.112162"
       }
     },
     {
       "source": "soil",
       "target": "organic matter",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581801"
+        "added_at": "2025-04-14T22:20:18.112167"
       }
     },
     {
       "source": "soil",
       "target": "compaction",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581811"
+        "added_at": "2025-04-14T22:20:18.112173"
       }
     },
     {
       "source": "soil",
       "target": "moisture",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581835"
+        "added_at": "2025-04-14T22:20:18.112198"
       }
     },
     {
       "source": "hydrology",
       "target": "runoff",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581844"
+        "added_at": "2025-04-14T22:20:18.112207"
       }
     },
     {
       "source": "hydrology",
       "target": "streamflow",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581849"
+        "added_at": "2025-04-14T22:20:18.112214"
       }
     },
     {
       "source": "hydrology",
       "target": "river",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581855"
+        "added_at": "2025-04-14T22:20:18.112222"
       }
     },
     {
       "source": "hydrology",
       "target": "discharge",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581863"
+        "added_at": "2025-04-14T22:20:18.112228"
       }
     },
     {
       "source": "hydrology",
       "target": "flood",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581868"
+        "added_at": "2025-04-14T22:20:18.112234"
       }
     },
     {
       "source": "hydrology",
       "target": "watershed",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581874"
+        "added_at": "2025-04-14T22:20:18.112240"
       }
     },
     {
       "source": "hydrology",
       "target": "basin",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581879"
+        "added_at": "2025-04-14T22:20:18.112245"
       }
     },
     {
       "source": "hydrology",
       "target": "flow",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581886"
+        "added_at": "2025-04-14T22:20:18.112252"
       }
     },
     {
       "source": "hydrology",
       "target": "evapotranspiration",
       "type": "includes",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581892"
+        "added_at": "2025-04-14T22:20:18.112258"
       }
     },
     {
       "source": "crop rotation",
       "target": "soil fertility",
       "type": "improves",
-      "weight": 1.3000000000000003,
+      "weight": 1.0,
       "attributes": {
-        "added_at": "2025-04-13T15:58:50.581923"
+        "added_at": "2025-04-14T22:20:18.112292"
       }
     },
     {
       "source": "you",
-      "target": "the available data groups",
+      "target": "your hydrology",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:58:57.115212",
+        "added_at": "2025-04-14T22:20:21.100383",
         "source": "agent_response"
       }
     },
     {
       "source": "you",
-      "target": "your question",
+      "target": "cdl",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:58:57.115219",
+        "added_at": "2025-04-14T22:20:37.024379",
         "source": "agent_response"
       }
     },
     {
-      "source": "the available data groups",
-      "target": "your question",
+      "source": "you",
+      "target": "the crop data layer (cdl) analysis",
       "type": "co_occurs_with",
-      "weight": 0.7999999999999999,
+      "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:58:57.115224",
+        "added_at": "2025-04-14T22:20:37.024382",
         "source": "agent_response"
       }
     },
     {
-      "source": "the available data groups",
+      "source": "you",
+      "target": "crop",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024385",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "the csv files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024389",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "you",
+      "target": "csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024392",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "this",
+      "target": "the cdl group",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024269",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "this",
+      "target": "the crop data layer",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024283",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "this",
+      "target": "an issue",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024287",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "this",
       "target": "you",
       "type": "co_occurs_with",
-      "weight": 0.7,
+      "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:23.339624",
+        "added_at": "2025-04-14T22:20:37.024290",
         "source": "agent_response"
       }
     },
     {
-      "source": "data",
-      "target": "what type",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.233896",
-        "source": "user_query"
-      }
-    },
-    {
-      "source": "modis",
-      "target": "groundwater",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241336",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "modis",
-      "target": "prism",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241342",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "modis",
+      "source": "this",
       "target": "cdl",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241346",
+        "added_at": "2025-04-14T22:20:37.024294",
         "source": "agent_response"
       }
     },
     {
-      "source": "modis",
-      "target": "nsrdb",
+      "source": "this",
+      "target": "the crop data layer (cdl) analysis",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241349",
+        "added_at": "2025-04-14T22:20:37.024297",
         "source": "agent_response"
       }
     },
     {
-      "source": "modis",
-      "target": "available groups",
+      "source": "this",
+      "target": "crop",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241353",
+        "added_at": "2025-04-14T22:20:37.024301",
         "source": "agent_response"
       }
     },
     {
-      "source": "modis",
-      "target": "gov_units",
+      "source": "this",
+      "target": "the csv files",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241356",
+        "added_at": "2025-04-14T22:20:37.024304",
         "source": "agent_response"
       }
     },
     {
-      "source": "modis",
-      "target": "climate_change",
+      "source": "this",
+      "target": "csv",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241360",
+        "added_at": "2025-04-14T22:20:37.024307",
         "source": "agent_response"
       }
     },
     {
-      "source": "modis",
-      "target": "gssurgo",
+      "source": "the cdl group",
+      "target": "the crop data layer",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241363",
+        "added_at": "2025-04-14T22:20:37.024311",
         "source": "agent_response"
       }
     },
     {
-      "source": "prism",
+      "source": "the cdl group",
+      "target": "an issue",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024314",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the cdl group",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024317",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the cdl group",
       "target": "cdl",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241391",
+        "added_at": "2025-04-14T22:20:37.024320",
         "source": "agent_response"
       }
     },
     {
-      "source": "prism",
-      "target": "nsrdb",
+      "source": "the cdl group",
+      "target": "the crop data layer (cdl) analysis",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241394",
+        "added_at": "2025-04-14T22:20:37.024324",
         "source": "agent_response"
       }
     },
     {
-      "source": "prism",
-      "target": "available groups",
+      "source": "the cdl group",
+      "target": "crop",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241397",
+        "added_at": "2025-04-14T22:20:37.024327",
         "source": "agent_response"
       }
     },
     {
-      "source": "prism",
-      "target": "gov_units",
+      "source": "the cdl group",
+      "target": "the csv files",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241400",
+        "added_at": "2025-04-14T22:20:37.024330",
         "source": "agent_response"
       }
     },
     {
-      "source": "prism",
-      "target": "climate_change",
+      "source": "the cdl group",
+      "target": "csv",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241403",
+        "added_at": "2025-04-14T22:20:37.024333",
         "source": "agent_response"
       }
     },
     {
-      "source": "prism",
-      "target": "gssurgo",
+      "source": "the crop data layer",
+      "target": "an issue",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241406",
+        "added_at": "2025-04-14T22:20:37.024337",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the crop data layer",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024340",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the crop data layer",
+      "target": "cdl",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024344",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the crop data layer",
+      "target": "the crop data layer (cdl) analysis",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024347",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the crop data layer",
+      "target": "crop",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024350",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the crop data layer",
+      "target": "the csv files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024353",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "the crop data layer",
+      "target": "csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024356",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "an issue",
+      "target": "you",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024359",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "an issue",
+      "target": "cdl",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024363",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "an issue",
+      "target": "the crop data layer (cdl) analysis",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024366",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "an issue",
+      "target": "crop",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024369",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "an issue",
+      "target": "the csv files",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024372",
+        "source": "agent_response"
+      }
+    },
+    {
+      "source": "an issue",
+      "target": "csv",
+      "type": "co_occurs_with",
+      "weight": 0.5,
+      "attributes": {
+        "added_at": "2025-04-14T22:20:37.024375",
         "source": "agent_response"
       }
     },
     {
       "source": "cdl",
-      "target": "nsrdb",
+      "target": "the crop data layer (cdl) analysis",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241409",
+        "added_at": "2025-04-14T22:20:37.024395",
         "source": "agent_response"
       }
     },
     {
       "source": "cdl",
-      "target": "available groups",
+      "target": "crop",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241413",
+        "added_at": "2025-04-14T22:20:37.024399",
         "source": "agent_response"
       }
     },
     {
       "source": "cdl",
-      "target": "gov_units",
+      "target": "the csv files",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241416",
+        "added_at": "2025-04-14T22:20:37.024402",
         "source": "agent_response"
       }
     },
     {
       "source": "cdl",
-      "target": "climate_change",
+      "target": "csv",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241419",
+        "added_at": "2025-04-14T22:20:37.024405",
         "source": "agent_response"
       }
     },
     {
-      "source": "cdl",
-      "target": "gssurgo",
+      "source": "the crop data layer (cdl) analysis",
+      "target": "crop",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241422",
+        "added_at": "2025-04-14T22:20:37.024409",
         "source": "agent_response"
       }
     },
     {
-      "source": "nsrdb",
-      "target": "available groups",
+      "source": "the crop data layer (cdl) analysis",
+      "target": "the csv files",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241425",
+        "added_at": "2025-04-14T22:20:37.024412",
         "source": "agent_response"
       }
     },
     {
-      "source": "nsrdb",
-      "target": "gov_units",
+      "source": "the crop data layer (cdl) analysis",
+      "target": "csv",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241428",
+        "added_at": "2025-04-14T22:20:37.024415",
         "source": "agent_response"
       }
     },
     {
-      "source": "nsrdb",
-      "target": "climate_change",
+      "source": "the csv files",
+      "target": "csv",
       "type": "co_occurs_with",
       "weight": 0.5,
       "attributes": {
-        "added_at": "2025-04-13T15:59:13.241431",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb",
-      "target": "gssurgo",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241435",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb",
-      "target": "group",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107437",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb",
-      "target": "1):\n- nsrdb_stats.csv",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107440",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb",
-      "target": ".png files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107443",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "available groups",
-      "target": "gov_units",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241438",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "available groups",
-      "target": "climate_change",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241441",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "available groups",
-      "target": "gssurgo",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241445",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "gov_units",
-      "target": "climate_change",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241448",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "gov_units",
-      "target": "gssurgo",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241452",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "climate_change",
-      "target": "gssurgo",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:13.241455",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "what",
-      "target": "nsrdb",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.097258",
-        "source": "user_query"
-      }
-    },
-    {
-      "source": "- climate_correlations.png",
-      "target": "solar_energy_potential.png",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107358",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "- climate_correlations.png",
-      "target": "nsrdb_stats.csv",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107364",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "- climate_correlations.png",
-      "target": "1):\n- nsrdb_report.md\n\n.csv files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107368",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "- climate_correlations.png",
-      "target": "nsrdb",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107372",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "- climate_correlations.png",
-      "target": "group",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107376",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "- climate_correlations.png",
-      "target": "1):\n- nsrdb_stats.csv",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107379",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "- climate_correlations.png",
-      "target": ".png files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107383",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "solar_energy_potential.png",
-      "target": "nsrdb_stats.csv",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107386",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "solar_energy_potential.png",
-      "target": "1):\n- nsrdb_report.md\n\n.csv files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107390",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "solar_energy_potential.png",
-      "target": "nsrdb",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107393",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "solar_energy_potential.png",
-      "target": "group",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107397",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "solar_energy_potential.png",
-      "target": "1):\n- nsrdb_stats.csv",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107400",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "solar_energy_potential.png",
-      "target": ".png files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107403",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb_stats.csv",
-      "target": "1):\n- nsrdb_report.md\n\n.csv files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107407",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb_stats.csv",
-      "target": "nsrdb",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107410",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb_stats.csv",
-      "target": "group",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107413",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb_stats.csv",
-      "target": "1):\n- nsrdb_stats.csv",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107417",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "nsrdb_stats.csv",
-      "target": ".png files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107420",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "1):\n- nsrdb_report.md\n\n.csv files",
-      "target": "nsrdb",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107424",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "1):\n- nsrdb_report.md\n\n.csv files",
-      "target": "group",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107427",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "1):\n- nsrdb_report.md\n\n.csv files",
-      "target": "1):\n- nsrdb_stats.csv",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107430",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "1):\n- nsrdb_report.md\n\n.csv files",
-      "target": ".png files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107433",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "group",
-      "target": "1):\n- nsrdb_stats.csv",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107447",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "group",
-      "target": ".png files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107450",
-        "source": "agent_response"
-      }
-    },
-    {
-      "source": "1):\n- nsrdb_stats.csv",
-      "target": ".png files",
-      "type": "co_occurs_with",
-      "weight": 0.5,
-      "attributes": {
-        "added_at": "2025-04-13T15:59:21.107454",
+        "added_at": "2025-04-14T22:20:37.024428",
         "source": "agent_response"
       }
     }

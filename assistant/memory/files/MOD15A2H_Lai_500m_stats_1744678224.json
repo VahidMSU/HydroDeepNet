@@ -1,0 +1,56 @@
+{
+  "original_path": "/data/SWATGenXApp/Users/admin/Reports/20250324_222749/modis/comprehensive/MOD15A2H_Lai_500m/MOD15A2H_Lai_500m_stats.csv",
+  "file_name": "MOD15A2H_Lai_500m_stats.csv",
+  "file_type": "csv",
+  "content": "The CSV file contains summary statistics for a dataset of MODIS (Moderate Resolution Imaging Spectroradiometer) LAI (Leaf Area Index) data, which is a measure of the amount of leaf area per unit ground surface area.\n\nHere are some key findings from the summary statistics:\n\n**Number of observations:** 72\n\n* The dataset contains 72 unique observations.\n* The top date in the dataset is January 1, 2015 (but this seems to be an error, as it should likely be a count or frequency rather than a specific date).\n* The most frequent value is not specified.\n\n**Mean and standard deviation:**\n\n* Mean LAI values range from 0.1348 to 4.22403.\n* Standard deviations are relatively small, ranging from 0.2927 to 1.3772.\n* The mean of the means is approximately 1.56 for all statistics except Max, which has a fixed value of 25.5.\n\n**Range and distribution:**\n\n* LAI values range from 0 (no leaves) to 4.22 (high leaf density).\n* The data are skewed, with some high values present.\n* The standard deviations suggest that there is some variation in the data, but it's not extremely large.\n\n**Year and Month:**\n\n* The mean year of observation is approximately 2015.36.\n* The mean month of observation is approximately May (month 5).\n* Years range from 2015 to 2016, with a relatively small standard deviation of around 0.48.\n* Months range from January (1) to December (12), with a larger standard deviation of around 3.28.\n\nOverall, this dataset appears to contain MODIS LAI data for a specific region or time period, with some variation in leaf density and distribution across the study area.",
+  "added_timestamp": "2025-04-14T20:50:24.966490",
+  "metadata": {
+    "statistics": {
+      "Mean": {
+        "mean": 1.5584331570833334,
+        "min": 0.13480075,
+        "max": 4.22403,
+        "std": 1.3772053646332112
+      },
+      "Min": {
+        "mean": 0.2730324109722222,
+        "min": 0.0,
+        "max": 0.925,
+        "std": 0.29268432174825754
+      },
+      "Max": {
+        "mean": 25.5,
+        "min": 25.5,
+        "max": 25.5,
+        "std": 0.0
+      },
+      "StdDev": {
+        "mean": 0.7136935409722223,
+        "min": 0.36806813,
+        "max": 1.2861986,
+        "std": 0.31516848513380596
+      },
+      "Year": {
+        "mean": 2015.361111111111,
+        "min": 2015.0,
+        "max": 2016.0,
+        "std": 0.48369340643025116
+      },
+      "Month": {
+        "mean": 5.555555555555555,
+        "min": 1.0,
+        "max": 12.0,
+        "std": 3.279852662823112
+      }
+    },
+    "columns": [
+      "Date",
+      "Mean",
+      "Min",
+      "Max",
+      "StdDev",
+      "Year",
+      "Month"
+    ]
+  }
+}

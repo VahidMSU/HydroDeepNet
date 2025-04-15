@@ -1,0 +1,14 @@
+{
+  "session_id": "20250414_212341",
+  "interaction_id": "20250414_212341_11",
+  "timestamp": "2025-04-14T21:24:05.104337",
+  "query": "hi",
+  "response": "Hello! It seems we haven't had a chance to interact yet. I've got various types of data, but I'm eager to learn more about what you're interested in. What can I assist you with today?",
+  "query_info": {
+    "keywords": [
+      "hi"
+    ],
+    "intent": "general"
+  },
+  "files_accessed": []
+}
