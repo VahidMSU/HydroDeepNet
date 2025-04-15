@@ -1,0 +1,1 @@
+##### never ever use try/except block in any part of this code

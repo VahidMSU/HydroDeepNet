@@ -23,7 +23,7 @@ def combined_reader(reports_dict: Dict, report_timestamp: Optional[str] = None, 
 
     Args:
         reports_dict: Dictionary containing the report structure
-        report_timestamp: Specific report timestamp to analyze (e.g., "20250324_222749")
+        report_timestamp: Specific report timestamp to analyze (e.g., "20250412_172208")
         group_name: Specific group to analyze (e.g., "groundwater", "climate")
         recreate_db_str: If 'true', drops and recreates the database table.
         logger: Logger instance to use

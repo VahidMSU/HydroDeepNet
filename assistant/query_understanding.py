@@ -1,539 +1,462 @@
 import re
+import json
 from typing import Dict, List, Any, Optional
+from datetime import datetime
+from Logger import LoggerSetup
 
 class QueryUnderstanding:
     """
-    Component responsible for understanding and enhancing user queries
-    by extracting intent, keywords, and other relevant information.
+    Class for analyzing and understanding user queries, including intent detection,
+    entity extraction, and keyword identification.
     """
     
-    def __init__(self, logger=None):
+    def __init__(self):
         """
-        Initialize the QueryUnderstanding component
-        """
-        self.logger = logger
-        self.logger.info("Initializing Query Understanding component")
+        Initialize the query understanding system
         
-        # Define intents and patterns
+        Args:
+            logger: Optional logger instance
+        """
+        self.logger = LoggerSetup(rewrite=False, verbose=True)
+        
+        # Define intents and their patterns
         self.intent_patterns = {
-            "search": [
-                r"(?i)find|search|look for|locate|get|retrieve",
-                r"(?i)where (is|are)|what files",
-                r"(?i)any (information|data|files) (on|about)"
-            ],
-            "analyze": [
-                r"(?i)analyze|analyse|study|examine|investigate|show|display|visualize|plot",
-                r"(?i)what (is|are) (in|inside|contained|the data|the content)",
-                r"(?i)what (is|does) .+ (show|contain|tell)",
-                r"(?i)compare|contrast|correlation|interpret|explain",
-                r"(?i)data (in|from|of)|file (content|data)"
-            ],
-            "help": [
-                r"(?i)how (can|do) (i|you)|help me",
-                r"(?i)what can you do|capabilities|features",
-                r"(?i)explain how to"
-            ],
-            "geographic": [
-                r"(?i)where (is|are)",
-                r"(?i)location of|coordinates for",
-                r"(?i)(city|country|state|region|area|place) of",
-                r"(?i)near|nearby|close to",
-                r"(?i)geographical|geospatial"
-            ],
             "dataset_inquiry": [
-                r"(?i)(what|tell me) about (the |)(\w+) data(set|)",
-                r"(?i)summarize the (\w+) data",
-                r"(?i)explain the (\w+) dataset",
-                r"(?i)information (about|on|from) (\w+)",
-                r"(?i)insights (from|about) (\w+)"
+                r"(?i)data(?:set)?s?\s+(?:about|on|for|related\s+to)\s+([\w\s]+)",
+                r"(?i)show\s+me\s+(?:the\s+)?data(?:set)?s?\s+(?:on|about|for)\s+([\w\s]+)",
+                r"(?i)what\s+data(?:set)?s?\s+(?:do\s+you\s+have|are\s+available)\s+(?:on|about|for)\s+([\w\s]+)",
+                r"(?i)information\s+(?:on|about|for)\s+([\w\s]+)"
+            ],
+            "file_operation": [
+                r"(?i)(?:open|show|read|display)\s+(?:the\s+)?file\s+([\w\.\-\s]+)",
+                r"(?i)(?:what(?:'s|\s+is)\s+in|contents\s+of)\s+(?:the\s+)?file\s+([\w\.\-\s]+)",
+                r"(?i)(?:save|write|create)\s+(?:a\s+)?file\s+(?:called|named)?\s*([\w\.\-\s]+)"
+            ],
+            "spatial_analysis": [
+                r"(?i)(?:spatial|geographic(?:al)?|map)\s+(?:analysis|data|information)\s+(?:of|for|on|about)\s+([\w\s]+)",
+                r"(?i)(?:show|display)\s+(?:me\s+)?(?:on\s+(?:a\s+)?map|spatially)\s+([\w\s]+)",
+                r"(?i)where\s+(?:is|are)\s+([\w\s]+)"
+            ],
+            "temporal_analysis": [
+                r"(?i)(?:temporal|time|trend)\s+(?:analysis|data|information|series)\s+(?:of|for|on|about)\s+([\w\s]+)",
+                r"(?i)(?:how|what)\s+has\s+([\w\s]+)\s+changed\s+over\s+time",
+                r"(?i)(?:show|display)\s+(?:me\s+)?(?:the\s+)?(?:time\s+series|trends|history)\s+(?:of|for)\s+([\w\s]+)"
+            ],
+            "comparison": [
+                r"(?i)(?:compare|comparison\s+(?:of|between))\s+([\w\s]+)\s+(?:and|vs\.?|versus)\s+([\w\s]+)",
+                r"(?i)(?:what(?:'s|\s+is)\s+the\s+)?difference\s+between\s+([\w\s]+)\s+and\s+([\w\s]+)",
+                r"(?i)(?:how\s+does)\s+([\w\s]+)\s+(?:compare\s+to|differ\s+from)\s+([\w\s]+)"
+            ],
+            "trend_analysis": [
+                r"(?i)(?:trend|pattern)\s+(?:analysis|detection)\s+(?:of|for|in)\s+([\w\s]+)",
+                r"(?i)(?:identify|detect|find)\s+(?:trends|patterns)\s+(?:in|of|for)\s+([\w\s]+)",
+                r"(?i)(?:is\s+there|are\s+there)\s+(?:any|some)\s+(?:trends|patterns)\s+(?:in|of|for)\s+([\w\s]+)"
+            ],
+            "help_request": [
+                r"(?i)(?:help|assist(?:ance)?)\s+(?:me\s+)?(?:with|on|about)?\s*([\w\s]*)",
+                r"(?i)(?:how\s+(?:do|can)\s+I|what(?:'s|\s+is)\s+the\s+way\s+to)\s+([\w\s]+)",
+                r"(?i)(?:what\s+can\s+you\s+do|(?:show|tell)\s+me\s+(?:your\s+)?capabilities)"
+            ],
+            "conversation": [
+                r"(?i)(?:hi|hello|hey|greetings)",
+                r"(?i)(?:how\s+are\s+you|what's\s+up)",
+                r"(?i)(?:thanks|thank\s+you)",
+                r"(?i)(?:bye|goodbye)"
             ]
         }
         
-        # Geographic entity patterns
-        self.geo_patterns = [
-            r"(?i)in ([A-Z][a-z]+([ \-'][A-Z][a-z]+)*)",  # Places with capitalized names
-            r"(?i)near ([A-Z][a-z]+([ \-'][A-Z][a-z]+)*)",
-            r"(?i)at ([A-Z][a-z]+([ \-'][A-Z][a-z]+)*)",
-            r"(?i)from ([A-Z][a-z]+([ \-'][A-Z][a-z]+)*)",
-            r"(?i)(city|town|village|country|state|province|region) of ([A-Z][a-z]+([ \-'][A-Z][a-z]+)*)"
+        # Keywords to look for in queries
+        self.known_keywords = [
+            "precipitation", "temperature", "climate", "weather", 
+            "rainfall", "elevation", "population", "vegetation",
+            "landcover", "urban", "rural", "agriculture", "forest",
+            "water", "river", "lake", "ocean", "mountain", "coastal",
+            "inland", "drought", "flood", "hurricane", "earthquake",
+            "disaster", "emergency", "response", "planning", "conservation",
+            "analysis", "visualization", "statistics", "model", "prediction",
+            "forecast", "historic", "current", "future", "change", "trend"
         ]
         
-        # File reference patterns
-        self.file_patterns = [
-            r"(?i)(\w+\.(csv|png|jpg|jpeg|md|txt))",  # Filename with extension
-            r"(?i)(analyze|analyse|show|display|visualize|examine|open|check|view|see) (.+\.(csv|png|jpg|jpeg|md|txt))",
-            r"(?i)(analyze|analyse|show|display|visualize|examine|open|check|view|see) (the |a |this |that )?(.+) (file|image|csv|document|data|visualization|plot|chart|map)"
+        # Load known dataset vocabulary if available
+        self.known_datasets = [
+            "precipitation", "temperature", "climate", "landcover",
+            "elevation", "population", "census", "demographics", 
+            "satellite", "imagery", "remote_sensing", "NDVI",
+            "MODIS", "Landsat", "SRTM", "LiDAR", "DEM", "DTM",
+            "hydrology", "watershed", "runoff", "soil_moisture"
         ]
         
-        # Known datasets and their related keywords
-        self.known_datasets = {
-            "cdl": ["cdl", "cropland", "crop", "agriculture", "land use", "land cover", "crop data layer", "usda", "crop type"],
-            "climate_change": ["climate change", "climate", "global warming", "temperature change", "precipitation change", "future climate", "climate projections", "climate scenarios"],
-            "gov_units": ["gov units", "governmental units", "administrative boundaries", "counties", "states", "boundaries", "administrative regions", "political boundaries"],
-            "groundwater": ["groundwater", "aquifer", "well", "water table", "ground water", "subsurface water", "water level", "water depth", "hydrology"],
-            "gssurgo": ["gssurgo", "soil", "sand", "clay", "silt", "organic matter", "bulk density", "soil properties", "soil survey", "usda soil"],
-            "modis": ["modis", "evi", "ndvi", "lai", "vegetation", "mod13q1", "mod16a2", "mod15a2h", "satellite", "remote sensing", "vegetation index", "leaf area", "evapotranspiration", "et"],
-            "nsrdb": ["nsrdb", "solar", "radiation", "solar power", "renewable energy", "irradiance", "pv", "photovoltaic", "solar potential", "insolation", "solar resource"],
-            "prism": ["prism", "climate", "temperature", "precipitation", "rainfall", "weather", "drought", "historical climate", "climate data", "meteorology"],
-            "snowdas": ["snow", "snowdas", "swe", "snow water equivalent", "snow cover", "snow depth", "snowpack", "snow accumulation", "snow melt"]
-        }
-        
-    def analyze_query(self, query: str) -> Dict[str, Any]:
+        self.logger.info("QueryUnderstanding initialized")
+    
+    def analyze_query(self, query: str) -> Dict:
         """
-        Analyze a user query to extract intent, keywords, and entities
+        Analyze a user query to extract intent, entities, keywords, and other information
         
         Args:
-            query (str): The user's query
+            query: The user's query string
             
         Returns:
-            dict: Analysis results including intent, keywords, and entities
+            dict: Analysis of the query with extracted information
         """
         self.logger.debug(f"Analyzing query: {query}")
         
-        # Initialize query info
-        query_info = {
-            "original_query": query,
-            "keywords": self._extract_keywords(query),
-            "length": len(query),
-            "intent": self._determine_intent(query),
-            "entities": self._extract_entities(query)
+        # Initialize analysis dictionary
+        analysis = {
+            "query": query,
+            "timestamp": datetime.now().isoformat(),
+            "intent": None,
+            "entities": [],
+            "keywords": [],
+            "dataset_references": []
         }
         
-        # Extract file references if present
-        file_references = self._extract_file_references(query)
-        if file_references:
-            query_info["file_references"] = file_references
-            # If file references are found, consider it an analysis intent
-            if query_info["intent"] == "search":
-                query_info["intent"] = "analyze"
-                self.logger.debug(f"Adjusted intent to 'analyze' due to file references")
+        # Detect intent
+        intent, confidence = self._detect_intent(query)
+        analysis["intent"] = intent
+        analysis["intent_confidence"] = confidence
         
-        # Check for dataset-specific queries
-        target_dataset = self._identify_dataset(query)
-        if target_dataset:
-            query_info["target_dataset"] = target_dataset
-            query_info["dataset_terms"] = self.known_datasets[target_dataset]
-            # If we're asking about a dataset and intent is search, adjust to dataset_inquiry
-            if query_info["intent"] == "search":
-                query_info["intent"] = "dataset_inquiry"
-                self.logger.debug(f"Adjusted intent to 'dataset_inquiry' based on detected dataset: {target_dataset}")
+        # Extract entities
+        entities = self._extract_entities(query, intent)
+        analysis["entities"] = entities
         
-        # Extract geographic entities if detected
-        if query_info["intent"] == "geographic" or self._has_geographic_indicators(query):
-            query_info["geographic_entities"] = self._extract_geographic_entities(query)
-            
-        self.logger.debug(f"Query analysis result: {query_info}")
-        return query_info
+        # Extract keywords
+        keywords = self._extract_keywords(query)
+        analysis["keywords"] = keywords
+        
+        # Look for dataset references
+        dataset_references = self._extract_dataset_references(query)
+        analysis["dataset_references"] = dataset_references
+        
+        # Determine if query is spatial
+        spatial_indicators = ["map", "location", "geographic", "spatial", "region", "area", "where"]
+        analysis["is_spatial"] = any(indicator in query.lower() for indicator in spatial_indicators)
+        
+        # Determine if query is temporal
+        temporal_indicators = ["time", "date", "period", "year", "month", "when", "history", "trend", "temporal"]
+        analysis["is_temporal"] = any(indicator in query.lower() for indicator in temporal_indicators)
+        
+        self.logger.debug(f"Query analysis: {json.dumps(analysis, indent=2)}")
+        return analysis
     
-    def _identify_dataset(self, query: str) -> Optional[str]:
+    def enhance_query(self, query: str, query_info: Dict, memory_system) -> Dict:
         """
-        Identify if the query is targeting a specific dataset
+        Enhance the query with additional context from memory system
         
         Args:
-            query (str): The query to analyze
-            
-        Returns:
-            str or None: Dataset name if identified
-        """
-        query_lower = query.lower()
-        
-        # Handle common misspellings and alternative forms
-        spelling_corrections = {
-            "prims": "prism",
-            "modiss": "modis",
-            "nsrd": "nsrdb",
-            "snowdass": "snowdas",
-            "gssurgo soil": "gssurgo",
-            "crop data": "cdl",
-            "cropland data layer": "cdl",
-            "climate change": "climate_change"
-        }
-        
-        # Apply spelling corrections
-        corrected_query = query_lower
-        for misspelled, correct in spelling_corrections.items():
-            if misspelled in query_lower:
-                corrected_query = corrected_query.replace(misspelled, correct)
-                self.logger.info(f"Corrected dataset spelling from '{misspelled}' to '{correct}'")
-        
-        # Check for direct mentions of dataset names first (highest priority)
-        for dataset in self.known_datasets:
-            # Exact dataset name match
-            if dataset in corrected_query.split() or f"{dataset} data" in corrected_query:
-                self.logger.info(f"Direct dataset match: {dataset}")
-                return dataset
-        
-        # Check for partial dataset name matches (medium priority)
-        partial_matches = []
-        for dataset in self.known_datasets:
-            if dataset in corrected_query:
-                # Calculate match score based on how much of the dataset name is present
-                match_score = len(dataset) / len(corrected_query)
-                partial_matches.append((dataset, match_score))
-        
-        if partial_matches:
-            # Sort by match score (descending)
-            partial_matches.sort(key=lambda x: x[1], reverse=True)
-            dataset = partial_matches[0][0]
-            self.logger.info(f"Partial dataset name match: {dataset} (score: {partial_matches[0][1]:.2f})")
-            return dataset
-        
-        # Check for keyword matches only if no direct or partial dataset name matches
-        keyword_matches = {}
-        for dataset, keywords in self.known_datasets.items():
-            match_count = 0
-            matched_terms = []
-            
-            for keyword in keywords:
-                if keyword in corrected_query:
-                    match_count += 1
-                    matched_terms.append(keyword)
-                    
-                    # For exact matches of specific technical terms, give higher weight
-                    if keyword in ["evi", "ndvi", "lai", "swe", "pv", "et"] and keyword in corrected_query.split():
-                        match_count += 2  # Extra weight for exact technical term matches
-            
-            if match_count > 0:
-                keyword_matches[dataset] = (match_count, matched_terms)
-        
-        if keyword_matches:
-            # Find dataset with highest match count
-            best_dataset = max(keyword_matches.items(), key=lambda x: x[1][0])
-            dataset = best_dataset[0]
-            match_count, matched_terms = best_dataset[1]
-            
-            # Only accept keyword matches if the match count is at least 2
-            # or if one of the matched terms is a specific technical term
-            specific_terms = ["evi", "ndvi", "lai", "swe", "pv", "et", "snowdas", "nsrdb", "gssurgo"]
-            has_specific_term = any(term in specific_terms for term in matched_terms)
-            
-            if match_count >= 2 or has_specific_term:
-                self.logger.info(f"Keyword match for dataset: {dataset} (score: {match_count}, terms: {matched_terms})")
-                return dataset
-            else:
-                self.logger.warning(f"Weak keyword match rejected: {dataset} (score: {match_count}, terms: {matched_terms})")
-                        
-        return None
-    
-    def enhance_query(self, 
-                     query: str, 
-                     query_info: Dict[str, Any], 
-                     memory_system) -> Dict[str, Any]:
-        """
-        Enhance the query using memory system information
-        
-        Args:
-            query (str): Original query
-            query_info (dict): Query analysis information
-            memory_system: Memory system component
+            query: The original query string
+            query_info: The analysis of the query
+            memory_system: Memory system for retrieving context
             
         Returns:
             dict: Enhanced query information
         """
+        self.logger.debug(f"Enhancing query: {query}")
+        
+        # Start with a copy of the query info
         enhanced_query = query_info.copy()
         
-        try:
-            # Get related interactions
-            related_interactions = memory_system.get_related_interactions(
-                query, 
-                query_info.get("keywords", [])
-            )
+        # Get conversation history for context
+        conversation_history = memory_system.get_conversation_history(limit=3)
+        
+        # Add conversation history
+        enhanced_query["conversation_history"] = conversation_history
+        
+        # Add recently mentioned datasets
+        mentioned_datasets = memory_system.get_mentioned_datasets()
+        if mentioned_datasets:
+            enhanced_query["recently_mentioned_datasets"] = mentioned_datasets
             
-            # Extract additional keywords from related interactions
-            additional_keywords = set()
-            for interaction in related_interactions[:3]:  # Use top 3 related interactions
-                if "query_info" in interaction and "keywords" in interaction["query_info"]:
-                    additional_keywords.update(interaction["query_info"]["keywords"])
+        # Add recently mentioned files
+        mentioned_files = memory_system.get_mentioned_files()
+        if mentioned_files:
+            enhanced_query["recently_mentioned_files"] = mentioned_files
+        
+        # Look for additional information based on intent
+        intent = query_info.get("intent")
+        
+        # For dataset inquiries, add related datasets
+        if intent == "dataset_inquiry" or "dataset_references" in query_info:
+            datasets = query_info.get("dataset_references", [])
             
-            # Add new keywords (not already in the original set)
-            new_keywords = additional_keywords - set(query_info["keywords"])
-            if new_keywords:
-                enhanced_query["enhanced_keywords"] = list(query_info["keywords"]) + list(new_keywords)
-                self.logger.debug(f"Enhanced keywords: {enhanced_query['enhanced_keywords']}")
-                
-            # If we have a target dataset, add it to the enhanced keywords
-            if "target_dataset" in query_info:
-                dataset = query_info["target_dataset"]
-                if "enhanced_keywords" not in enhanced_query:
-                    enhanced_query["enhanced_keywords"] = list(query_info["keywords"])
-                # Add dataset name and a few key terms
-                enhanced_query["enhanced_keywords"].append(dataset)
-                for term in self.known_datasets[dataset][:3]:  # Add top 3 related terms
-                    if term not in enhanced_query["enhanced_keywords"]:
-                        enhanced_query["enhanced_keywords"].append(term)
-                
-            # If we have file references, try to get full paths and add to enhanced query
-            if "file_references" in query_info and query_info["file_references"]:
-                file_refs = query_info["file_references"]
-                file_paths = []
-                
-                # Look up each file reference in memory
-                for file_ref in file_refs:
-                    file_records = memory_system.get_related_files(file_ref, [file_ref.split(".")[0]], limit=3)
-                    for record in file_records:
-                        if "original_path" in record:
-                            file_paths.append(record["original_path"])
-                
-                if file_paths:
-                    enhanced_query["file_paths"] = file_paths
-                    self.logger.debug(f"Enhanced with file paths: {enhanced_query['file_paths']}")
-                
-            # Enhance geographic understanding if applicable
-            if "geographic_entities" in query_info and query_info["geographic_entities"]:
-                geo_entities = query_info["geographic_entities"]
-                
-                # Get additional geographic info from memory
-                enhanced_geo_info = {}
-                for entity in geo_entities:
-                    geo_info = memory_system.get_geographic_info(entity)
-                    if geo_info:
-                        enhanced_geo_info[entity] = geo_info
-                
-                if enhanced_geo_info:
-                    enhanced_query["enhanced_geographic_info"] = enhanced_geo_info
+            # If we have a dataset, add information about it
+            for dataset in datasets:
+                dataset_info = memory_system.get_dataset_info(dataset)
+                if dataset_info:
+                    if "dataset_info" not in enhanced_query:
+                        enhanced_query["dataset_info"] = {}
+                    enhanced_query["dataset_info"][dataset] = dataset_info
+        
+        # For file operations, try to resolve file references
+        if intent == "file_operation" and "entities" in query_info:
+            file_entities = [entity for entity in query_info["entities"] 
+                           if entity.get("type") == "file"]
             
-            return enhanced_query
+            if file_entities:
+                resolved_files = []
+                for entity in file_entities:
+                    file_name = entity.get("value", "")
+                    files = memory_system.get_related_files(file_name, 
+                                                          query_info.get("keywords", []))
+                    resolved_files.extend(files)
+                
+                if resolved_files:
+                    enhanced_query["resolved_files"] = resolved_files
+        
+        # For spatial queries, add geospatial context
+        if query_info.get("is_spatial"):
+            # Get any location entities
+            location_entities = [entity["value"] for entity in query_info.get("entities", [])
+                               if entity.get("type") == "location"]
             
-        except Exception as e:
-            self.logger.error(f"Error enhancing query: {str(e)}", exc_info=True)
-            return query_info  # Return original query_info if enhancement fails
+            if location_entities:
+                enhanced_query["geospatial_context"] = {
+                    "locations": location_entities
+                }
+        
+        # For temporal queries, add temporal context
+        if query_info.get("is_temporal"):
+            # Get any time entities
+            time_entities = [entity["value"] for entity in query_info.get("entities", [])
+                           if entity.get("type") == "time"]
+            
+            if time_entities:
+                enhanced_query["temporal_context"] = {
+                    "time_periods": time_entities
+                }
+        
+        # Add enhanced keywords
+        if "keywords" in query_info:
+            # Start with original keywords
+            enhanced_keywords = query_info["keywords"].copy()
+            
+            # Add keywords from conversation history
+            for interaction in conversation_history:
+                if "query_analysis" in interaction and "keywords" in interaction["query_analysis"]:
+                    hist_keywords = interaction["query_analysis"]["keywords"]
+                    # Add relevant keywords that aren't already in the list
+                    for keyword in hist_keywords:
+                        if keyword not in enhanced_keywords:
+                            enhanced_keywords.append(keyword)
+            
+            # Prioritize and filter keywords (top 10)
+            if len(enhanced_keywords) > 10:
+                # Keep original keywords and fill with history keywords
+                orig_count = len(query_info["keywords"])
+                enhanced_keywords = query_info["keywords"] + enhanced_keywords[orig_count:10]
+            
+            enhanced_query["enhanced_keywords"] = enhanced_keywords
+        
+        self.logger.debug(f"Enhanced query with additional context")
+        return enhanced_query
     
-    def _extract_keywords(self, text: str) -> List[str]:
+    def _detect_intent(self, query: str) -> tuple:
         """
-        Extract important keywords from text
+        Detect the intent of a query
         
         Args:
-            text (str): Text to extract keywords from
+            query: The user's query string
+            
+        Returns:
+            tuple: (intent name, confidence score)
+        """
+        # Check for common file listing commands first
+        list_patterns = [
+            r"(?i)list\s+(?:all\s+)?(\w+)(?:\s+files)?",
+            r"(?i)show\s+(?:me\s+)?(?:all\s+)?(?:the\s+)?(\w+)(?:\s+files)?",
+            r"(?i)what\s+(\w+)(?:\s+files)?\s+(?:do\s+you\s+have|are\s+available)"
+        ]
+        
+        # Check for analyze/analyse commands
+        analyze_patterns = [
+            r"(?i)anal[yz]e\s+([\w\.\-]+)"
+        ]
+        
+        for pattern in list_patterns:
+            if re.search(pattern, query):
+                return "file_operation", 0.9
+                
+        for pattern in analyze_patterns:
+            if re.search(pattern, query):
+                return "analyze", 0.9
+        
+        # Check patterns for each intent
+        for intent, patterns in self.intent_patterns.items():
+            for pattern in patterns:
+                match = re.search(pattern, query)
+                if match:
+                    return intent, 0.9  # Confidence score for pattern match
+        
+        # Default to help request for unmatched queries
+        return "general_inquiry", 0.5
+    
+    def _extract_entities(self, query: str, intent: str) -> List[Dict]:
+        """
+        Extract entities from the query based on intent
+        
+        Args:
+            query: The user's query string
+            intent: Detected intent
+            
+        Returns:
+            list: List of entity dictionaries
+        """
+        entities = []
+        
+        # Extract file names
+        if intent == "file_operation":
+            file_patterns = [
+                r"(?i)file\s+([a-zA-Z0-9\._\-]+)",
+                r"(?i)(?:open|read|show|display|save|write|create)\s+([a-zA-Z0-9\._\-]+\.[a-zA-Z0-9]+)",
+            ]
+            
+            for pattern in file_patterns:
+                matches = re.finditer(pattern, query)
+                for match in matches:
+                    file_name = match.group(1).strip()
+                    entities.append({
+                        "type": "file",
+                        "value": file_name,
+                        "start": match.start(1),
+                        "end": match.end(1)
+                    })
+        
+        # Extract locations
+        location_patterns = [
+            r"(?i)(?:in|at|near|around)\s+([A-Z][a-zA-Z\s,]+)(?:\.|\?|$|\s)",
+            r"(?i)(?:of|for)\s+([A-Z][a-zA-Z\s,]+)(?:\.|\?|$|\s)"
+        ]
+        
+        for pattern in location_patterns:
+            matches = re.finditer(pattern, query)
+            for match in matches:
+                location = match.group(1).strip()
+                if location and not any(entity.get("value") == location for entity in entities):
+                    entities.append({
+                        "type": "location",
+                        "value": location,
+                        "start": match.start(1),
+                        "end": match.end(1)
+                    })
+        
+        # Extract time periods
+        time_patterns = [
+            r"(?i)(?:in|from|during|for)\s+(\d{4}(?:\s*-\s*\d{4})?)",
+            r"(?i)(?:in|from|during|for)\s+([A-Z][a-z]+\s+\d{4})",
+            r"(?i)(?:last|past|previous)\s+(\d+\s+(?:year|month|day|week)s?)"
+        ]
+        
+        for pattern in time_patterns:
+            matches = re.finditer(pattern, query)
+            for match in matches:
+                time_period = match.group(1).strip()
+                entities.append({
+                    "type": "time",
+                    "value": time_period,
+                    "start": match.start(1),
+                    "end": match.end(1)
+                })
+        
+        # Extract quantities
+        quantity_patterns = [
+            r"(\d+(?:\.\d+)?)\s+(mm|cm|m|km|inch|feet|acre|hectare|percent|%)"
+        ]
+        
+        for pattern in quantity_patterns:
+            matches = re.finditer(pattern, query)
+            for match in matches:
+                value = match.group(1)
+                unit = match.group(2)
+                entities.append({
+                    "type": "quantity",
+                    "value": float(value),
+                    "unit": unit,
+                    "full_text": f"{value} {unit}",
+                    "start": match.start(),
+                    "end": match.end()
+                })
+        
+        return entities
+    
+    def _extract_keywords(self, query: str) -> List[str]:
+        """
+        Extract keywords from the query
+        
+        Args:
+            query: The user's query string
             
         Returns:
             list: List of keywords
         """
-        # Remove common stop words
-        stop_words = {"a", "an", "the", "and", "or", "but", "is", "are", "was", "were", 
-                     "in", "on", "at", "to", "for", "with", "by", "about", "like", 
-                     "from", "of", "that", "this", "these", "those", "it", "they",
-                     "file", "files", "show", "me", "please", "analyze", "analyse", "can", "you"}
-        
-        # Tokenize, clean, and filter
-        words = re.findall(r'\b[a-zA-Z]\w+\b', text.lower())
-        keywords = [word for word in words if word not in stop_words and len(word) > 2]
-        
-        # Check for dataset keywords and prioritize them
-        dataset_keywords = []
-        for dataset, terms in self.known_datasets.items():
-            if dataset in text.lower():
-                dataset_keywords.append(dataset)
-            for term in terms:
-                if term in text.lower() and term not in dataset_keywords:
-                    dataset_keywords.append(term)
-        
-        # Combine dataset keywords with regular keywords
-        for dataset_keyword in dataset_keywords:
-            if dataset_keyword not in keywords:
-                keywords.insert(0, dataset_keyword)  # Insert at beginning to prioritize
-        
-        # Extract potential filenames (words with extensions)
-        file_patterns = [r'\b\w+\.(csv|png|jpg|jpeg|md|txt)\b']
-        for pattern in file_patterns:
-            matches = re.findall(pattern, text.lower())
-            for match in matches:
-                # Add the full filename to keywords if found
-                full_match = text[text.lower().find(match[0])-len(match[0]):text.lower().find(match[0])+len(match[0])]
-                if full_match not in keywords:
-                    keywords.append(full_match)
-        
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_keywords = [k for k in keywords if not (k in seen or seen.add(k))]
-        
-        return unique_keywords
-    
-    def _determine_intent(self, query: str) -> str:
-        """
-        Determine the intent of a query
-        
-        Args:
-            query (str): The query to analyze
-            
-        Returns:
-            str: Detected intent
-        """
-        # Check if query is about a specific dataset
-        if self._identify_dataset(query):
-            # Look for dataset inquiry patterns
-            for pattern in self.intent_patterns["dataset_inquiry"]:
-                if re.search(pattern, query):
-                    return "dataset_inquiry"
-        
-        # First check for file references which strongly indicate analysis intent
-        file_references = self._extract_file_references(query)
-        if file_references:
-            return "analyze"
-            
-        # Check each intent pattern
-        intent_scores = {"search": 0, "analyze": 0, "help": 0, "geographic": 0, "dataset_inquiry": 0}
-        
-        for intent, patterns in self.intent_patterns.items():
-            for pattern in patterns:
-                if re.search(pattern, query):
-                    intent_scores[intent] += 1
-        
-        # Get the intent with the highest score
-        max_score = max(intent_scores.values())
-        if max_score > 0:
-            # If there's a tie, prioritize in this order: dataset_inquiry, analyze, search, geographic, help
-            priority_order = ["dataset_inquiry", "analyze", "search", "geographic", "help"]
-            for intent in priority_order:
-                if intent_scores[intent] == max_score:
-                    return intent
-        
-        # Default to search if no specific intent is detected
-        return "search"
-    
-    def _extract_entities(self, query: str) -> List[str]:
-        """
-        Extract named entities from query
-        
-        Args:
-            query (str): The query to analyze
-            
-        Returns:
-            list: Detected entities
-        """
-        # Simple entity extraction based on capitalization
-        # This is a placeholder for more sophisticated NER
-        entities = re.findall(r'\b[A-Z][a-z]+\b', query)
-        return entities
-    
-    def _extract_file_references(self, query: str) -> List[str]:
-        """
-        Extract potential file references from the query
-        
-        Args:
-            query (str): The query to analyze
-            
-        Returns:
-            list: List of potential file references
-        """
-        file_references = []
-        
-        # Check for direct file mentions with extensions
-        extensions = ["csv", "png", "jpg", "jpeg", "md", "txt"]
-        ext_pattern = "|".join(extensions)
-        direct_pattern = rf'\b\w+[-_\w]*\.({ext_pattern})\b'
-        direct_matches = re.findall(direct_pattern, query, re.IGNORECASE)
-        
-        # Find the complete filename for each match
-        for ext in direct_matches:
-            # Find the position of this extension
-            pos = query.lower().find(f".{ext.lower()}")
-            if pos > 0:
-                # Extract the filename
-                start_pos = pos
-                while start_pos > 0 and query[start_pos-1].isalnum() or query[start_pos-1] in "-_":
-                    start_pos -= 1
-                
-                filename = query[start_pos:pos+len(ext)+1]
-                if filename not in file_references:
-                    file_references.append(filename)
-        
-        # Check for files mentioned after action verbs
-        for pattern in self.file_patterns:
-            matches = re.findall(pattern, query)
-            if matches:
-                for match in matches:
-                    if isinstance(match, tuple):
-                        # Different patterns will have different tuple structures
-                        # Extract the filename or reference from the appropriate position
-                        if len(match) == 2 and match[1] in extensions:
-                            # Pattern 1: full filename with extension
-                            filename = match[0]
-                        elif len(match) >= 2:
-                            # Pattern 2 or 3: verb + filename
-                            filename = match[-2] if len(match) > 2 else match[-1]
-                            if filename.lower() in extensions or filename.lower() in ["file", "image", "document"]:
-                                continue  # Skip if we matched just "file" or "image" without a name
-                        else:
-                            continue  # Skip if we can't determine a filename
-                            
-                        if filename and filename not in file_references:
-                            file_references.append(filename)
-        
-        return file_references
-    
-    def _has_geographic_indicators(self, query: str) -> bool:
-        """
-        Check if query has geographic indicators
-        
-        Args:
-            query (str): The query to check
-            
-        Returns:
-            bool: True if geographic indicators are present
-        """
-        geo_indicators = ["where", "location", "place", "area", "region", "city", 
-                         "country", "state", "coordinates", "near", "nearby", 
-                         "close to", "far from", "latitude", "longitude"]
-        
+        # Convert to lowercase and split into words
         query_lower = query.lower()
-        for indicator in geo_indicators:
-            if indicator in query_lower:
-                return True
+        words = re.findall(r'\b\w+\b', query_lower)
         
-        # Check for capitalized place names with geographic prepositions
-        for pattern in self.geo_patterns:
-            if re.search(pattern, query):
-                return True
-                
-        return False
+        # Filter stopwords and extract keywords
+        stopwords = [
+            "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
+            "in", "on", "at", "by", "for", "with", "about", "against", "between",
+            "into", "through", "during", "before", "after", "above", "below", "to",
+            "from", "up", "down", "of", "off", "over", "under", "again", "further",
+            "then", "once", "here", "there", "when", "where", "why", "how", "all",
+            "any", "both", "each", "few", "more", "most", "other", "some", "such",
+            "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very",
+            "s", "t", "can", "will", "just", "don", "should", "now", "d", "ll", "m",
+            "o", "re", "ve", "y", "ain", "aren", "couldn", "didn", "doesn", "hadn",
+            "hasn", "haven", "isn", "ma", "mightn", "mustn", "needn", "shan", "shouldn",
+            "wasn", "weren", "won", "wouldn", "show", "tell", "want", "like", "need",
+            "help", "do", "does", "did", "have", "has", "had", "would", "could", "should",
+            "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your",
+            "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she",
+            "her", "hers", "herself", "it", "its", "itself", "they", "them", "their",
+            "theirs", "themselves", "what", "which", "who", "whom", "this", "that",
+            "these", "those"
+        ]
+        
+        # Extract keywords that are in our known list or not in stopwords
+        keywords = []
+        for word in words:
+            if len(word) > 2 and word not in stopwords:
+                if word in self.known_keywords:
+                    keywords.append(word)
+                elif word not in keywords:
+                    keywords.append(word)
+        
+        # Also check for multi-word keywords
+        for keyword in self.known_keywords:
+            if " " in keyword and keyword.lower() in query_lower:
+                keywords.append(keyword)
+        
+        return keywords
     
-    def _extract_geographic_entities(self, query: str) -> List[str]:
+    def _extract_dataset_references(self, query: str) -> List[str]:
         """
-        Extract geographic entities from query
+        Extract references to known datasets
         
         Args:
-            query (str): The query to analyze
+            query: The user's query string
             
         Returns:
-            list: Detected geographic entities
+            list: List of dataset references
         """
-        entities = []
+        query_lower = query.lower()
+        datasets = []
         
-        # Extract from patterns
-        for pattern in self.geo_patterns:
-            matches = re.findall(pattern, query)
-            if matches:
-                # Handle different match formats based on capture groups
-                for match in matches:
-                    if isinstance(match, tuple):
-                        # Get the place name from the tuple (second capture group)
-                        entities.append(match[1])
-                    else:
-                        entities.append(match)
+        # Check for known datasets
+        for dataset in self.known_datasets:
+            if dataset.lower() in query_lower:
+                datasets.append(dataset)
         
-        # Backup method: look for capitalized words after geographic prepositions
-        prepositions = ["in", "at", "near", "from", "to"]
+        # Check for common dataset patterns
+        dataset_patterns = [
+            r"(?i)(?:dataset|data\s+set|data)\s+(?:called|named)\s+([a-zA-Z0-9_\-\s]+)",
+            r"(?i)([a-zA-Z0-9_\-]+)\s+(?:dataset|data\s+set|data)"
+        ]
         
-        words = query.split()
-        for i, word in enumerate(words):
-            if word.lower() in prepositions and i + 1 < len(words):
-                next_word = words[i + 1]
-                if next_word[0].isupper():
-                    # Get the full entity (may span multiple capitalized words)
-                    entity = next_word
-                    j = i + 2
-                    while j < len(words) and words[j][0].isupper():
-                        entity += " " + words[j]
-                        j += 1
-                    
-                    if entity not in entities:
-                        entities.append(entity)
+        for pattern in dataset_patterns:
+            matches = re.finditer(pattern, query)
+            for match in matches:
+                dataset_name = match.group(1).strip()
+                if dataset_name and dataset_name.lower() not in [d.lower() for d in datasets]:
+                    datasets.append(dataset_name)
         
-        # Remove duplicates and clean up
-        unique_entities = []
-        for entity in entities:
-            cleaned = entity.strip(".,;:!?'\"")
-            if cleaned and cleaned not in unique_entities:
-                unique_entities.append(cleaned)
-                
-        return unique_entities 
+        return datasets 

@@ -10,600 +10,703 @@ from collections import defaultdict
 import re
 import time
 import shutil
-
+from Logger import LoggerSetup
+import uuid
+import copy
 
 class MemorySystem:
     """
-    Component responsible for storing and retrieving user interactions
-    and managing file information in the system's memory.
+    System for storing, indexing, and retrieving files, datasets, and conversation history
+    to provide context for the assistant.
     """
     
-    def __init__(self, memory_dir: str = "/data/SWATGenXApp/codes/assistant/memory", logger=None):
+    def __init__(self, base_memory_path: str = None, logger=None):
         """
-        Initialize the memory system
+        Initialize the memory system with directories for storing session data and files
         
         Args:
-            memory_dir (str): Path to directory for storing memory
+            base_memory_path: Base directory for storing memory files and session data
+            logger: Optional logger instance
         """
-        self.logger = logger
-        self.logger.info(f"Initializing Memory System with directory: {memory_dir}")
+        self.logger = LoggerSetup(rewrite=False, verbose=True)
         
-        self.memory_dir = Path(memory_dir)
-        self.interactions_dir = self.memory_dir / "interactions"
-        self.files_dir = self.memory_dir / "files"
-        self.geographic_dir = self.memory_dir / "geographic"
+        # Set default memory path if not provided
+        if not base_memory_path:
+            # Default to a directory in the current working directory
+            base_memory_path = os.path.join(os.getcwd(), "assistant_memory")
         
-        # Create memory directories if they don't exist
-        self._create_directories()
+        # Convert to Path object for easier path manipulation
+        self.base_path = Path(base_memory_path)
         
-        # Session ID based on timestamp
-        self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.interaction_count = 0
-        self.logger.info(f"Created new session with ID: {self.session_id}")
+        # Define subdirectories
+        self.files_dir = self.base_path / "files"
+        self.session_dir = self.base_path / "sessions"
+        self.index_dir = self.base_path / "index"
+        self.datasets_dir = self.base_path / "datasets"
         
-    def _create_directories(self):
-        """Create necessary directories for memory storage"""
-        try:
-            for directory in [self.memory_dir, self.interactions_dir, 
-                             self.files_dir, self.geographic_dir]:
-                directory.mkdir(exist_ok=True, parents=True)
-                
-            self.logger.debug(f"Memory directories created/verified")
-        except Exception as e:
-            self.logger.error(f"Error creating memory directories: {str(e)}", exc_info=True)
-            raise
-            
-    def store_interaction(self, query: str, response: str, 
-                         query_info: Dict[str, Any], 
-                         files_accessed: Optional[List[str]] = None) -> Dict[str, Any]:
-        """
-        Store a user interaction in memory
+        # Create required directories
+        self._create_memory_directories()
         
-        Args:
-            query (str): User's query
-            response (str): System's response
-            query_info (dict): Information about the query
-            files_accessed (list, optional): List of files accessed
-            
-        Returns:
-            dict: Stored interaction data
-        """
-        self.interaction_count += 1
+        # Initialize memory components
+        self.file_memory = {}  # Store file metadata
+        self.search_index = {}  # Simple keyword search index
+        self.conversation_history = []  # Store conversation interactions
         
-        # Create interaction data
-        interaction = {
-            "session_id": self.session_id,
-            "interaction_id": f"{self.session_id}_{self.interaction_count}",
-            "timestamp": datetime.now().isoformat(),
-            "query": query,
-            "response": response,
-            "query_info": query_info,
-            "files_accessed": files_accessed or []
+        # Session data
+        self.session_id = str(uuid.uuid4())
+        self.session_data = {
+            "id": self.session_id,
+            "start_time": datetime.now().isoformat(),
+            "interactions": [],
+            "user_preferences": {},
+            "mentioned_files": set(),
+            "mentioned_datasets": set(),
+            "context": {}
         }
         
-        try:
-            # Save to session file
-            interaction_path = self.interactions_dir / f"{self.session_id}_{self.interaction_count}.json"
-            with open(interaction_path, 'w', encoding='utf-8') as f:
-                json.dump(interaction, f, indent=2)
-                
-            self.logger.debug(f"Stored interaction {self.interaction_count} to {interaction_path}")
-            return interaction
-            
-        except Exception as e:
-            self.logger.error(f"Error storing interaction: {str(e)}", exc_info=True)
-            return interaction
+        # Load existing dataset information
+        self.known_datasets = self._load_known_datasets()
+        
+        self.logger.info(f"Memory system initialized with base path: {self.base_path}")
     
-    def add_file(self, file_path: Union[str, Path], content: str, 
-                file_type: Optional[str] = None, metadata: Optional[Dict] = None) -> bool:
+    def _load_known_datasets(self) -> Dict[str, Dict]:
         """
-        Add a file to memory for future reference
+        Load information about known datasets from disk
+        
+        Returns:
+            dict: Dictionary of dataset information
+        """
+        datasets = {}
+        
+        # Create datasets directory if it doesn't exist
+        os.makedirs(self.datasets_dir, exist_ok=True)
+        
+        # Check for dataset information files
+        dataset_files = list(self.datasets_dir.glob("*.json"))
+        
+        for dataset_file in dataset_files:
+            with open(dataset_file, 'r') as f:
+                dataset_info = json.load(f)
+                if 'name' in dataset_info:
+                    datasets[dataset_info['name']] = dataset_info
+                    self.logger.debug(f"Loaded dataset info: {dataset_info['name']}")
+                else:
+                    self.logger.warning(f"Dataset file {dataset_file} does not contain 'name' field")
+        
+        return datasets
+    
+    def _create_memory_directories(self):
+        """Create necessary directories for the memory system"""
+        # Create all required directories
+        os.makedirs(self.files_dir, exist_ok=True)
+        os.makedirs(self.session_dir, exist_ok=True)
+        os.makedirs(self.index_dir, exist_ok=True)
+        os.makedirs(self.datasets_dir, exist_ok=True)
+        
+        self.logger.debug("Memory directories created or verified")
+    
+    def add_file(self, 
+                file_path: str, 
+                content: Any = None, 
+                file_type_or_metadata: Union[str, Dict] = None, 
+                file_context: str = None) -> Dict:
+        """
+        Add a file to memory with its metadata and optional context
         
         Args:
-            file_path (str or Path): Path to the file
-            content (str): File content
-            file_type (str, optional): Type of file
-            metadata (dict, optional): Additional metadata
+            file_path: Path to the file
+            content: File content (optional - will be indexed if provided)
+            file_type_or_metadata: Either a string indicating the file type or a metadata dictionary
+            file_context: Description or context for the file
             
         Returns:
-            bool: Success status
+            dict: File record with metadata
         """
-        try:
-            # Convert to Path object if string
-            if isinstance(file_path, str):
-                file_path = Path(file_path)
-                
-            # Get file type from extension if not provided
-            if not file_type:
-                file_type = file_path.suffix.lstrip('.')
-                
-            # Create file record
-            file_record = {
-                "original_path": str(file_path),
-                "file_name": file_path.name,
-                "file_type": file_type,
-                "content": content,
-                "added_timestamp": datetime.now().isoformat(),
-                "metadata": metadata or {}
-            }
-            
-            # Calculate unique ID for file (based on name and timestamp)
-            file_id = f"{file_path.stem}_{int(time.time())}"
-            
-            # Save to files directory
-            file_record_path = self.files_dir / f"{file_id}.json"
-            with open(file_record_path, 'w', encoding='utf-8') as f:
-                json.dump(file_record, f, indent=2)
-                
-            self.logger.info(f"Added file {file_path.name} to memory with ID {file_id}")
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error adding file to memory: {str(e)}", exc_info=True)
-            return False
+        # Create a unique ID for this file
+        file_id = str(uuid.uuid4())
+        
+        # Extract filename from path
+        filename = os.path.basename(file_path)
+        
+        # Process the file_type_or_metadata parameter
+        metadata = {}
+        if isinstance(file_type_or_metadata, dict):
+            metadata = file_type_or_metadata
+        elif isinstance(file_type_or_metadata, str):
+            metadata = {"file_type_tag": file_type_or_metadata}
+        
+        # Create basic file record
+        file_record = {
+            "id": file_id,
+            "original_path": file_path,
+            "filename": filename,
+            "added_time": datetime.now().isoformat(),
+            "metadata": metadata,
+            "content": content,  # Store content directly in the record
+            "context": file_context or "",
+            "memory_path": str(self.files_dir / file_id)
+        }
+        
+        # Add file extension information
+        file_ext = os.path.splitext(filename)[1].lower()
+        file_record["file_extension"] = file_ext
+        
+        # Determine file type based on extension
+        if file_ext in ['.csv', '.xlsx', '.xls']:
+            file_record["file_type"] = "tabular_data"
+        elif file_ext in ['.jpg', '.jpeg', '.png', '.gif', '.tif', '.tiff']:
+            file_record["file_type"] = "image"
+        elif file_ext in ['.txt', '.md', '.log']:
+            file_record["file_type"] = "text"
+        elif file_ext in ['.py', '.r', '.js', '.html', '.css', '.java', '.cpp']:
+            file_record["file_type"] = "code"
+        else:
+            file_record["file_type"] = "other"
+        
+        # Store the file record
+        self.file_memory[file_id] = file_record
+        
+        # Index the file content if provided
+        if content is not None:
+            self._index_file(file_id, content, file_record)
+        
+        # Save the file record
+        self._save_file_record(file_id, file_record)
+        
+        self.logger.info(f"Added file to memory: {filename} (ID: {file_id})")
+        return file_record
+        
+
     
-    def get_related_interactions(self, query: str, keywords: List[str], 
-                                limit: int = 5) -> List[Dict[str, Any]]:
+    def _index_file(self, file_id: str, content: Any, file_record: Dict):
         """
-        Retrieve interactions related to the current query
+        Index file content for searching
         
         Args:
-            query (str): Current query
-            keywords (list): Keywords from the query
-            limit (int): Maximum number of interactions to return
+            file_id: ID of the file to index
+            content: File content to index
+            file_record: File record dictionary
+        """
+        # Get the content to index - either from the parameter or from the file_record
+        content_to_index = content
+        
+        # Simple keyword extraction and indexing
+        if isinstance(content_to_index, str):
+            # For text content, extract keywords
+            keywords = self._extract_keywords(content_to_index)
+            
+            # Add filename keywords
+            filename_keywords = self._extract_keywords(file_record["filename"])
+            keywords.extend(filename_keywords)
+            
+            # Add metadata keywords if available
+            if file_record["metadata"]:
+                for key, value in file_record["metadata"].items():
+                    if isinstance(value, str):
+                        metadata_keywords = self._extract_keywords(value)
+                        keywords.extend(metadata_keywords)
+            
+            # Add context keywords if available
+            if file_record["context"]:
+                context_keywords = self._extract_keywords(file_record["context"])
+                keywords.extend(context_keywords)
+            
+            # Update search index
+            for keyword in set(keywords):  # Remove duplicates
+                if keyword not in self.search_index:
+                    self.search_index[keyword] = []
+                
+                if file_id not in self.search_index[keyword]:
+                    self.search_index[keyword].append(file_id)
+            
+            # Save keywords in file record
+            file_record["keywords"] = list(set(keywords))
+            
+            # Save the updated index
+            self._save_search_index()
+            
+            self.logger.debug(f"Indexed file {file_id} with {len(keywords)} keywords")
+
+    
+    def _extract_keywords(self, text: str) -> List[str]:
+        """
+        Extract keywords from text for indexing
+        
+        Args:
+            text: Text to extract keywords from
             
         Returns:
-            list: Related interactions
+            list: List of extracted keywords
         """
-        try:
-            # Get all interaction files
-            interaction_files = list(self.interactions_dir.glob("*.json"))
+        # Convert to string if not already
+        if not isinstance(text, str):
+            text = str(text)
+        
+        # Convert to lowercase
+        text = text.lower()
+        
+        # Remove common stop words (simplified version)
+        stop_words = {'a', 'an', 'the', 'and', 'or', 'but', 'is', 'are', 'was', 'were', 
+                     'in', 'on', 'at', 'to', 'for', 'with', 'by', 'about', 'like', 'from'}
+        
+        # Tokenize and filter
+        tokens = re.findall(r'\b\w+\b', text)
+        keywords = [token for token in tokens if token not in stop_words and len(token) > 2]
+        
+        return keywords
+    
+    def _save_file_record(self, file_id: str, file_record: Dict):
+        """
+        Save a file record to disk
+        
+        Args:
+            file_id: ID of the file
+            file_record: File record to save
+        """
+        # Create a copy to avoid modifying the original
+        record_to_save = copy.deepcopy(file_record)
+        
+        # Convert sets to lists for JSON serialization
+        for key, value in record_to_save.items():
+            if isinstance(value, set):
+                record_to_save[key] = list(value)
+        
+        # Save to disk
+        record_path = self.index_dir / f"file_{file_id}.json"
+        with open(record_path, 'w') as f:
+            json.dump(record_to_save, f, indent=2)
             
-            if not interaction_files:
-                return []
-                
-            # For each interaction, compute relevance score
-            scored_interactions = []
+        self.logger.debug(f"Saved file record for {file_id}")
+
+    
+    def _save_search_index(self):
+        """Save the search index to disk"""
+        # Save the index to disk
+        index_path = self.index_dir / "search_index.json"
+        with open(index_path, 'w') as f:
+            json.dump(self.search_index, f, indent=2)
             
-            for file_path in interaction_files:
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        interaction = json.load(f)
-                        
-                    # Score based on keyword overlap
-                    score = 0
-                    if "query_info" in interaction and "keywords" in interaction["query_info"]:
-                        interaction_keywords = interaction["query_info"]["keywords"]
-                        # Count overlapping keywords
-                        for keyword in keywords:
-                            if keyword in interaction_keywords:
-                                score += 1
-                                
-                    # Add interaction with score
-                    scored_interactions.append((score, interaction))
-                    
-                except Exception as e:
-                    self.logger.warning(f"Error processing interaction file {file_path}: {str(e)}")
-                    continue
+        self.logger.debug("Saved search index")
+
+    
+    def search_files(self, query: str, limit: int = 5) -> List[Dict]:
+        """
+        Search for files based on a query
+        
+        Args:
+            query: Search query
+            limit: Maximum number of results to return
             
-            # Sort by score (descending) and return top results
-            scored_interactions.sort(key=lambda x: x[0], reverse=True)
-            return [interaction for score, interaction in scored_interactions[:limit]]
+        Returns:
+            list: List of matching file records
+        """
+        # Extract keywords from the query
+        keywords = self._extract_keywords(query)
+        
+        # Find matching files
+        matching_files = {}
+        
+        for keyword in keywords:
+            if keyword in self.search_index:
+                for file_id in self.search_index[keyword]:
+                    if file_id not in matching_files:
+                        matching_files[file_id] = 0
+                    matching_files[file_id] += 1
+        
+        # Sort by match count (descending)
+        sorted_matches = sorted(matching_files.items(), key=lambda x: x[1], reverse=True)
+        
+        # Get the file records
+        results = []
+        for file_id, score in sorted_matches[:limit]:
+            if file_id in self.file_memory:
+                file_record = copy.deepcopy(self.file_memory[file_id])
+                file_record["match_score"] = score
+                results.append(file_record)
+        
+        self.logger.info(f"Search for '{query}' found {len(results)} results")
+        return results
             
-        except Exception as e:
-            self.logger.error(f"Error retrieving related interactions: {str(e)}", exc_info=True)
+    
+    def get_related_files(self, 
+                         file_reference: str, 
+                         keywords: List[str] = None, 
+                         limit: int = 3) -> List[Dict]:
+        """
+        Get files related to a reference based on name or keywords
+        
+        Args:
+            file_reference: File name or reference
+            keywords: Additional keywords to match
+            limit: Maximum number of results to return
+            
+        Returns:
+            list: List of related file records
+        """
+        matching_files = {}
+        
+        # First check for exact filename matches
+        for file_id, record in self.file_memory.items():
+            if file_reference.lower() in record["filename"].lower():
+                matching_files[file_id] = 10  # High score for filename match
+        
+        # Then check for keyword matches
+        if keywords:
+            for keyword in keywords:
+                if keyword in self.search_index:
+                    for file_id in self.search_index[keyword]:
+                        if file_id not in matching_files:
+                            matching_files[file_id] = 0
+                        matching_files[file_id] += 1
+        
+        # Sort by match score
+        sorted_matches = sorted(matching_files.items(), key=lambda x: x[1], reverse=True)
+        
+        # Get the file records
+        results = []
+        for file_id, score in sorted_matches[:limit]:
+            if file_id in self.file_memory:
+                file_record = copy.deepcopy(self.file_memory[file_id])
+                file_record["match_score"] = score
+                results.append(file_record)
+        
+        return results
+
+    
+    def store_interaction(self, 
+                         query: str, 
+                         query_analysis: Dict, 
+                         response: str, 
+                         relevant_files: List[Dict] = None) -> str:
+        """
+        Store a conversation interaction with query, analysis, and response
+        
+        Args:
+            query: User's query
+            query_analysis: Analysis of the query
+            response: Assistant's response
+            relevant_files: Files relevant to this interaction
+            
+        Returns:
+            str: ID of the stored interaction
+        """
+        # Create interaction record
+        interaction_id = str(uuid.uuid4())
+        timestamp = datetime.now().isoformat()
+        
+        interaction = {
+            "id": interaction_id,
+            "timestamp": timestamp,
+            "query": query,
+            "query_analysis": query_analysis,
+            "response": response,
+            "relevant_files": relevant_files or []
+        }
+        
+        # Add to conversation history
+        self.conversation_history.append(interaction)
+        
+        # Add to session data
+        self.session_data["interactions"].append(interaction)
+        
+        # Update mentioned files in session
+        if relevant_files:
+            for file in relevant_files:
+                if "filename" in file:
+                    self.session_data["mentioned_files"].add(file["filename"])
+        
+        # Update mentioned datasets
+        if "dataset_references" in query_analysis:
+            for dataset in query_analysis["dataset_references"]:
+                self.session_data["mentioned_datasets"].add(dataset)
+        
+        # Save session data
+        self._save_session_data()
+        
+        self.logger.info(f"Stored interaction {interaction_id}")
+        return interaction_id
+        
+
+    
+    def get_conversation_history(self, limit: int = 10) -> List[Dict]:
+        """
+        Get recent conversation history
+        
+        Args:
+            limit: Maximum number of interactions to return
+            
+        Returns:
+            list: List of recent interactions
+        """
+        # Return the most recent interactions
+        return self.conversation_history[-limit:] if self.conversation_history else []
+    
+    def get_related_interactions(self, 
+                               query: str, 
+                               keywords: List[str] = None, 
+                               limit: int = 3) -> List[Dict]:
+        """
+        Get interactions related to a query based on similarity
+        
+        Args:
+            query: Current query
+            keywords: Keywords to match
+            limit: Maximum number of interactions to return
+            
+        Returns:
+            list: List of related interactions
+        """
+        if not self.conversation_history:
             return []
+        
+        matching_interactions = {}
+        
+        # Extract query keywords if not provided
+        if not keywords:
+            keywords = self._extract_keywords(query)
+        
+        # Score interactions based on keyword matches
+        for i, interaction in enumerate(self.conversation_history):
+            score = 0
+            
+            # Check query text
+            interaction_query = interaction.get("query", "")
+            for keyword in keywords:
+                if keyword in interaction_query.lower():
+                    score += 1
+            
+            # Check query analysis keywords
+            if "query_analysis" in interaction and "keywords" in interaction["query_analysis"]:
+                analysis_keywords = interaction["query_analysis"]["keywords"]
+                common_keywords = set(keywords).intersection(set(analysis_keywords))
+                score += len(common_keywords) * 2  # Higher weight for analysis keywords
+            
+            # Add recency bonus (more recent = higher score)
+            recency_bonus = (i + 1) / len(self.conversation_history)
+            score += recency_bonus
+            
+            if score > 0:
+                matching_interactions[i] = score
+        
+        # Sort by score (descending)
+        sorted_matches = sorted(matching_interactions.items(), key=lambda x: x[1], reverse=True)
+        
+        # Get the interactions
+        results = []
+        for idx, score in sorted_matches[:limit]:
+            interaction = copy.deepcopy(self.conversation_history[idx])
+            interaction["match_score"] = score
+            results.append(interaction)
+        
+        return results
+
     
-    def get_related_files(self, query: str, keywords: List[str], 
-                         file_type: Optional[str] = None,
-                         limit: int = 5) -> List[Dict[str, Any]]:
+    def _save_session_data(self):
+        """Save current session data to disk"""
+        # Create a copy to avoid modifying the original
+        session_to_save = copy.deepcopy(self.session_data)
+        
+        # Convert sets to lists for JSON serialization
+        for key, value in session_to_save.items():
+            if isinstance(value, set):
+                session_to_save[key] = list(value)
+        
+        # Save to disk
+        session_path = self.session_dir / f"session_{self.session_id}.json"
+        with open(session_path, 'w') as f:
+            json.dump(session_to_save, f, indent=2)
+            
+        self.logger.debug(f"Saved session data for {self.session_id}")
+        
+
+    def update_dataset_info(self, dataset_name: str, dataset_info: Dict):
         """
-        Retrieve files related to the current query
+        Update information about a dataset
         
         Args:
-            query (str): Current query
-            keywords (list): Keywords from the query
-            file_type (str, optional): Filter by file type
-            limit (int): Maximum number of files to return
-            
-        Returns:
-            list: Related file records
+            dataset_name: Name of the dataset
+            dataset_info: Information about the dataset
         """
-        try:
-            # Get all file records
-            file_records = []
+        # Update in memory
+        self.known_datasets[dataset_name] = dataset_info
+        
+        # Save to disk
+        dataset_path = self.datasets_dir / f"{dataset_name}.json"
+        with open(dataset_path, 'w') as f:
+            json.dump(dataset_info, f, indent=2)
             
-            for file_path in self.files_dir.glob("*.json"):
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        file_record = json.load(f)
-                        
-                    # Filter by file type if specified
-                    if file_type and file_record.get("file_type") != file_type:
-                        continue
-                        
-                    file_records.append(file_record)
-                except Exception as e:
-                    self.logger.warning(f"Error reading file record {file_path}: {str(e)}")
-                    continue
-            
-            if not file_records:
-                return []
-            
-            # Extract topic keywords from the query
-            query_lower = query.lower()
-            
-            # List of specific data products or datasets that might be queried
-            known_datasets = {
-                "cdl": ["cdl", "cropland", "crop", "agriculture", "land use", "land cover", "crop data layer", "usda", "crop type"],
-                "climate_change": ["climate change", "climate", "global warming", "temperature change", "precipitation change", "future climate", "climate projections", "climate scenarios"],
-                "gov_units": ["gov units", "governmental units", "administrative boundaries", "counties", "states", "boundaries", "administrative regions", "political boundaries"],
-                "groundwater": ["groundwater", "aquifer", "well", "water table", "ground water", "subsurface water", "water level", "water depth", "hydrology"],
-                "gssurgo": ["gssurgo", "soil", "sand", "clay", "silt", "organic matter", "bulk density", "soil properties", "soil survey", "usda soil"],
-                "modis": ["modis", "evi", "ndvi", "lai", "vegetation", "mod13q1", "mod16a2", "mod15a2h", "satellite", "remote sensing", "vegetation index", "leaf area", "evapotranspiration", "et"],
-                "nsrdb": ["nsrdb", "solar", "radiation", "solar power", "renewable energy", "irradiance", "pv", "photovoltaic", "solar potential", "insolation", "solar resource"],
-                "prism": ["prism", "climate", "temperature", "precipitation", "rainfall", "weather", "drought", "historical climate", "climate data", "meteorology"],
-                "snowdas": ["snow", "snowdas", "swe", "snow water equivalent", "snow cover", "snow depth", "snowpack", "snow accumulation", "snow melt"]
-            }
-            
-            # Check if the query is asking about a specific dataset
-            target_dataset = None
-            for dataset, terms in known_datasets.items():
-                if dataset in query_lower or any(term in query_lower for term in terms):
-                    target_dataset = dataset
-                    self.logger.info(f"Query appears to be about the '{dataset}' dataset")
-                    break
-            
-            # If we identified a specific dataset, prioritize files from that dataset
-            if target_dataset:
-                dataset_matches = []
-                
-                for file_record in file_records:
-                    file_name = file_record.get("file_name", "").lower()
-                    file_path = file_record.get("original_path", "").lower()
-                    file_content = file_record.get("content", "").lower()
-                    
-                    # First verify file is actually in the correct dataset directory
-                    # This is the most important check - file must be in the target dataset directory
-                    is_in_dataset_dir = False
-                    dataset_dir_patterns = [
-                        f"/{target_dataset}/", 
-                        f"\\{target_dataset}\\",
-                        f"/{target_dataset}_",
-                        f"\\{target_dataset}_"
-                    ]
-                    
-                    for pattern in dataset_dir_patterns:
-                        if pattern in file_path:
-                            is_in_dataset_dir = True
-                            break
-                    
-                    # Calculate a dataset relevance score
-                    score = 0
-                    
-                    # Give high score for being in the right directory
-                    if is_in_dataset_dir:
-                        score += 50  # This should outweigh all other factors
-                    
-                    # Check filename and path
-                    if target_dataset in file_name:
-                        score += 10
-                    if target_dataset in file_path:
-                        score += 8
-                    
-                    # Check related terms in the dataset's vocabulary
-                    for term in known_datasets[target_dataset]:
-                        if term in file_name:
-                            score += 5
-                        if term in file_path:
-                            score += 3
-                        if term in file_content:
-                            score += 1
-                    
-                    if score > 0:
-                        dataset_matches.append((score, file_record))
-                        self.logger.debug(f"Dataset match for '{target_dataset}': {file_name} (score: {score})")
-                
-                # If we found dataset-specific matches, return those
-                if dataset_matches:
-                    dataset_matches.sort(key=lambda x: x[0], reverse=True)
-                    self.logger.info(f"Found {len(dataset_matches)} matches for '{target_dataset}' dataset")
-                    return [file for score, file in dataset_matches[:limit]]
-            
-            # Check for filename references in the query
-            # First pass: Look for exact filename references with extensions
-            extensions = ['.csv', '.png', '.jpg', '.jpeg', '.md', '.txt']
-            exact_filename_matches = []
-            
-            # Look for filenames with extensions in the query
-            for ext in extensions:
-                pattern = rf'[\w\-_\s]+{ext}'
-                matches = re.findall(pattern, query_lower)
-                for match in matches:
-                    match = match.strip()
-                    # Look for matching files
-                    for file_record in file_records:
-                        file_name = file_record.get("file_name", "").lower()
-                        if match in file_name:
-                            exact_filename_matches.append(file_record)
-                            break
-            
-            # Also check for exact and partial filename matches
-            for file_record in file_records:
-                file_name = file_record.get("file_name", "").lower()
-                if file_name and file_name in query_lower:
-                    # Add if not already included
-                    if file_record not in exact_filename_matches:
-                        exact_filename_matches.append(file_record)
-                        
-                # Check filename without extension
-                if file_name:
-                    filename_base = os.path.splitext(file_name)[0]
-                    if filename_base and len(filename_base) > 3:
-                        if filename_base in query_lower:
-                            if file_record not in exact_filename_matches:
-                                exact_filename_matches.append(file_record)
-            
-            # If we found exact filename matches, prioritize these
-            if exact_filename_matches:
-                self.logger.info(f"Found {len(exact_filename_matches)} filename matches for '{query}'")
-                return exact_filename_matches[:limit]
-                
-            # If exact filename matching didn't work, try fuzzy matching for filenames
-            fuzzy_matches = []
-            query_words = query_lower.split()
-            
-            for file_record in file_records:
-                file_name = file_record.get("file_name", "").lower()
-                if not file_name:
-                    continue
-                    
-                # Calculate fuzzy score based on word overlap
-                filename_words = re.findall(r'\w+', file_name)
-                overlap = set(query_words) & set(filename_words)
-                
-                # If at least one word overlaps, consider it a match
-                if overlap:
-                    score = len(overlap) * 5  # Prioritize filename matches
-                    fuzzy_matches.append((score, file_record))
-                    continue
-                    
-            # If we found fuzzy matches for filenames, return these first
-            if fuzzy_matches:
-                fuzzy_matches.sort(key=lambda x: x[0], reverse=True)
-                return [file for score, file in fuzzy_matches[:limit]]
-                
-            # If filename matching didn't yield results, score based on content match
-            scored_files = []
-            
-            for file_record in file_records:
-                score = 0
-                content = file_record.get("content", "").lower()
-                file_name = file_record.get("file_name", "").lower()
-                file_path = file_record.get("original_path", "").lower()
-                
-                # Check for keyword presence in content
-                for keyword in keywords:
-                    keyword_lower = keyword.lower()
-                    # Give higher score for filename matches
-                    if keyword_lower in file_name:
-                        score += 5
-                    if keyword_lower in file_path:
-                        score += 3
-                    if keyword_lower in content:
-                        score += 1
-                
-                # Check for query terms in content
-                for term in query_words:
-                    if len(term) > 2 and term not in ["the", "and", "for", "in", "on", "of", "to", "a", "an"]:
-                        if term in file_name:
-                            score += 3
-                        if term in file_path:
-                            score += 2
-                        if term in content:
-                            score += 1
-                        
-                if score > 0:
-                    scored_files.append((score, file_record))
-                
-            # Sort by score (descending) and return top results
-            scored_files.sort(key=lambda x: x[0], reverse=True)
-            return [file for score, file in scored_files[:limit]]
-            
-        except Exception as e:
-            self.logger.error(f"Error retrieving related files: {str(e)}", exc_info=True)
-            return []
+        self.logger.info(f"Updated dataset info for {dataset_name}")
+
     
-    def get_geographic_info(self, entity: str) -> Optional[Dict[str, Any]]:
+    def get_dataset_info(self, dataset_name: str) -> Optional[Dict]:
         """
-        Get geographic information for an entity if available
+        Get information about a specific dataset
         
         Args:
-            entity (str): Geographic entity name
+            dataset_name: Name of the dataset
             
         Returns:
-            dict or None: Geographic information if available
+            dict: Dataset information or None if not found
         """
-        try:
-            # Check if we have information about this entity
-            entity_file = self.geographic_dir / f"{entity.lower().replace(' ', '_')}.json"
-            
-            if entity_file.exists():
-                with open(entity_file, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            
-            return None
-            
-        except Exception as e:
-            self.logger.error(f"Error retrieving geographic info for {entity}: {str(e)}")
-            return None
+        return self.known_datasets.get(dataset_name)
     
-    def store_geographic_info(self, entity: str, info: Dict[str, Any]) -> bool:
+    def get_all_dataset_info(self) -> Dict[str, Dict]:
         """
-        Store geographic information about an entity
+        Get information about all known datasets
         
-        Args:
-            entity (str): Geographic entity name
-            info (dict): Geographic information
-            
         Returns:
-            bool: Success status
+            dict: Dictionary of dataset information
         """
-        try:
-            # Prepare entity file name (lowercase with underscores)
-            entity_filename = entity.lower().replace(' ', '_') + '.json'
-            entity_path = self.geographic_dir / entity_filename
-            
-            # Add timestamp
-            info['stored_timestamp'] = datetime.now().isoformat()
-            
-            # Save to file
-            with open(entity_path, 'w', encoding='utf-8') as f:
-                json.dump(info, f, indent=2)
-                
-            self.logger.info(f"Stored geographic information for entity: {entity}")
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error storing geographic info for {entity}: {str(e)}")
-            return False
+        return self.known_datasets
     
-    def get_related_geographic_files(self, entities: List[str], 
-                                    limit: int = 5) -> List[Dict[str, Any]]:
+    def clear_memory(self, clear_files: bool = False):
         """
-        Get files related to geographic entities
+        Clear memory components
         
         Args:
-            entities (list): Geographic entity names
-            limit (int): Maximum number of files to return
-            
-        Returns:
-            list: Related file records
+            clear_files: Whether to also remove file records
         """
-        try:
-            # Search for files mentioning the geographic entities
-            file_records = []
-            entity_keywords = [entity.lower() for entity in entities]
+        # Clear conversation history
+        self.conversation_history = []
+        
+        # Clear session data
+        self.session_data["interactions"] = []
+        self.session_data["mentioned_files"] = set()
+        self.session_data["mentioned_datasets"] = set()
+        
+        # Save empty session
+        self._save_session_data()
+        
+        if clear_files:
+            # Clear file memory and search index
+            self.file_memory = {}
+            self.search_index = {}
             
-            for file_path in self.files_dir.glob("*.json"):
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        file_record = json.load(f)
-                        
-                    # Check if file content mentions any of the entities
-                    content = file_record.get("content", "").lower()
-                    
-                    for entity in entity_keywords:
-                        if entity in content:
-                            file_records.append(file_record)
-                            break
-                            
-                except Exception as e:
-                    self.logger.warning(f"Error reading file record {file_path}: {str(e)}")
-                    continue
-                    
-            return file_records[:limit]
+            # Save empty search index
+            self._save_search_index()
             
-        except Exception as e:
-            self.logger.error(f"Error retrieving geographic-related files: {str(e)}")
-            return []
+            # Remove file records from disk
+            for file_record in list(self.index_dir.glob("file_*.json")):
+                os.remove(file_record)
             
-    def get_session_interactions(self, session_id: Optional[str] = None) -> List[Dict[str, Any]]:
+            self.logger.info("Cleared memory including file records")
+        else:
+            self.logger.info("Cleared conversation memory (kept file records)")
+
+    
+    def load_session(self, session_id: str) -> bool:
         """
-        Get all interactions for a specific session
+        Load a previous session
         
         Args:
-            session_id (str, optional): Session ID to retrieve (current session if None)
+            session_id: ID of the session to load
             
         Returns:
-            list: Session interactions
+            bool: Success or failure
         """
-        try:
-            session_id = session_id or self.session_id
-            interactions = []
-            
-            # Get all interaction files for this session
-            pattern = f"{session_id}_*.json"
-            session_files = list(self.interactions_dir.glob(pattern))
-            
-            # Sort by interaction number
-            session_files.sort()
-            
-            for file_path in session_files:
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        interaction = json.load(f)
-                        interactions.append(interaction)
-                except Exception as e:
-                    self.logger.warning(f"Error reading interaction file {file_path}: {str(e)}")
-                    continue
-                    
-            return interactions
-            
-        except Exception as e:
-            self.logger.error(f"Error retrieving session interactions: {str(e)}")
-            return []
-            
-    def clear_memory(self, confirm: bool = False) -> bool:
-        """
-        Clear all memory (USE WITH CAUTION)
+        session_path = self.session_dir / f"session_{session_id}.json"
         
-        Args:
-            confirm (bool): Confirmation flag to prevent accidental clearing
-            
-        Returns:
-            bool: Success status
-        """
-        if not confirm:
-            self.logger.warning("Memory clear attempted without confirmation")
+        if not os.path.exists(session_path):
+            self.logger.warning(f"Session {session_id} not found")
             return False
             
-        try:
-            # Remove and recreate all memory directories
-            shutil.rmtree(self.memory_dir)
-            self._create_directories()
-            
-            # Reset session counters
-            self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.interaction_count = 0
-            
-            self.logger.info("Memory system cleared successfully")
-            return True
-            
-        except Exception as e:
-            self.logger.error(f"Error clearing memory: {str(e)}")
-            return False
-            
-    def get_session_info(self) -> Dict[str, Any]:
+        with open(session_path, 'r') as f:
+            session_data = json.load(f)
+        
+        # Update session data
+        self.session_id = session_id
+        self.session_data = session_data
+        
+        # Convert lists back to sets
+        if "mentioned_files" in self.session_data:
+            self.session_data["mentioned_files"] = set(self.session_data["mentioned_files"])
+        
+        if "mentioned_datasets" in self.session_data:
+            self.session_data["mentioned_datasets"] = set(self.session_data["mentioned_datasets"])
+        
+        # Load conversation history
+        self.conversation_history = self.session_data.get("interactions", [])
+        
+        self.logger.info(f"Loaded session {session_id}")
+        return True
+
+    
+    def get_user_preferences(self) -> Dict:
         """
-        Get information about the current session
+        Get user preferences from the current session
         
         Returns:
-            dict: Session information including ID, interactions, and active files
+            dict: User preferences
         """
-        try:
-            # Get all interactions for current session
-            interactions = self.get_session_interactions()
+        return self.session_data.get("user_preferences", {})
+    
+    def update_user_preferences(self, preferences: Dict):
+        """
+        Update user preferences in the current session
+        
+        Args:
+            preferences: Dictionary of user preferences
+        """
+        # Update preferences
+        if "user_preferences" not in self.session_data:
+            self.session_data["user_preferences"] = {}
             
-            # Get list of unique files accessed in this session
-            active_files = set()
-            for interaction in interactions:
-                if "files_accessed" in interaction:
-                    active_files.update(interaction["files_accessed"])
+        self.session_data["user_preferences"].update(preferences)
+        
+        # Save session data
+        self._save_session_data()
+        
+        self.logger.info("Updated user preferences")
+
+    
+    def add_to_context(self, key: str, value: Any):
+        """
+        Add information to the session context
+        
+        Args:
+            key: Context key
+            value: Context value
+        """
+        # Update context
+        self.session_data["context"][key] = value
+        
+        # Save session data
+        self._save_session_data()
+        
+        self.logger.debug(f"Added to context: {key}")
+
+    
+    def get_context(self, key: str = None) -> Any:
+        """
+        Get information from the session context
+        
+        Args:
+            key: Context key (if None, return all context)
             
-            # Compile session information
-            session_info = {
-                "session_id": self.session_id,
-                "interactions": interactions,
-                "active_files": list(active_files),
-                "interaction_count": self.interaction_count
-            }
-            
-            return session_info
-            
-        except Exception as e:
-            self.logger.error(f"Error getting session info: {str(e)}")
-            return {
-                "session_id": self.session_id,
-                "error": str(e)
-            } 
+        Returns:
+            Context value or dictionary of all context values
+        """
+        context = self.session_data.get("context", {})
+        
+        if key is not None:
+            return context.get(key)
+        
+        return context
+    
+    def get_mentioned_datasets(self) -> List[str]:
+        """
+        Get datasets mentioned in this session
+        
+        Returns:
+            list: List of mentioned dataset names
+        """
+        return list(self.session_data.get("mentioned_datasets", set()))
+    
+    def get_mentioned_files(self) -> List[str]:
+        """
+        Get files mentioned in this session
+        
+        Returns:
+            list: List of mentioned filenames
+        """
+        return list(self.session_data.get("mentioned_files", set())) 

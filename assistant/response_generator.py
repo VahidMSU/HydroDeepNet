@@ -1,8 +1,8 @@
-import logging
 from typing import Dict, List, Any, Optional
 import os
 import json
 import re
+from Logger import LoggerSetup
 
 class ResponseGenerator:
     """
@@ -10,14 +10,14 @@ class ResponseGenerator:
     based on query understanding and relevant file information.
     """
     
-    def __init__(self, llm_service=None, logger=None):
+    def __init__(self, llm_service=None):
         """
         Initialize the response generator
         
         Args:
             llm_service: Optional service for LLM-based response generation
         """
-        self.logger = logger
+        self.logger = LoggerSetup(rewrite=False, verbose=False)
         self.logger.info("Initializing Response Generator")
         self.llm_service = llm_service
         
@@ -40,36 +40,27 @@ class ResponseGenerator:
         """
         self.logger.debug(f"Generating response for query: {query}")
         
-        try:
-            # Check if we have any relevant files first
-            if not relevant_files:
-                # If no relevant files were found, try to find them directly from query
-                self.logger.info("No relevant files provided, attempting to extract filenames from query")
-                extracted_files = self._extract_file_references(query, memory_system)
-                if extracted_files:
-                    self.logger.info(f"Found potentially referenced files in query: {extracted_files}")
-                    relevant_files = extracted_files
-            
-            # Get file content for relevant files
-            file_contents = self._get_file_contents(relevant_files, memory_system)
-            
-            # Determine response strategy based on query intent
-            intent = query_info.get("intent", "general")
-            
-            if self.llm_service:
-                # If we have an LLM service, use it for response generation
-                return self._generate_llm_response(query, query_info, file_contents)
-            else:
-                # Otherwise use rule-based response generation
-                return self._generate_rule_based_response(query, query_info, file_contents)
-                
-        except Exception as e:
-            self.logger.error(f"Error generating response: {str(e)}", exc_info=True)
-            return {
-                "answer": f"I'm sorry, I encountered an error while generating a response: {str(e)}",
-                "relevant_files": [],
-                "error": str(e)
-            }
+        # Check if we have any relevant files first
+        if not relevant_files:
+            # If no relevant files were found, try to find them directly from query
+            self.logger.info("No relevant files provided, attempting to extract filenames from query")
+            extracted_files = self._extract_file_references(query, memory_system)
+            if extracted_files:
+                self.logger.info(f"Found potentially referenced files in query: {extracted_files}")
+                relevant_files = extracted_files
+        
+        # Get file content for relevant files
+        file_contents = self._get_file_contents(relevant_files, memory_system)
+        
+        # Determine response strategy based on query intent
+        intent = query_info.get("intent", "general")
+        
+        if self.llm_service:
+            # If we have an LLM service, use it for response generation
+            return self._generate_llm_response(query, query_info, file_contents)
+        else:
+            # Otherwise use rule-based response generation
+            return self._generate_rule_based_response(query, query_info, file_contents)
     
     def _extract_file_references(self, query: str, memory_system) -> List[str]:
         """
@@ -129,23 +120,20 @@ class ResponseGenerator:
         file_contents = {}
         
         for file_path in file_paths:
-            try:
-                # Get file record from memory
-                file_record = self._get_file_record(file_path, memory_system)
-                
-                if file_record:
-                    self.logger.debug(f"Found file record for {file_path}")
-                    file_contents[file_path] = file_record
-                else:
-                    self.logger.debug(f"No file record found for {file_path}, trying basename lookup")
-                    # If file not found by path, try looking by filename
-                    basename = os.path.basename(file_path)
-                    file_records = memory_system.get_related_files(basename, [basename.split('.')[0]], limit=1)
-                    if file_records:
-                        self.logger.debug(f"Found file by basename: {basename}")
-                        file_contents[file_path] = file_records[0]
-            except Exception as e:
-                self.logger.warning(f"Error retrieving content for file {file_path}: {str(e)}")
+            # Get file record from memory
+            file_record = self._get_file_record(file_path, memory_system)
+            
+            if file_record:
+                self.logger.debug(f"Found file record for {file_path}")
+                file_contents[file_path] = file_record
+            else:
+                self.logger.debug(f"No file record found for {file_path}, trying basename lookup")
+                # If file not found by path, try looking by filename
+                basename = os.path.basename(file_path)
+                file_records = memory_system.get_related_files(basename, [basename.split('.')[0]], limit=1)
+                if file_records:
+                    self.logger.debug(f"Found file by basename: {basename}")
+                    file_contents[file_path] = file_records[0]
                 
         return file_contents
     
@@ -160,8 +148,6 @@ class ResponseGenerator:
         Returns:
             dict or None: File record if found
         """
-        # Try multiple approaches to get the file record
-        
         # Method 1: Direct lookup in file_memory
         if hasattr(memory_system, "file_memory"):
             for path, record in memory_system.file_memory.items():
@@ -173,13 +159,10 @@ class ResponseGenerator:
                     return record
         
         # Method 2: Use get_related_files method
-        try:
-            basename = os.path.basename(file_path)
-            file_records = memory_system.get_related_files(basename, [basename.split('.')[0]], limit=1)
-            if file_records and len(file_records) > 0:
-                return file_records[0]
-        except Exception as e:
-            self.logger.debug(f"Error in get_related_files lookup: {str(e)}")
+        basename = os.path.basename(file_path)
+        file_records = memory_system.get_related_files(basename, [basename.split('.')[0]], limit=1)
+        if file_records and len(file_records) > 0:
+            return file_records[0]
         
         # Method 3: For backward compatibility with HierarchicalMemory
         if hasattr(memory_system, "document_memory"):
@@ -192,20 +175,14 @@ class ResponseGenerator:
                     return doc_data
         
         # Method 4: Search in files directory directly
-        try:
-            if hasattr(memory_system, "files_dir"):
-                basename = os.path.basename(file_path)
-                # Look for files with similar name
-                for file_path in memory_system.files_dir.glob("*.json"):
-                    try:
-                        with open(file_path, 'r', encoding='utf-8') as f:
-                            file_record = json.load(f)
-                            if file_record.get("file_name") == basename:
-                                return file_record
-                    except Exception as e:
-                        self.logger.debug(f"Error reading file record {file_path}: {str(e)}")
-        except Exception as e:
-            self.logger.debug(f"Error searching files directory: {str(e)}")
+        if hasattr(memory_system, "files_dir"):
+            basename = os.path.basename(file_path)
+            # Look for files with similar name
+            for json_file_path in memory_system.files_dir.glob("*.json"):
+                with open(json_file_path, 'r', encoding='utf-8') as f:
+                    file_record = json.load(f)
+                    if file_record.get("file_name") == basename:
+                        return file_record
         
         # File not found in memory
         self.logger.warning(f"File not found in memory: {file_path}")
