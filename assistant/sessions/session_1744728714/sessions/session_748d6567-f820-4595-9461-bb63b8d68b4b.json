@@ -1,0 +1,20 @@
+{
+  "id": "748d6567-f820-4595-9461-bb63b8d68b4b",
+  "start_time": "2025-04-15T10:52:03.234830",
+  "interactions": [
+    {
+      "id": "f26a60f6-ff18-4670-89e9-b2bfee7f2c89",
+      "timestamp": "2025-04-15T10:52:05.947731",
+      "query": "hi",
+      "query_analysis": "Hello! What's on your mind? Are you looking for assistance with a specific report or dataset, or would you like some guidance on how to get started with analyzing the data?",
+      "response": {
+        "intent": "general"
+      },
+      "relevant_files": []
+    }
+  ],
+  "user_preferences": {},
+  "mentioned_files": [],
+  "mentioned_datasets": [],
+  "context": {}
+}

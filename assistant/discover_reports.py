@@ -30,7 +30,11 @@ def discover_reports(base_dir):
                     reports_dict[report_name]["files"][file_name] = {
                         "path": file_path
                     }
-        
+    
+    ## save the reports_dict to a file
+    with open(Path(base_dir) / "report_structure.json", "w") as f:
+        json.dump(reports_dict, f)
+
     # Remove debug print statement
     logger.info(f"Discovered {len(reports_dict)} report groups")
     

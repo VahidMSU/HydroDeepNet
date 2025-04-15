@@ -1,0 +1,58 @@
+{
+  "id": "a4890a44-7122-42f7-b2d3-eb450d04d049",
+  "start_time": "2025-04-15T10:13:17.090195",
+  "interactions": [
+    {
+      "id": "2df79e66-e4db-42c0-b3e1-e3d076a7e550",
+      "timestamp": "2025-04-15T10:13:22.889839",
+      "query": "what data u have access to?",
+      "query_analysis": "We have access to various files containing different types of data, including maps and statistical summaries.",
+      "response": {
+        "keywords": [
+          "what",
+          "data",
+          "u",
+          "have",
+          "access",
+          "to?"
+        ],
+        "intent": "general"
+      },
+      "relevant_files": []
+    },
+    {
+      "id": "a809194c-00a3-49f4-9947-e63fec2d2250",
+      "timestamp": "2025-04-15T10:13:29.022169",
+      "query": "what data u have access to?",
+      "query_analysis": "I can provide you with an overview of the types of data I have access to. My primary sources include publicly available datasets, knowledge bases, and structured databases across various domains such as finance, healthcare, technology, and more. However, please note that my access is limited by the availability and accuracy of the data within these sources.\n\nIf you're looking for specific information or want me to analyze a particular dataset, feel free to ask about it!",
+      "response": {
+        "query": "what data u have access to?",
+        "timestamp": "2025-04-15T10:13:17.091454",
+        "intent": "general_inquiry",
+        "entities": [
+          {
+            "type": "location",
+            "value": "data u have access to",
+            "start": 5,
+            "end": 26
+          }
+        ],
+        "keywords": [
+          "data",
+          "access"
+        ],
+        "dataset_references": [
+          "what"
+        ],
+        "intent_confidence": 0.5,
+        "is_spatial": false,
+        "is_temporal": false
+      },
+      "relevant_files": []
+    }
+  ],
+  "user_preferences": {},
+  "mentioned_files": [],
+  "mentioned_datasets": [],
+  "context": {}
+}

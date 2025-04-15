@@ -1,0 +1,20 @@
+{
+  "id": "b172b665-3674-458d-b27c-ae188318e2b1",
+  "start_time": "2025-04-15T10:25:12.725570",
+  "interactions": [
+    {
+      "id": "da56c50e-ad90-4bfe-918e-d748aab142f1",
+      "timestamp": "2025-04-15T10:25:17.230000",
+      "query": "hi",
+      "query_analysis": "Hello! I'm here to assist you. However, it seems like we haven't discussed a specific topic or dataset yet. Could you please tell me more about what you'd like to work on or discuss regarding report data? What's on your mind?",
+      "response": {
+        "intent": "general"
+      },
+      "relevant_files": []
+    }
+  ],
+  "user_preferences": {},
+  "mentioned_files": [],
+  "mentioned_datasets": [],
+  "context": {}
+}
