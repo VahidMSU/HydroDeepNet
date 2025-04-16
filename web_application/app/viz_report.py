@@ -7,7 +7,7 @@ import zipfile
 import tempfile
 import sys 
 
-from AI_agent.report_generator import run_report_generation
+from GeoReporter.report_generator import run_report_generation
 from datetime import datetime
 from app.decorators import conditional_login_required, conditional_verified_required
 

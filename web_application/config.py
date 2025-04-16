@@ -3,7 +3,7 @@ import json
 from datetime import timedelta
 import sys
 sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
-sys.path.append('/data/SWATGenXApp/codes/AI_agent')
+sys.path.append('/data/SWATGenXApp/codes/GeoReporter')
 sys.path.append('/data/SWATGenXApp/codes/MODFLOW')
 
 from SWATGenX.SWATGenXLogging import LoggerSetup

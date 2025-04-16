@@ -9,7 +9,7 @@
     },
     "python.analysis.extraPaths": [
         "/data/SWATGenXApp/codes/SWATGenX",
-        "/data/SWATGenXApp/codes/SWATGenX/AI_agent",
+        "/data/SWATGenXApp/codes/SWATGenX/GeoReporter",
         "/data/SWATGenXApp/codes/ModelProcessing",
         "/usr/local/share/SWATPlusEditor/swatplus-editor/src/api",
     ]

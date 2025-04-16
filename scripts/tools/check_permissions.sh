@@ -26,7 +26,7 @@ DIRS_TO_CHECK=(
   "/data/SWATGenXApp/GenXAppData"
   "/data/SWATGenXApp/Users"
   "/data/SWATGenXApp/codes/SWATGenX"
-  "/data/SWATGenXApp/codes/AI_agent"
+  "/data/SWATGenXApp/codes/GeoReporter"
   "/data/SWATGenXApp/codes/web_application/logs"
   "/data/SWATGenXApp/codes/web_application/frontend/build"
 )

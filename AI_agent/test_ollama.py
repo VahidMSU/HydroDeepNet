@@ -1,1 +1,0 @@
-import ollama; print("Testing Ollama connection..."); response = ollama.chat(model="mistral:latest", messages=[{"role": "user", "content": "Say hello"}]); print("Response:", response["message"]["content"])
