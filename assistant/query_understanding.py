@@ -2,6 +2,7 @@ import re
 import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+import ollama
 try:
     from .Logger import LoggerSetup
 except ImportError:
@@ -13,60 +14,30 @@ class QueryUnderstanding:
     entity extraction, and keyword identification.
     """
     
-    def __init__(self):
+    def __init__(self, default_model=None):
         """
         Initialize the query understanding system
         
         Args:
+            default_model: Default LLM model to use for zero-shot classification
             logger: Optional logger instance
         """
         self.logger = LoggerSetup(rewrite=False, verbose=True)
+        self.default_model = default_model or "Llama3.2-Vision:latest"
         
-        # Define intents and their patterns
-        self.intent_patterns = {
-            "dataset_inquiry": [
-                r"(?i)data(?:set)?s?\s+(?:about|on|for|related\s+to)\s+([\w\s]+)",
-                r"(?i)show\s+me\s+(?:the\s+)?data(?:set)?s?\s+(?:on|about|for)\s+([\w\s]+)",
-                r"(?i)what\s+data(?:set)?s?\s+(?:do\s+you\s+have|are\s+available)\s+(?:on|about|for)\s+([\w\s]+)",
-                r"(?i)information\s+(?:on|about|for)\s+([\w\s]+)"
-            ],
-            "file_operation": [
-                r"(?i)(?:open|show|read|display)\s+(?:the\s+)?file\s+([\w\.\-\s]+)",
-                r"(?i)(?:what(?:'s|\s+is)\s+in|contents\s+of)\s+(?:the\s+)?file\s+([\w\.\-\s]+)",
-                r"(?i)(?:save|write|create)\s+(?:a\s+)?file\s+(?:called|named)?\s*([\w\.\-\s]+)"
-            ],
-            "spatial_analysis": [
-                r"(?i)(?:spatial|geographic(?:al)?|map)\s+(?:analysis|data|information)\s+(?:of|for|on|about)\s+([\w\s]+)",
-                r"(?i)(?:show|display)\s+(?:me\s+)?(?:on\s+(?:a\s+)?map|spatially)\s+([\w\s]+)",
-                r"(?i)where\s+(?:is|are)\s+([\w\s]+)"
-            ],
-            "temporal_analysis": [
-                r"(?i)(?:temporal|time|trend)\s+(?:analysis|data|information|series)\s+(?:of|for|on|about)\s+([\w\s]+)",
-                r"(?i)(?:how|what)\s+has\s+([\w\s]+)\s+changed\s+over\s+time",
-                r"(?i)(?:show|display)\s+(?:me\s+)?(?:the\s+)?(?:time\s+series|trends|history)\s+(?:of|for)\s+([\w\s]+)"
-            ],
-            "comparison": [
-                r"(?i)(?:compare|comparison\s+(?:of|between))\s+([\w\s]+)\s+(?:and|vs\.?|versus)\s+([\w\s]+)",
-                r"(?i)(?:what(?:'s|\s+is)\s+the\s+)?difference\s+between\s+([\w\s]+)\s+and\s+([\w\s]+)",
-                r"(?i)(?:how\s+does)\s+([\w\s]+)\s+(?:compare\s+to|differ\s+from)\s+([\w\s]+)"
-            ],
-            "trend_analysis": [
-                r"(?i)(?:trend|pattern)\s+(?:analysis|detection)\s+(?:of|for|in)\s+([\w\s]+)",
-                r"(?i)(?:identify|detect|find)\s+(?:trends|patterns)\s+(?:in|of|for)\s+([\w\s]+)",
-                r"(?i)(?:is\s+there|are\s+there)\s+(?:any|some)\s+(?:trends|patterns)\s+(?:in|of|for)\s+([\w\s]+)"
-            ],
-            "help_request": [
-                r"(?i)(?:help|assist(?:ance)?)\s+(?:me\s+)?(?:with|on|about)?\s*([\w\s]*)",
-                r"(?i)(?:how\s+(?:do|can)\s+I|what(?:'s|\s+is)\s+the\s+way\s+to)\s+([\w\s]+)",
-                r"(?i)(?:what\s+can\s+you\s+do|(?:show|tell)\s+me\s+(?:your\s+)?capabilities)"
-            ],
-            "conversation": [
-                r"(?i)(?:hi|hello|hey|greetings)",
-                r"(?i)(?:how\s+are\s+you|what's\s+up)",
-                r"(?i)(?:thanks|thank\s+you)",
-                r"(?i)(?:bye|goodbye)"
-            ]
-        }
+        # Define possible intents for zero-shot classification
+        self.intent_classes = [
+            "dataset_inquiry",     # User asking about data or datasets
+            "file_operation",      # User wanting to open, view, or save files
+            "spatial_analysis",    # Requests related to geographic or spatial analysis
+            "temporal_analysis",   # Requests about time series or temporal trends
+            "comparison",          # Comparing two or more entities or datasets
+            "trend_analysis",      # Analyzing trends or patterns
+            "help_request",        # User asking for help or instructions
+            "conversation",        # General conversational queries (greetings, etc.)
+            "general_inquiry",     # Any other general questions
+            "analyze"              # Specific requests to analyze something
+        ]
         
         # Keywords to look for in queries
         self.known_keywords = [
@@ -252,45 +223,90 @@ class QueryUnderstanding:
         self.logger.debug(f"Enhanced query with additional context")
         return enhanced_query
     
-    def _detect_intent(self, query: str) -> tuple:
+    def _detect_intent(self, query: str, model=None) -> tuple:
         """
-        Detect the intent of a query
+        Detect the intent of a query using zero-shot classification with LLM
         
         Args:
             query: The user's query string
+            model: Optional model name to override the default
             
         Returns:
             tuple: (intent name, confidence score)
         """
-        # Check for common file listing commands first
+        # Special case for common file listing commands for backward compatibility
         list_patterns = [
             r"(?i)list\s+(?:all\s+)?(\w+)(?:\s+files)?",
             r"(?i)show\s+(?:me\s+)?(?:all\s+)?(?:the\s+)?(\w+)(?:\s+files)?",
             r"(?i)what\s+(\w+)(?:\s+files)?\s+(?:do\s+you\s+have|are\s+available)"
         ]
         
-        # Check for analyze/analyse commands
-        analyze_patterns = [
-            r"(?i)anal[yz]e\s+([\w\.\-]+)"
-        ]
-        
         for pattern in list_patterns:
             if re.search(pattern, query):
                 return "file_operation", 0.9
-                
+        
+        # Special case for analyze commands for backward compatibility
+        analyze_patterns = [r"(?i)anal[yz]e\s+([\w\.\-]+)"]
         for pattern in analyze_patterns:
             if re.search(pattern, query):
                 return "analyze", 0.9
-        
-        # Check patterns for each intent
-        for intent, patterns in self.intent_patterns.items():
-            for pattern in patterns:
-                match = re.search(pattern, query)
-                if match:
-                    return intent, 0.9  # Confidence score for pattern match
-        
-        # Default to help request for unmatched queries
-        return "general_inquiry", 0.5
+                
+        # Use zero-shot classification with LLM for all other queries
+        try:
+            # Use provided model or fall back to default
+            llm_model = model or self.default_model
+            
+            # Prepare a prompt for zero-shot classification
+            prompt = f"""Classify the following query into one of these categories:
+            {', '.join(self.intent_classes)}
+            
+            Query: "{query}"
+            
+            Respond with only the intent class name and a confidence score between 0 and 1, 
+            in the format: "intent_class|confidence".
+            For example: "dataset_inquiry|0.85"
+            """
+            
+            self.logger.debug(f"Sending zero-shot classification prompt to LLM using model {llm_model}")
+            
+            # Get classification from LLM
+            response = ollama.generate(
+                model=llm_model,
+                prompt=prompt,
+            )
+            
+            # Parse response
+            prediction = response.response.strip()
+            self.logger.debug(f"LLM classification result: {prediction}")
+            
+            # Extract intent and confidence
+            if "|" in prediction:
+                intent, confidence_str = prediction.split("|", 1)
+                intent = intent.strip()
+                
+                # Make sure intent is in valid classes
+                if intent not in self.intent_classes:
+                    self.logger.warning(f"LLM returned invalid intent: {intent}, defaulting to general_inquiry")
+                    intent = "general_inquiry"
+                
+                try:
+                    confidence = float(confidence_str)
+                    if confidence < 0 or confidence > 1:
+                        confidence = 0.7  # Default if out of range
+                except ValueError:
+                    confidence = 0.7  # Default if confidence is not a valid float
+            else:
+                # Fallback if response format is incorrect
+                self.logger.warning(f"LLM response format incorrect: {prediction}")
+                intent = prediction if prediction in self.intent_classes else "general_inquiry"
+                confidence = 0.6
+            
+            return intent, confidence
+            
+        except Exception as e:
+            # If LLM classification fails, fall back to a safe default
+            self.logger.error(f"Error in zero-shot classification: {str(e)}")
+            return "general_inquiry", 0.5
     
     def _extract_entities(self, query: str, intent: str) -> List[Dict]:
         """

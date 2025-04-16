@@ -9,16 +9,19 @@ import ollama
 
 
 # Add new completion_agent function at the appropriate place after the imports
-def completion_agent(raw_response, query, DEFAULT_MODEL, logger):
-
+def completion_agent(raw_response, query, DEFAULT_MODEL, logger, memory=None, use_context=True):
     """
-    Takes a raw response and generates a polished, complete response.
+    Takes a raw response and generates a polished, complete response with full context access.
     This ensures consistent style and format for all system responses.
+    
     Args:
         raw_response (str): The raw response from various analysis components
         query (str): The original user query
-        DEFAULT_MODEL: The language model to use
+        DEFAULT_MODEL: Default model to use if not final completion
         logger: Logger instance
+        memory: Optional memory system for context
+        use_context: Whether to include memory context in the completion
+        
     Returns:
         str: A polished final response
     """
@@ -29,19 +32,41 @@ def completion_agent(raw_response, query, DEFAULT_MODEL, logger):
         
     logger.info("Using completion agent to polish response")
     
+    # Get context from memory if available
+    memory_context = ""
+    if memory and use_context:
+        # Get related interactions from memory using semantic search
+        related_interactions = memory.get_related_interactions(query, [], limit=3, use_semantic=True)
+        if related_interactions:
+            memory_context = "Previous relevant interactions:\n"
+            for interaction in related_interactions[:3]:
+                if "query" in interaction and "response" in interaction:
+                    memory_context += f"Q: {interaction['query']}\nA: {interaction['response']}\n\n"
+    
+    # Determine which model to use
+    # For final completions, always use llama3:70b
+    completion_model = "llama3:70b"
+    logger.info(f"Using {completion_model} for final completion")
+    
     # Create a prompt that instructs the model to polish the response
     prompt = f"""You are a helpful AI assistant specializing in data analysis and explanations.
 Given the user query and a draft response, improve the response to be clear, direct, and helpful.
 Maintain all factual information but improve clarity and readability.
 
 User query: {query}
+"""
 
+    # Include memory context if available
+    if memory_context:
+        prompt += f"\nRelevant context from previous interactions:\n{memory_context}\n"
+
+    prompt += f"""
 Draft response: {raw_response}
 
 Improved response:"""
 
     response = ollama.generate(
-        model=DEFAULT_MODEL,
+        model=completion_model,
         prompt=prompt,
     )
     
@@ -54,26 +79,71 @@ Improved response:"""
         
     return improved_response
 
-def handle_basic_query(query):
-    """Handle basic queries without needing the index"""
+def handle_basic_query(query, memory=None, report_structure=None):
+    """
+    Handle basic queries without needing the index
+    
+    Args:
+        query: The user query
+        memory: Optional memory system to check for available data
+        report_structure: Optional report structure for data awareness
+    """
     query_lower = query.lower()
     
-    # Basic greeting patterns
-    greetings = {
-        "hi": "Hello! How can I help you with the report data?",
-        "hello": "Hi there! I can help you analyze reports and data files. What would you like to know?",
-        "hey": "Hey! I'm ready to help you with your data analysis needs.",
-        "greetings": "Greetings! I'm here to help with your report analysis."
-    }
+    # For greeting patterns, provide more detailed information about available data
+    is_greeting = query_lower in ["hi", "hello", "hey", "greetings"] or any(greeting in query_lower.split() for greeting in ["hi", "hello", "hey", "greetings"])
     
-    # Check for exact matches first
-    for greeting, response in greetings.items():
-        if query_lower == greeting or query_lower == f"{greeting}!":
-            return response
-    
-    # Check for greeting patterns
-    if any(greeting in query_lower.split() for greeting in greetings.keys()):
-        return "Hello! I can help you analyze report data, show visualizations, or explain files. What would you like to explore?"
+    if is_greeting:
+        # Build a more informative response that includes what data is available
+        response = "Hello! I'm your data analysis assistant. "
+        
+        # Include information about available datasets if we have report structure
+        if report_structure:
+            datasets = list(report_structure.keys())
+            if datasets:
+                if len(datasets) <= 5:
+                    datasets_str = ", ".join(datasets)
+                    response += f"I have access to the following datasets: {datasets_str}. "
+                else:
+                    datasets_sample = ", ".join(datasets[:5])
+                    response += f"I have access to {len(datasets)} datasets including {datasets_sample}, and more. "
+            
+            # Count file types in the report structure
+            file_counts = {"csv": 0, "image": 0, "markdown": 0, "other": 0}
+            for group_data in report_structure.values():
+                for file_name in group_data.get('files', {}):
+                    if file_name.lower().endswith('.csv'):
+                        file_counts["csv"] += 1
+                    elif file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                        file_counts["image"] += 1
+                    elif file_name.lower().endswith('.md'):
+                        file_counts["markdown"] += 1
+                    else:
+                        file_counts["other"] += 1
+            
+            # Add file type info
+            file_types = []
+            if file_counts["csv"] > 0:
+                file_types.append(f"{file_counts['csv']} CSV files")
+            if file_counts["image"] > 0:
+                file_types.append(f"{file_counts['image']} images")
+            if file_counts["markdown"] > 0:
+                file_types.append(f"{file_counts['markdown']} markdown documents")
+            if file_counts["other"] > 0:
+                file_types.append(f"{file_counts['other']} other files")
+            
+            if file_types:
+                response += f"I can help analyze {', '.join(file_types)}. "
+        
+        # Add instructions for how to proceed
+        response += "You can ask me to:\n"
+        response += "1. List available files by type (try 'list images' or 'list csv files')\n"
+        response += "2. Analyze specific files (try 'analyze [filename]')\n"
+        response += "3. Ask questions about the data\n"
+        response += "4. Get summaries of reports\n\n"
+        response += "What would you like to know about?"
+        
+        return response
     
     # Help request patterns
     if "help" in query_lower or "what can you do" in query_lower or "capabilities" in query_lower:
@@ -99,8 +169,8 @@ def ask_query(engine, question, conversation_history, memory=None, DEFAULT_MODEL
     # Get context from memory if available
     memory_context = ""
     if memory:
-        # Get related interactions from memory
-        related_interactions = memory.get_related_interactions(question, [])
+        # Get related interactions from memory using semantic search
+        related_interactions = memory.get_related_interactions(question, [], limit=3, use_semantic=True)
         if related_interactions:
             memory_context = "Previous relevant interactions:\n"
             for interaction in related_interactions[:3]:
@@ -144,23 +214,50 @@ class UserQueryAgent:
     """
     
     def __init__(self, memory, query_understanding, response_generator, report_structure, logger, DEFAULT_MODEL):
-        """Initialize the user query agent"""
+        """
+        Initialize the UserQueryAgent with memory, query understanding, and response generator
+        
+        Args:
+            memory: Memory system instance
+            query_understanding: QueryUnderstanding instance
+            response_generator: ResponseGenerator instance
+            report_structure: Structure of available reports
+            logger: Logger instance
+            DEFAULT_MODEL: Default model to use for LLM operations
+        """
+        # Store components
         self.memory = memory
-        self.query_understanding = query_understanding
+        
+        # If query_understanding is not pre-initialized, create it with default model
+        if query_understanding is None:
+            from query_understanding import QueryUnderstanding
+            self.query_understanding = QueryUnderstanding(default_model=DEFAULT_MODEL)
+        else:
+            # Use the provided instance but ensure default_model is set
+            self.query_understanding = query_understanding
+            if hasattr(self.query_understanding, 'default_model') and not self.query_understanding.default_model:
+                self.query_understanding.default_model = DEFAULT_MODEL
+        
         self.response_generator = response_generator
         self.report_structure = report_structure
         self.logger = logger
         self.DEFAULT_MODEL = DEFAULT_MODEL
-        self.conversation_history = []
+        
+        # Track last mentioned entities for context
         self.last_mentioned_files = []
         self.last_mentioned_dataset = None
+        
+        # Track conversation history
+        self.conversation_history = []
+        
+        # Define command patterns
         self.command_patterns = {
-            "list": r"(?i)list\s+([\w\s]+)(?:\s+files)?$",
-            "analyze": r"(?i)anal[yz]e\s+(.*)",
-            "show": r"(?i)show\s+(.*)",
-            "what_is": r"(?i)what\s+is\s+(.*)",
-            "tell_about": r"(?i)tell\s+(?:me\s+)?about\s+(.*)",
-            "help": r"(?i)help|help me|how to|what can you do"
+            "list": r"(?i)^list\s+(.*?)(?:\s+files)?$",
+            "analyze": r"(?i)^anal[yz]e\s+(.*?)$",
+            "show": r"(?i)^show\s+(.*?)$",
+            "what_is": r"(?i)^what(?:'s| is)\s+(.*?)$",
+            "tell_about": r"(?i)^tell\s+(?:me\s+)?(?:about\s+)?(.*?)$",
+            "help": r"(?i)^(?:help|assist)(?:\s+me)?(?:\s+with)?(?:\s+how\s+to)?(?:\s+)?(.*?)$"
         }
     
 
@@ -332,10 +429,17 @@ class UserQueryAgent:
         self.logger.info(f"UserQueryAgent processing: {user_input}")
         
         # Check if this is a simple query that can be handled directly
-        simple_response = handle_basic_query(user_input)
+        simple_response = handle_basic_query(user_input, self.memory, self.report_structure)
         if simple_response:
             # Apply completion agent to simple responses for consistency
-            polished_response = completion_agent(simple_response, user_input, self.DEFAULT_MODEL, self.logger)
+            polished_response = completion_agent(
+                simple_response, 
+                user_input, 
+                self.DEFAULT_MODEL, 
+                self.logger,
+                memory=self.memory,
+                use_context=True
+            )
             self.memory.store_interaction(user_input, polished_response, {"intent": "general"}, [])
             return polished_response
             
@@ -387,8 +491,8 @@ class UserQueryAgent:
         # For general queries, use standard pipeline with the query engine
         enhanced_query = self.query_understanding.enhance_query(user_input, query_info, self.memory)
         
-        # Get related files
-        related_files = self.memory.get_related_files(user_input, query_info.get("keywords", []))
+        # Get related files using semantic search
+        related_files = self.memory.get_related_files(user_input, query_info.get("keywords", []), use_semantic=True)
         related_file_paths = [file.get("original_path") for file in related_files if "original_path" in file]
         
         # Update last mentioned files if we found any
@@ -396,6 +500,9 @@ class UserQueryAgent:
             self.last_mentioned_files = related_file_paths
             
         if query_engine:
+            # Get related interactions using semantic search
+            related_interactions = self.memory.get_related_interactions(user_input, query_info.get("keywords", []), use_semantic=True)
+            
             # Get RAG response for general questions
             rag_response, history = ask_query(
                 query_engine, 
@@ -417,8 +524,15 @@ class UserQueryAgent:
             # Get the final answer
             answer = response_data.get("answer", rag_response)
             
-            # Polish with completion agent
-            polished_answer = completion_agent(answer, user_input, self.DEFAULT_MODEL, self.logger)
+            # Polish with completion agent with full memory context
+            polished_answer = completion_agent(
+                answer, 
+                user_input, 
+                self.DEFAULT_MODEL, 
+                self.logger,
+                memory=self.memory,
+                use_context=True
+            )
             
             # Store in memory
             self.memory.store_interaction(user_input, polished_answer, query_info, related_file_paths)
@@ -434,7 +548,17 @@ class UserQueryAgent:
             )
             
             answer = response_data.get("answer", "I'm sorry, I don't have enough information to answer that question.")
-            polished_answer = completion_agent(answer, user_input, self.DEFAULT_MODEL, self.logger)
+            
+            # Polish with completion agent with full memory context
+            polished_answer = completion_agent(
+                answer, 
+                user_input, 
+                self.DEFAULT_MODEL, 
+                self.logger,
+                memory=self.memory,
+                use_context=True
+            )
+            
             self.memory.store_interaction(user_input, polished_answer, query_info, related_file_paths)
             
             return polished_answer
@@ -560,7 +684,7 @@ class UserQueryAgent:
             
             # Fallback message if no query engine or it fails
             fallback_response = f"I don't have specific information about '{command_args}'. Try asking about available datasets or files, or use the 'list' command to see what's available."
-            return completion_agent(fallback_response, original_query, self.DEFAULT_MODEL, self.logger)
+            return completion_agent(fallback_response, original_query, self.DEFAULT_MODEL, self.logger, memory=self.memory, use_context=True)
         
         elif command_type == "help":
             help_response = (
@@ -577,7 +701,7 @@ class UserQueryAgent:
             self.memory.store_interaction(original_query, help_response, query_info, [])
             
             # Polish the response with completion agent for consistency
-            polished_response = completion_agent(help_response, original_query, self.DEFAULT_MODEL, self.logger)
+            polished_response = completion_agent(help_response, original_query, self.DEFAULT_MODEL, self.logger, memory=self.memory, use_context=True)
             return polished_response
         
         # If no command matched or not handled, return None to fall back to standard processing
@@ -781,18 +905,65 @@ class UserQueryAgent:
         return None
     
     def _resolve_references(self, query, query_info):
-        """Resolve references to previously mentioned entities"""
-        if not self.last_mentioned_files and not self.last_mentioned_dataset:
-            return
+        """
+        Resolve references to previously mentioned entities
+        
+        Args:
+            query: Raw query string
+            query_info: Query analysis information
             
-        # References to dataset
-        if self.last_mentioned_dataset and any(word in query.lower() for word in ['it', 'this dataset', 'that dataset', 'these data']):
-            query_info["target_dataset"] = self.last_mentioned_dataset
-            query_info["dataset_terms"] = self.query_understanding.known_datasets.get(self.last_mentioned_dataset, [])
-            self.logger.info(f"Resolved reference to dataset: {self.last_mentioned_dataset}")
+        Returns:
+            Updated query_info with resolved references
+        """
+        self.logger.info("Resolving references in query")
+        
+        # Check for previously mentioned datasets
+        if self.last_mentioned_dataset:
+            if "dataset_references" not in query_info:
+                query_info["dataset_references"] = []
             
-        # References to files
-        if self.last_mentioned_files and any(word in query.lower() for word in ['it', 'this file', 'that file', 'the file', 'those files']):
-            query_info["file_references"] = [os.path.basename(f) for f in self.last_mentioned_files]
-            self.logger.info(f"Resolved references to files: {query_info['file_references']}")
+            if self.last_mentioned_dataset not in query_info["dataset_references"]:
+                query_info["dataset_references"].append(self.last_mentioned_dataset)
+                self.logger.info(f"Resolved pronoun to dataset: {self.last_mentioned_dataset}")
+        
+        # Check for previously mentioned files
+        if self.last_mentioned_files:
+            if "file_references" not in query_info:
+                query_info["file_references"] = []
+            
+            for file in self.last_mentioned_files:
+                if file not in query_info["file_references"]:
+                    query_info["file_references"].append(file)
+                    self.logger.info(f"Resolved pronoun to file: {file}")
+            
+            # Also check if the query might be an "analyze" intent with a pronoun referring to a file
+            if not query_info.get("intent") or query_info.get("intent") == "general_inquiry":
+                # Check for analysis keywords
+                analysis_terms = ["analyze", "show", "display", "explain", "describe", "plot", "graph"]
+                if any(term in query.lower() for term in analysis_terms):
+                    query_info["intent"] = "analyze"
+                    self.logger.info("Updated intent to 'analyze' based on resolved file references")
+        
+        # For more complex reference resolution, look at conversation history
+        conversation_history = self.memory.get_conversation_history(limit=3)
+        
+        # Use semantic search to find related past interactions
+        related_interactions = self.memory.get_related_interactions(query, query_info.get("keywords", []), use_semantic=True)
+        
+        for interaction in related_interactions:
+            # Check for dataset references in past interactions
+            if "query_analysis" in interaction and "dataset_references" in interaction["query_analysis"]:
+                past_datasets = interaction["query_analysis"]["dataset_references"]
+                if past_datasets and "dataset_references" not in query_info:
+                    query_info["dataset_references"] = past_datasets
+                    self.logger.info(f"Resolved context to datasets: {past_datasets}")
+                
+            # Check for file references in past interactions
+            if "query_analysis" in interaction and "file_references" in interaction["query_analysis"]:
+                past_files = interaction["query_analysis"]["file_references"]
+                if past_files and "file_references" not in query_info:
+                    query_info["file_references"] = past_files
+                    self.logger.info(f"Resolved context to files: {past_files}")
+        
+        return query_info
 

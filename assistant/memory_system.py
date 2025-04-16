@@ -23,13 +23,14 @@ class MemorySystem:
     to provide context for the assistant.
     """
     
-    def __init__(self, base_memory_path: str = None, logger=None):
+    def __init__(self, base_memory_path: str = None, logger=None, embedding_model_name: str = "nomic-embed-text"):
         """
         Initialize the memory system with directories for storing session data and files
         
         Args:
             base_memory_path: Base directory for storing memory files and session data
             logger: Optional logger instance
+            embedding_model_name: Name of the embedding model to use
         """
         self.logger = LoggerSetup(rewrite=False, verbose=True)
         
@@ -46,14 +47,22 @@ class MemorySystem:
         self.session_dir = self.base_path / "sessions"
         self.index_dir = self.base_path / "index"
         self.datasets_dir = self.base_path / "datasets"
+        self.embeddings_dir = self.base_path / "embeddings"
         
         # Create required directories
         self._create_memory_directories()
         
         # Initialize memory components
         self.file_memory = {}  # Store file metadata
-        self.search_index = {}  # Simple keyword search index
+        self.search_index = {}  # Simple keyword search index (legacy)
         self.conversation_history = []  # Store conversation interactions
+        
+        # Initialize embedding model
+        self.embedding_model_name = embedding_model_name
+        self.embedding_model = OllamaEmbedding(model_name=embedding_model_name)
+        
+        # Vector store for embeddings
+        self.document_embeddings = {}  # file_id -> embedding vector
         
         # Session data
         self.session_id = str(uuid.uuid4())
@@ -69,6 +78,9 @@ class MemorySystem:
         
         # Load existing dataset information
         self.known_datasets = self._load_known_datasets()
+        
+        # Load existing embeddings if available
+        self._load_embeddings()
         
         self.logger.info(f"Memory system initialized with base path: {self.base_path}")
     
@@ -105,8 +117,39 @@ class MemorySystem:
         os.makedirs(self.session_dir, exist_ok=True)
         os.makedirs(self.index_dir, exist_ok=True)
         os.makedirs(self.datasets_dir, exist_ok=True)
+        os.makedirs(self.embeddings_dir, exist_ok=True)
         
         self.logger.debug("Memory directories created or verified")
+    
+    def _load_embeddings(self):
+        """Load document embeddings from disk"""
+        embedding_file = self.embeddings_dir / "document_embeddings.json"
+        if embedding_file.exists():
+            with open(embedding_file, 'r') as f:
+                embedding_data = json.load(f)
+                # Convert string representations of arrays back to numpy arrays
+                for file_id, embedding_str in embedding_data.items():
+                    self.document_embeddings[file_id] = np.array(json.loads(embedding_str))
+            self.logger.info(f"Loaded {len(self.document_embeddings)} document embeddings")
+        else:
+            self.logger.info("No existing embeddings found")
+    
+    def _save_embeddings(self):
+        """Save document embeddings to disk"""
+        if not self.document_embeddings:
+            return
+            
+        # Convert numpy arrays to serializable format (list)
+        serializable_embeddings = {}
+        for file_id, embedding in self.document_embeddings.items():
+            # Store as JSON string to preserve numeric precision
+            serializable_embeddings[file_id] = json.dumps(embedding.tolist())
+            
+        embedding_file = self.embeddings_dir / "document_embeddings.json"
+        with open(embedding_file, 'w') as f:
+            json.dump(serializable_embeddings, f)
+            
+        self.logger.debug(f"Saved {len(self.document_embeddings)} document embeddings")
     
     def add_file(self, 
                 file_path: str, 
@@ -114,7 +157,7 @@ class MemorySystem:
                 file_type_or_metadata: Union[str, Dict] = None, 
                 file_context: str = None) -> Dict:
         """
-        Add a file to memory with its metadata and optional context
+        Add a file to memory with its metadata and optional content
         
         Args:
             file_path: Path to the file
@@ -171,6 +214,11 @@ class MemorySystem:
         
         # Index the file content if provided
         if content is not None:
+            # Generate semantic embedding for text content
+            if isinstance(content, str) and len(content) > 0:
+                self._generate_embedding(file_id, content)
+            
+            # Also perform legacy keyword indexing
             self._index_file(file_id, content, file_record)
         
         # Save the file record
@@ -178,12 +226,39 @@ class MemorySystem:
         
         self.logger.info(f"Added file to memory: {filename} (ID: {file_id})")
         return file_record
-        
-
     
+    def _generate_embedding(self, file_id: str, content: str):
+        """
+        Generate and store embedding for text content
+        
+        Args:
+            file_id: File ID to associate with the embedding
+            content: Text content to embed
+        """
+        if not content or not isinstance(content, str):
+            return
+            
+        self.logger.debug(f"Generating embedding for file {file_id}")
+        
+        # Create embedding
+        try:
+            # Truncate if needed (most embedding models have token limits)
+            truncated_content = content[:10000]  # Reasonable limit
+            embedding = self.embedding_model.get_text_embedding(truncated_content)
+            
+            # Store the embedding
+            self.document_embeddings[file_id] = np.array(embedding)
+            
+            # Save embeddings to disk
+            self._save_embeddings()
+            
+            self.logger.debug(f"Generated and saved embedding for file {file_id}")
+        except Exception as e:
+            self.logger.error(f"Error generating embedding for file {file_id}: {str(e)}")
+        
     def _index_file(self, file_id: str, content: Any, file_record: Dict):
         """
-        Index file content for searching
+        Index file content for searching (legacy keyword indexing)
         
         Args:
             file_id: ID of the file to index
@@ -258,43 +333,86 @@ class MemorySystem:
         
         return keywords
     
-    def _save_file_record(self, file_id: str, file_record: Dict):
+    def search_files(self, query: str, limit: int = 5, use_semantic: bool = True) -> List[Dict]:
         """
-        Save a file record to disk
+        Search for files based on a query using semantic search by default
         
         Args:
-            file_id: ID of the file
-            file_record: File record to save
-        """
-        # Create a copy to avoid modifying the original
-        record_to_save = copy.deepcopy(file_record)
-        
-        # Convert sets to lists for JSON serialization
-        for key, value in record_to_save.items():
-            if isinstance(value, set):
-                record_to_save[key] = list(value)
-        
-        # Save to disk
-        record_path = self.index_dir / f"file_{file_id}.json"
-        with open(record_path, 'w') as f:
-            json.dump(record_to_save, f, indent=2)
+            query: Search query
+            limit: Maximum number of results to return
+            use_semantic: Whether to use semantic search (if False, falls back to keyword search)
             
-        self.logger.debug(f"Saved file record for {file_id}")
-
-    
-    def _save_search_index(self):
-        """Save the search index to disk"""
-        # Save the index to disk
-        index_path = self.index_dir / "search_index.json"
-        with open(index_path, 'w') as f:
-            json.dump(self.search_index, f, indent=2)
-            
-        self.logger.debug("Saved search index")
-
-    
-    def search_files(self, query: str, limit: int = 5) -> List[Dict]:
+        Returns:
+            list: List of matching file records
         """
-        Search for files based on a query
+        if use_semantic and len(self.document_embeddings) > 0:
+            return self.semantic_search(query, limit)
+        else:
+            return self.keyword_search(query, limit)
+    
+    def semantic_search(self, query: str, limit: int = 5) -> List[Dict]:
+        """
+        Search for files based on semantic similarity to the query
+        
+        Args:
+            query: Search query
+            limit: Maximum number of results to return
+            
+        Returns:
+            list: List of matching file records
+        """
+        if not self.document_embeddings:
+            self.logger.warning("No document embeddings available, falling back to keyword search")
+            return self.keyword_search(query, limit)
+        
+        self.logger.info(f"Performing semantic search for: '{query}'")
+        
+        # Generate query embedding
+        query_embedding = np.array(self.embedding_model.get_text_embedding(query))
+        
+        # Calculate similarity scores
+        similarity_scores = {}
+        for file_id, doc_embedding in self.document_embeddings.items():
+            # Compute cosine similarity
+            similarity = self._cosine_similarity(query_embedding, doc_embedding)
+            similarity_scores[file_id] = similarity
+        
+        # Sort by similarity score (descending)
+        sorted_scores = sorted(similarity_scores.items(), key=lambda x: x[1], reverse=True)
+        
+        # Get the file records
+        results = []
+        for file_id, score in sorted_scores[:limit]:
+            if file_id in self.file_memory:
+                file_record = copy.deepcopy(self.file_memory[file_id])
+                file_record["match_score"] = float(score)  # Convert numpy float to Python float
+                results.append(file_record)
+        
+        self.logger.info(f"Semantic search for '{query}' found {len(results)} results")
+        return results
+    
+    def _cosine_similarity(self, vec1: np.ndarray, vec2: np.ndarray) -> float:
+        """
+        Calculate cosine similarity between two vectors
+        
+        Args:
+            vec1: First vector
+            vec2: Second vector
+            
+        Returns:
+            float: Cosine similarity score
+        """
+        norm1 = np.linalg.norm(vec1)
+        norm2 = np.linalg.norm(vec2)
+        
+        if norm1 == 0 or norm2 == 0:
+            return 0.0
+            
+        return np.dot(vec1, vec2) / (norm1 * norm2)
+    
+    def keyword_search(self, query: str, limit: int = 5) -> List[Dict]:
+        """
+        Search for files based on keyword matching (legacy method)
         
         Args:
             query: Search query
@@ -327,25 +445,73 @@ class MemorySystem:
                 file_record["match_score"] = score
                 results.append(file_record)
         
-        self.logger.info(f"Search for '{query}' found {len(results)} results")
+        self.logger.info(f"Keyword search for '{query}' found {len(results)} results")
         return results
+    
+    def _save_file_record(self, file_id: str, file_record: Dict):
+        """
+        Save a file record to disk
+        
+        Args:
+            file_id: ID of the file
+            file_record: File record to save
+        """
+        # Create a copy to avoid modifying the original
+        record_to_save = copy.deepcopy(file_record)
+        
+        # Convert sets to lists for JSON serialization
+        for key, value in record_to_save.items():
+            if isinstance(value, set):
+                record_to_save[key] = list(value)
+        
+        # Save to disk
+        record_path = self.index_dir / f"file_{file_id}.json"
+        with open(record_path, 'w') as f:
+            json.dump(record_to_save, f, indent=2)
             
+        self.logger.debug(f"Saved file record for {file_id}")
+
+    
+    def _save_search_index(self):
+        """Save the search index to disk"""
+        # Save the index to disk
+        index_path = self.index_dir / "search_index.json"
+        with open(index_path, 'w') as f:
+            json.dump(self.search_index, f, indent=2)
+            
+        self.logger.debug("Saved search index")
     
     def get_related_files(self, 
                          file_reference: str, 
                          keywords: List[str] = None, 
-                         limit: int = 3) -> List[Dict]:
+                         limit: int = 3,
+                         use_semantic: bool = True) -> List[Dict]:
         """
-        Get files related to a reference based on name or keywords
+        Get files related to a reference based on name or semantic similarity
         
         Args:
             file_reference: File name or reference
             keywords: Additional keywords to match
             limit: Maximum number of results to return
+            use_semantic: Whether to use semantic search (if False, falls back to keyword matching)
             
         Returns:
             list: List of related file records
         """
+        # If we have embeddings and semantic search is enabled, try semantic search first
+        if use_semantic and self.document_embeddings:
+            # Combine file reference and keywords into a query
+            search_query = file_reference
+            if keywords:
+                search_query += " " + " ".join(keywords)
+                
+            semantic_results = self.semantic_search(search_query, limit=limit)
+            
+            # If we got good results semantically, return them
+            if semantic_results:
+                return semantic_results
+        
+        # Fall back to keyword matching
         matching_files = {}
         
         # First check for exact filename matches
@@ -378,16 +544,16 @@ class MemorySystem:
     
     def store_interaction(self, 
                          query: str, 
-                         query_analysis: Dict, 
                          response: str, 
+                         query_analysis: Dict, 
                          relevant_files: List[Dict] = None) -> str:
         """
         Store a conversation interaction with query, analysis, and response
         
         Args:
             query: User's query
-            query_analysis: Analysis of the query
             response: Assistant's response
+            query_analysis: Analysis of the query
             relevant_files: Files relevant to this interaction
             
         Returns:
@@ -426,6 +592,10 @@ class MemorySystem:
         # Save session data
         self._save_session_data()
         
+        # Also generate embedding for the interaction
+        interaction_text = f"Query: {query}\nResponse: {response}"
+        self._generate_embedding(f"interaction_{interaction_id}", interaction_text)
+        
         self.logger.info(f"Stored interaction {interaction_id}")
         return interaction_id
         
@@ -447,14 +617,16 @@ class MemorySystem:
     def get_related_interactions(self, 
                                query: str, 
                                keywords: List[str] = None, 
-                               limit: int = 3) -> List[Dict]:
+                               limit: int = 3,
+                               use_semantic: bool = True) -> List[Dict]:
         """
-        Get interactions related to a query based on similarity
+        Get interactions related to a query based on semantic similarity
         
         Args:
             query: Current query
-            keywords: Keywords to match
+            keywords: Keywords to match (for fallback)
             limit: Maximum number of interactions to return
+            use_semantic: Whether to use semantic search
             
         Returns:
             list: List of related interactions
@@ -462,6 +634,40 @@ class MemorySystem:
         if not self.conversation_history:
             return []
         
+        # If semantic search is enabled and we have embeddings for interactions, use them
+        if use_semantic and any(k.startswith("interaction_") for k in self.document_embeddings.keys()):
+            # Generate embedding for the query
+            query_embedding = np.array(self.embedding_model.get_text_embedding(query))
+            
+            # Calculate similarity with all interaction embeddings
+            similarity_scores = {}
+            for file_id, embedding in self.document_embeddings.items():
+                if file_id.startswith("interaction_"):
+                    interaction_id = file_id.replace("interaction_", "")
+                    similarity = self._cosine_similarity(query_embedding, embedding)
+                    similarity_scores[interaction_id] = similarity
+            
+            # Find matching interactions
+            matching_interactions = {}
+            for i, interaction in enumerate(self.conversation_history):
+                if interaction["id"] in similarity_scores:
+                    matching_interactions[i] = similarity_scores[interaction["id"]]
+            
+            # Sort by score (descending)
+            sorted_matches = sorted(matching_interactions.items(), key=lambda x: x[1], reverse=True)
+            
+            # Get interactions
+            results = []
+            for idx, score in sorted_matches[:limit]:
+                interaction = copy.deepcopy(self.conversation_history[idx])
+                interaction["match_score"] = float(score)  # Convert numpy float to Python float
+                results.append(interaction)
+                
+            if results:
+                self.logger.info(f"Found {len(results)} semantically related interactions")
+                return results
+        
+        # Fall back to keyword-based matching
         matching_interactions = {}
         
         # Extract query keywords if not provided
@@ -501,6 +707,7 @@ class MemorySystem:
             interaction["match_score"] = score
             results.append(interaction)
         
+        self.logger.info(f"Found {len(results)} keyword-matched related interactions")
         return results
 
     
@@ -515,6 +722,7 @@ class MemorySystem:
                 session_to_save[key] = list(value)
         
         # Save to disk
+        os.makedirs(self.session_dir, exist_ok=True)
         session_path = self.session_dir / f"session_{self.session_id}.json"
         with open(session_path, 'w') as f:
             json.dump(session_to_save, f, indent=2)
@@ -562,12 +770,13 @@ class MemorySystem:
         """
         return self.known_datasets
     
-    def clear_memory(self, clear_files: bool = False):
+    def clear_memory(self, clear_files: bool = False, clear_embeddings: bool = False):
         """
         Clear memory components
         
         Args:
             clear_files: Whether to also remove file records
+            clear_embeddings: Whether to clear document embeddings
         """
         # Clear conversation history
         self.conversation_history = []
@@ -579,6 +788,15 @@ class MemorySystem:
         
         # Save empty session
         self._save_session_data()
+        
+        if clear_embeddings:
+            # Clear embeddings
+            self.document_embeddings = {}
+            # Remove embedding file
+            embedding_file = self.embeddings_dir / "document_embeddings.json"
+            if embedding_file.exists():
+                os.remove(embedding_file)
+            self.logger.info("Cleared document embeddings")
         
         if clear_files:
             # Clear file memory and search index

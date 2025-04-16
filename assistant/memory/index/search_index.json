@@ -1,359 +1,278 @@
 {
-  "unique": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "moderate": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "date": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "time": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "provides": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "pronounced": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "summary": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "trajectory": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "indicating": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "96235648148146": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "years": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "278077741130037": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "data": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "376": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "humidity": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "wind": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "have": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "doy": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "ghi": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "theoretical": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "sections": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
   "over": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "conditions": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "patterns": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "possibly": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "2050": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "521897810218978": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "183": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "2192": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "csv": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "takeaways": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "708570970757655": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "same": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "cover": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "max": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "statistics": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "significant": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "maximum": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "various": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "extended": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "counts": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "irradiance": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "2017": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "not": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "wind_speed": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "min": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "ranges": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "columns": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "that": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "across": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "horizontal": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "provided": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "here": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "minimum": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "24134391534392": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "exceeding": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "identical": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "location": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "specific": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "represents": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "contain": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "exhibit": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "deviations": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "approaching": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "3047619047619": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "dataset": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "global": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "high": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "all": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "714735449735451": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "likely": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "set": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "december": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "2020": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "relative": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "4497732021253227": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "mean": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "speed": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "most": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "nsrdb_stats": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "month": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "48684571213519": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "159": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "value": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "366": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "key": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "105": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "relatively": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "relative_humidity": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "weather": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "largest": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "period": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "deviation": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "fields": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "limits": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "findings": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "related": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "each": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "5004562043796": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "field": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "std": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "1669708029197": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "records": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "732664233576642": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "range": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "2015": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "top": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "57239804194182": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "day": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
-  ],
-  "values": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "trend": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
   "variability": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "303108465608467": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "suggest": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "8037082462088316": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "potentially": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "year": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "range": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "standard": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "values": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "534372900011586": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "findings": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "contains": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "project": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "has": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "decrease": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "file": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "detail": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "80337839285231": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "societies": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "0460161168076": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "implications": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "54976162024923": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "2020": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "possible": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "shows": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "3550727513227514": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "maximum": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "192": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "indicating": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ],
-  "appears": [
-    "ad72ad07-caeb-46d6-82c4-e0dcef7b3e51"
+  "increases": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "suggesting": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "minimum": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "comparison": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "ecosystems": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "increase": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "fluctuations": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "years": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "presents": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "prompt": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "upward": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "focusing": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "summary": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "further": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "describe": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "temperature": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "scenarios": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "continuation": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "graph": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "projections": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "comprehensive": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "impact": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "predict": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "narrow": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "that": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "slight": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "temperatures": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "wide": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "significant": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "decreases": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "three": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "analyze": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "consistent": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "2060": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "reveals": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "png": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "change": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "acceleration": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "both": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "downward": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "increasing": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "this": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "more": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "precipitation": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "between": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "historical": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "into": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "greater": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "image": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "anticipated": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "these": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "human": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "climate": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "relatively": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "climate_timeseries_comparison": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "will": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "2000": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "illustrates": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "even": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "future": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "gradual": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "periods": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "indicate": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "continue": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "clear": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "data": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "trends": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
+  ],
+  "divided": [
+    "ee323f8f-a978-4039-92b4-3c319bcf56b1"
   ]
 }

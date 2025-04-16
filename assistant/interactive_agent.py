@@ -216,8 +216,8 @@ def run_chat(logger, REPORT_DIR, DEFAULT_MODEL, report_structure=None, max_worke
 
     # Initialize the user query agent
     user_agent = UserQueryAgent(
-        memory=MemorySystem(f"{base_path}/memory"),
-        query_understanding=QueryUnderstanding(),
+        memory=MemorySystem(f"{base_path}/memory", embedding_model_name="nomic-embed-text"),
+        query_understanding=QueryUnderstanding(default_model=DEFAULT_MODEL),
         response_generator=ResponseGenerator(llm_service=None),
         report_structure=read_report_structure(REPORT_DIR),
         logger=logger,
@@ -271,7 +271,7 @@ def interactive_agent(username="admin"):
 if __name__ == "__main__":
     username = "admin"
     user_agent, query_engine = interactive_agent(username)
-
+    
     if user_agent and query_engine:
         # Interactive chat loop at the higher level
         while True:

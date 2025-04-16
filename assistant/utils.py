@@ -8,6 +8,10 @@ import pandas as pd
 def describe_image(path, DEFAULT_MODEL, logger, memory=None, prompt="Analyze the image and describe it in detail"):
     logger.info(f"Describing image... {path}")
     
+    # Always use Llama3.2-Vision:latest for image descriptions
+    vision_model = "Llama3.2-Vision:latest"
+    logger.info(f"Using {vision_model} for image description")
+    
     # Check if we already have this analysis in memory
     if memory:
         # Get file from memory system if it exists
@@ -20,7 +24,7 @@ def describe_image(path, DEFAULT_MODEL, logger, memory=None, prompt="Analyze the
     with open(path, "rb") as img_file:
         img_data = base64.b64encode(img_file.read()).decode("utf-8")
     response = ollama.chat(
-        model=DEFAULT_MODEL,
+        model=vision_model,
         messages=[
             {"role": "user", "content": prompt, "images": [img_data]}
         ]
@@ -38,6 +42,10 @@ def describe_image(path, DEFAULT_MODEL, logger, memory=None, prompt="Analyze the
 # ==== CSV ANALYSIS TOOL ====
 def summarize_csv(path, DEFAULT_MODEL, logger, memory=None):
     logger.info(f"Summarizing CSV... {path}")
+    
+    # Use llama3:latest for document analysis tasks
+    analysis_model = "llama3:latest"
+    logger.info(f"Using {analysis_model} for CSV analysis")
     
     # Check if file exists
     assert os.path.exists(path), f"CSV file does not exist: {path}"
@@ -69,7 +77,7 @@ def summarize_csv(path, DEFAULT_MODEL, logger, memory=None):
     stats_text = "\n\nKey Statistics:\n" + json.dumps(stats, indent=2)
     
     response = ollama.generate(
-        model=DEFAULT_MODEL,
+        model=analysis_model,
         prompt=f"Summarize the following CSV file: {path}\n\n{summary}{stats_text}",
     )
     result = response.response
@@ -86,6 +94,10 @@ def summarize_csv(path, DEFAULT_MODEL, logger, memory=None):
 def describe_markdown(path, DEFAULT_MODEL, logger, memory=None):
     logger.info(f"Describing markdown... {path}")
     
+    # Use llama3:latest for document analysis tasks
+    analysis_model = "llama3:latest"
+    logger.info(f"Using {analysis_model} for markdown analysis")
+    
     # Check if we already have this analysis in memory
     if memory:
         # Get file from memory system if it exists
@@ -98,7 +110,7 @@ def describe_markdown(path, DEFAULT_MODEL, logger, memory=None):
     with open(path, "r") as f:
         content = f.read()
     response = ollama.generate(
-        model=DEFAULT_MODEL,
+        model=analysis_model,
         prompt=f"Summarize the following markdown file: {path}\n\n{content}",
     )
     result = response.response
