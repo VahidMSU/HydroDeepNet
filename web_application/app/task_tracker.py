@@ -6,9 +6,9 @@ from datetime import datetime
 from redis import Redis, ConnectionError, exceptions
 import socket
 import traceback
-from flask import current_app
+
 # Set up logging
-log_dir = current_app.config['LOG_PATH']
+log_dir = "/data/SWATGenXApp/codes/web_application/logs"
 os.makedirs(log_dir, exist_ok=True)  # Ensure log directory exists
 
 logger = logging.getLogger(__name__)
