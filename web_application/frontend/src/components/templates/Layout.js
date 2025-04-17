@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  GlobalStyle,
-  Sidebar,
-  NavLink,
-  ViewDiv,
-  Button, // Add missing import
-} from '../../styles/Layout.tsx';
+import { GlobalStyle, Sidebar, NavLink, ViewDiv, Button } from '../../styles/Layout.tsx';
 
 const LayoutTemplate = ({ children, handleLogout }) => {
   const navigate = useNavigate(); // Hook for navigation

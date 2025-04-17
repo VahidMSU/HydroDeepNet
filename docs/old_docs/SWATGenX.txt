@@ -1,0 +1,358 @@
+
+
+Abstract:
+
+Keywords: NHDPlus HR; SWAT+; gwflow; PRISM; NSRDB; LOCA2 
+
+Highlight:
+
+
+
+
+
+
+
+
+
+
+
+Abbreviations:
+SWAT+: Soil and Water Assessment Tool Plus
+MODFLOW: Modular Finite-Difference Groundwater Flow Model
+NAM: National Agroecosystem Model
+NHM: National Hydrological Model
+NSRDB: National Solar Radiation Database
+LOCA2: Localized Constructed Analogs Version 2
+PRISM: Parameter-elevation Regressions on Independent Slopes Model
+DEM: Digital Elevation Model
+NLCD: National Landcover Database
+gSSURGO: Gridded Soil Survey Geographic
+HPC: High-Performance Computer
+NSE: Nash–Sutcliffe model efficiency coefficient
+PFAS: Per- and poly-fluoroalkyl substances 
+VPUID: Vectorized Processing Unit ID
+HUC12: Hydrologic Unit Code 12 Digit
+HUC8: Hydrologic Unit Code 8 Digit
+CONUS: Contiguous United States
+WBD: Watershed Boundary Dataset
+VAA: Value Added Attribute
+MLP: Michigan Lower Peninsula
+HSDS: Highly Scalable Data Service
+1. Introduction
+	Regional hydrological modeling is crucial for evaluating the impact of natural and anthropogenic changes on water resources. It facilitates informed decision-making for sustainable development and provides actionable information for communities, townships, and state authorities to preserve the quality and quantity of water resources.  
+	Recent advancements in geospatial data resolution have significantly enhanced our ability to model hydrological processes with greater precision. , the NHDPlus HR (National Hydrography Dataset Plus High Resolution) offers detailed hydrographic and land area classification at a 1:24k resolution and provides 27 million identifiable channels at the CONUS scale (Moore et al., 2019)tatistical techniques like LOCA2 (Localized Constructed Analogs Version 2) have downscaled the new climate change models (CMIP6) to a 6-kilometer resolution (Livneh et al., 2015; Pierce et al., 2023), aligning closely with current high-resolution gridded climate observations data such as PRISM at 4-kilometer resolution (Daly et al., 2021). The National Solar Radiation Database (NSRDB) further exemplifies this by providing various solar irradiance measures, wind speed/direction, and humidity, among many at a 2-kilometer resolution with 5-minute to 30-minute intervals (Sengupta et al., 2018).
+	Despite data, technology, and computational power advancements, implementing a scalable regional groundwater-surface water modeling built on high-resolution hydrographical and climate data has rarely been investigated at a large scale. The current large-scale national and regional hydrological models mostly remained at the moderate 1:100k level with many aggregations. For instance, the NAM (National Agroecosystem Model) (White et al., 2022) and the NHM  (National Hydrologic Model) (Regan et al., 2018) rely on moderate resolution NHD (National Hydrography Dataset) (1:100k) for hydrographical connections which provides 2.5 million identifiable channels, comparing to 27 million identifiable channels in NHDPlus HR. Surprisingly, even the future version of the Chesapeake Bay Watershed Regional Model (Phase 7), in progress for release after 2027, also mentions the 1:100k resolution as the base for hydrological modeling (Chesapeake Bay Program Office, 2024, 2023). However, using higher-resolution data in watershed modeling is crucial for several technical reasons: (1) lower-resolution data, specifically in hydrographical data, can miss critical small-scale features such as divergence, non-contributing area, lake-river connections, isolated basins, and hydrographical sequence, leading to inaccurate water routing; (2) it hinders the identification of pollution hot stops by aggregating simulations at a coarser resolution, and therefore limiting targeted interventions; and (3) high-resolution data provides more credible and robust results for stakeholders, policymakers and therefore decision making.  
+	This work results from our investigation to achieve a highly efficient scalable solution for providing high-resolution hydrological models at the CONUS level. Throughout this work, we hypothesized that using high-resolution hydrographical data increases the performance of regional hydrological models. We hypothesized that more watersheds, HRUs (Hydrologic Response Units), identifiable channels, and lakes mean more accurate source identification and mass/energy balance calculation. Mainly, we built the proposed modeling system to be able to simulate emerging contaminants’ fate and transport, such as PFAS, which has numerous potential polluters whose contaminated sites can be as small as 250 m2 within a manufacturing area or an airport (Rafiei and Nejadhashemi, 2023). Therefore, high and hyper-resolution hydrographical data is required to estimate their effluent accurately at a regional scale. 
+	Accordingly, we developed a scalable and automatic framework for creating SWAT+ (Bieger et al., 2017) with NHDPlus HR, NSRDB, PRISM, and LOCA2. We applied the proposed framework to  watersheds across Michigan’s Lower Peninsula (100,000 km2) and evaluated the improvement in modeling by addressing.
+1— We calibrated 45 SWAT+ models and 45 SWAT+gwflow models using the PRISM dataset to represent only precipitation and temperature for meteorological data. The optimization performed for this analysis was less extensive, starting from the 10th iteration to account for early stopping criteria in optimization. Based on this, we highlight the impact of improvement achieved by incorporating groundwater simulation in SWAT+ models. 
+2—We added 15 extra large models with sizes ranging from 1500 km2 to 3500 km2. We used coarser resolution for landuse and soil for these large models to keep their HRU numbers less than 40,000. We calibrated the 60 SWAT+ models with the Gwflow module, solar radiation, humidity, wind speed (extracted from NSRDB), and PRISM for precipitation and temperature. The optimization performed for this analysis was extensive, starting from the 50th iteration to account for early stopping criteria. 
+3— We performed a Morris Sensitivity analysis on all SWAT+ models and evaluated the sensitivity of different parameters in these models under various hydrogeological and climatic conditions. 
+
+
+
+
+2. Methodology
+The final presented models consist of 59,656 km2, 987,587 HRUs, 50,602 rivers, and 2260 lakes with a surface area of 644 km2
+2.1. SWATGenX
+	Creating a predefined watershed for SWAT+ requires preparing specific structures for streams, watersheds, and sub-basins. These include defining hydrograph sequences, lake-stream connections, and sub-basin boundaries and creating lakes, watersheds, and stream links for the model. Since NHDPlus almost has complete coverage for CONUS, we have automated an approach for generating SWAT+ predefined hydrographical models based on the NHDPlus HR streams, waterbodies, and catchments. We designed a hierarchical database to distribute geospatial and hydrographical data to VPUIDs (Vectorized Processing Units equal to HUC4-size watersheds). Furthermore, we connected our works to NWIS API to extract streamflow data within CONUS that provides the information for more than 36,000 USGS stations. We used PRISM grid data to distribute weather stations at 4km resolution in each SWAT+ model. For the energy balance of the model, we used h5pyd- a Python package for HSD5 (highly scalable Data Service), to connect our workflow to NSRDB for the North American region and extract GHI (Global horizontal irradiance), wind speed, and relative humidity corresponding to the defined weather stations for the model.  
+	The design of this data extraction process enables us to create SWAT+ models with all necessary input in an optimized way with appropriate data distribution. This process also ensures we generate a standard model for various geographic extents, from a single HUC12/HUC8 to multiple HUC12/HUC8 across CONUS. Applying this data processing generates SWAT+ models for the drainage area of any desired USGS streamflow station (based on recursive network analysis to find huc12 hydrographical sequences for each station). The entire process is encapsulated in a Python program module, which we call SWATGenX. 
+	The  includes a shell script to QSWAT+ . The QSWAT+ API automates the generation of the SWAT+ QGIS project and database based on the predefined watershed generated by SWATGenX. The product of QSWAT+ is an SQL database, and we connect that database with SWAT+Editor API to write weather and model input files and run the model for one successful year. This is the final checking point for creating SWAT+ models. Creating a SWAT+ model takes 20 seconds for small areas (100 km2) to 10 minutes for most models below 1000 km2. Most of the processing time is spent extracting meteorological data, specifically for NSRDB, which must be HSDS API. 
+The source code of the Python program that performs the described automation tasks and generates SWAT+ models is provided in the manuscript’s Softwater and Data Availability section. 
+	Using the SWAT+ project and input created, we developed another automation program to include the Gwflow module (Bailey et al., 2020). For SWAT+ with the GWflow module, we aggregate the groundwater hydraulic properties (depths, conductivity, river transmitivity) into four quantiles to represent four homogenous regions for each variable in a watershed. Gwflow thereby simulates groundwater flow and groundwater-surface water interaction at rivers and lakes and is built based on a 250m grid. The flowchart of the described automation process is shown in Figure 1. 
+Figure 1. Flowchart of Automatic SWAT+ model’s preparation.
+2.1. Case study
+	We utilized this workflow to extract predefined watersheds for all streamflow station drainage areas within the Michigan Lower Peninsula, adhering to the following criteria: 1) Only streamflow stations with a maximum drainage area of 3,500 km2 were used; 2) Stations selected had less than a 10% data gap between 1999 to 2022. These strategies enabled the extraction of SWAT+ models representing surface water and groundwater hydrological cycles within Michigan’s Lower Peninsula.
+
+
+ 
+Figure . 60 HUC12 cluster models within Michigan’s Lower Peninsula. 
+
+
+
+
+	The distribution of landuse (16 NLCD landuse classes, epoch 2021) within MLP is shown in Table 1. The distribution of 4 primary land uses (agriculture and urban, forest, and wetlands) for the SWAT+ are shown in Figure 3. The median percentage of agricultural area (majority cultivated crops) is %40 among SWAT+. The agricultural area in MLP covers %31 of all land uses. For other land uses, the distribution of land uses in SWAT+ models is comparable to those in MLP. 
+
+Table 1. Distribution of Land Use Types across the Michigan Lower Peninsula based on NLCD. 
+
+SWAT+ model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2.. National Hydrographical Dataset High-Resolution
+The NHD has undergone significant evolution, driven by advances in geospatial technology and increasing data resolution requirements. Here is a summary of its development based on (Dewald, 2017):
+Initial Development:
+Reach File Version 1 (RF1): Developed in the late 1970s by Robert C. Horn of the EPA’s Office of Water, RF1 utilized USGS topographic maps and NOAA enhancements to create a 1:500,000-scale digital stream network. It included stream names, addressing systems, catchments, and streamflow estimates.
+Reach File Version 3 (RF3): The RF3, developed in the early 1990s, provided a more detailed 1:100,000-scale network, integrating RF3 stream attributes with USGS Digital Line Graph hydrography.
+Medium Resolution NHD:
+NHD: The integration of RF3 and USGS hydrography resulted in the 1:100,000-scale National Hydrography Dataset (NHD), designed for maintainability and broader application through GIS technology. Production began in 1997 and was completed by 2000.
+NHDPlus Versions 1 and 2: NHDPlus was developed to enhance the medium-resolution NHD with additional attributes like streamflow estimates and catchments, based on hydrologically conditioned elevation data (30m). NHDPlusV2, released in 2012, included significant updates and additional features.
+High-Resolution NHD:
+NHDPlus HR: In 2015, the NHDPlus High Resolution (HR) aimed to deliver a 1:24,000-scale or better hydrography network. It uses high-resolution NHD data, 10m elevation data, and Watershed Boundary Dataset (WBD) boundaries. This high-resolution dataset is over 20 times larger than the medium-resolution NHD.
+Future Developments:
+Lidar-Based NHD: The next generation of NHD is expected to leverage lidar technology, achieving resolutions of 1:5,000 or better. This will provide even more detailed and accurate hydrography data, supporting a wide range of water quality and quantity modeling applications.
+This progression illustrates geospatial surface water frameworks’ increasing precision and utility, moving from the initial 1:500,000-scale RF1 to the anticipated lidar-based 1:5,000-scale datasets ​(The Evolution of Geospa…)​.
+
+National Solar Radiation Database   
+NSRDB provides comprehensive solar radiation and meteorological parameter datasets encapsulated in annual Hierarchical Data Format 5 (HDF5) files. Each file includes variables such as air temperature, GHI, DNI, DHI, wind speed, and humidity, structured in matrices of dimensions (17520, 2018392), representing half-hourly time steps and location points. For this study, we utilized the NSRDB for Global Horizontal Irradiance (GHI), wind speed, and humidity. The data were upscaled from a resolution of 2 km x 2 km to 4 km x 4 km (nearest) and resampled from 30-minute intervals to daily intervals. Specifically, GHI values were aggregated using summation, wind speed using the median, and humidity using the mean. 
+
+Surface terrain
+	The study utilizes a DEM with a resolution of 30 m and land use and soil data with a resolution of 250 m. The DEM’s resolution is selected at 30 m because NHDPlus HR catchments are delineated by similar DEM resolution, and using coarser resolution results in the loss of catchments below 100 m2, thereby hampering the integrity of hydrograph sequences. For all models below 1500 km2, we used a 250m resolution of landuse and soil based on resampling the original 30 m. For models between 1500 to 3500 km2, we use 500 m resolution soil and landuse. Given the differences between the spatial resolution of meteorological data with NSRDB at 2 km, PRISM at 4 km, and LOCA2 at 6 km,  we selected the PRISM as the base of the meteorological resolution, and the other two datasets resampled (nearest) to the PRISM. The details of data sources are described in Table 2. 
+
+Table 2. List of complete data sources used in this study
+
+
+2.3. SWAT+ NHDPlus HR connection
+2.4. MODFLOW and Gwflow implementation
+2.5. Sensitivity analysis
+	We selected the Morris method (Morris, 1991) to perform sensitivity analysis on the parameters of our SWAT+ models. The Morris method, often called the Elementary Effects Method, can assess the global importance of each input parameter across a wide range of possible values. We initially selected the Morris method for two primary reasons: First, its potential to screen insensitive parameters with a relatively low number of samples compared to other global sensitivity analyses like Sobol (Nossent et al., 2011), which requires a larger sample size, even with quasi-random sampling. Second, the Morris method was aligned with our aim of identifying significant parameters without the need to understand parameter interactions, which is a strength of the Sobol method. This approach might be particularly beneficial for understanding major hydrological processes across various regional models. 
+	In the sensitivity analysis using the Morris method, we specifically focused on two key elements: the number of levels and the number of trajectories.
+Levels: In the Morris method, ‘levels’ refers to discretizing the input parameter space. The number of levels determines how finely each input parameter’s range is divided. This discretization facilitates the Morris method’s systematic exploration of the parameter space by altering one parameter at a time, keeping others constant, to understand each parameter’s impact on the model output.
+Trajectories: A trajectory in the Morris method represents a unique path through the parameter space, involving a sequence of steps where each step changes one parameter by one level. However, it is essential to note that after changing one variable, the subsequent step involves changing another variable while keeping the previously altered variable at its new value and others at its start values. This process continues until all input variables are changed. The method is repeated multiple times (usually between 5 and 15 runs), each starting from a different set of values, leading to r(k + 1) model runs, where k is the number of input variables​​.
+	Through trial and error, we determined that a maximum of 20 trajectories for 42 SWAT+gwflow parameters was optimal for our problem regarding computational time and identifying impactful parameters, which result in 20× (42+1) model evaluations. 
+	The Morris sensitivity analysis (sampling and analysis) was done using SALib (Sensitivity Analysis Library in Python), which provides various sensitivity analysis methods, including Sobol, Fourier Amplitude Sensitivity Test (FAST), Delta Moment-independent Measure among others (Herman and Usher, 2017). 
+
+2.6. Calibration procedure
+	We performed parameter calibration of hydrological models using a modified version of the Particle Swarm Optimization (PSO) algorithm (Rafiei et al., 2022). The PSO algorithm calibrates the hydrological parameters using different techniques in population management and optimizing model performance. To find the best global optimum, each particle in PSO searches the solution space, improves its local best solution in each iteration, and collectively moves toward the global best solution found among all particles. The total number of Iterations defined for PSO in this study was 75, with 50 particles. We also defined an early stopping to terminate the calibration. The minimum number of iterations before checking the early stopping was 10 for the initial optimization of the models. For extensive calibration, the early stopping moved to at least 50 iterations. The SWAT+ parameters and their respective min/max and updating operations are presented in Table 3 and Table 4. 
+2.6.1. Termination criteria
+We have implemented two straightforward methods to terminate calibration processes. The first method involves monitoring the standard deviation (std) of objective functions; for loose calibration, starting from the 10th iteration, if the std remains below 0.001 for ten consecutive iterations, the calibration terminates. For more extensive calibration, the counting starts from the 50th iteration under the same std threshold. The second method terminates calibration when the average Nash-Sutcliffe Efficiency (NSE) of daily and monthly simulations exceeds 0.7.
+2.7. Computational Capacity
+	We performed the computational processes of this work on two computer servers, one with Windows Server 2022 OS and 2x AMD EPYC 9454 (256 logical processors) and the other with Red Hat Enterprise Linux (RHEL 9) OS and 2x Intel Xeon Platinum 8568Y+ 5th Gen (196 logical processors). The specifications of these servers are provided in the supplementary material. 
+
+
+3. Results and discussion 
+3.1. Parameter Sensitivity Analysis
+	Table 5 shows the ranking of parameter sensitivity analysis for SWAT+ models. As can be seen, the parameters related to snow processes are among the most sensitive parameters in most of the SWAT+ models for the study area. 
+
+	The radar plot visualizes the parameter sensitivity of SWAT+Gwflow models by three metrics: 1- counts of parameters ranked in the top 10 and bottom ten and their average ranks among all parameter sensitivity analyses in different models. The overall sensitivity rank of parameters (shown in the radar plot by sorting them clockwise) is based on the average sensitivity rank, then ranked for the most repeated in the top ten and less repeated in the bottom ten. The plot shows that specific parameters, such as streambed conductivity (k_sb), saturation condition (cn3_swf), percolation (perco), groundwater yield, horizontal hydraulic conductivity (hhc), saturated hydraulic conductivity (k), and specific yield sy, consistently rank higher than snow parameters comparing the SWAT+ model without Gwflow component. 
+To better understand the impact of model choice on parameter sensitivity, we performed a mixed-effects test. The test revealed that most parameters did not significantly affect μ*​, except for sy​, which showed a significant positive effect (p=0.036). The mixed-effects model indicated substantial variability in μ*​ attributable to differences between models, with a significant group variance of 1069.421. This suggests that the choice of model significantly impacts the sensitivity results, which is expected given the large geographic extent of the study and the variability of hydrological processes in different regions of the state.
+
+Figure 4. Parameters’ sensitivity ranked clockwise based on the average, the most repeated in the top ten and the least repeated in the bottom ten sensitivity parameters among all models.  
+
+3.2. Calibration Performance
+	Table 3 shows the performance of SWAT+ models calibrated without the GWflow component. The median NSE for daily prediction is 0.3, with eight models resulting in an NSE of less than 0. Using GWflow along with SWAT+ models, the performance of most river basins that SWAT+ could not satisfy the performance coefficients has been resolved in SWAT+gwflow models. Four SWAT+ models with over 60,000 HRUs could not be executed with the GWflow component. We removed those models, and the final model’s performance comparison is shown in Figure 4. Figure 5 shows the performance of the SWAT+ models vs. SWAT+gwflow models. Both models are calibrated based on the same criteria. However, as we can see from Figure 5, the performance of the majority of the models improved by adding the gwflow component to the SWAT+ models. Specifically, those models in the northwest of Michigan, which are heavily groundwater watersheds, are improved to a satisfactory level once Gwflow is added. 
+
+
+
+Figure 4. SWAT+ and SWAT+gwflow performance (average NSE for daily and monthly of all streamflow within a model)
+
+Figure 5. Comparison between SWAT+ and SWAT+gwflow performance (average NSE for daily and monthly of all streamflow within a model)
+
+Figure 6 shows the convergence behavior of model performance during calibration using the Particle Swarm Optimization (PSO) algorithm. The objective value on the y-axis represents the reverse-signed sum of NSE for daily and monthly streamflow data for a watershed with one streamflow station. Based on over 60 model calibration results, the PSO algorithm typically achieves optimal calibration within 75 iterations. 
+Figures 6a and 6b demonstrate continuous improvement with a gradual slope after approximately 30 iterations.
+Figures 6c and 6d show periods with no improvement over consecutive 20 iterations, followed by sudden jumps, indicating the particle escaped a local optimum. We can conclude that looser termination criteria were necessary to allow the algorithm to explore the solution space and converge effectively.  
+This performance trend highlights the algorithm’s ability to balance exploration and exploitation effectively. Given sufficient particles and iterations to explore, the algorithm could effectively calibrate all the models in the first trial. 
+
+4.1. Final model implementation with all climate change variables and more intense calibration
+
+Figure 12. Performance of the SWAT+ models for the final implementation.
+
+
+SWAT+ model performance and execution time
+Figure 13 illustrates the relationship between the evaluation time (in minutes) and the HRU count for various SWAT+ models. Each scatter point represents a different model, with the point size proportional to the watershed’s geographic extent, providing a comprehensive visual representation of computational demands. A similar comparison, but with a number of rivers, is provided in Figure 14. These evaluation times are the median values derived from over 1500 simulations per model, covering 13 years with a 3-year warm-up phase, with printing daily for channel outputs.
+Significant performance optimizations, such as using Intel VTune for debugging and employing the most aggressive compiling level of the Intel IFX compiler, have noticeably enhanced the SWAT+ model’s efficiency. Future studies should consider these improvements to estimate the relative execution time of a default SWAT+gwflow model. The median computational time across different models provides a reliable benchmark for expected execution times.
+A notable observation from the analysis is the linear relationship between the number of HRUs and execution time, depicted by a regression line with a slope of 1.56e-3. This indicates that with each 10,000 increase in the HRU count, the execution time increases by 15.6 minutes. For models with an HRU count below 10,000, the execution time generally remains under 10 minutes. In contrast, models with more than 35,000 HRUs can take up to 70 minutes. This linear trend underscores the predictability of increased computational time with larger HRU counts. However, as depicted in Figure 14, there is a nonlinear relation between the number of channels and the execution time. This results from larger models (between 1500 km2 to 3500 km2) we created with 500 m resolution for land use and soil. Therefore, the results show that implementing NHDPlus HR can be achieved more efficiently in model execution time when coarser landuse resolution is considered.   
+These insights are invaluable for researchers working with SWAT+ models. They provide clear expectations and emphasize the importance of performance optimization.
+
+Figure 13. Model execution time vs number model hrus. The size of the scatter points is relative to the overall size of the watershed. 
+In Figure 14, the performance of the SWAT+gwflow model is compared against the number of calibration stations. The 13 red points represent models covering areas greater than 1500 km²) and the rest in blue represent models with up to 1500 km². We performed a one-way ANOVA test to determine whether there is any significant difference between the average best performance of the models of these two groups. The result shows an F-statistic of 0.047 and a p-value of approximately 0.828. Since the p-value is much more significant than the standard alpha level of 0.05, we fail to reject the null hypothesis. This means there is no statistically significant difference between the average best performance of models with an area greater than 1500 km² and those with less than or equal to 1500 km².
+
+
+Figure 14: Model performance vs the number of stations.
+
+
+Figure 15. the distribution of model performance
+
+
+
+Figure 16. SWAT+gwflow models performance vs number of lakes
+
+Clustering Results and Analysis
+In this study, we employed K-Means clustering to categorize hydrological models based on various characteristics, including HRU counts, total watershed area, percent urban landuse, agriculture landuse, wetland landuse, forest landuse, rivers length, number of rivers, total waterbody area, average lake size in, number of lakes, number of streamflow gauging stations, and the best performance. Initially, we preprocessed the dataset and normalized the features with the StandardScaler, ensuring that all variables contributed equally to the clustering process. The dataset included several characteristics of hydrological models: 
+To determine the optimal number of clusters, we utilized the elbow method, which involved plotting the Within-Cluster Sum of Squares (WCSS) for a range of cluster numbers (1 to 10) and identifying the point where the rate of decrease in WCSS slowed down, indicating a balance between cluster cohesion and separation.
+
+Figure 17.
+Following this, we performed K-Means clustering with the optimal number of clusters identified (three clusters) and assigned each model to a cluster. We then analyzed the characteristics of each cluster by calculating the mean values of the features within each cluster and counted the number of models per cluster. This allowed us to identify distinct groups of hydrological models with similar characteristics, providing insights into each cluster’s typical features and performance metrics. 
+Based on the KMeans clustering with 3 clusters, here is a summary of the main characteristics of each cluster:
+Cluster 0:
+Average Total Area: 23,524 ha
+Dominated by Urban Land Use (79.58%)
+Average number of rivers: 690
+Best Performance: 0.402
+Number of models: 6
+Cluster 1:
+Average Total Area: 53,220 ha
+Dominated by Agricultural Land Use (45.13%)
+Average number of rivers: 390
+Best Performance: 0.562
+Number of models: 34
+Cluster 2:
+Average Total Area: 206,813 ha
+Mixed land use, with significant Forest (30.25%) and Agricultural (39.85%) land use
+Average number of rivers: 1,766
+Best Performance: 0.584
+Number of models: 18
+
+Key Observations:
+Cluster 0: Smaller areas, predominantly urban, fewer rivers, and lower performance.
+Cluster 1: Moderate areas, predominantly agricultural, moderate number of rivers, and moderate performance.
+Cluster 2: Larger areas, mixed land use, many rivers, and higher performance.
+Further Analysis: Investigate why larger areas with mixed land use (Cluster 2) perform better. Factors could include model complexity, environmental factors, or data availability.
+Model Improvements: For urban-dominated models (Cluster 0), explore ways to improve performance, potentially through better urban hydrology modeling or additional data.
+
+
+4. Conclusion
+4.1. Future studies
+	1- The output writing of the SWAT+ is the bottleneck of model processing. We found this by running different models with different sizes and measuring the hot spots with Intel VTuner. The major problem with the current SWAT+ is the limitation of the output writing format, which is limited to text and CSV. However,  in h5 format, which we can significantly improve the writing speed of the SWAT+ models and significantly reduce the output . Even with the default float32 data type for saving in the h5 file, the 2 GB output of a SWAT+ model (monthly and annual output for channel, HRU water balance, and gw flow output such as GW recharge) can be reduced to 400 MB. The HDS library is freely available and can linked to SWAT+ source code when compiling.   
+	2 -  As we show in the SWAT+ sensitivity results, the snow parameters are among the most sensitive parameters in the SWAT+ models of Michigan. There are two avenues for improving the performance of the SWAT+ models for snow simulation: 1) Using the models that preserve energy balance to replace the default snow simulation in SWAT+; 2) Using snowmelt rate, snow water equivalent, snow layer thickness, and sublimation from the National Snow Assimilation System (SNODAS). We implemented the latter approach in SWAT+ models but have not explored the performance improvement yet. 
+	4- The gSSURGO database currently integrated with the SWAT+ model is designed with a default aggregation up to the A-horizon of the vadose zone. This level of aggregation is generally adequate for most applications, especially those focused on agricultural studies. The A-horizon is crucial for these studies as it contains the highest organic matter and is most influenced by surface activities. However, for studies investigating the fate and transport of emerging contaminants, the vadose zone plays a significant role in chemical tracking and simulation. These contaminants often migrate beyond the A-horizon, accumulating in the unsaturated zone. Therefore, future research on contaminant fate and transport should consider a more comprehensive aggregation of gSSURGO data, extending beyond the A-horizon. This enhanced level of detail would improve the accuracy of simulations and the ability to track contaminants through deeper soil layers, providing a more robust model for environmental assessments.
+3- As we showed in the SWAT+gwflow sensitivity analysis, the groundwater parameters were more sensitive than snow parameters when considering the sensitivity analysis of all models. Among them, the streambed conductivity was the most sensitive parameter, and we did not have real data to approximate a closer range for these parameters. However, it should be noted that the mixed effect model revealed that none of the parameters (except groundwater yield) could significantly impact the model variance. Also, it should be noted that the sensitivity results are the direct products of the initial range of parameter variation, the type of parameter modification operation and the number of levels that we used for sampling. Therefore, the credibility of the sensitivity analysis is limited to the specific model. Also, it should be noted that the higher sensitivity rank for groundwater parameters compared to snow or other parameters might be related to the difference in simulation method in SWAT+ and gwflow. The groundwater model parameters, in general, can cause significant numerical instability, resulting in higher sensitivity. Also, it should be noted that we used the average daily and monthly NSE to measure the performance and consequently calculate model variance. In this regard, the choice of objective function is another factor that might significantly impact the sensitivity ranking. 
+	4–  Even though SWAT+ with the Gwflow module improved the performance of SWAT+ models, there is still a pressing need to connect SWAT+ models with MODFLOW (even though this coupling results in higher computational time). The MODFLOW code base is more optimized than the current GWFLOW module and can simulate a GW flow system with several layers and various pollution fates and transport, such as PFAS. 
+
+
+Acknowledgment:
+		
+
+References:
+Bailey, R.T., Bieger, K., Arnold, J.G., Bosch, D.D., 2020. A new physically-based spatially-distributed groundwater flow module for SWAT+. Hydrology 7, 75.
+Bieger, K., Arnold, J.G., Rathjens, H., White, M.J., Bosch, D.D., Allen, P.M., Volk, M., Srinivasan, R., 2017. Introduction to SWAT+, a completely restructured version of the soil and water assessment tool. JAWRA Journal of the American Water Resources Association 53, 115–130.
+Chesapeake Bay Program Office, 2024. Request for Applications for: Modeling, Monitoring, and Data Analysis Support for the Chesapeake Bay Program Partnership.
+Chesapeake Bay Program Office, 2023. Request for Applications for: Leverage High Resolution Watershed Data for Water Quality Modeling using Machine Learning Techniques.
+Daly, C., Doggett, M.K., Smith, J.I., Olson, K.V., Halbleib, M.D., Dimcovic, Z., Keon, D., Loiselle, R.A., Steinberg, B., Ryan, A.D., 2021. Challenges in observation-based mapping of daily precipitation across the conterminous United States. Journal of Atmospheric and Oceanic Technology 38, 1979–1992.
+Dewald, T., 2017. Making the Digital Water Flow: The Evolution of Geospatial Surface Water Frameworks. USEPA Office of Water: Washington, DC, USA.
+Herman, J., Usher, W., 2017. SALib: An open-source Python library for sensitivity analysis. Journal of Open Source Software 2, 97.
+Homer, C., Dewitz, J., Jin, S., Xian, G., Costello, C., Danielson, P., Gass, L., Funk, M., Wickham, J., Stehman, S., 2020. Conterminous United States land cover change patterns 2001–2016 from the 2016 national land cover database. ISPRS Journal of Photogrammetry and Remote Sensing 162, 184–199.
+Livneh, B., Bohn, T.J., Pierce, D.W., Munoz-Arriola, F., Nijssen, B., Vose, R., Cayan, D.R., Brekke, L., 2015. A spatially comprehensive, hydrometeorological data set for Mexico, the US, and Southern Canada 1950–2013. Scientific data 2, 1–12.
+Moore, R.B., McKay, L.D., Rea, A.H., Bondelid, T.R., Price, C.V., Dewald, T.G., Johnston, C.M., 2019. User’s guide for the national hydrography dataset plus (NHDPlus) high resolution (No. 2331–1258). US Geological Survey.
+Morris, M.D., 1991. Factorial sampling plans for preliminary computational experiments. Technometrics 33, 161–174.
+Nossent, J., Elsen, P., Bauwens, W., 2011. Sobol’sensitivity analysis of a complex environmental model. Environmental Modelling & Software 26, 1515–1525.
+Pierce, D.W., Cayan, D.R., Feldman, D.R., Risser, M.D., 2023. Future increases in North American Extreme Precipitation in CMIP6 downscaled with LOCA. Journal of Hydrometeorology 24, 951–975.
+Rafiei, V., Nejadhashemi, A.P., 2023. Watershed scale PFAS fate and transport model for source identification and management implications. Water Research 240, 120073.
+Rafiei, V., Nejadhashemi, A.P., Mushtaq, S., Bailey, R.T., An-Vo, D.-A., 2022. An improved calibration technique to address high dimensionality and non-linearity in integrated groundwater and surface water models. Environmental Modelling & Software 149, 105312. https://doi.org/10.1016/j.envsoft.2022.105312
+Regan, R.S., Markstrom, S.L., Hay, L.E., Viger, R.J., Norton, P.A., Driscoll, J.M., LaFontaine, J.H., 2018. Description of the national hydrologic model for use with the precipitation-runoff modeling system (prms) (No. 2328–7055). US Geological Survey.
+Sengupta, M., Xie, Y., Lopez, A., Habte, A., Maclaurin, G., Shelby, J., 2018. The national solar radiation data base (NSRDB). Renewable and sustainable energy reviews 89, 51–60.
+White, M.J., Arnold, J.G., Bieger, K., Allen, P.M., Gao, J., Čerkasova, N., Gambone, M., Park, S., Bosch, D.D., Yen, H., 2022. Development of a field scale SWAT+ modeling framework for the contiguous US. JAWRA Journal of the American Water Resources Association 58, 1545–1560.
+
+Supplementary material
+Technical notes for NHDPlus HR connection with SWAT+
+S1. SWAT+ Hydrographical Model Construction Using NHDPlus HR
+	This document outlines the methodology for constructing predefined SWAT+ models based on the NHDPlus High-Resolution (HR) database.
+S1.1. Data Preparation and Import
+	The primary hydrographical data were extracted from the NHDPlus database for the Vector Processing Units (VPUIDs) of 405, 406, 407, 408, 409, and 410 covering the entire Michigan lower Peninsula. 
+  - WBDHU8 and WBDHU12 represent the basin or subbasin boundary depending on the scale of interest.
+  - NHDFlowline: representing streamlines.
+  - NHDPlusCatchment: representing the drainage area of a streamline.
+  - NHDWaterbody: Representing reservoirs, lakes, wetlands, and playa. 
+  - NHDPlusFlowlineVAA: Value-Added Attribute table for streams and catchments characteristics. The following attribute values were used to prepare the SWAT+ predefined watershed. 
+VPUID: Identifier for Vector Processing Unit (equivalent to HUC4)
+NHDPlusID: Common key among NHDPlusFlowlines, NHDPlusCatchment, and NHDPlusVAA.
+StreamOrder: The stream order is based on the Strahler method.
+UpHydroSeq: The hydrological sequence number for the upstream.
+HydroSeq: The hydrological sequence number for the flowline.
+DnHydroSeq: The hydrological sequence number for the downstream.
+StartFlag: Flag indicating if the flowline is a headwater.
+TerminalFl: Flag indicating if the flowline is a terminal point (outlet).
+Divergence: Indicates if a flowline diverges into multiple downstream paths.
+Permanent_Identifier: A permanent identifier for each flowline.
+WBArea_Permanent_Identifier: Identifier for the associated water body area.
+MaxElevSmo: Smoothed maximum elevation of the flowline.
+MinElevSmo: Smoothed minimum elevation of the flowline.
+AreaSqKm: Drainage area in square kilometers.
+LengthKM: Original length of the flowline in kilometers (later converted to meters).
+TotDASqKm: Total drainage area in square kilometers.
+
+S1.2. General preprocessing:
+CRS: The geometries were projected to the UTM Zone of the respective VPUID. 
+Removing Second Divergence: Streams with a divergence code of 2 were eliminated, and their corresponding drainage area was merged to their downstream. 
+Data Consistency Check: We excluded flowlines that did not have corresponding drainage areas.
+Coastal Line Removal: Flowlines designated as coastal lines were removed from the dataset.
+Isolated Streams: Basins without upstream or downstream hydro sequence but with identifiable streams in NHDPlusCatchment were considered standalone subbasins with outlets. 
+Length Unit Conversion: The lengths of the streams, originally in kilometers, were converted to meters.
+Drop Calculation: SWAT+ requires drop, representing the difference between a flowline’s maximum and minimum elevation. We calculate the drop for each stream based on the MaxElevSmo and MinElevSmo features in NHDPlus HR. 
+Reset Flags: The Start and Terminal flags were reset based on the above revision.
+Identifying Hydrologic Unit Codes (HUC): The catchment centroids were spatially joined with the HUC shapefiles. The process is carried out separately for HUC8 and HUC12 levels.
+
+S1.4. Configuring NHDPlus Data Based on SWAT+ Hydrographical Logic: The One-Outlet Rule
+	SWAT model has a one-outlet rule that requires each subbasin to have only one stream flowing into one downstream subbasin. However, HUC12 boundaries, when used along with NHDPlus HR, often need to adhere to this rule, leading to subbasins with multiple outlets. Several conditions that violate this rule include 1-isolated subbasins within a HUC12, 2- the confluence of two streams draining into a downstream subbasin, and 3- a normal condition when a subbasin has different outlets leading to two or more downstream subbasins.
+	A systematic search is implemented to identify the number of outlets in subbasins to enforce the one-outlet rule. An outlet is where a stream exits a subbasin, either entering another subbasin or leaving the hydrological domain. In cases where a subbasin has more than one outlet, we perform a recursive function to trace all upstream segments for each outlet. These segments for each outlet subsequently form new subbasins, splitting the initial multi-outlet subbasins into multiple single-outlet subbasins. This process involves iterative checks to ensure all subbasins adhere to the one-outlet criterion.
+S1.5. Defining Flowline-Waterbody Connections
+	To incorporate waterbodies into the hydrograph of the SWAT model, it is essential to identify lake inlet and outlet segments within flowlines. This includes the following steps:
+Stream Classification: Based on their NHDPlus Ftype feature of waterbodies, we categorize streams into four types: lakes, reservoirs, wetlands, and playas.
+Area Threshold: Waterbodies can be excluded based on the threshold area. We retrained all waterbodies. 
+Lake Identification (LakeId): To identify LakeId in flowlines, flowline data is merged with waterbody datasets, aligning the ‘Permanent_Identifier’ from waterbodies with the ‘WBArea_Permanent_Identifier’ in flowlines. Flowlines associated with lakes are initially considered as LakeWithin.
+Lake Inlets (LakeIn): LakeIn segments are identified by traversing from headwater to outlet. Segments draining into a lake (indicated by a downstream LakeId) are named LakeIn.
+Updating LakeWithin: All segments within a lake’s boundary are initially classified as LakeWithin. This classification is updated as outflow segments (LakeOut) are identified.
+Lake Outlets (LakeOut): Any LakeWithin without having LakeId in downstream hydrosequence.   
+Main Lake Outlet (LakeMain): LakeMain is determined based on stream order, selecting the segment with the highest order in each lake as the primary outflow channel. This might cause an issue, but we could not find a better solution, as this is the limitation of SWAT+: each lake has only one outlet. 
+Special Cases Handling: When creating SWAT+ lakes from NHDPlus data, certain exceptional cases are addressed. For instance, adjacent lakes in NHDPlus data with different permanent IDs merge to share the same LakeId, or if a lake’s outlet coincides with the watershed’s outlet, the last LakeWithin segment before the outlet is specifically designated as the LakeOut.
+Subbasin refinement
+Once the streams (flowlines) are prepared as described above, we join them with NHDCatchments based on the NHDPlusID. Subsequently, the subbasins were created based on the dissolving catchments by their subbasin number that we obtained during stream modification. Given the changes to the subbasins that we made to follow the one-outlet rule, we had to refine the subbasins to avoid excessively small subbasins. To do this, we performed another round of aggregating subbasins to a minimum of 250*250*1000m2 area. We accomplish this by iteratively dissolving subbasins to their downstream subbasins until the size of new subbasins is above the threshold. This threshold size equals 75% of the average size of HUC12 in Michigan that we compared. Ultimately, the subbasins below this threshold were typically isolated with no upstream or downstream connection. 
+S1.6 Quality assurance check:
+Single Association for Streams and Catchments: Confirmed that each stream is associated with only one catchment and vice versa.
+Unique Subbasin Association: Verified that each catchment or stream is associated with only one subbasin.
+Lake Outlet Requirement: Ensured every lake has at least one outlet.
+Avoidance of Circular Hydrographs: Checked for and eliminated any divergence that could cause circular hydrographs.
+Single Outlet per Subbasin: Ensure each subbasin has only one outlet.
+ID Initialization: Ensured that channel and Lake IDs start from 1.
+
+
+
+		Figure 2. Distribution of HUC12 Models’ HRUs and drainage area
+
+Figure 3. Distribution of wetlands, forests, urban and agricultural areas of HUC12 models.
+
+Table 3. SWAT+ parameters were used in Sensitivity analysis and calibration; in total, 24 parameters related to snow melting, groundwater discharge, lake volumetry, routings, and evapotranspiration.
+
+Table 4. SWAT+gwflow parameters for calibration and validation.
+
+Server 1:
+Motherboard: DELL PowerEdge R7625 Server
+OS: Windows Server 2022
+CPU: AMD EPYC 9454 2.75GHz, 64C/128T, 256M Cache (290W) DDR5-4800
+CPU Release date: Nov 2023
+SSD: 6x3.84TB and 2x15.8TB Data Center NVMe Read Intensive AG Drive U2 Gen4
+RAM: 32x 16GB RDIMM, 4800MT/s Single Rank
+Server 2:
+Motherboard: DELL PowerEdge R760XA Server
+OS: RHEL 9
+CPU: Intel Xeon Platinum 8568Y+ 2.3G, 48C/96T, 300M Cache, (350W) DDR5-5600
+CPU Release date: Feb 2024
+SSD: 6x3.84TB and 2x15.8TB Enterprise NVMe Read Intensive AG Drive U.2 Gen4 
+RAM: 24x 32GB RDIMM, 5600MT/s, Dual Rank
+
+
+Table 5. Morris’s sensitivity ranking based on μ*
+
+
+Table 3. The daily and monthly SWAT+ model performance for different streamflow stations 
+
+
+
+
+
+
+
+
+
+
+
+
+Although performance benefits are associated with higher resolution in hydrographical data, we need higher resolution to simulate individual contributors in each neighborhood. For instance, our previous study (Rafiei & Nejadhashemi, 2023) developed the SWAT model to simulate PFAS fate and transport at the Huron River Watershed. We delineated the watershed (~3000 km2) into 189 subbasins, which resulted in 10,000 HRUs. This amount of HRUs is at the maximum data management capacity in a SWAT 2012 model, resulting in more than 60,000 input files for the model and millions of files in parallel processing for calibration. This problem in data management, to some extent, has been resolved in the SWAT+ model with the use of relation tables and object-oriented programming. Therefore, with the SWAT+ model and NHSPlus HR, the model for the Huron River watershed can have 3,000 identifiable channels and more than 100,000 HRUs (30m DEM and 250m soil and landuse, equal to the number of HRUs employed in NAM for the entire CONUS).
+
+
+
+
+Wall time:
+
+In this project, we aimed to understand and optimize the execution time for running hydrological models. Initially, we set a wall time for each model based on the number of hydrological response units (HRUs). The wall time was calculated using a predefined function that allocated more time to models with a higher number of HRUs. For models with more than 10,000 HRUs, the function assigned a wall time ranging from 8 to 18 hours, depending on the exact count. This approach ensured that larger and more complex models had sufficient time to complete their simulations.
+We then conducted an extensive experiment where each model was executed thousands of times, simulating 13 years of hydrological data. We recorded the execution time for each run and analyzed the results. Our findings revealed a clear linear relationship between the number of HRUs and the average execution time. This relationship was visualized in a plot that showed a strong positive correlation, indicating that as the number of HRUs increased, the execution time also increased proportionally.

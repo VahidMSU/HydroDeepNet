@@ -1,0 +1,1 @@
+ngrok start --all --config ~/snap/ngrok/common/.ngrok2/ngrok.yml

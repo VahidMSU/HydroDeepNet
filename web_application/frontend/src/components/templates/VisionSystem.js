@@ -185,26 +185,24 @@ const VisionSystemTemplate = () => {
 
         <section>
           <SectionHeader>Overview of GeoCNN</SectionHeader>
-          <SectionText>
-            GeoCNN efficiently handles:
-            <ul>
-              <li>
-                <strong>Large Datasets:</strong> Fast loading/reloading of multi-year monthly data.
-              </li>
-              <li>
-                <strong>Multi-Scale Inputs:</strong> Incorporates MODIS, PRISM, soil, and land cover
-                info.
-              </li>
-              <li>
-                <strong>Powerful Architectures:</strong> CNN-Transformers and fully
-                Transformer-based models.
-              </li>
-              <li>
-                <strong>Spatial & Temporal Flexibility:</strong> Custom skip connections, attention,
-                and advanced up/down-sampling.
-              </li>
-            </ul>
-          </SectionText>
+          <SectionText>GeoCNN efficiently handles:</SectionText>
+          <ul>
+            <li>
+              <strong>Large Datasets:</strong> Fast loading/reloading of multi-year monthly data.
+            </li>
+            <li>
+              <strong>Multi-Scale Inputs:</strong> Incorporates MODIS, PRISM, soil, and land cover
+              info.
+            </li>
+            <li>
+              <strong>Powerful Architectures:</strong> CNN-Transformers and fully Transformer-based
+              models.
+            </li>
+            <li>
+              <strong>Spatial & Temporal Flexibility:</strong> Custom skip connections, attention,
+              and advanced up/down-sampling.
+            </li>
+          </ul>
         </section>
 
         <section>
@@ -222,21 +220,22 @@ const VisionSystemTemplate = () => {
         <section>
           <SectionHeader>Deep Learning Models</SectionHeader>
           <SectionText>
-            <ul>
-              <li>
-                <strong>Inception-LSTM:</strong> Combines spatial feature extraction with LSTM-based
-                temporal modeling.
-              </li>
-              <li>
-                <strong>CNN-Transformers:</strong> Uses a CNN down-sampling path and a Transformer
-                encoder for time steps.
-              </li>
-              <li>
-                <strong>Fully Transformer-Based:</strong> Omits convolutional operations entirely,
-                focusing on spatiotemporal attention.
-              </li>
-            </ul>
+            Our models include:
           </SectionText>
+          <ul>
+            <li>
+              <strong>Inception-LSTM:</strong> Combines spatial feature extraction with LSTM-based
+              temporal modeling.
+            </li>
+            <li>
+              <strong>CNN-Transformers:</strong> Uses a CNN down-sampling path and a Transformer
+              encoder for time steps.
+            </li>
+            <li>
+              <strong>Fully Transformer-Based:</strong> Omits convolutional operations entirely,
+              focusing on spatiotemporal attention.
+            </li>
+          </ul>
         </section>
 
         <section>
@@ -261,38 +260,36 @@ const VisionSystemTemplate = () => {
           <SectionText>
             Our final CNN-Transformer processes inputs of shape [B, T, C, H, W]—batch, time steps,
             channels, height, width. Key elements include:
-            <ul>
-              <li>
-                <strong>Down-Sampling Pathway:</strong> Deformable convolutions, SE blocks,
-                coordinate attention for hierarchical spatial features.
-              </li>
-              <li>
-                <strong>Transformer Encoder:</strong> Fourier-based positional encoding and
-                multi-head attention for temporal modeling.
-              </li>
-              <li>
-                <strong>Up-Sampling Pathway:</strong> Sub-pixel convolution and skip connections to
-                restore spatial resolution.
-              </li>
-            </ul>
           </SectionText>
+          <ul>
+            <li>
+              <strong>Down-Sampling Pathway:</strong> Deformable convolutions, SE blocks, coordinate
+              attention for hierarchical spatial features.
+            </li>
+            <li>
+              <strong>Transformer Encoder:</strong> Fourier-based positional encoding and multi-head
+              attention for temporal modeling.
+            </li>
+            <li>
+              <strong>Up-Sampling Pathway:</strong> Sub-pixel convolution and skip connections to
+              restore spatial resolution.
+            </li>
+          </ul>
         </section>
 
         <section>
           <SectionHeader>Specialized Loss Function</SectionHeader>
-          <SectionText>
-            GeoCNN uses a custom loss that evaluates:
-            <ul>
-              <li>
-                <strong>Spatial Dimensions:</strong> Penalizes boundary errors, outliers, and
-                no-value regions.
-              </li>
-              <li>
-                <strong>Temporal Dimensions:</strong> Seasonal performance in winter, spring,
-                summer, and fall.
-              </li>
-            </ul>
-          </SectionText>
+          <SectionText>GeoCNN uses a custom loss that evaluates:</SectionText>
+          <ul>
+            <li>
+              <strong>Spatial Dimensions:</strong> Penalizes boundary errors, outliers, and no-value
+              regions.
+            </li>
+            <li>
+              <strong>Temporal Dimensions:</strong> Seasonal performance in winter, spring, summer,
+              and fall.
+            </li>
+          </ul>
         </section>
 
         {selectedMedia && (

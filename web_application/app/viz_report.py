@@ -6,7 +6,8 @@ import threading
 import zipfile
 import tempfile
 import sys 
-
+import sys
+sys.path.append('/data/SWATGenXApp/codes/')
 from GeoReporter.report_generator import run_report_generation
 from datetime import datetime
 from app.decorators import conditional_login_required, conditional_verified_required

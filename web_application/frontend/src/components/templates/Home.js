@@ -55,33 +55,33 @@ const HomeTemplate = () => {
             <strong>1. Hydrological Modeling with SWAT+</strong><br />
             SWAT+ serves as the core model for simulating surface and subsurface hydrological cycles.
             Key highlights:
-            <ul>
-              <li>Simulates evapotranspiration, runoff, and groundwater recharge.</li>
-              <li>Uses hierarchical land classification for HRU-based analysis.</li>
-              <li>Employs Particle Swarm Optimization (PSO) for calibrating parameters.</li>
-            </ul>
           </SectionText>
+          <ul>
+            <li>Simulates evapotranspiration, runoff, and groundwater recharge.</li>
+            <li>Uses hierarchical land classification for HRU-based analysis.</li>
+            <li>Employs Particle Swarm Optimization (PSO) for calibrating parameters.</li>
+          </ul>
           
           <SectionText>
             <strong>2. Hierarchical Data Management</strong><br />
             The platform uses a robust HDF5 database to manage multi-resolution data.
-            <ul>
-              <li>Land use and soil data (250m resolution).</li>
-              <li>Groundwater hydraulic properties from 650k water wells.</li>
-              <li>Meteorological inputs from PRISM (4km) and NSRDB (2km, upsampled to 4km).</li>
-            </ul>
           </SectionText>
+          <ul>
+            <li>Land use and soil data (250m resolution).</li>
+            <li>Groundwater hydraulic properties from 650k water wells.</li>
+            <li>Meteorological inputs from PRISM (4km) and NSRDB (2km, upsampled to 4km).</li>
+          </ul>
           
           <SectionText>
             <strong>3. GeoNet Vision System</strong><br />
             GeoNet leverages hydrological data for spatiotemporal regression tasks, predicting
             groundwater recharge and climate impacts.
-            <ul>
-              <li>Support for 4D spatiotemporal analysis at 250m resolution.</li>
-              <li>Efficient processing of hydrological data with specialized loss functions.</li>
-              <li>Modular design for hyperparameter tuning and model customization.</li>
-            </ul>
           </SectionText>
+          <ul>
+            <li>Support for 4D spatiotemporal analysis at 250m resolution.</li>
+            <li>Efficient processing of hydrological data with specialized loss functions.</li>
+            <li>Modular design for hyperparameter tuning and model customization.</li>
+          </ul>
         </section>
         
         <section>
@@ -97,12 +97,13 @@ const HomeTemplate = () => {
         <section>
           <SectionHeader>Applications</SectionHeader>
           <SectionText>
-            <ul>
-              <li>Predicting groundwater recharge in data-scarce regions.</li>
-              <li>Assessing climate change impacts on hydrological processes.</li>
-              <li>Supporting scalable watershed-level hydrological modeling.</li>
-            </ul>
+            Applications of our modeling system include:
           </SectionText>
+          <ul>
+            <li>Predicting groundwater recharge in data-scarce regions.</li>
+            <li>Assessing climate change impacts on hydrological processes.</li>
+            <li>Supporting scalable watershed-level hydrological modeling.</li>
+          </ul>
         </section>
         
         <section>

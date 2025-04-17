@@ -1,0 +1,436 @@
+Transformed-based deep learning framework for High-Resolution Spatiotemporal Hydrological Modeling
+Abstract
+Recent advances in deep learning have enabled the development of spatiotemporal deep learning predictive models in hydrology. , many rely on recurrent architectures such as and for temporal modeling. While practical and lightweight, these older approaches are prone to exploding/vanishing gradients and high memory usage. In contrast, the computer vision domain has shifted toward Transformer-based architectures, such as -Transformers, which replace LSTM/RNN layers with Transformer modules to reduce memory usage, improve efficiency, and keep convolution encoders for including inductive biases for feature extraction. Despite their success in video motion recognition, object detection, semantic segmentation, and super-resolution tasks, CNN-Transformers remain less underexplored for spatiotemporal regression tasks. To address this gap, we developed and introduced a novel CNN-Transformer architecture designed for high-resolution spatiotemporal hydrological modeling. This architecture is optimized for regression tasks and integrates geospatial and remote sensing data alongside outputs from physically based hydrological models for deep learning model training. . The results demonstrate the pros/cons and potential of CNN-Transformers to advance vision systems for hydrological modeling applications. 
+Keywords: Groundwater Recharge, SWAT+, CNN-Transformer, Hydrology, Deep Learning, MODIS, Vision systems. 
+
+Abbreviations:
+CNN: Convolutional Neural Network
+CONUS: Conterminous United States
+DEM: Digital Elevation Model
+EBK: Empirical Bayesian Kriging
+ET: Evapotranspiration
+GHI: Global Horizontal Irradiance
+GWflow: Groundwater Flow Module
+HSD5: Hierarchical Scientific Data Format version 5
+HSDS: Highly Scalable Data Service
+HUC: Hydrologic Unit Code
+HRU: Hydrologic Response Unit
+LSTM: Long Short-Term Memory
+MODIS: Moderate Resolution Imaging Spectroradiometer
+NAM: National Agroecosystem Model
+NHM: National Hydrologic Model
+NHD: National Hydrography Dataset
+NHDPlus HR: National Hydrography Dataset Plus High Resolution
+NLCD: National Land Cover Database
+NSRDB: National Solar Radiation Database
+PSO: Particle Swarm Optimization
+PRISM: Parameter-elevation Regressions on Independent Slopes Model
+QGIS: Geographic Information System
+SE: Squeeze-and-Excitation
+SQL: Structured Query Language
+SWAT+: Soil and Water Assessment Tool Plus
+USGS: United States Geological Survey
+ViT: Vision Transformer
+VPUID: Vector Processing Unit Identifier
+NDVI: Normalized Difference Vegetation Index
+Fpar: Fraction of Photosynthetically Active Radiation
+LAI: Leaf Area Index
+EVI: Enhanced Vegetation Index
+
+
+
+Introduction
+Predicting spatiotemporal hydrological processes, such as evapotranspiration, runoff, and groundwater recharge, is a fundamental challenge in hydrology and Earth system science (Alattar et al., 2020; Costa et al., 2021; Steinman et al., 2022). Among them, groundwater recharge estimation is vital but has been computationally demanding, especially when pursuing high-resolution spatiotemporal predictions (De Vries and Simmers, 2002). The difficulty lies in  distributed hydrological models for water balance estimation, which requires significant upstream and downstream hydrological modeling framework development (White et al., 2022; Yang et al., 2023). For accurate recharge prediction, it is essential to ensure that the hydrological model can adequately predict related processes like evapotranspiration, crop biomass, water consumption, and runoff, among others (Arnold et al., 2000; Mosase et al., 2019; Yifru et al., 2020). This often involves extensive calibration across thousands of simulation rounds to achieve acceptable model performance, making model preparation and calibration a highly complex and resource-intensive problem (Rafiei et al., 2022; Rafiei and Nejadhashemi, 2023). 
+Recent hydrological studies have numerous deep-learning architectures with novel techniques to achieve vision systems for continuous spatiotemporal variable predictions (Camps-Valls et al., 2021; Pourghasemi et al., 2020). In such a setting, the physically based model describes the system's dynamic through theoretical and science-based principles, and the vision system learns the dynamical system to replicate the simulations without requiring the physically based model to be run. Theoretically, this approach should eventually work with a significant amount of physically based simulation data and computational power through a well-designed deep-learning model (Adombi et al., 2022). 
+recent advancements in computer vision have shifted towards Vision Transformers (ViTs), specifically hybrid CNN-Transformers, which leverage the strengths of Convolutional Neural Networks (CNNs) for spatial feature extraction and Transformers for modeling global and temporal relationships in images (Li et al., 2022; Nie et al., 2024; Zhang et al., 2024).
+(Vaswani, 2017)(Dosovitskiy, 2020)(Camps-Valls et al., 2021; Elgendy, 2020)(Jamil et al., 2023; Khan et al., 2023)
+In this study, we developed a hybrid approach integrating physically based hydrological modeling with two unique advanced deep learning architectures,one based on CNN-Transformers for spatiotemporal  and one based on Inception architecture with long-term, short-term memory (LSTM. 
+
+This research contributes to hydrological modeling by introducing a novel deep-learning architecture designed from scratch for high-resolution spatiotemporal regression tasks. The primary objective of this study to design two different deep learning architectures capable of learning complex spatiotemporal patterns in geospatial and hydrological datasets and () to evaluate the framework’s performance in estimating evapotranspiration and groundwater recharge in Michigan. The novelty of this work lies in adapting CNN-Transformer architectures for spatiotemporal regression and the comparison with older deep learning vision system architecture—a largely unexplored area in both computer vision and hydrological modeling. We demonstrate the capability and performance of such physic-informed deep learning in capturing hydrological processes at . This study aims to advance state-of-the-art hydrological modeling by leveraging modern vision systems and sets a foundation for future innovations in physics-informed machine learning frameworks.
+
+Methodology
+. Section 2.1 and its subdivisions describe our data and approach to establishing the hydrological modeling framework using SWAT+. Section 2.2 and its subdivisions described our development and design for CNN-Transformer and Inception-LSTM architectures. 
+2.1. Hydrological model
+2.2.1 Hydrological model development 
+SWAT+ is a restructured version of the SWAT 2012 model, introducing several advancements that enhance its performance and usability. SWAT+ introduces three levels of land classification: basin, subbasin, and landscape, whereas SWAT 2012 only includes basin and subbasin levels. This change allows for a more detailed and accurate representation of landscapes, each containing an identifiable channel. Furthermore, the data management in SWAT+ has seen substantial improvements over SWAT 2012. The model utilizes relational tables to manage data, dramatically reducing the required input files. In SWAT 2012, a model with 10,000 Hydrologic Response Units (HRUs) could generate over 50,000 HRU files, resulting in millions of input files during parallel processing for calibration. The relational table approach in SWAT+ addresses this issue by streamlining data input and reducing the complexity of ancillary file management.
+Additionally, SWAT+ has been developed using modern Fortran and incorporating object-oriented programming techniques. This shift from Fortran 90, used in SWAT 2012, to modern Fortran facilitates easier code maintenance and development. SWAT+ also includes enhanced features for water management and hydrologic assessment that are required for accurate water balance simulations.
+The rest of the sub-sections describe our approach for creating, calibrating, and processing the hydrological models. Creating a predefined watershed for SWAT+ requires preparing specific structures for streams, watersheds, and sub-basins. These include defining hydrograph sequences, lake-stream connections, sub-basin boundaries, and lakes for the model. For this purpose, we leverage the National Hydrography Dataset (NHD) Plus High Resolution (NHDPlus HR). It is worth noting that the NHD  has evolved significantly since 1970, starting with the 1:500,000-scale Reach File Version 1 (RF1), followed by the more detailed 1:100,000-scale RF3 in the 1990s, ultimately leading to the medium-resolution NHD in 1997. The enhanced NHDPlus (Versions 1 and 2) adds attributes like streamflow estimates and hydrologically conditioned catchments and provides 2.5 million identifiable channels across the contiguous United States (CONUS) (Dewald, 2017). The NHDPlus V2 has been used for several large-scale implementations for hydrological modeling. For instance, the NAM (National Agroecosystem Model) (White et al., 2022) and the NHM  (National Hydrologic Model) (Regan et al., 2018) rely on moderate resolution NHD (National Hydrography Dataset) (1:100k) for hydrographical connections. The NHDPlus High Resolution (NHDPlus HR) used in this study, introduced in 2015 (Buto and Anderson, 2020), offers 1:24,000-scale or better detail using 10m elevation data and provides 27 million identifiable channels (~20 times larger than NHDPlus V2). 
+Given NHDPlus HR’s capabilities, including its complete coverage for CONUS, we have generated SWAT+ predefined hydrographical models based on the NHDPlus HR streams, waterbodies, and catchments. We designed a hierarchical database for data management to distribute geospatial and hydrographical data based on a Vectorized Processing Unit Identifier (VPUID) according to NHDPlus HR. Furthermore, we connected our codebase to the National Water Information System API to extract streamflow data within CONUS, providing information for more than 36,000 USGS stations. We used PRISM grid data to distribute weather stations for the watershed models at 4km resolution (PRISM Climate Group, 2014). For the energy balance of the model, we used h5pyd - a Python package for HSD5, to connect our workflow to the National Solar Radiation Database (NSRDB) for the North American region and extract Global Horizontal Irradiance (GHI), wind speed, and relative humidity corresponding to the defined weather stations for the model (Sengupta et al., 2018).
+The design of this data extraction process enables us to create SWAT+ models with all necessary inputs in an optimized way with appropriate data distribution. This process also ensures we generate a standard model for various geographic extents, from a single HUC12/HUC8 to multiple HUC12/HUC8 across CONUS. Applying this data processing generates SWAT+ models for the drainage area of any desired USGS streamflow station. The entire process is encapsulated in a Python program module, which we call SWATGenX.
+The next step in our automation procedure, SWATGenX, includes the integration of QSWAT+ and SWAT+Editor APIs with SWATGenX. The QSWAT+ API automates the generation of the SWAT+ QGIS project and database based on the predefined watershed generated by SWATGenX. The product of QSWAT+ is an SQL database, and we connect that database with the SWAT+Editor API to write weather and model input files and run the model for one successful year. This is the final checking point for creating SWAT+ models. Creating a SWAT+ model takes 20 seconds for small areas to 10 minutes for most models below 1000 km². Most of the processing time is spent extracting meteorological data, specifically for NSRDB, which must be extracted using the h5pyd library that communicates through the HSDS API.
+The source code of the Python program that performs the described automation tasks and generates SWAT+ models is provided in the manuscript’s Software and Data Availability section.
+ Finally, we developed consistent groundwater datasets, including hydraulic conductivity, groundwater head, transmissivity, and aquifer depth. These datasets were created using the lithological data from 650,000 water wells across Michigan, processed with Empirical Bayesian Kriging (EBK). After that, using the SWAT+ project and input created, we include the Gwflow module (Bailey et al., 2020). For SWAT+ with the GWflow module, we aggregate the groundwater hydraulic properties into four quantiles to represent four homogeneous regions for each variable in a watershed. Gwflow, built on a 250 m grid, thereby simulates groundwater flow and groundwater-surface water interaction at rivers and lakes. Figure 1 summarizes the automated workflow for creating and storing SWAT+ models.  
+Figure 1. Flowchart of Automatic SWAT+ model’s preparation.
+
+2.2.2 Hydrological model coverage
+We utilized this workflow to extract predefined watersheds for all streamflow station drainage areas within the Michigan Lower Peninsula, adhering to the following criteria: 1) Only streamflow stations with a maximum drainage area of 3,500 km2, were used, which is a standard size for HUC8 watersheds. 2) Stations selected had less than a 10% data gap between 1999 to 2022. These strategies enabled the extraction of 58 SWAT+ models representing surface water and groundwater hydrological cycles within Michigan’s Lower Peninsula. Additional streamflow stations were included in the watersheds to fully utilize all available streamflow data for model calibration, provided they had complete data for the simulation period. As a result, 71 streamflow monitoring stations were incorporated into the model calibrations.
+ Figure 1 shows the model boundaries, the HUC8 watershed boundaries, and the streamflow stations included in model calibration. Accordingly, the number of HRUs ranges from a minimum of 1,564 to a maximum of 42,480, with a median of 14,049 HRUs. The total size of all watersheds is 5,825,283 ha, while the total area of Michigan LP is 10,402,000 ha. Moreover, Table S1 presents the distribution of 16 major land uses within Michigan’s Lower Peninsula, based on the National Land Cover Database (NLCD) 2021 dataset. There are a variety of SWAT+ models with different combinations of land uses, from watersheds with more than 90% urban landuse to watersheds with more than 80% agriculture. The distribution of 4 primary land uses (agriculture and urban, forest, and wetlands) for the 58 SWAT+ are shown in Figure S1. 
+ 
+Figure 1. 58 SWAT+gwflow models created for 58 unique streamflow monitoring stations within Michigan’s Lower Peninsula. 
+2.2.3 Hydrological model calibration procedure
+We performed parameter calibration of hydrological models using a modified version of the Particle Swarm Optimization (PSO) algorithm (Rafiei et al., 2022). The PSO algorithm calibrates the hydrological parameters using different techniques in population management and optimizing model performance. To find the best global optimum, each particle in PSO searches the solution space, improves its local best solution in each iteration, and collectively moves toward the global best solution found among all particles. The total number of Iterations defined for PSO in this study was 75, with 50 particles. We also defined an early stopping to terminate the calibration. The minimum number of iterations before checking the early stopping was 10 for the initial optimization of the models. For extensive calibration, the early stopping moved to at least 50 iterations. The SWAT+ parameters and their respective min/max and updating operations are presented in Tables S2 and S3. 
+We have implemented two straightforward methods to terminate calibration processes. The first method involves monitoring the standard deviation (std) of the overall objective function (weighted streamflow, groundwater head, static water level, and crop yield). For calibration, the early stopping mechanism begins after the 50th iteration. The calibration process is terminated if the standard deviation remains below 0.001 for ten consecutive iterations. 
+2.2. Deep Learning with CNN-Transformer
+This section and its subdivisions introduce the deep learning CNN-Transformer architecture, training technique, and hyperparameter optimization. 
+2.2.1. Data Preprocessing for evapotranspiration prediction
+To predict ET with CNN-Transformer, we created a dataset comprising MODIS products, PRISM, NLCD, and LANDFIRE, corresponding to the extent of Michigan’s Lower Peninsula. The MODIS products include surface reflectance, EVI, NDVI, Fpar, and LAI, obtained from Google Earth Engine at 250m resolution. PRISM data consists of daily precipitation and minimum/maximum temperature at 4km resolution, resampled to 250m using the nearest neighbor method. . Both MODIS and PRISM data span from 2001 to 2021. Static features include land use, soil properties, and surface terrain, resampled from 30m to 250m resolution. The entire dataset covers the Michigan LP at 1850 rows and 1450 columns, ensuring uniform spatial resolution across variables. Table  summarizes the datasets used in this study.
+We ensured spatial and temporal consistency for ET data preprocessing by addressing gaps caused by occasional clouds/aerosols and open water. . A mask derived from the NLCD water and wetland categories was applied to identify water regions, and no values in these regions were set to the average of ET for the time frame. These regions were later excluded from loss calculations to prevent bias. For cells outsideregions, occasional no-values due to aerosols or clouds were filled by averaging the values from the adjacent months, ensuring smooth temporal transitions. If no valid data existed for the current month, gaps were filled by averaging corresponding values from adjacent months. Once the gap-filling was complete, all data were scaled to a 0–1 range using the respective global minimum and maximum values.
+Finally, the dataset was split into training, validation, and test sets based on no-value thresholds. Batches with less than 25% no-values were assigned to the training set, 25–50% no-values to the validation set, and batches with 50–80% no-values to the test set. Batches with more than 80% no-values were excluded from training and validation but retained for inference. Figure 2 shows the distribution of ET data among all training, validation, and test batches. 
+
+Figure 2. The target ET distribution was scaled using Min-Max normalization across all batches. 
+
+2.2.2. Hyperparameter Tuning of the CNN-Transformer
+Experiment Design for Hyperparameter Optimization of CNN-Transformer Architecture. This experiment evaluates multiple configurations for a CNN-Transformer architecture to identify the best-performing model. We explore two positional encoding methods, several different methods for encoding and decoding, and three different Transformer attention head mechanisms. We assess the performance of these architectures under different learning rates, weight decay, and loss functions, leading to more than 300 unique evaluations. This approach allows us to systematically assess the effects of each configuration component and identify the optimal setup for this CNN-Transformer architecture on the given data.
+2.2.3. Deep Learning Architecture
+Figure 3 presents the flowchart of the developed CNN-Transformer architecture, and the rest of the section describes the final implementation of the CNN-Transformer model designed to process spatiotemporal data. The model accepts input tensors of shape [batchsize, timesteps, channels, height, width], representing a sequence of multi-channel images over time. It combines a CNN-based down-sampling pathway for spatial feature extraction with a Transformer encoder for temporal modeling. Additionally, the model incorporates advanced attention mechanisms, deformable convolutions, and positional encodings to optimize performance.
+Down-Sampling Pathway: Each step is processed independently through a series of down-sampling blocks that progressively reduce spatial resolution while extracting hierarchical spatial features. Each block includes:
+Convolutional Layers: Extract spatial features with regular and deformable convolutions.
+Squeeze-and-Excitation (SE) Layers: Enhance channel-wise attention to improve feature representation.
+Coordinate Attention Mechanism: Captures spatial correlations along height and width dimensions.
+Down-Sampling Layer: Stride convolutions to reduce spatial dimensions. the up-sampling pathway.
+Bottleneck and Feature Collection: A bottleneck layer compresses spatial information into a compact high-dimensional embedding at the deepest level of the down-sampling pathway. This embedding is collected across all time steps, resulting in a tensor of shape [, , , , ] that encapsulates spatial features over time
+Transformer-Based Temporal Modeling: The spatial embeddings are aggregated by applying spatial attention to highlight important regions, followed by a global pooling operation to create a temporal sequence tensor of shape [, , ]. This tensor is processed by a Transformer encoder with the following features:
+Fourier Positional Encoding: Retains temporal order and facilitates stable training.
+Temporal Multi-Head Attention: Captures complex temporal dependencies and periodic patterns in the data.
+Feedforward Layers: Refine temporal features with layer normalization and residual connections.
+Up-Sampling Pathway with Skip Connections: The Transformer-processed temporal features are reshaped into a spatial grid and passed through a series of up-sampling blocks. Each block restores spatial resolution using:
+Sub-Pixel Convolution Layers: Efficiently  feature maps.
+Deformable Convolutions: Adapt spatial filters to capture local details dynamically.
+Attention Mechanisms: Enhance feature representation by reintroducing skip connections from the down-sampling pathway.
+Final Convolution and Output: a tensor of shape [, , , , ]. 
+
+Figure 3. Flowchart of the CNN-Transformer 
+
+2.2.4. CNN-Transformer Model Training
+We train the models with several different maximum thresholds for epochs. Each batch (N 4D tensors) is fed to the model with 80-time steps out of 240-time steps, followed by loss calculation and backpropagation. The training loop order is auto-cast, backward with scaling, unscaled once, clip, step, and optimization update. We initially used AdamW(Loshchilov, 2017) and AdaBelief (Zhuang et al., 2020)optimizers for model parameters optimization, ultimately finding that AdaBelief better avoids/controls gradient explosion during training. . We used the CosineAnnealingLR with the hard-restart scheduler to adjust the learning rate through different cycles (usually one cycle for a maximum of 250 epochs). Each model was trained for a maximum of 100 epochs, and in the final stage of model training, we extended the maximum epochs to 500. We selected it based on our observation of model performance, which indicated minimal improvement after 100 epochs.
+2.2.5. Spatiotemporal Loss 
+The SpatioTemporal Loss (STL) is a novel composite loss function designed to address spatiotemporal modeling challenges by integrating quantile-based weighting, boundary emphasis, torrential weighting, and seasonal considerations. This loss function is tailored for datasets with spatial boundaries and temporal variations, ensuring robust predictions under varying conditions, including extreme events and outlier scenarios.
+Boundary Emphasis: .
+Quantile-Based Classification: Targets are classified into no-values. The loss applies distinct weights to these categories based on their number of cells to emphasize the importance of extreme values while curbing their contribution. 
+Torrential Weighting: Extreme values (e.g., torrential events) are weighted exponentially to capture their nonlinear impact. Using tunable weights, separate penalties are applied to over- and under-predictions for these events.
+Seasonal Errors: Temporal weighting incorporates seasonal patterns, explicitly calculating errors for each season (e.g., Winter, Spring, Summer, Fall). Seasonal errors are aggregated to reflect the performance over different time frames.
+The total loss for T time steps is computed as:
+
+Where:
+: Loss for timestep t, computed as:
+
+: Weighted Overall prediction loss with emphasis on over- and under-predictions relative to the torrential threshold, computed as: 
+
+: Weighted Loss for regular torrential predictions is defined as follows:
+
+ Weighted Loss for image boundaries predictions is defined as follows:
+
+: Seasonal error is calculated as the mean absolute error (MAE) and weighted by their season.
+3. Results
+3.1. Hydrological Model Performance
+Figures 4 and 5 show monthly and daily performance for simulating streamflow at 58 stations within Michigan LP. For daily streamflow prediction performance, of 58 watersheds, two models have NSE values below 0 (bad performance). There are seven watersheds with daily NSE values in the range of 0 to 0.25 (satisfactory), 25 watersheds fall within the range of 0.5 to 0.75 (good), and the rest have excellent performance (NSE> 0.75). Moreover, three watersheds exhibit performance,  a significant majority, 37 watersheds, achieve good performance (0.5 to 0.75), and two watersheds demonstrate excellent performance with NSE between 0.75 and 1. 
+
+
+
+Figure 4. SWAT+ Monthly performance for streamflow stations
+
+Figure 5. SWAT+ daily performance for streamflow stations 
+. The original data, available at a 30m resolution, was organized into 60200 batches with 240 timesteps (20 years of monthly data from 2000 to 2019). Since groundwater, land use, and soil data were at the 250m resolution, the 30m resolution data of HRUs was resampled to match this scale for deep learning model training
+We first extracted the 30m resolution data from the SWAT+ outputs using a 256256 window size to achieve this. We then resampled the data to a 6464 window size, corresponding to the 250m resolution, for model training. This resampling process reduced the dataset size to 250 batches. Out of these, 175 batches were allocated for training, 45 for validation, and 30 for testing. The landuse data are treated as a categorical one-hot encoding (each landuse representing one channel with 0 or 1). One example of categorical data is shown in Figure 6. Figure 7 shows an animation of recharge data used for training, . 
+
+Figure 6. Example of categorical (landuse) data. 
+
+Figure 7 
+
+
+
+3.2. CNN-Transformer Prediction for Evapotranspiration
+Figure shows the validation, training dataset loss, and gradient norm. The model could effectively learn the patterns and gradually improve predictions. The first ten epochs of the training are the warm-up period, with an incremental increase in the learning rate and the model. Figure 10 shows each gradient and optimization learning rate per training step. As shown, the CosineAnnealingLR starts cycling the learning rate and makes it a stable training process up to 70 epochs, where the training and validation loss plateaued, and the early stopping terminates the training. 
+Figure 11 juxtaposes the dynamics of predictions vs. target and their absolute residual error. As shown in the animation, the model dynamic predictions are well aligned with the ground truth; the predictions have captured both high and low-intensity periods, and the residual error is minimal. Figure 12 shows cellwise RMSE and correlation for two example test batches. The cellwise correlation is exceptionally high. However, the RMSE error has a diverse variability from 0 to 0.12, and near the edges between the no-value region (lakes) and inland, it has a higher error. 
+
+
+
+
+
+Figure  
+
+Figure 10: Learning rate and gradient norm per learning step. 
+
+
+Figure 11. CNN-Transformer prediction for ET for 60-time steps, comparing with Target and the absolute residual errors.
+
+
+
+Figure 12: cellwise RMSE and correlation for two examples of test datasets for 
+
+Figure 13: Cellwise NSE performance CNN-Transformer predictio
+
+
+
+
+3.2. CNN-Transformer Prediction for SWAT+ groundwater recharge
+Figure 14 illustrates the training and validation losses over  epochs, with early stopping applied after 50 stepsat 300 epochs due to the lack of improvement. Figure 15 depicts the gradient norm and learning rate progression throughout one complete training cycle. Figure 16 presents the cell-wise RMSE and correlation for two example batches. Notably, the cell-wise correlation in this case is considerably weaker compared to the correlation achieved during ET 
+
+Figure 14: validation, training loss, and average gradient norm per epoch.
+
+Figure 15: Learning rate and gradient norm per learning step for training CNN-Transformer on groundwater recharge data. 
+
+
+
+
+
+
+Figure 16: Two example batches for evaluating the correlation and RMSE per cell for SWAT+ groundwater recharge output. 
+
+
+
+
+
+Figure 17: Two example animations for evaluating model predictions vs ground truth and absolute residual error per time step. 
+
+
+
+Discussion
+
+
+
+
+
+
+4.. Handling Missing Values
+Handling no-values emerged as the most critical and challenging aspect of model development, particularly in MODIS ET data with spatial gaps over lakes and wetlands and temporal gaps due to clouds, aerosol, and shadow, creating substantial obstacles for model training and validation. Initial strategies, such as masking or excluding these values, proved ineffective, leading to significant degradation in model performance. We determined that small negative placeholders (e.g., -1e-6) worked best for distinguishing no-values from valid zeros. We masked all lakes from feature channels to ensure that no-value regions in the target data are reflected on feature channels. Moreover, further efforts were needed to address missing values due to clouds, shadows, and aerosol. For this purpose, we filled them out using the median ET of the corresponding time steps, or for batches with no all-value that might happen for one or two consecutive time steps, we used the average for the previous and next months. Although imperfect, these adjustments ensured that missing values in the dataset were appropriately handled to achieve a smooth training process without gradient explosion or overfitting.  
+4.. Model Architecture and Training Adjustments
+Our experiments revealed that a few specific architectural modifications significantly influenced the model’s performance. Removing batch normalization layers from convolutional blocks improved training stability and reduced memory usage, as excessive regularization led to instability in both the training and validation phases. However, retaining batch normalization in squeeze-and-excitation (SE) blocks preserved necessary scaling effects without adding complexity.
+Incorporating an activation function (e.g., Sigmoid, ReLU, LeakyReLu) in the final convolutional layer proved optional. The sigmoid activation can constrain the model’s output to the range [0, 1], aligning with the scaled target distribution and preventing gradient explosion during training. However, once the model structure achieved an optimized state, we observed that no activation was needed, and the model could perfectly match the ground truth distribution. 
+The CNN-Transformer architecture evolved through nine distinct versions (V1–V9), each refining spatial-temporal modeling capabilities. Early versions (V1–V4) laid the foundation with CNN-based spatial feature extraction, trying different Transformer encoders and position encoding like Cosine and Fourier. We eventually retained the Temporal head position encoding that encodes/decodes each time step independently. We also found no significant difference between Cosine and Fourier position encoding, but we retained Fourier position encoding with slightly better performance. In midway versions (V5–V7), we introduced innovations in the decoder, including sub-pixel, dilated and deformable convolutions, edge-preserving filters, boundary attention, and attention-based skip connections to improve spatial reconstruction and feature integration. Several features, such as dilated convolution and edge-preserving filters, were eventually dropped out, culminating in V8.
+4.. Optimization Strategies
+We identified learning rate selection as critical for achieving optimal performance. Rates around 1e-5 to 1e-4 with a CosineLearningLR scheduler and 10% of total training as a warmup period were the best strategy to achieve stable training. However, the early stopping and total number of training epochs could be adjusted between 200 and 1000 epochs with a maximum of 50 steps with no significant change for early stopping. We found 64x64 provided the best balance between computational efficiency and spatial coverage for batch sizes, outperforming larger sizes like 128x128. Additionally, training on more batches with two gradient accumulation steps (160 time steps per update) improved model predictions compared to longer accumulation periods. However, the gradient accumulation steps must have been adjusted based on the observed gradient norm during training, and total training steps must be considered to avoid saturating the optimization. 
+
+
+
+
+
+4.5. Computational resources
+We performed the computational processes of this work on two computer servers, one with Ubuntu Jimmy Jellyfish OS and 2x AMD EPYC 9454 (256 logical processors) and the second server with Red Hat Enterprise Linux (RHEL 9) OS and 2x Intel Xeon Platinum 8568Y+ 5th Gen (196 logical processors) and 4x NVIDIA L40S PCIe. 
+The computational time consumed by the CNN transformer varies depending on the data size and type of GPU devices. For the presented work, each epoch of training during the model takes 90 seconds, with 28 batches in each step, filling the 44 GB of a single GPU.
+The computational time for SWAT+ models  depending on the number of HRUs and landscape units. Figure S6 shows the SWAT+ models’ computational time concerning the number of HRUs and landscape units. The overall time taken to calibrate SWAT+ models was 16 days with 200 CPU cores and 400 GB RAM. 
+5. Conclusion
+This study demonstrates the potential of integrating physically based hydrological models like SWAT+ with advanced deep learning architectures (CNN-Transformers and Inception-LSTM) for high-resolution spatiotemporal predictions of hydrological processes, including evapotranspiration and groundwater recharge. The results showed the CNN-Transformer architecture effectively captured spatial-temporal patterns in evapotranspiration data, achieving high-performance metrics with well-aligned predictions and minimal residual errors despite variability in edge regions and urban areas. Groundwater recharge prediction poses unique challenges due to its localized, discontinuous nature and dependency on diverse factors like land use, soil type, and calibration parameters, which deep learning models struggle to generalize without additional feature inclusion. 
+References:
+Abbaspour, K.C., 2022. The fallacy in the use of the “best-fit” solution in hydrologic modeling. Science of the total environment 802, 149713.
+Adombi, A.V.D.P., Chesnaux, R., Boucher, M.-A., 2022. Comparing numerical modelling, traditional machine learning and theory-guided machine learning in inverse modeling of groundwater dynamics: A first study case application. Journal of Hydrology 615, 128600.
+Alattar, M.H., Troy, T.J., Russo, T.A., Boyce, S.E., 2020. Modeling the surface water and groundwater budgets of the US using MODFLOW-OWHM. Advances in Water Resources 143. https://doi.org/10.1016/j.advwatres.2020.103682
+Arnold, J.G., Muttiah, R.S., Srinivasan, R., Allen, P.M., 2000. Regional estimation of base flow and groundwater recharge in the Upper Mississippi river basin. Journal of Hydrology 227, 21–40. https://doi.org/10.1016/S0022-1694(99)00139-0
+Bailey, R.T., Bieger, K., Arnold, J.G., Bosch, D.D., 2020. A new physically-based spatially-distributed groundwater flow module for SWAT+. Hydrology 7, 75.
+Barrett, A.P., 2003. National operational hydrologic remote sensing center snow data assimilation system (SNODAS) products at NSIDC. National Snow and Ice Data Center, Cooperative Institute for Research in ….
+Bennett, A., Tran, H., De la Fuente, L., Triplett, A., Ma, Y., Melchior, P., Maxwell, R.M., Condon, L.E., 2024. Spatio‐temporal machine learning for regional to continental scale terrestrial hydrology. Journal of Advances in Modeling Earth Systems 16, e2023MS004095.
+Buto, S.G., Anderson, R.D., 2020. NHDPlus high resolution (NHDPlus HR)---A hydrography framework for the nation (No. 2327–6932). US Geological Survey.
+Camps-Valls, G., Tuia, D., Zhu, X.X., Reichstein, M., 2021. Deep learning for the Earth Sciences: A comprehensive approach to remote sensing, climate science and geosciences. John Wiley & Sons.
+Costa, D., Zhang, H., Levison, J., 2021. Impacts of climate change on groundwater in the Great Lakes Basin: A review. Journal of Great Lakes Research 47, 1613–1625.
+De Vries, J.J., Simmers, I., 2002. Groundwater recharge: an overview of processes and challenges. Hydrogeology journal 10, 5–17.
+Dewald, T., 2017. Making the Digital Water Flow: The Evolution of Geospatial Surface Water Frameworks. USEPA Office of Water: Washington, DC, USA.
+Dosovitskiy, A., 2020. An image is worth 16x16 words: Transformers for image recognition at scale. arXiv preprint arXiv:2010.11929.
+Elgendy, M., 2020. Deep learning for vision systems. Simon and Schuster.
+Homer, C., Dewitz, J., Jin, S., Xian, G., Costello, C., Danielson, P., Gass, L., Funk, M., Wickham, J., Stehman, S., 2020. Conterminous United States land cover change patterns 2001–2016 from the 2016 national land cover database. ISPRS Journal of Photogrammetry and Remote Sensing 162, 184–199.
+Jamil, S., Jalil Piran, M., Kwon, O.-J., 2023. A comprehensive survey of transformers for computer vision. Drones 7, 287.
+Khan, A., Rauf, Z., Sohail, A., Khan, A.R., Asif, H., Asif, A., Farooq, U., 2023. A survey of the vision transformers and their CNN-transformer based variants. Artificial Intelligence Review 56, 2917–2970.
+Li, Y., Lian, G., Zhang, W., Ma, G., Ren, J., Yang, J., 2022. Heterogeneous feature-aware Transformer-CNN coupling network for person re-identification. PeerJ Computer Science 8, e1098.
+Loshchilov, I., 2017. Decoupled weight decay regularization. arXiv preprint arXiv:1711.05101.
+Moore, R.B., McKay, L.D., Rea, A.H., Bondelid, T.R., Price, C.V., Dewald, T.G., Johnston, C.M., 2019. User’s guide for the national hydrography dataset plus (NHDPlus) high resolution (No. 2331–1258). US Geological Survey.
+Mosase, E., Ahiablame, L., Park, S., Bailey, R., 2019. Modelling potential groundwater recharge in the Limpopo River Basin with SWAT-MODFLOW. Groundwater for sustainable development 9, 100260.
+Nie, X., Chen, X., Jin, H., Zhu, Z., Yan, Y., Qi, D., 2024. Triplet attention transformer for spatiotemporal predictive learning. Presented at the Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision, pp. 7036–7045.
+Pourghasemi, H.R., Sadhasivam, N., Yousefi, S., Tavangar, S., Nazarlou, H.G., Santosh, M., 2020. Using machine learning algorithms to map the groundwater recharge potential zones. Journal of Environmental Management 265, 110525.
+PRISM Climate Group, 2014.
+Rafiei, V., Nejadhashemi, A.P., 2023. Watershed scale PFAS fate and transport model for source identification and management implications. Water Research 240, 120073.
+Rafiei, V., Nejadhashemi, A.P., Mushtaq, S., Bailey, R.T., An-Vo, D.-A., 2022. An improved calibration technique to address high dimensionality and non-linearity in integrated groundwater and surface water models. Environmental Modelling & Software 149, 105312. https://doi.org/10.1016/j.envsoft.2022.105312
+Regan, R.S., Markstrom, S.L., Hay, L.E., Viger, R.J., Norton, P.A., Driscoll, J.M., LaFontaine, J.H., 2018. Description of the national hydrologic model for use with the precipitation-runoff modeling system (prms) (No. 2328–7055). US Geological Survey.
+Ryan, K.C., Opperman, T.S., 2013. LANDFIRE - A national vegetation/fuels data base for use in fuels treatment, restoration, and suppression planning. Forest Ecology and Management 294, 208–216. https://doi.org/10.1016/j.foreco.2012.11.003
+Sengupta, M., Xie, Y., Lopez, A., Habte, A., Maclaurin, G., Shelby, J., 2018. The national solar radiation data base (NSRDB). Renewable and sustainable energy reviews 89, 51–60.
+Steinman, A.D., Uzarski, D.G., Lusch, D.P., Miller, C., Doran, P., Zimnicki, T., Chu, P., Allan, J., Asher, J., Bratton, J., 2022. Groundwater in crisis? Addressing groundwater challenges in Michigan (USA) as a template for the Great Lakes. Sustainability 14, 3008.
+Vaswani, A., 2017. Attention is all you need. Advances in Neural Information Processing Systems.
+White, M.J., Arnold, J.G., Bieger, K., Allen, P.M., Gao, J., Čerkasova, N., Gambone, M., Park, S., Bosch, D.D., Yen, H., 2022. Development of a field scale SWAT+ modeling framework for the contiguous US. JAWRA Journal of the American Water Resources Association 58, 1545–1560.
+Yang, C., Tijerina-Kreuzer, D., Tran, H., Condon, L., Maxwell, R., 2023. A high-resolution, 3D groundwater-surface water simulation of the contiguous US: Advances in the integrated ParFlow CONUS 2.0 modeling platform.
+Yifru, B.A., Chung, I.-M., Kim, M.-G., Chang, S.W., 2020. Assessment of groundwater recharge in agro-urban watersheds using integrated SWAT-MODFLOW model. Sustainability 12, 6593.
+Zhang, W., Tan, Z., Lv, Q., Li, J., Zhu, B., Liu, Y., 2024. An Efficient Hybrid CNN-Transformer Approach for Remote Sensing Super-Resolution. Remote Sensing 16, 880.
+Zhuang, J., Tang, T., Ding, Y., Tatikonda, S.C., Dvornek, N., Papademetris, X., Duncan, J., 2020. Adabelief optimizer: Adapting stepsizes by the belief in observed gradients. Advances in neural information processing systems 33, 18795–18806.
+
+Supplementary Material
+S1. SWAT+ Hydrographical Model Construction Using NHDPlus HR
+This document outlines the methodology for constructing predefined SWAT+ models based on the NHDPlus High-Resolution (HR) database.
+S1.1. Data Preparation and Import
+The primary hydrographical data were extracted from the NHDPlus database for the Vector Processing Units (VPUIDs) of 405, 406, 407, 408, 409, and 410 covering the entire Michigan lower Peninsula.
+WBDHU8 and WBDHU12 represent the basin or subbasin boundary depending on the scale of interest.
+NHDFlowline: representing streamlines.
+NHDPlusCatchment: representing the drainage area of a streamline.
+NHDWaterbody: Representing reservoirs, lakes, wetlands, and playa.
+NHDPlusFlowlineVAA: Value-Added Attribute table for streams and catchments characteristics. The following attribute values were used to prepare the SWAT+ predefined watershed.
+VPUID: Identifier for Vector Processing Unit (equivalent to HUC4)
+NHDPlusID: Common key among NHDPlusFlowlines, NHDPlusCatchment, and NHDPlusVAA.
+StreamOrder: The stream order is based on the Strahler method.
+UpHydroSeq: The hydrological sequence number for the upstream.
+HydroSeq: The hydrological sequence number for the flowline.
+DnHydroSeq: The hydrological sequence number for the downstream.
+StartFlag: Flag indicating if the flowline is a headwater.
+TerminalFl: Flag indicating if the flowline is a terminal point (outlet).
+Divergence: Indicates if a flowline diverges into multiple downstream paths.
+Permanent_Identifier: A permanent identifier for each flowline.
+WBArea_Permanent_Identifier: Identifier for the associated water body area.
+MaxElevSmo: Smoothed maximum elevation of the flowline.
+MinElevSmo: Smoothed minimum elevation of the flowline.
+AreaSqKm: Drainage area in square kilometers.
+LengthKM: Original length of the flowline in kilometers (later converted to meters).
+TotDASqKm: Total drainage area in square kilometers.
+S1.2. General preprocessing:
+CRS: The geometries were projected to the UTM Zone of the respective VPUID.
+Removing Second Divergence: Streams with a divergence code of 2 were eliminated, and their corresponding drainage area was merged to their downstream.
+Data Consistency Check: We excluded flowlines that did not have corresponding drainage areas.
+Coastal Line Removal: Flowlines designated as coastal lines were removed from the dataset.
+Isolated Streams: Basins without upstream or downstream hydro sequence but with identifiable streams in NHDPlusCatchment were considered standalone subbasins with outlets.
+Length Unit Conversion: The lengths of the streams, originally in kilometers, were converted to meters.
+Drop Calculation: SWAT+ requires drop, representing the difference between a flowline’s maximum and minimum elevation. We calculate the drop for each stream based on the MaxElevSmo and MinElevSmo features in NHDPlus HR.
+Reset Flags: The Start and Terminal flags were reset based on the above revision.
+Identifying Hydrologic Unit Codes (HUC): The catchment centroids were spatially joined with the HUC shapefiles. The process is carried out separately for HUC8 and HUC12 levels.
+
+S1.4. Configuring NHDPlus Data Based on SWAT+ Hydrographical Logic: The One-Outlet Rule
+SWAT model has a one-outlet rule that requires each subbasin to have only one stream flowing into one downstream subbasin. However, HUC12 boundaries, when used along with NHDPlus HR, often need to adhere to this rule, leading to subbasins with multiple outlets. Several conditions that violate this rule include 1-isolated subbasins within a HUC12, 2- the confluence of two streams draining into a downstream subbasin, and 3- a normal condition when a subbasin has different outlets leading to two or more downstream subbasins.
+A systematic search is implemented to identify the number of outlets in subbasins to enforce the one-outlet rule. An outlet is where a stream exits a subbasin, either entering another subbasin or leaving the hydrological domain. In cases where a subbasin has more than one outlet, we perform a recursive function to trace all upstream segments for each outlet. These segments for each outlet subsequently form new subbasins, splitting the initial multi-outlet subbasins into multiple single-outlet subbasins. This process involves iterative checks to ensure all subbasins adhere to the one-outlet criterion.
+S1.5. Defining Flowline-Waterbody Connections
+To incorporate waterbodies into the hydrograph of the SWAT model, it is essential to identify lake inlet and outlet segments within flowlines. This includes the following steps:
+- Stream Classification: Based on their NHDPlus Ftype feature of waterbodies, we categorize streams into four types: lakes, reservoirs, wetlands, and playas.
+- Area Threshold: Waterbodies can be excluded based on the threshold area. We retrained all waterbodies.
+- Lake Identification (LakeId): To identify LakeId in flowlines, flowline data is merged with waterbody datasets, aligning the ‘Permanent_Identifier’ from waterbodies with the ‘WBArea_Permanent_Identifier’ in flowlines. Flowlines associated with lakes are initially considered as LakeWithin.
+- Lake Inlets (LakeIn): LakeIn segments are identified by traversing from headwater to outlet. Segments draining into a lake (indicated by a downstream LakeId) are named LakeIn.
+- Updating LakeWithin: All segments within a lake’s boundary are initially classified as LakeWithin. This classification is updated as outflow segments (LakeOut) are identified.
+- Lake Outlets (LakeOut): Any LakeWithin without having LakeId in downstream hydrosequence.
+- Main Lake Outlet (LakeMain): LakeMain is determined based on stream order, selecting the segment with the highest order in each lake as the primary outflow channel. This might cause an issue, but we could not find a better solution, as this is the limitation of SWAT+: each lake has only one outlet.
+- Special Cases Handling: When creating SWAT+ lakes from NHDPlus data, certain exceptional cases are addressed. For instance, adjacent lakes in NHDPlus data with different permanent IDs merge to share the same LakeId, or if a lake’s outlet coincides with the watershed’s outlet, the last LakeWithin segment before the outlet is specifically designated as the LakeOut.
+S1.6 Quality assurance check:
+- Single Association for Streams and Catchments: Confirmed that each stream is associated with only one catchment and vice versa.
+- Unique Subbasin Association: Verified that each catchment or stream is associated with only one subbasin.
+- Lake Outlet Requirement: Ensured every lake has at least one outlet.
+- Avoidance of Circular Hydrographs: Checked for and eliminated any divergence that could cause circular hydrographs.
+- Single Outlet per Subbasin: Ensure each subbasin has only one outlet.
+- ID Initialization: Ensured that channel and Lake IDs start from 1.
+
+S2. SWAT+ model characteristics established for Michigan LP
+
+Figure S1. SWAT+ models’ size and number of HRUs prepared for this study
+ 
+Figure S2. Distribution of landuse in 58 SWAT+ models prepared for this study.
+
+
+
+Table S1. Distribution of Land Use Types across the Michigan Lower Peninsula based on NLCD. 
+
+S3. Groundwater static data generation and evaluation
+We acquired groundwater data from Wellogic, which is an Internet-based data entry program developed by the State of Michigan that provides an easy method for water well drilling contractors to submit water well records. The groundwater dataset comprises over 600,000 unique well records, including lithological data such as aquifer thickness, hydraulic conductivity, static water level, and transmissivity. We rasterize the data for each variable into 30m and 250m resolution. We have provided the following statistical measures for each variable: number of observations, minimum, 2.5th percentile, mean, median, standard deviation, 97.5th percentile, and maximum. Additionally, we have conducted several non-parametric normality tests (Shapiro-Wilk, Kolmogorov-Smirnov, Anderson-Darling, and Lilliefors) to evaluate whether the data follows a normal distribution.
+S3.1. Variables and Their Statistics
+Aquifer Thickness (AQ_THK)
+AQ_THK_1_250m: Aquifer thickness at 250m resolution.
+AQ_THK_1_30m: Aquifer thickness at 30m resolution.
+AQ_THK_2_250m: Aquifer thickness at 250m resolution (second observation set).
+AQ_THK_2_30m: Aquifer thickness at 30m resolution (second observation set).
+Hydraulic Conductivity (H_COND)
+H_COND_1_250m: Hydraulic conductivity at 250m resolution.
+H_COND_1_30m: Hydraulic conductivity at 30m resolution.
+H_COND_2_250m: Hydraulic conductivity at 250m resolution (second observation set).
+H_COND_2_30m: Hydraulic conductivity at 30m resolution (second observation set).
+Static Water Level (SWL)
+SWL_250m: Static water level at 250m resolution.
+SWL_30m: Static water level at 30m resolution.
+Transmissivity (TRANSMSV)
+TRANSMSV_1_250m: Transmissivity at 250m resolution.
+TRANSMSV_1_30m: Transmissivity at 30m resolution.
+TRANSMSV_2_250m: Transmissivity at 250m resolution (second observation set).
+TRANSMSV_2_30m: Transmissivity at 30m resolution (second observation set).
+Vertical Conductivity (V_COND)
+V_COND_1_250m: Vertical conductivity at 250m resolution.
+V_COND_1_30m: Vertical conductivity at 30m resolution.
+V_COND_2_250m: Vertical conductivity at 250m resolution (second observation set).
+V_COND_2_30m: Vertical conductivity at 30m resolution (second observation set).
+S3.2. Statistical Summary
+Table S2 lists the statistics and the results of the normality tests for each groundwater variable. In all cases presented here, the normality tests indicate that the data does not follow a normal distribution. This is not unusual for large environmental datasets, which often exhibit skewness, kurtosis, or other deviations from normality due to natural variability and measurement processes.
+Table S2: statics of groundwater data
+
+S2.3. Overview of Groundwater Station Data Analysis
+Figure S3 presents a series of Quantile-Quantile (Q-Q) plots for groundwater transmissivity and aquifer depth, each aiming to assess the normality of the data distribution for the respective parameter. Each subplot features a histogram with a Kernel Density Estimate (KDE) in blue, overlaid on the primary Y-axis, which represents the data density. This offers an initial visualization of the data distribution for quick assessment. On the secondary Y-axis, red dots represent “Sample Quantiles,” which are the sorted observed values of the parameter being examined. These are plotted against the theoretical quantiles of a standard normal distribution, calculated based on the mean and standard deviation of the observed data. The closer these points lie along a 1:1 line, the more the data adheres to a normal distribution.
+
+Figure S3: Quantile-Quantile (Q-Q) Plots for Groundwater Hydraulic Parameters. Each subplot displays a histogram with a Kernel Density Estimate (KDE) in blue on the primary Y-axis, serving as a quick visual assessment of data distribution for a specific parameter. The red dots on the secondary Y-axis represent the Sample Quantiles—sorted observed values—plotted against theoretical quantiles from a standard normal distribution. 
+
+S3.4. Empirical Bayesian Kriging
+Empirical Bayesian Kriging (EBK) is a robust geostatistical interpolation method employed in this study to interpolate observed groundwater hydraulic properties spatially. Unlike traditional kriging methods, which rely on a single variogram model, EBK uses an ensemble of semi-variogram models. This ensemble approach allows EBK to capture better groundwater data’s spatial variability, continuity, and uncertainty. 
+S3.4.1. EBK model parameters setting:
+Cell Size: The resolution of the output raster is set to 250 meters.
+Transformation Type: The “EMPIRICAL” transformation stabilizes variance across the dataset.
+Maximum Local Points: Up to 250 neighboring points are considered for each estimation, balancing computational efficiency and spatial accuracy.
+Overlap Factor: An overlap factor of 2 ensures smooth transitions between local models.
+Number of semi-variograms: To capture the spatial variability within the dataset, 150 semi-variogram models are generated.
+Semi-variogram Model Type: The “EXPONENTIAL” model is selected because it is suitable for representing the spatial correlation structure of groundwater data.
+
+S3.5. MODFLOW and groundwater modeling
+Using the above-generated data and the Flopy library, we created MODFLOW models corresponding to the 58 SWAT+ models presented in this study. Figure S4 shows the NSE, RMSE, and PBIAS errors of the 58 MODFLOW models generated corresponding to the SWAT+ model watersheds. Accordingly, the median RMSE error in the simulated vs. observed heads is 8m, and the NSE is skewed to 1 with -3% PBIAS. The metrics show the excellent performance of MODFLOW models for static simulation using the data generated by EBK. 
+
+Figure S4. MODFLOW model performance metrics. The MODFLOW models are based on the data generated by EBK and 650,000 water wells.
+S4. Data Sources
+Table S3: Data sources used in this study.
+
+
+S4.1. National Hydrographical Dataset High-Resolution
+The NHD has undergone significant evolution, driven by advances in geospatial technology and increasing data resolution requirements. Here is a summary of its development based on (Dewald, 2017):
+Initial Development:
+Reach File Version 1 (RF1): Developed in the late 1970s by Robert C. Horn of the EPA’s Office of Water, RF1 utilized USGS topographic maps and NOAA enhancements to create a 1:500,000-scale digital stream network. It included stream names, addressing systems, catchments, and streamflow estimates.
+Reach File Version 3 (RF3): The RF3, developed in the early 1990s, provided a more detailed 1:100,000-scale network, integrating RF3 stream attributes with USGS Digital Line Graph hydrography.
+Medium Resolution NHD:
+NHD: The integration of RF3 and USGS hydrography resulted in the 1:100,000-scale National Hydrography Dataset (NHD), designed for maintainability and broader application through GIS technology. Production began in 1997 and was completed by 2000.
+NHDPlus Versions 1 and 2: NHDPlus was developed to enhance the medium-resolution NHD with additional attributes like streamflow estimates and catchments, based on hydrologically conditioned elevation data (30m). NHDPlusV2, released in 2012, included significant updates and additional features.
+High-Resolution NHD:
+NHDPlus HR: In 2015, the NHDPlus High Resolution (HR) aimed to deliver a 1:24,000-scale or better hydrography network. It uses high-resolution NHD data, 10m elevation data, and Watershed Boundary Dataset (WBD) boundaries. This high-resolution dataset is over 20 times larger than the medium-resolution NHD.
+Future Developments:
+Lidar-Based NHD: The next generation of NHD is expected to leverage lidar technology, achieving resolutions of 1:5,000 or better. This will provide even more detailed and accurate hydrography data, supporting a wide range of water quality and quantity modeling applications.
+This progression illustrates geospatial surface water frameworks’ increasing precision and utility, moving from the initial 1:500,000-scale RF1 to the anticipated lidar-based 1:5,000-scale datasets. 
+
+S5. Calibration parameters list
+
+Table S4. SWAT+ parameters for calibration and validation.
+
+
+S6. SWAT+gwflow simulation time
+
+Figure S6. Computational time (in minutes) for different SWAT+gwflow models with respect to the watershed size, number of identifiable channels and number of HRUs
+
+
+S7. 
+
+
+
+
+
+
+S7.1. 
+
+
+
+
+
+
+
+
+
+
+
+
+Inception LSTM performance for groundwater recharge prediction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

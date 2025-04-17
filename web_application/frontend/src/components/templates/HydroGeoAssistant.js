@@ -6,9 +6,6 @@ import {
   faInfo,
   faQuestionCircle,
   faCog,
-  faCheckCircle,
-  faExclamationTriangle,
-  faSpinner,
   faChevronDown,
   faChevronUp,
 } from '@fortawesome/free-solid-svg-icons';
@@ -23,7 +20,6 @@ import {
   MessageList,
   ChatInputContainer,
   ThinkingIndicator,
-  InputField,
   FormGroup,
 } from '../../styles/HydroGeoDataset.tsx';
 
@@ -31,35 +27,23 @@ const HydroGeoAssistant = () => {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gpt-4o');
-  const [agnoStatus, setAgnoStatus] = useState({ connected: false, error: null });
+  //const [selectedModel] = useState('llama3:latest');
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [samplesExpanded, setSamplesExpanded] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const initializedRef = useRef(false);
 
-  // Models available for selection
-  const availableModels = [
-    { id: 'gpt-4o', name: 'GPT-4o (OpenAI)', provider: 'OpenAI' },
-    { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Google)', provider: 'Google', disabled: true },
-    { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro (Google)', provider: 'Google', disabled: true },
-    { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet (Future)', provider: 'Anthropic', disabled: true },
-  ];
-
-  // Memoize the initializeAgent function to prevent infinite loops
   const initializeAgent = useCallback(async () => {
     try {
       setIsLoading(true);
-      setAgnoStatus({ connected: false, error: null });
 
-      // Don't reset chat history if we're just checking connection
       if (!sessionId) {
         setChatHistory([
           {
             type: 'bot',
             content:
-              "Hello! I'm the HydroGeo Assistant powered by Agno and GPT-4o. I can help you understand environmental and hydrological data. What would you like to know?",
+              "Hello! I'm the HydroGeo Assistant powered by Ollama. I can help you understand environmental and hydrological data. What would you like to know?",
           },
         ]);
       }
@@ -70,74 +54,64 @@ const HydroGeoAssistant = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             context: 'hydrogeo_dataset',
-            model: 'gpt-4o',
-            use_agno: true,
-            session_id: sessionId
+            model: 'llama3:latest',
+            session_id: sessionId,
           }),
         });
 
         if (response.ok) {
           const data = await response.json();
-          
-          // Only update chat history if it's a new session or we have a welcome message
+
           if (!sessionId || data.welcome_message) {
             setChatHistory([
               {
                 type: 'bot',
                 content:
                   data.welcome_message ||
-                  "Hello! I'm the HydroGeo Assistant powered by Agno and GPT-4o. I can help you understand environmental and hydrological data. What would you like to know?",
+                  "Hello! I'm the HydroGeo Assistant powered by Ollama. I can help you understand environmental and hydrological data. What would you like to know?",
               },
             ]);
           }
-          
-          // Save the session ID
+
           if (data.session_id) {
             setSessionId(data.session_id);
           }
-          
-          setAgnoStatus({ connected: true, error: null });
         } else {
           console.warn('Server returned non-OK status for chatbot initialization');
-          setAgnoStatus({ connected: false, error: 'Connection failed' });
         }
       } catch (error) {
         console.error('Error initializing chatbot:', error);
-        setAgnoStatus({ connected: false, error: error.message });
       }
     } finally {
       setIsLoading(false);
     }
-  }, [selectedModel, sessionId]);
+  }, [sessionId]);
 
   useEffect(() => {
-    // Only initialize once when component mounts
     if (!initializedRef.current) {
       initializeAgent();
       initializedRef.current = true;
     }
   }, [initializeAgent]);
-  
-  // Only reinitialize when the model actually changes
+
   useEffect(() => {
     if (initializedRef.current && sessionId) {
       initializeAgent();
     }
-  }, [selectedModel, initializeAgent, sessionId]);
+  }, [initializeAgent, sessionId]);
 
   const handleChatSubmit = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
 
-    // Add user message to chat history
     const userMessage = { type: 'user', content: message };
     setChatHistory((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
     const currentMessage = message;
-    setMessage(''); // Clear input field immediately after submission
+    setMessage('');
 
     try {
       const response = await fetch('/api/chatbot', {
@@ -148,9 +122,8 @@ const HydroGeoAssistant = () => {
         body: JSON.stringify({
           message: currentMessage,
           context: 'hydrogeo_dataset',
-          model: 'gpt-4o',
-          use_agno: true,
-          session_id: sessionId
+          model: 'llama3:latest',
+          session_id: sessionId,
         }),
       });
 
@@ -158,15 +131,12 @@ const HydroGeoAssistant = () => {
       if (response.ok) {
         const data = await response.json();
         botResponse = data.response;
-        setAgnoStatus({ connected: true, error: null });
       } else {
         console.error('Error response from server:', response.status);
         botResponse =
           'Sorry, I encountered an error while processing your request. Please try again.';
-        setAgnoStatus({ connected: false, error: 'Request failed' });
       }
 
-      // Add chatbot response to chat history
       setChatHistory((prev) => [...prev, { type: 'bot', content: botResponse }]);
     } catch (error) {
       console.error('Error sending message to chatbot:', error);
@@ -178,211 +148,190 @@ const HydroGeoAssistant = () => {
             'Sorry, there was an error connecting to the assistant. Please check your network connection and try again.',
         },
       ]);
-      setAgnoStatus({ connected: false, error: error.message });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleModelChange = (e) => {
-    // Model change is disabled as we're always using gpt-4o
-    return;
-  };
-
-  // Helper function to determine if a message might contain markdown
   const containsMarkdown = (content) => {
     const markdownPatterns = [
-      /\*\*(.*?)\*\*/g,  // Bold
-      /\*(.*?)\*/g,      // Italic
-      /```([\s\S]*?)```/g, // Code blocks
-      /`([^`]+)`/g,      // Inline code
-      /\[(.*?)\]\((.*?)\)/g, // Links
-      /#{1,6}\s.+/g,     // Headers
-      /(-|\*|\+)\s.+/g,  // Lists
-      /\n\n/g            // Paragraphs
+      /\*\*(.*?)\*\*/g,
+      /\*(.*?)\*/g,
+      /```([\s\S]*?)```/g,
+      /`([^`]+)`/g,
+      /\[(.*?)\]\((.*?)\)/g,
+      /#{1,6}\s.+/g,
+      /(-|\*|\+)\s.+/g,
+      /\n\n/g,
     ];
-    
-    return markdownPatterns.some(pattern => pattern.test(content));
+
+    return markdownPatterns.some((pattern) => pattern.test(content));
   };
 
-  // Helper to render message content with basic markdown support
   const renderMessageContent = (content) => {
     if (!containsMarkdown(content)) {
       return <span>{content}</span>;
     }
 
-    // Process markdown-like patterns
     let formattedContent = content;
-    
-    // Convert code blocks
+
     formattedContent = formattedContent.replace(/```([\s\S]*?)```/g, (match, code) => {
       return `<pre style="background-color:#2d2d2d; padding:1rem; border-radius:5px; overflow-x:auto; color:#e6e6e6;">${code}</pre>`;
     });
-    
-    // Convert inline code
-    formattedContent = formattedContent.replace(/`([^`]+)`/g, '<code style="background-color:#2d2d2d; padding:0.2rem; border-radius:3px; color:#e6e6e6;">$1</code>');
-    
-    // Convert bold
+
+    formattedContent = formattedContent.replace(
+      /`([^`]+)`/g,
+      '<code style="background-color:#2d2d2d; padding:0.2rem; border-radius:3px; color:#e6e6e6;">$1</code>',
+    );
+
     formattedContent = formattedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
-    // Convert italic
+
     formattedContent = formattedContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    // Convert links
-    formattedContent = formattedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color:#ff5722; text-decoration:underline;">$1</a>');
-    
-    // Convert headings
-    formattedContent = formattedContent.replace(/^# (.*?)$/gm, '<h1 style="font-size:1.5rem; margin:0.5rem 0;">$1</h1>');
-    formattedContent = formattedContent.replace(/^## (.*?)$/gm, '<h2 style="font-size:1.3rem; margin:0.5rem 0;">$1</h2>');
-    formattedContent = formattedContent.replace(/^### (.*?)$/gm, '<h3 style="font-size:1.1rem; margin:0.5rem 0;">$1</h3>');
-    
-    // Convert lists (simple)
+
+    formattedContent = formattedContent.replace(
+      /\[(.*?)\]\((.*?)\)/g,
+      '<a href="$2" target="_blank" style="color:#ff5722; text-decoration:underline;">$1</a>',
+    );
+
+    formattedContent = formattedContent.replace(
+      /^# (.*?)$/gm,
+      '<h1 style="font-size:1.5rem; margin:0.5rem 0;">$1</h1>',
+    );
+    formattedContent = formattedContent.replace(
+      /^## (.*?)$/gm,
+      '<h2 style="font-size:1.3rem; margin:0.5rem 0;">$1</h2>',
+    );
+    formattedContent = formattedContent.replace(
+      /^### (.*?)$/gm,
+      '<h3 style="font-size:1.1rem; margin:0.5rem 0;">$1</h3>',
+    );
+
     formattedContent = formattedContent.replace(/^- (.*?)$/gm, '• $1<br/>');
-    
-    // Convert paragraphs
+
     formattedContent = formattedContent.replace(/\n\n/g, '<br/><br/>');
     formattedContent = formattedContent.replace(/\n/g, '<br/>');
-    
+
     return <div dangerouslySetInnerHTML={{ __html: formattedContent }} />;
   };
 
-  // Helper to render collapsible section
   const CollapsibleSection = ({ title, icon, isExpanded, setExpanded, children }) => (
-    <div style={{ 
-      marginBottom: '0.5rem',
-      backgroundColor: '#2b2b2c',
-      borderRadius: '8px',
-      overflow: 'hidden',
-      border: '1px solid #3f3f45'
-    }}>
-      <div 
-        style={{ 
+    <div
+      style={{
+        marginBottom: '0.5rem',
+        backgroundColor: '#2b2b2c',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        border: '1px solid #3f3f45',
+      }}
+    >
+      <div
+        style={{
           padding: '0.7rem 1rem',
-          display: 'flex', 
+          display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           cursor: 'pointer',
           backgroundColor: '#333',
-          borderBottom: isExpanded ? '1px solid #3f3f45' : 'none'
+          borderBottom: isExpanded ? '1px solid #3f3f45' : 'none',
         }}
         onClick={() => setExpanded(!isExpanded)}
       >
-        <h3 style={{ margin: 0, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: '0.95rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+          }}
+        >
           <FontAwesomeIcon icon={icon} style={{ color: '#ff5722' }} />
           {title}
         </h3>
-        <FontAwesomeIcon 
-          icon={isExpanded ? faChevronUp : faChevronDown} 
+        <FontAwesomeIcon
+          icon={isExpanded ? faChevronUp : faChevronDown}
           style={{ fontSize: '0.8rem', color: '#999' }}
         />
       </div>
-      {isExpanded && (
-        <div style={{ padding: '0.8rem 1rem' }}>
-          {children}
-        </div>
-      )}
+      {isExpanded && <div style={{ padding: '0.8rem 1rem' }}>{children}</div>}
     </div>
   );
 
   return (
-    <HydroGeoContainer style={{ 
-      overflow: 'hidden',
-      backgroundColor: '#1c1c1e',
-      padding: 0,
-      minHeight: '100vh',
-      maxHeight: '100vh'
-    }}>
-      <HydroGeoHeader style={{ 
-        padding: '0.75rem', 
-        marginBottom: '0.75rem', 
-        flexShrink: 0,
-        minHeight: 'auto',
-        background: '#2b2b2c',
-        borderRadius: '10px',
-        margin: '10px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-      }}>
+    <HydroGeoContainer
+      style={{
+        overflow: 'hidden',
+        backgroundColor: '#1c1c1e',
+        padding: 0,
+        minHeight: '100vh',
+        maxHeight: '100vh',
+      }}
+    >
+      <HydroGeoHeader
+        style={{
+          padding: '0.75rem',
+          marginBottom: '0.75rem',
+          flexShrink: 0,
+          minHeight: 'auto',
+          background: '#2b2b2c',
+          borderRadius: '10px',
+          margin: '10px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        }}
+      >
         <h1 style={{ fontSize: '1.8rem', margin: 0 }}>
           <FontAwesomeIcon icon={faRobot} style={{ marginRight: '0.8rem', color: '#ff5722' }} />
           HydroGeo Assistant
-          <span style={{ 
-            fontSize: '0.7em', 
-            backgroundColor: '#4a5568', 
-            color: 'white', 
-            padding: '0.2rem 0.5rem', 
-            borderRadius: '0.5rem', 
-            marginLeft: '0.8rem', 
-            verticalAlign: 'middle' 
-          }}>
-            Powered by Agno
-          </span>
         </h1>
       </HydroGeoHeader>
 
-      <div style={{ 
-        display: 'flex', 
-        gap: '1.5rem', 
-        height: 'calc(100vh - 120px)',
-        maxHeight: 'calc(100vh - 120px)',
-        overflow: 'hidden',
-        padding: '0 10px 10px 10px'
-      }}>
-        {/* Sidebar with collapsible elements */}
-        <div style={{ 
-          width: '280px', 
-          overflowY: 'auto',
-          overflowX: 'hidden',
+      <div
+        style={{
           display: 'flex',
-          flexDirection: 'column',
-          gap: '0.5rem',
-          flexShrink: 0,
-          paddingRight: '0.5rem',
-          backgroundColor: '#2b2b2c',
-          borderRadius: '10px',
-          padding: '10px'
-        }}>
-          <CollapsibleSection 
-            title="About the Assistant" 
-            icon={faInfo} 
-            isExpanded={aboutExpanded} 
+          gap: '1.5rem',
+          height: 'calc(100vh - 120px)',
+          maxHeight: 'calc(100vh - 120px)',
+          overflow: 'hidden',
+          padding: '0 10px 10px 10px',
+        }}
+      >
+        <div
+          style={{
+            width: '280px',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+            flexShrink: 0,
+            paddingRight: '0.5rem',
+            backgroundColor: '#2b2b2c',
+            borderRadius: '10px',
+            padding: '10px',
+          }}
+        >
+          <CollapsibleSection
+            title="About the Assistant"
+            icon={faInfo}
+            isExpanded={aboutExpanded}
             setExpanded={setAboutExpanded}
           >
             <p style={{ fontSize: '0.85rem', color: '#c5c5c8', margin: 0 }}>
-              The HydroGeo Assistant is powered by <strong>Agno</strong> and <strong>GPT-4o</strong>, offering 
-              advanced AI capabilities for environmental data analysis. You can ask questions about data 
+              The HydroGeo Assistant is powered by <strong>Ollama</strong>, offering advanced AI
+              capabilities for environmental data analysis. You can ask questions about data
               sources, methodologies, analysis techniques, and more.
             </p>
-            
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              marginTop: '0.8rem', 
-              padding: '0.5rem', 
-              backgroundColor: agnoStatus.connected ? 'rgba(72, 187, 120, 0.1)' : 'rgba(229, 62, 62, 0.1)', 
-              borderRadius: '0.5rem',
-              fontSize: '0.8rem'
-            }}>
-              <FontAwesomeIcon 
-                icon={agnoStatus.connected ? faCheckCircle : agnoStatus.error ? faExclamationTriangle : faSpinner} 
-                style={{ 
-                  color: agnoStatus.connected ? '#48bb78' : '#e53e3e', 
-                  marginRight: '0.5rem',
-                  ...((!agnoStatus.connected && !agnoStatus.error) && { animation: 'spin 1s linear infinite' })
-                }} 
-              />
-              <span style={{ color: agnoStatus.connected ? '#2f855a' : '#c53030' }}>
-                {agnoStatus.connected ? 'Connected to Agno' : agnoStatus.error ? `Connection error: ${agnoStatus.error}` : 'Connecting to Agno...'}
-              </span>
-            </div>
           </CollapsibleSection>
 
-          <CollapsibleSection 
-            title="Sample Questions" 
-            icon={faQuestionCircle} 
-            isExpanded={samplesExpanded} 
+          <CollapsibleSection
+            title="Sample Questions"
+            icon={faQuestionCircle}
+            isExpanded={samplesExpanded}
             setExpanded={setSamplesExpanded}
           >
-            <ul style={{ color: '#c5c5c8', paddingLeft: '1.2rem', margin: '0', fontSize: '0.85rem' }}>
+            <ul
+              style={{ color: '#c5c5c8', paddingLeft: '1.2rem', margin: '0', fontSize: '0.85rem' }}
+            >
               <li>What climate data sources are available in the HydroGeo dataset?</li>
               <li>How can I interpret PRISM precipitation data?</li>
               <li>What is the difference between LOCA and CMIP climate projections?</li>
@@ -390,51 +339,57 @@ const HydroGeoAssistant = () => {
             </ul>
           </CollapsibleSection>
 
-          <CollapsibleSection 
-            title="Model Settings" 
-            icon={faCog} 
-            isExpanded={settingsExpanded} 
+          <CollapsibleSection
+            title="Model Settings"
+            icon={faCog}
+            isExpanded={settingsExpanded}
             setExpanded={setSettingsExpanded}
           >
             <FormGroup style={{ margin: 0 }}>
               <p style={{ fontSize: '0.85rem', color: '#c5c5c8', margin: 0 }}>
-                This assistant is powered by <strong>GPT-4o</strong>, OpenAI's most advanced model, to provide the highest quality responses for environmental data analysis.
+                This assistant is powered by <strong>Ollama</strong>, to provide the highest quality
+                responses for environmental data analysis.
               </p>
               <p style={{ fontSize: '0.8rem', color: '#9e9e9e', margin: '0.8rem 0 0 0' }}>
-                Currently using: <strong>GPT-4o</strong> by OpenAI
+                Currently using: <strong>llama3 & Llama3.2-Vision</strong> by Ollama
               </p>
             </FormGroup>
           </CollapsibleSection>
         </div>
 
-        {/* Main chat area - takes most of the screen */}
-        <ChatContainer style={{ 
-          flexGrow: 1, 
-          marginTop: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          maxHeight: '100%',
-          overflow: 'hidden',
-          backgroundColor: '#2b2b2c',
-          borderRadius: '10px'
-        }}>
-          <ChatHeader style={{ 
-            padding: '0.8rem',
-            flexShrink: 0
-          }}>
+        <ChatContainer
+          style={{
+            flexGrow: 1,
+            marginTop: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            maxHeight: '100%',
+            overflow: 'hidden',
+            backgroundColor: '#2b2b2c',
+            borderRadius: '10px',
+          }}
+        >
+          <ChatHeader
+            style={{
+              padding: '0.8rem',
+              flexShrink: 0,
+            }}
+          >
             <h2>
               <FontAwesomeIcon icon={faRobot} className="icon" />
               Chat with the Assistant
             </h2>
           </ChatHeader>
 
-          <ChatMessagesContainer style={{ 
-            flex: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            maxHeight: 'calc(100% - 75px)'
-          }}>
+          <ChatMessagesContainer
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              maxHeight: 'calc(100% - 75px)',
+            }}
+          >
             <MessageList>
               {chatHistory.map((chat, index) => (
                 <MessageBubble key={index} className={chat.type}>
@@ -451,10 +406,7 @@ const HydroGeoAssistant = () => {
             </MessageList>
           </ChatMessagesContainer>
 
-          <ChatInputContainer 
-            onSubmit={handleChatSubmit}
-            style={{ flexShrink: 0 }}
-          >
+          <ChatInputContainer onSubmit={handleChatSubmit} style={{ flexShrink: 0 }}>
             <input
               type="text"
               value={message}
@@ -472,4 +424,4 @@ const HydroGeoAssistant = () => {
   );
 };
 
-export default HydroGeoAssistant; 
+export default HydroGeoAssistant;

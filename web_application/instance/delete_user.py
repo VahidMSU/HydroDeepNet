@@ -1,7 +1,7 @@
 import sqlite3
 
 database = '/data/SWATGenXApp/codes/web_application/instance/site.db'
-username = "guest"
+username = "vahidr32"
 
 ##remove user from database
 
