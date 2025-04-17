@@ -119,7 +119,7 @@ def signup():
         current_app.logger.info(f"Verification email sent to {email}")
         
         # Create user directory structure
-        user_dir = os.path.join('/data/SWATGenXApp/Users', username)
+        user_dir = os.path.join(current_app.config['USER_PATH'], username)
         if not os.path.exists(user_dir):
             os.makedirs(user_dir, exist_ok=True)
             os.makedirs(os.path.join(user_dir, 'SWATplus_by_VPUID'), exist_ok=True)
@@ -288,7 +288,7 @@ def api_user_files():
     Supports navigation within subdirectories and provides download links.
     """
     current_app.logger.info("API User Files route called")
-    base_user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
+    base_user_dir = os.path.join(current_app.config['USER_PATH'], current_user.username, "SWATplus_by_VPUID")
     subdir = request.args.get('subdir', '')  # Get subdirectory from query params (default: root)
     target_dir = os.path.join(base_user_dir, subdir)
     current_app.logger.info(f"Listing contents for {current_user.username} in: {target_dir}")
@@ -338,7 +338,7 @@ def api_user_files():
 def download_user_file(filename):
     current_app.logger.info(f"download_user_file called with filename: {filename}")  # Log the filename
 
-    user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
+    user_dir = os.path.join(current_app.config['USER_PATH'], current_user.username, "SWATplus_by_VPUID")
     filename = filename.lstrip("/")
     full_path = os.path.join(user_dir, filename)
 
@@ -360,7 +360,7 @@ def download_directory(dirpath):
     """
     current_app.logger.info(f"download_directory called with dirpath: {dirpath}")
     
-    user_dir = os.path.join('/data/SWATGenXApp/Users', current_user.username, "SWATplus_by_VPUID")
+    user_dir = os.path.join(current_app.config['USER_PATH'], current_user.username, "SWATplus_by_VPUID")
     dirpath = dirpath.lstrip("/")
     full_dir_path = os.path.join(user_dir, dirpath)
     
@@ -483,10 +483,10 @@ def google_callback():
         current_app.logger.info(f"User {user.username} logged in with Google OAuth")
         
         # Create SFTP user if it doesn't exist
-        if not os.path.exists(f"/data/SWATGenXApp/Users/{user.username}"):
+        if not os.path.exists(f"{current_app.config['USER_PATH']}/{user.username}"):
             try:
                 # Create user directory structure
-                user_dir = os.path.join('/data/SWATGenXApp/Users', user.username)
+                user_dir = os.path.join(current_app.config['USER_PATH'], user.username)
                 os.makedirs(user_dir, exist_ok=True)
                 os.makedirs(os.path.join(user_dir, 'SWATplus_by_VPUID'), exist_ok=True)
                 os.makedirs(os.path.join(user_dir, 'Reports'), exist_ok=True)

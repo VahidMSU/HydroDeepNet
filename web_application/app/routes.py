@@ -1,5 +1,4 @@
-##/data/SWATGenXApp/codes/web_application/app/routes.py
-from flask import current_app, request, redirect
+from flask import request, redirect
 from app.extensions import csrf
 from app.utils import LoggerSetup
 import os

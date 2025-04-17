@@ -6,12 +6,17 @@ try:
     from app.utils import find_VPUID
 except:
     from utils import find_VPUID
+import pandas as pd
+from SWATGenX.SWATGenXConfigPars import SWATGenXPaths 
+
+USER_PATH = "/data/SWATGenXApp/Users/"
+
 
 # Model check functions (from model_checks.py)
 def check_model_completion(username, site_no, MODEL_NAME="SWAT_MODEL_Web_Application", LEVEL="huc12"):
     """Check if a SWAT model execution completed successfully."""
     VPUID = find_VPUID(site_no)
-    path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{site_no}/{MODEL_NAME}/Scenarios/Default/TxtInOut/simulation.out"
+    path = f"{USER_PATH}/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{site_no}/{MODEL_NAME}/Scenarios/Default/TxtInOut/simulation.out"
     
     if not os.path.exists(path):
         return False, "Model execution did not complete successfully"
@@ -25,7 +30,7 @@ def check_model_completion(username, site_no, MODEL_NAME="SWAT_MODEL_Web_Applica
 def check_qswat_model_files(username, site_no, MODEL_NAME="SWAT_MODEL_Web_Application", LEVEL="huc12"):
     """Check if QSWAT+ processing completed successfully by verifying required files."""
     VPUID = find_VPUID(site_no)
-    path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{site_no}/{MODEL_NAME}/Watershed/Shapes/"
+    path = f"{USER_PATH}/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{site_no}/{MODEL_NAME}/Watershed/Shapes/"
     required_files = ['subs1.shp', 'rivs1.shp', 'hrus1.shp', 'hrus2.shp', 'lsus1.shp', 'lsus2.shp']
     for file in required_files:
         if not os.path.exists(os.path.join(path, file)):
@@ -36,7 +41,7 @@ def check_qswat_model_files(username, site_no, MODEL_NAME="SWAT_MODEL_Web_Applic
 def check_meterological_data(username, site_no, MODEL_NAME="SWAT_MODEL_Web_Application", LEVEL="huc12"):
     """Check if all required meteorological data files exist."""
     VPUID = find_VPUID(site_no)
-    path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{site_no}/PRISM/"
+    path = f"{USER_PATH}/{username}/SWATplus_by_VPUID/{VPUID}/{LEVEL}/{site_no}/PRISM/"
     cli_files = os.listdir(path)
     cli_files = [x for x in cli_files if x.endswith(".cli")]
     missing_files = []
@@ -59,9 +64,7 @@ def check_meterological_data(username, site_no, MODEL_NAME="SWAT_MODEL_Web_Appli
 # MODFLOW coverage check (from check_MODFLOW_coverage.py)
 def MODFLOW_coverage(station_no):
     """Check if MODFLOW data is available for the given station (currently limited to Michigan LP)."""
-    import pandas as pd
-    sys.path.append('/data/SWATGenXApp/codes/SWATGenX')
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths  
+ 
 
     CONUS_streamflow_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={'site_no': str,'huc_cd': str})
     lat = CONUS_streamflow_data.loc[CONUS_streamflow_data['site_no'] == station_no, 'dec_lat_va'].values[0]

@@ -1,4 +1,3 @@
-## /data/SWATGenXApp/codes/web_application/app/__init__.py
 import sys
 import os
 from flask import Flask, abort, jsonify, request
@@ -23,7 +22,7 @@ def create_app(config_class=Config):  # Update function signature
     Creates and configures the Flask application.
     """
     # Set up logging
-    log_dir = "/data/SWATGenXApp/codes/web_application/logs"
+    log_dir = Config.LOG_PATH
     logger = LoggerSetup(log_dir, rewrite=False).setup_logger("FlaskApp")
     logger.info("Initializing Flask application")
 
@@ -31,7 +30,7 @@ def create_app(config_class=Config):  # Update function signature
     app = Flask(
         __name__,
         static_url_path='/static',
-        static_folder='/data/SWATGenXApp/GenXAppData',
+        static_folder=Config.BASE_PATH,
     )
 
     # Load configurations

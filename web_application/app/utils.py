@@ -15,8 +15,14 @@ import pandas as pd
 import logging
 from shapely.geometry import mapping
 from scipy.spatial import cKDTree
-from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 import traceback
+
+HYDROGEO_DATASET_PATH = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+NHD_VPUID_PATH = "/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus"
+CDL_LOOKUP_PATH = "/data/SWATGenXApp/GenXAppData/CDL/CDL_CODES.csv"
+LOG_PATH = "/data/SWATGenXApp/codes/web_application/logs/"
+BASE_PATH = "/data/SWATGenXApp/GenXAppData/"
+USER_PATH = "/data/SWATGenXApp/Users/"
 
 
 def check_existing_models(station_name,config):
@@ -171,20 +177,20 @@ class LoggerSetup:
         self.log(message, level="debug")
 
 
-def hydrogeo_dataset_dict(path="/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"):
+def hydrogeo_dataset_dict(path=HYDROGEO_DATASET_PATH):
     with h5py.File(path, 'r') as f:
         groups = f.keys()
         hydrogeo_dict = {group: list(f[group].keys()) for group in groups}
     return hydrogeo_dict
 
 def CDL_lookup(code):
-    path = "/data/SWATGenXApp/GenXAppData/CDL/CDL_CODES.csv"
+    path = CDL_LOOKUP_PATH
     df = pd.read_csv(path)
     df = df[df['CODE'] == code]
     return df.NAME.values[0]
 
 def read_h5_file(address, lat=None, lon=None, lat_range=None, lon_range=None, logger=None):
-    path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+    path = HYDROGEO_DATASET_PATH
 
     if lat is not None and lon is not None:
         if logger:
@@ -265,7 +271,7 @@ def process_data(data, address):
 	return dict_data
 
 def get_rowcol_range_by_latlon(desired_min_lat, desired_max_lat, desired_min_lon, desired_max_lon):
-    path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+    path = HYDROGEO_DATASET_PATH
     with h5py.File(path, 'r') as f:
         lat_ = f["geospatial/lat_250m"][:]
         lon_ = f["geospatial/lon_250m"][:]
@@ -290,7 +296,7 @@ def _extract_rowcol_range(combined_mask):
     return min_row_number, max_row_number, min_col_number, max_col_number
 
 def get_rowcol_index_by_latlon(desired_lat, desired_lon):
-    path = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
+    path = HYDROGEO_DATASET_PATH
     with h5py.File(path, 'r') as f:
         lat_ = f["geospatial/lat_250m"][:]
         lat_ = np.where(lat_ == -999, np.nan, lat_)
@@ -327,9 +333,8 @@ def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolut
     """
     
     VPUID = find_VPUID(site_no)
-    BASE_PATH = os.getenv('BASE_PATH', '/data/SWATGenXApp/GenXAppData/')
     from SWATGenX.SWATGenXLogging import LoggerSetup
-    logger = LoggerSetup('/data/SWATGenXApp/codes/web_application/logs/', verbose=True, rewrite=False)
+    logger = LoggerSetup(LOG_PATH, verbose=True, rewrite=False)
     logger.setup_logger(name="WebAppLogger")
     config = {
         "VPUID": VPUID,
@@ -372,12 +377,12 @@ def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolut
     logger.info(f"Configuration: {config}")
     # Model creation
     
-    os.makedirs(f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID", exist_ok=True)
+    os.makedirs(f"{USER_PATH}/{username}/SWATplus_by_VPUID", exist_ok=True)
     
-    if not os.path.exists(f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/"):
-         logger.error(f"Output directory not found: /data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/")
+    if not os.path.exists(f"{USER_PATH}/{username}/SWATplus_by_VPUID/"):
+         logger.error(f"Output directory not found: {USER_PATH}/{username}/SWATplus_by_VPUID/")
     else:
-        logger.info(f"Output directory found: /data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/")
+        logger.info(f"Output directory found: {USER_PATH}/{username}/SWATplus_by_VPUID/")
     
     # Initialize model_path to None in case of exceptions
     model_path = None
@@ -390,7 +395,7 @@ def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolut
         logger.error(f"Error in single_swatplus_model_creation: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
         # Set a default path or failure indicator
-        expected_path = f"/data/SWATGenXApp/Users/{username}/SWATplus_by_VPUID/{VPUID}/huc12/{site_no}/SWAT_MODEL_Web_Application"
+        expected_path = f"{USER_PATH}/{username}/SWATplus_by_VPUID/{VPUID}/huc12/{site_no}/SWAT_MODEL_Web_Application"
         logger.error(f"Model would have been created at: {expected_path}")
         logger.error(f"Traceback: {traceback.format_exc()}")
        
@@ -406,7 +411,7 @@ def get_huc12_geometries(list_of_huc12s):
     VPUID = list_of_huc12s[0][:4]
     print(VPUID)
     # Read the shapefile
-    path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/unzipped_NHDPlusVPU/"
+    path = f"{NHD_VPUID_PATH}/{VPUID}/unzipped_NHDPlusVPU/"
     geodata_path = os.listdir(path)
     geodata_path = [x for x in geodata_path if x.endswith('.gdb')][0]
     geodata_path = os.path.join(path, geodata_path)
@@ -420,7 +425,7 @@ def get_huc12_streams_geometries(list_of_huc12s):
     VPUID = list_of_huc12s[0][:4]
     print(VPUID)
     # Read the shapefile
-    path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/streams.pkl"
+    path = f"{NHD_VPUID_PATH}/{VPUID}/streams.pkl"
     
     gdf = gpd.GeoDataFrame(pd.read_pickle(path)).to_crs("EPSG:4326")
     ### make sure list_of_huc12s and huc12 column in the geodataframe are in 12 digit int
@@ -435,7 +440,7 @@ def get_huc12_streams_geometries(list_of_huc12s):
 
 def get_huc12_lakes_geometries(list_of_huc12s, WBArea_Permanent_Identifier):
     VPUID = list_of_huc12s[0][:4]
-    path = f"/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus/{VPUID}/NHDWaterbody.pkl"
+    path = f"{NHD_VPUID_PATH}/{VPUID}/NHDWaterbody.pkl"
     gdf = gpd.GeoDataFrame(pd.read_pickle(path)).to_crs("EPSG:4326")
 
     # Rename column to match your usage

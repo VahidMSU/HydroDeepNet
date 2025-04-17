@@ -6,9 +6,7 @@ import geopandas as gpd
 from shapely.geometry import Point
 
 def load_station_geometries():
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
-    import pandas as pd
-    import geopandas as gpd
+
     df = pd.read_csv(SWATGenXPaths.FPS_all_stations, dtype={'SiteNumber': str})
     print(f"DataFrame columns: {df.columns.tolist()}")  # Debugging
     ## check the columns

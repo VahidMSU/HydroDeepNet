@@ -133,10 +133,10 @@ def file_access_diagnostics():
     
     # Check static file paths
     static_paths = {
-        "images": "/data/SWATGenXApp/GenXAppData/images",
-        "videos": "/data/SWATGenXApp/GenXAppData/videos",
-        "visualizations": "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12",
-        "user_files": "/data/SWATGenXApp/Users"
+        "images": current_app.config['STATIC_IMAGES_PATH'],
+        "videos": current_app.config['STATIC_VIDEOS_PATH'],
+        "visualizations": current_app.config['VISUALIZATION_PATH'],
+        "user_files": current_app.config['USER_PATH']
     }
     
     for name, path in static_paths.items():
@@ -264,7 +264,7 @@ def debug_request():
 @debug_bp.route('/reports', methods=['GET'])
 def debug_reports():
     """Debug endpoint to inspect the structure of reports directory"""
-    reports_dir = "/data/SWATGenXApp/Users"
+    reports_dir = current_app.config['USER_PATH']
     users = {}
     
     try:
@@ -313,7 +313,7 @@ def debug_check_report(report_id):
     """Debug endpoint to check a specific report"""
     # Get username from query parameters or use a default
     username = request.args.get('username', 'admin')
-    report_dir = os.path.join('/data/SWATGenXApp/Users', username, "Reports", report_id)
+    report_dir = os.path.join(current_app.config['USER_PATH'], username, "Reports", report_id)
     
     if not os.path.exists(report_dir) or not os.path.isdir(report_dir):
         return jsonify({
@@ -372,7 +372,7 @@ def debug_report_contents(report_id):
     """List all files in a report directory with their paths"""
     # Get username from query parameters or use a default
     username = request.args.get('username', 'admin')
-    report_dir = os.path.join('/data/SWATGenXApp/Users', username, "Reports", report_id)
+    report_dir = os.path.join(current_app.config['USER_PATH'], username, "Reports", report_id)
     
     if not os.path.exists(report_dir) or not os.path.isdir(report_dir):
         return jsonify({
@@ -667,7 +667,7 @@ def email_logs():
                         mail_log_content.append(f"Error reading {alt_log}: {str(e)}")
         
         # Try application email logs
-        app_email_log = "/data/SWATGenXApp/codes/web_application/logs/email.log"
+        app_email_log = os.path.join(current_app.config['LOG_PATH'], "email.log")
         app_email_content = []
         if os.path.exists(app_email_log):
             try:

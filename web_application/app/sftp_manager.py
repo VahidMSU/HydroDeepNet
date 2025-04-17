@@ -1,4 +1,3 @@
-## /data/SWATGenXApp/codes/web_application/app/sftp_manager.py
 import subprocess
 import logging
 

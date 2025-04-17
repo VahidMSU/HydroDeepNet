@@ -24,7 +24,7 @@ def _run_ftps_command(command, username=None):
     Returns:
         dict: A dictionary containing the result of the operation
     """
-    script_path = "/data/SWATGenXApp/codes/scripts/ftps_user_manager.sh"
+    script_path = current_app.config['FTPS_SCRIPT_PATH']
     
     # Check if the script exists and is executable
     if not os.path.isfile(script_path):

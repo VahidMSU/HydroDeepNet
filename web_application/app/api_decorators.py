@@ -5,11 +5,11 @@ from flask import request, jsonify, current_app
 
 # Set up logging
 logger = logging.getLogger(__name__)
-handler = logging.FileHandler(os.path.join('/data/SWATGenXApp/codes/web_application/logs', 'ApiDecorators.log'))
+handler = logging.FileHandler(os.path.join(current_app.config['LOG_PATH'], 'ApiDecorators.log'))
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
-logger.info("Logger initialized: /data/SWATGenXApp/codes/web_application/logs/ApiDecorators.log")
+logger.info(f"Logger initialized: {current_app.config['LOG_PATH']}/ApiDecorators.log")
 
 def require_api_key(view_function):
     """

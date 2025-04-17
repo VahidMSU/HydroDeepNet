@@ -131,7 +131,7 @@ def login_oauth_user(user_data):
                 logger.info("Attempting to run migration directly...")
                 # Direct migration code
                 import sqlite3
-                db_path = '/data/SWATGenXApp/codes/web_application/instance/site.db'
+                db_path = current_app.config['DB_PATH']
                 conn = sqlite3.connect(db_path)
                 cursor = conn.cursor()
                 
