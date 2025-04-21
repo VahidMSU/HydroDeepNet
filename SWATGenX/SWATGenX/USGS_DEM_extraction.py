@@ -10,7 +10,7 @@ import glob
 import math
 import os
 import utm
-import os 
+import os
 import multiprocessing
 import time
 import sys
@@ -35,7 +35,7 @@ class DEMProcessor:
         return f"EPSG:326{zone_number}" if zone_letter >= 'N' else f"EPSG:327{zone_number}"
 
     def VPUID_HUC4_bounds(self, temp_path, utm_zone, unzipped_nhdplus_base_path):
-        
+
         gdb_base = unzipped_nhdplus_base_path
         print("gdb_base", gdb_base)
         gdb_file_name = os.listdir(gdb_base)
@@ -55,7 +55,7 @@ class DEMProcessor:
         # simplify the geometry
         #gdf['geometry'] = gdf['geometry'].simplify(0.01)
         ### make it a single polygon
-  
+
         try:
             gdf.dissolve(by='huc4').reset_index(drop=True)[['geometry']].to_file(temp_path)
         except Exception:
@@ -151,7 +151,7 @@ class DEMProcessor:
         # Get the source spatial reference
         src_srs = osr.SpatialReference()
         src_srs.ImportFromWkt(src_ds.GetProjection())
-        print("##### utm_zone", utm_zone)   
+        print("##### utm_zone", utm_zone)
         # Define the target spatial reference
         dst_srs = osr.SpatialReference()
         dst_srs.ImportFromEPSG(int(utm_zone))
@@ -198,13 +198,13 @@ class DEMProcessor:
                 print(f"Failed to delete {output_raster}: {e}")
 
     def get_EPSG(self, VPUID):
-        import pandas as pd 
+        import pandas as pd
         base_input_raster = f'{SWATGenXPaths.DEM_path}/VPUID/{VPUID}/'
         streams_path = os.path.join(f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{VPUID}/streams.pkl')
         streams = gpd.GeoDataFrame(pd.read_pickle(streams_path))
         zone = streams.crs.to_string().split(' ')[1].split('=')[-1]
         return f"326{zone[-2:]}"
-    
+
 
     def get_watershed_bounds(self,unzipped_nhdplus_base_path):
         gdb_base = unzipped_nhdplus_base_path
@@ -270,7 +270,7 @@ class DEMProcessor:
             print(f"URL: {url}")
 
             filename = os.path.basename(url)
-            
+
             ## if filename exist in {SWATGenXPaths.DEM_path}/CONUS
             list_of_already_downloaded_files = os.listdir(f"{SWATGenXPaths.DEM_path}/CONUS")
             if filename in list_of_already_downloaded_files:
@@ -279,9 +279,9 @@ class DEMProcessor:
                 import shutil
                 shutil.copy(f"{SWATGenXPaths.DEM_path}/CONUS/{filename}", path_to_download)
                 continue
-            
+
             print(f"Downloading {filename}...")
-            import time 
+            import time
 
             time.sleep(15)
             if os.path.exists(path_to_download):
@@ -301,10 +301,10 @@ class DEMProcessor:
                 print(f"Data retrieved successfully for {filename}.")
             else:
                 print(f"Failed to retrieve data: {response.status_code}, {response.text}")
-        print(f"downloaded_files: {downloaded_files}")  
+        print(f"downloaded_files: {downloaded_files}")
         return downloaded_files
 
-        
+
     def create_mosaic(self, downloaded_files, output_mosaic_path):
 
         """
@@ -318,7 +318,7 @@ class DEMProcessor:
         if os.path.exists(output_mosaic_path):
             print(f"Mosaic already exists at {output_mosaic_path}, continue...")
             return
-        
+
         # Open all input files and add them to a list
         src_files_to_mosaic = []
         for dem in downloaded_files:
@@ -410,7 +410,6 @@ class DEMProcessor:
         else:
             raise RuntimeError("Resampling failed.")
 
-    # TODO Rename this here and in `clip_vpuid_mosaic` and `resampling`
     def _extracted_from_resampling_13(self, arg0, arg1, arg2, arg3):
         print(arg0)
         if result := arg1.Open(arg2):
@@ -418,7 +417,7 @@ class DEMProcessor:
         else:
             raise FileNotFoundError(f"{arg3}{arg2}")
 
-        
+
     def clean_directory(self, path, not_delete_pattern):
         files = glob.glob(f"{path}/*")
         for file in files:
@@ -427,14 +426,10 @@ class DEMProcessor:
                 print(f"{file} is not deleted")
                 continue
             os.remove(file)
-        
-
 
 
 def warrper_NHDPlus_DEM(VPUID) -> None:
-
     DEM_extract_by_VPUID(VPUID)
-    
 
 
 def DEM_extract_by_VPUID(VPUID) -> None:
@@ -451,23 +446,23 @@ def DEM_extract_by_VPUID(VPUID) -> None:
     EPSG = dem_processor.get_EPSG(VPUID)
 
     if not os.path.exists(output_raster_projected):
-        
-        dem_processor.process_dem(unzipped_nhdplus_base_path)    
+
+        dem_processor.process_dem(unzipped_nhdplus_base_path)
         dem_processor.VPUID_HUC4_bounds(temp_path, EPSG, unzipped_nhdplus_base_path)
         dem_processor.clip_vpuid_mosaic(input_raster, temp_path, output_raster)
         dem_processor.project_clipped_raster(output_raster, EPSG, dem_base_path, output_raster_projected)
         dem_processor.delete_temp_files(temp_path, output_raster)
 
         RESOLUTIONS = [100, 250, 500, 1000, 2000]
-        
+
         for RESOLUTION in RESOLUTIONS:
-            
+
             output_resampled_raster_path = os.path.join(dem_base_path, f"{VPUID}/USGS_DEM_{RESOLUTION}m.tif")
             if not os.path.exists(output_resampled_raster_path):
                 dem_processor.resampling(RESOLUTION, output_raster_projected,output_resampled_raster_path)
 
 
-    import pandas as pd 
+    import pandas as pd
     base_input_raster = f'{SWATGenXPaths.DEM_path}/VPUID/{VPUID}/'
     streams_path = os.path.join(f'{SWATGenXPaths.extracted_nhd_swatplus_path}/{VPUID}/streams.pkl')
     input_raster = os.path.join(base_input_raster, "USGS_DEM_30m.tif")
@@ -489,13 +484,13 @@ def DEM_extract_by_VPUID(VPUID) -> None:
 
 def check_DEM_by_VPUID(VPUID):
     dem_base_path = "{SWATGenXPaths.DEM_path}/VPUID"
-    RESOLUTIONS = ["30", "100", "250", "500", "1000", "2000"]
+    RESOLUTIONS = ["30"]
     for RESOLUTION in RESOLUTIONS:
-        
-        output_raster_projected = os.path.join(dem_base_path, f"{VPUID}/USGS_DEM_{RESOLUTION}m.tif")    
+
+        output_raster_projected = os.path.join(dem_base_path, f"{VPUID}/USGS_DEM_{RESOLUTION}m.tif")
         if not os.path.exists(output_raster_projected):
             raise FileNotFoundError(f"USGS DEM {RESOLUTION}m for VPUID {VPUID} not found.")
-        
+
     print(f"## USGS DEM for VPUID {VPUID} exists. #####")
 
 if __name__ == "__main__":
@@ -521,5 +516,3 @@ if __name__ == "__main__":
 #    for process in processes:
 #        process.join()
 #    print("All processes have been completed")
-    
-    

@@ -1,4 +1,4 @@
-import rasterio 
+import rasterio
 import numpy as np
 import os
 import xarray as xr
@@ -8,7 +8,7 @@ import pandas as pd
 try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 except ImportError:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenXConfigPars import SWATGenXPaths
 
 
 PRISM_path = SWATGenXPaths.PRISM_path
@@ -39,7 +39,7 @@ for TYPE in TYPES:
                 # now create the NetCDF file using all of the bil files for a type
                 with rasterio.open(extract_path) as src:
                     array = src.read(1)
-                    
+
 
                 arrays.append(array)
 
