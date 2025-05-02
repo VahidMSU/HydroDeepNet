@@ -42,53 +42,53 @@ generate_password() {
 # Function to create a new FTPS user
 create_user() {
     local username=$1
-    
+
     # Check if username is valid
     if [[ ! $username =~ ^[a-zA-Z][a-zA-Z0-9_-]*$ ]]; then
         echo "Invalid username format. Username must start with a letter and contain only letters, numbers, underscores, and hyphens."
         log_operation "Failed to create user $username: Invalid username format"
         return 1
     fi
-    
+
     # Check if user already exists
     if id "$username" &>/dev/null; then
         echo "User $username already exists"
         log_operation "Failed to create user $username: User already exists"
         return 1
     fi
-    
+
     # Generate a secure password
     password=$(generate_password)
-    
+
     # Create the user with no login shell and a home directory in the FTP root
     useradd -m -d "$FTPS_ROOT" -s /usr/sbin/nologin "$username"
-    
+
     # Set the password
     echo "$username:$password" | chpasswd
-    
+
     # Add user to the allowed users list
     if ! grep -q "^$username$" "$USERLIST_FILE"; then
         echo "$username" >> "$USERLIST_FILE"
     fi
-    
+
     # Restrict user permissions to read-only
     chown -R root:root "$FTPS_ROOT"
     chmod -R 755 "$FTPS_ROOT"
-    
+
     # Set user's permissions to read-only access
     setfacl -m u:$username:r-x "$FTPS_ROOT"
-    
+
     # Apply ACLs recursively
     find "$FTPS_ROOT" -type d -exec setfacl -m u:$username:r-x {} \;
     find "$FTPS_ROOT" -type f -exec setfacl -m u:$username:r-- {} \;
-    
+
     log_operation "Created FTPS user $username"
-    
+
     # Output the credentials
     echo "FTPS User created successfully:"
     echo "Username: $username"
     echo "Password: $password"
-    echo "Server: ciwre-bae.campusad.msu.edu (35.9.219.73)"
+    echo "Server: swatgenx.com (207.180.226.103)"
     echo "Port: 990"
     echo "Protocol: FTPS (FTP over SSL/TLS)"
     echo "Directory: /SWATplus_by_VPUID"
@@ -97,20 +97,20 @@ create_user() {
 # Function to delete an FTPS user
 delete_user() {
     local username=$1
-    
+
     # Check if user exists
     if ! id "$username" &>/dev/null; then
         echo "User $username does not exist"
         log_operation "Failed to delete user $username: User does not exist"
         return 1
     fi
-    
+
     # Remove user from the allowed users list
     sed -i "/^$username$/d" "$USERLIST_FILE"
-    
+
     # Delete the user
     userdel -r "$username" 2>/dev/null || true
-    
+
     log_operation "Deleted FTPS user $username"
     echo "FTPS User $username deleted successfully"
 }

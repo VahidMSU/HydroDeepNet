@@ -23,4 +23,3 @@ StandardError=append:${LOG_DIR}/flask-app-error.log
 
 [Install]
 WantedBy=multi-user.target
-

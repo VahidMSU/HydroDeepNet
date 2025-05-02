@@ -21,7 +21,7 @@ const FTPS_Server = () => {
           <ListItem>
             <ListItemText
               primary="Server:"
-              secondary="ciwre-bae.campusad.msu.edu (IP: 35.9.219.73)"
+              secondary="swatgenx.com (IP: 207.180.226.103)"
               primaryTypographyProps={{ fontWeight: 'bold' }}
             />
           </ListItem>

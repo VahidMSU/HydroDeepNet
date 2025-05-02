@@ -8,7 +8,7 @@ def align_rasters(landuse, dem, soil):
 
     assert os.path.exists(landuse), f"Landuse raster not found: {landuse}"
     assert os.path.exists(dem), f"DEM raster not found: {dem}"
-    assert os.path.exists(soil), f"Soil raster not found: {soil}"
+    assert os.path.exists(soil), f"gSSURGO raster not found: {soil}"
 
     def get_valid_bounds(raster_path):
         with rasterio.open(raster_path, 'r') as src:
@@ -63,6 +63,6 @@ def align_rasters(landuse, dem, soil):
 
 landuse = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/Landuse/landuse.tif"
 dem = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/DEM/dem.tif"
-soil = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/Soil/soil.tif"
+soil = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/gSSURGO/soil.tif"
 
 align_rasters(landuse, dem, soil)

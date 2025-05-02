@@ -35,28 +35,28 @@ def create_app(config_class=Config):  # Update function signature
 
     # Load configurations
     app.config.from_object(config_class)  # Update to use config_class
-    
+
     # Export GOOGLE_API_KEY to environment for Agno
     if hasattr(config_class, 'GOOGLE_API_KEY') and config_class.GOOGLE_API_KEY:
         os.environ['GOOGLE_API_KEY'] = config_class.GOOGLE_API_KEY
         logger.info(f"Exported GOOGLE_API_KEY to environment: {config_class.GOOGLE_API_KEY[:10]}...")
-    
+
     # Clean up CORS configuration - use just one comprehensive configuration
     CORS(
         app,
         supports_credentials=True,
         resources={
             r"/api/*": {
-                "origins": ["http://localhost:3000", "https://ciwre-bae.campusad.msu.edu"],
+                "origins": ["http://localhost:3000", "https://swatgenx.com"],
             },
             r"/login": {
-                "origins": ["http://localhost:3000", "https://ciwre-bae.campusad.msu.edu"],
+                "origins": ["http://localhost:3000", "https://swatgenx.com"],
             },
             r"/signup": {
-                "origins": ["http://localhost:3000", "https://ciwre-bae.campusad.msu.edu"],
+                "origins": ["http://localhost:3000", "https://swatgenx.com"],
             },
             r"/model-settings": {
-                "origins": ["http://localhost:3000", "https://ciwre-bae.campusad.msu.edu"],
+                "origins": ["http://localhost:3000", "https://swatgenx.com"],
             },
             r"/*": {
                 "origins": "*"  # Fallback for other routes
@@ -71,12 +71,12 @@ def create_app(config_class=Config):  # Update function signature
     app.config.from_object(config_class)  # Update to use config_class
     app.config.update({
         'SESSION_COOKIE_SECURE': False,  # ✅ Disable HTTPS for local testing
-        'REMEMBER_COOKIE_SECURE': False,  # ✅ Disable HTTPS for local testing  
+        'REMEMBER_COOKIE_SECURE': False,  # ✅ Disable HTTPS for local testing
         'SESSION_COOKIE_HTTPONLY': True,
         'SESSION_COOKIE_SAMESITE': 'None',
         'PREFERRED_URL_SCHEME': 'https'
     })
-    
+
     # Set Flask logger to use our custom logger
     app.logger.handlers = logger.handlers
     app.logger.setLevel(logger.level)
@@ -113,7 +113,7 @@ def create_app(config_class=Config):  # Update function signature
         try:
             db.create_all()
             logger.info("Ensured database tables exist")
-            
+
             # Try to load test user safely, without breaking the application if there are schema issues
             try:
                 test_user = User.query.get(1)
@@ -186,7 +186,7 @@ def create_app(config_class=Config):  # Update function signature
         code = 500
         if hasattr(e, 'code'):
             code = e.code
-        
+
         # Check if this is an API request
         if request.path.startswith('/api/'):
             logger.error(f"API error: {str(e)}")
@@ -195,10 +195,10 @@ def create_app(config_class=Config):  # Update function signature
                 "message": str(e),
                 "error_type": e.__class__.__name__
             }), code
-        
+
         # For non-API routes, let Flask handle the error normally
         return e
-    
+
     # Add error handler for 404 errors to return JSON for API routes
     @app.errorhandler(404)
     def not_found(e):
@@ -210,7 +210,7 @@ def create_app(config_class=Config):  # Update function signature
                 "path": request.path
             }), 404
         return e
-    
+
     # Add error handler for 500 errors to return JSON for API routes
     @app.errorhandler(500)
     def server_error(e):

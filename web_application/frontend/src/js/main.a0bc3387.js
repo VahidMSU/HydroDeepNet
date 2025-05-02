@@ -8610,14 +8610,14 @@
                   children: [
                     (0, o.jsx)('img', {
                       src: ''.concat(
-                        'https://ciwre-bae.campusad.msu.edu',
+                        'https://swatgenx.com',
                         '/static/images/SWATGenX_flowchart.jpg',
                       ),
                       alt: 'SWATGenX Workflow',
                       onClick: () =>
                         i(
                           ''.concat(
-                            'https://ciwre-bae.campusad.msu.edu',
+                            'https://swatgenx.com',
                             '/static/images/SWATGenX_flowchart.jpg',
                           ),
                         ),

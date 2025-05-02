@@ -29,15 +29,15 @@ try:
 except ImportError:
     from SWATGenXConfigPars import SWATGenXPaths
 sys.path.append(SWATGenXPaths.QSWATPlus_env_path)
-from qgis.core import QgsApplication, QgsProject, QgsRasterLayer, QgsVectorLayer # type: ignore 
+from qgis.core import QgsApplication, QgsProject, QgsRasterLayer, QgsVectorLayer # type: ignore
 import atexit
 import sys
 import os
 import glob
 from osgeo import gdal, ogr
-from QSWATPlus.QSWATPlusMain import QSWATPlus  
-from QSWATPlus.delineation import Delineation 
-from QSWATPlus.hrus import HRUs 
+from QSWATPlus.QSWATPlusMain import QSWATPlus
+from QSWATPlus.delineation import Delineation
+from QSWATPlus.hrus import HRUs
 import traceback
 from SWATGenXLogging import LoggerSetup
 from QSWATPlus.QSWATUtils import QSWATUtils, FileTypes
@@ -91,7 +91,7 @@ class runHUC():
         # Safer in any case to raise exceptions if something goes wrong.
         gdal.UseExceptions()
         ogr.UseExceptions()
-        self.logger.info("Set GDAL exceptions") 
+        self.logger.info("Set GDAL exceptions")
 
 
     def runProject(self, minHRUha):
@@ -104,7 +104,7 @@ class runHUC():
 
         assert os.path.isdir(self.projDir)
         assert os.path.isfile(self.projDir + '/{0}.qgs'.format(os.path.split(self.projDir)[1])  )
-    
+
         self.delin = Delineation(gv, self.QSWATPlusPlugin._demIsProcessed)
         self.delin._dlg.tabWidget.setCurrentIndex(1)
         self.delin._dlg.selectDem.setText(
@@ -124,7 +124,7 @@ class runHUC():
         assert os.path.isfile(self.delin._dlg.selectSubbasins.text())
         assert os.path.isfile(self.delin._dlg.selectWshed.text())
         assert os.path.isfile(self.delin._dlg.selectStreams.text())
-        
+
         self.delin._dlg.selectExistOutlets.setText('')
 
         self.delin._dlg.recalcButton.setChecked(False)  # want to use length field in channels shapefile
@@ -139,28 +139,28 @@ class runHUC():
         self.logger.info(f'gv.existingWshed {gv.existingWshed}')
         self.logger.info(f'ProjectDir {self.projDir}')
         lakesFile = f'{self.projDir}/Watershed/Shapes/SWAT_plus_lakes.shp'
-        
+
         # Handle lakes properly - first check if file exists
         if os.path.isfile(lakesFile):
             self.logger.info(f'Lakes file found: {lakesFile}')
-            
+
             # Set the file path in the UI
             self.delin._dlg.selectLakes.setText(lakesFile)
             self.delin._dlg.selectLakes.setEnabled(True)
-            
+
             # Set the file path in global variables
             gv.lakeFile = lakesFile
-            
+
             # Explicitly load the lakes shapefile before processing
             root = QgsProject.instance().layerTreeRoot()
-            
+
             # Load lakes layer to the project if not already loaded
             lakesLayer = QSWATUtils.getLayerByFilename(root.findLayers(), lakesFile, FileTypes._LAKES, None, None, None)[0]
             if not lakesLayer:
                 self.logger.info(f'Loading lakes layer from {lakesFile}')
                 # Get DEM layer to use as sublayer for loading lakes
                 demLayer = QSWATUtils.getLayerByFilename(root.findLayers(), gv.demFile, FileTypes._DEM, None, None, None)[0]
-                
+
                 # Load lakes layer explicitly
                 lakesLayerName = os.path.splitext(os.path.basename(lakesFile))[0]
                 lakesLayer = QgsVectorLayer(lakesFile, lakesLayerName, 'ogr')
@@ -169,10 +169,10 @@ class runHUC():
                     self.logger.info(f'Successfully loaded lakes layer {lakesFile}')
                 else:
                     self.logger.info(f'Failed to load lakes layer from {lakesFile}')
-            
+
             # Mark lakes as not processed yet
             self.delin.lakesDone = False
-            
+
             # Explicitly add lakes before finalizing delineation
             self.delin.addLakes()
             self.logger.info('Lakes added to the project')
@@ -191,7 +191,7 @@ class runHUC():
             self.projDir, 'Watershed', 'Rasters', 'Landuse', 'landuse.tif'
         )
         self.hrus.landuseLayer = QgsRasterLayer(self.hrus.landuseFile, 'landuse')
-        self.hrus.soilFile = os.path.join(self.projDir, 'Watershed', 'Rasters', 'Soil', 'soil.tif')
+        self.hrus.soilFile = os.path.join(self.projDir, 'Watershed', 'Rasters', 'gSSURGO', 'soil.tif')
         self.hrus.soilLayer = QgsRasterLayer(self.hrus.soilFile, 'soil')
         self.hrus.landuseTable = 'landuse_lookup'
         self.logger.info(f'landuseFile {self.hrus.landuseFile}')
@@ -220,17 +220,17 @@ class runHUC():
 
 
 def main(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path):
-    
-    
+
+
     try:
         print(f"Running project {VPUID}")
         app = QgsApplication([], True)
         QgsApplication.initQgis()
         atexit.register(QgsApplication.exitQgis)
-        
+
         base_path = f"{SWATGenXPaths_swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/{MODEL_NAME}"
         model_dir = f"{base_path}/{MODEL_NAME}.qgs"
-        
+
         assert os.path.exists(base_path), f"QSWATPlus Base Directory {base_path} does not exist"
 
         if os.path.exists(base_path):
@@ -238,18 +238,18 @@ def main(VPUID, LEVEL, NAME, MODEL_NAME, SWATGenXPaths_swatgenx_outlet_path):
             for f in glob.glob(f"{base_path}/*"):
                 if os.path.isfile(f):
                     os.remove(f)
-            
-        assert not os.path.exists(model_dir), f"Model directory {model_dir} already exists" 
+
+        assert not os.path.exists(model_dir), f"Model directory {model_dir} already exists"
 
         base_directory = os.path.dirname(model_dir)
         minHRUha = 0.0
         logFile = f'{base_directory}/LogFile.txt'
         print(f"Creating project in {base_directory}")
-        import time 
+        import time
         time.sleep(5)
         huc = runHUC(base_directory, logFile)
         huc.runProject(minHRUha)
-        
+
     except Exception as e:
         print(f"Error running project: {e}")
         traceback.print_exc()

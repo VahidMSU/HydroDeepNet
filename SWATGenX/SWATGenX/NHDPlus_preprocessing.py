@@ -14,6 +14,47 @@ except Exception:
     from SWATGenXLogging import LoggerSetup
     from utils import get_all_VPUIDs
 
+def clean_id_column(df, column):
+    """
+    Safely clean and convert ID columns to int64, handling decimals and NaN values.
+
+    Parameters:
+    - df: DataFrame containing the column
+    - column: Name of the column to clean
+
+    Returns:
+    - DataFrame with cleaned column
+    """
+    if column in df.columns:
+        df[column] = (
+            df[column]
+            .astype(str)
+            .str.replace(r'\.0$', '', regex=True)
+            .str.strip()
+            .replace('nan', '0')
+            .astype('int64')
+        )
+    return df
+
+def clean_id_columns(df, columns=None):
+    """
+    Clean multiple ID columns in a DataFrame
+
+    Parameters:
+    - df: DataFrame to clean
+    - columns: List of column names to clean. If None, uses default columns.
+
+    Returns:
+    - DataFrame with cleaned columns
+    """
+    if columns is None:
+        columns = ['NHDPlusID', 'HydroSeq', 'DnHydroSeq', 'UpHydroSeq', 'huc8', 'huc12']
+
+    for col in columns:
+        df = clean_id_column(df, col)
+
+    return df
+
 def generate_hydroseq_upstream_dict(streams):
     """ Generate a dictionary of HydroSeqs and their upstream HydroSeqs."""
     def move_upstream(df, start_hydroseq, segments_dict):
@@ -47,6 +88,9 @@ def generate_hydroseq_upstream_dict(streams):
     def process_hydroseq(hydroseq):
         return hydroseq, move_upstream(reduced_streams, hydroseq, segments_dict)
 
+    # Ensure HydroSeq and DnHydroSeq are int64
+    streams = clean_id_columns(streams, ['HydroSeq', 'DnHydroSeq'])
+
     reduced_streams = streams[['DnHydroSeq', 'HydroSeq']]
     segments_dict = reduced_streams.groupby('DnHydroSeq').apply(lambda x: x.to_dict('records')).to_dict()
 
@@ -59,30 +103,33 @@ def generate_hydroseq_upstream_dict(streams):
 
     return hydroseq_upstream_dict
 
-def adding_subbasins_level_one(df,outlets_upstream_dict):
-    df ['Subbasin_level_1'] =np.nan
-    sub=0
+def adding_subbasins_level_one(df, outlets_upstream_dict):
+    df['Subbasin_level_1'] = np.nan
+    sub = 0
     for HydroSeq in df[df.TerminalFl == 1].HydroSeq.values:
-        sub=sub+1
-        upstreams=outlets_upstream_dict[HydroSeq]
-        df ['Subbasin_level_1'] = np.where(df.HydroSeq.isin(upstreams), sub, df.Subbasin_level_1)
+        sub = sub + 1
+        upstreams = outlets_upstream_dict[HydroSeq]
+        df['Subbasin_level_1'] = np.where(df.HydroSeq.isin(upstreams), sub, df.Subbasin_level_1)
     print('basins level one (one basin for each outlet) are added')
-    return(df)
+    return df
 
 def process_huc_and_merge(watersheds, WBDHU, streams, huc_level):
     """
     Add HUC basins number (either HUC8 or HUC12) to streams based on watershed centroids.
-    
+
     Parameters:
     - watersheds: GeoDataFrame of watersheds.
     - WBDHU: GeoDataFrame of HUC (either WBDHU8 or WBDHU12).
     - streams: DataFrame of streams.
     - huc_level: Either 'huc8' or 'huc12'.
-    
+
     Returns:
     - DataFrame of streams merged with the appropriate HUC.
     """
-    
+    # Ensure NHDPlusID is int64 to enable proper merging
+    watersheds = clean_id_column(watersheds, 'NHDPlusID')
+    streams = clean_id_column(streams, 'NHDPlusID')
+
     print(f'Number of STREAMS before merging with {huc_level}:', len(streams))
     print(f'Number of WATERSHEDS before processing with {huc_level}:', len(watersheds))
 
@@ -110,6 +157,12 @@ def process_huc_and_merge(watersheds, WBDHU, streams, huc_level):
     if huc_level == 'huc12':
         merge_columns.append('tohuc')
 
+    # Ensure ID columns are proper int64
+    watersheds_huc_clean = clean_id_column(watersheds_huc_clean, 'NHDPlusID')
+    watersheds_huc_clean = clean_id_column(watersheds_huc_clean, huc_level)
+    if huc_level == 'huc12':
+        watersheds_huc_clean = clean_id_column(watersheds_huc_clean, 'tohuc')
+
     streams_f = streams.merge(watersheds_huc_clean[merge_columns], on='NHDPlusID', how='left')
     print(f'Number of streams after merging with {huc_level}:', len(streams_f))
     print(f'{huc_level.upper()} basins are added')
@@ -118,92 +171,101 @@ def process_huc_and_merge(watersheds, WBDHU, streams, huc_level):
 
 def converting_length_unit_of_streams(df):
     """converts the length unit from kilometer to meter."""
-    df['LengthKM']=df['LengthKM']*1000  ### WE CONVERT KILOMETER UNIT IN NHDPLUS FOR LENGTH TO METER 
-    df=df.rename(columns={'LengthKM':'Length'})
+    df['LengthKM'] = df['LengthKM'] * 1000  ### WE CONVERT KILOMETER UNIT IN NHDPLUS FOR LENGTH TO METER
+    df = df.rename(columns={'LengthKM': 'Length'})
     print('length (m) column is added')
-    return(df)
+    return df
 
 def calculating_drop(df):
     """Calculates the drop in elevation for each stream segment."""
-    df['Drop']=0.01*(df['MaxElevSmo'] - df['MinElevSmo'])  ### WE CONVERT CENTIMETER UNIT IN NHDPLUS FOR MIN AND MAX ELEVATION TO METER 
+    df['Drop'] = 0.01 * (df['MaxElevSmo'] - df['MinElevSmo'])  ### WE CONVERT CENTIMETER UNIT IN NHDPLUS FOR MIN AND MAX ELEVATION TO METER
     print('Drop (m) column is calculated as the difference betweeen maximum and minimum elevation')
-    df=df.drop(columns=['MaxElevSmo','MinElevSmo'])
-    return(df)
+    df = df.drop(columns=['MaxElevSmo', 'MinElevSmo'])
+    return df
 
 def removing_second_divergence(df):
-    
     """we remove the streams that have divergence 2. This is because the divergence 2 is a result of circular hydrographs"""
-    
-    a=len(df)
-    df = df[df.Divergence!=2].reset_index(drop=True)    
-    b=len(df)
-    print('Number of removed streams due to being second divergence',a-b)
-    return(df)
+    a = len(df)
+    df = df[df.Divergence != 2].reset_index(drop=True)
+    b = len(df)
+    print('Number of removed streams due to being second divergence', a - b)
+    return df
 
 def remove_streams_without_drainage(df, df2):
     """"we remove the streams that does not have corresponding drainage area simply by checking the NHDPlusID of streams and catchments"""
-    a=len(df)
-    df = df[df.NHDPlusID.isin(df2.NHDPlusID)].reset_index(drop=True)
-    b=len(df)
-    print('Number of removed streams due to lack of drainage',a-b)
-    return(df)
+    # Ensure NHDPlusID is int64 in both dataframes for proper comparison
+    df = clean_id_column(df, 'NHDPlusID')
+    df2 = clean_id_column(df2, 'NHDPlusID')
 
-    
+    a = len(df)
+    df = df[df.NHDPlusID.isin(df2.NHDPlusID)].reset_index(drop=True)
+    b = len(df)
+    print('Number of removed streams due to lack of drainage', a - b)
+    return df
+
 def remove_coastal_lines(df):
     """ we remove the coastal lines. The coastal lines are results of using watershed boundary walls in NHDPlus and considered error since these are not streams."""
-    a=len(df)
+    a = len(df)
     df = df[~df['Permanent_Identifier'].str.startswith('C')].reset_index(drop=True)
-    b=len(df)
-    print('Number of flowlines removed due to being coastal lines',a-b)
-    df=df.drop(columns=['Permanent_Identifier'])
-    return(df)
+    b = len(df)
+    print('Number of flowlines removed due to being coastal lines', a - b)
+    df = df.drop(columns=['Permanent_Identifier'])
+    return df
 
 def setting_zero_for_outlets_and_headwaters(df):
     """ setting 0 for UpHydroSeq and DnHydroSeq for headwaters and outlets."""
-    df['DnHydroSeq'] = np.where(df.DnHydroSeq.isin(df.HydroSeq),df.DnHydroSeq, 0)
-    df['UpHydroSeq'] = np.where(df.UpHydroSeq.isin(df.HydroSeq),df.UpHydroSeq, 0)
-    df ['DnHydroSeq'] = df['DnHydroSeq'].fillna(0).astype('int64')
-    df ['UpHydroSeq'] = df['UpHydroSeq'].fillna(0).astype('int64')
-    return(df)
+    # First clean ID columns to ensure proper comparison
+    df = clean_id_columns(df, ['HydroSeq', 'DnHydroSeq', 'UpHydroSeq'])
 
+    df['DnHydroSeq'] = np.where(df.DnHydroSeq.isin(df.HydroSeq), df.DnHydroSeq, 0)
+    df['UpHydroSeq'] = np.where(df.UpHydroSeq.isin(df.HydroSeq), df.UpHydroSeq, 0)
+
+    return df
 
 def resetting_start_terminate_flags(df):
     """ resetting start and terminal flags. This is because the start and terminal flags are not correctly set in NHDPlus."""
-    df ['StartFlag'] = np.where(df.UpHydroSeq==0,1,0)
-    df ['TerminalFl'] = np.where(df.DnHydroSeq==0,1,0)
+    df['StartFlag'] = np.where(df.UpHydroSeq == 0, 1, 0)
+    df['TerminalFl'] = np.where(df.DnHydroSeq == 0, 1, 0)
     print('start and terminal flags are reset')
-    print('number of outlets:', len(df[df.TerminalFl==1]) )
-    print('number of headwaters:', len(df[df.StartFlag==1]) )
-    return(df)
+    print('number of outlets:', len(df[df.TerminalFl == 1]))
+    print('number of headwaters:', len(df[df.StartFlag == 1]))
+    return df
 
-def save_divergence_2_streams(df,df2, database_name):
+def save_divergence_2_streams(df, df2, database_name):
     output_base = os.path.join(SWATGenXPaths.NHDPlus_path, database_name)
     divergence_2_streams = df[df.Divergence == 2]
-    df2 = df2.merge(divergence_2_streams[['NHDPlusID','huc12','huc8']], on='NHDPlusID')
-    output_path = os.path.join(output_base,"Divergence2Streams.shp")
+
+    # Clean ID columns before merging
+    divergence_2_streams = clean_id_columns(divergence_2_streams, ['NHDPlusID', 'huc12', 'huc8'])
+    df2 = clean_id_column(df2, 'NHDPlusID')
+
+    df2 = df2.merge(divergence_2_streams[['NHDPlusID', 'huc12', 'huc8']], on='NHDPlusID')
+    output_path = os.path.join(output_base, "Divergence2Streams.shp")
     df2.to_file(output_path)
     print(f"Divergence 2 streams saved to {output_path}")
 
-
-def removing_isolated_streams(df,watersheds, save_path):
+def removing_isolated_streams(df, watersheds, save_path):
     """### remove isolated channels WHERE BOTH UpHydroSeq and DnHydroSeq are
     ZERO (not be found in any other HydroSeq). THIS WILL EFFECTIVELY REMOVE ALL ISOLATED STREAMS
     """
+    # Clean ID columns before identification and merging
+    df = clean_id_columns(df, ['NHDPlusID', 'HydroSeq', 'DnHydroSeq', 'UpHydroSeq'])
+    watersheds = clean_id_column(watersheds, 'NHDPlusID')
+
     # Identify isolated streams
     isolated_streams = df[(df.UpHydroSeq == 0) & (df.DnHydroSeq == 0)]
+
     # Print the number of removed isolated streams
     num_removed = len(isolated_streams)
     print('Number of removed isolated streams:', num_removed)
-    save_file(
-        save_path, 'isolated_streams/isolated_streams.shp', isolated_streams
-    )
+
     # Save the isolated streams to a file
+    save_file(save_path, 'isolated_streams/isolated_streams.shp', isolated_streams)
+
+    # Process watersheds using the isolated streams
     isolated_watersheds = watersheds.merge(isolated_streams[['NHDPlusID']], on='NHDPlusID')
-    save_file(
-        save_path,
-        'isolated_watersheds/isolated_watersheds.shp',
-        isolated_watersheds,
-    )
+    save_file(save_path, 'isolated_watersheds/isolated_watersheds.shp', isolated_watersheds)
+
     # Remove isolated streams from the main dataframe
     df = df[~((df.UpHydroSeq == 0) & (df.DnHydroSeq == 0))].reset_index(drop=True)
     return df
@@ -217,25 +279,24 @@ def save_file(save_path, arg1, arg2):
     arg2.to_file(isolated_stream_path)
 
 def setting_data_type(streams):
-    
-    streams=streams.dropna(subset='huc8')
-    streams=streams.dropna(subset='huc12')
+    # First drop rows with NaN in critical columns
+    streams = streams.dropna(subset='huc8')
+    streams = streams.dropna(subset='huc12')
     streams = streams.dropna(subset=['tohuc'])
     streams = streams.dropna(subset=['HydroSeq'])
     streams = streams.dropna(subset=['DnHydroSeq'])
     streams = streams.dropna(subset=['UpHydroSeq'])
     streams = streams.dropna(subset=['NHDPlusID'])
-    
-    streams['HydroSeq'] = streams.HydroSeq.astype('int64', errors='ignore')
-    streams['DnHydroSeq'] = streams.DnHydroSeq.astype('int64', errors='ignore')
-    streams['UpHydroSeq'] = streams.UpHydroSeq.astype('int64', errors='ignore')
-    streams['NHDPlusID'] = streams.NHDPlusID.astype('int64', errors='ignore')
-    streams['huc12'] = streams.huc12.astype('int64', errors='ignore')
-    streams['huc8'] = streams.huc8.astype('int64', errors='ignore')
+
+    # Now clean all ID columns to ensure they're proper int64
+    streams = clean_id_columns(streams, ['HydroSeq', 'DnHydroSeq', 'UpHydroSeq', 'NHDPlusID', 'huc12', 'huc8'])
+
     return streams
 
-def creating_watershed_dissolving_divergence (watersheds):
-    
+def creating_watershed_dissolving_divergence(watersheds):
+    # Clean ID columns before processing
+    watersheds = clean_id_columns(watersheds, ['HydroSeq', 'DnHydroSeq'])
+
     divergence_2 = watersheds[watersheds.Divergence == 2]
     # Step 2: Create a mapping of HydroSeq to DnHydroSeq for these rows
     hydroseq_dn_mapping = divergence_2.set_index('HydroSeq')['DnHydroSeq'].to_dict()
@@ -255,21 +316,16 @@ def creating_watershed_dissolving_divergence (watersheds):
 
     return watersheds
 
-
 def NHDPlus_preprocessing(VPUID):
-    database_name = f'SWATPlus_NHDPlus/{VPUID}'
-    outpath = os.path.join(SWATGenXPaths.NHDPlus_path,f'{database_name}/streams.pkl')
+    database_name = f'VPUID/{VPUID}'
+    outpath = os.path.join(SWATGenXPaths.NHDPlus_path, f'{database_name}/streams.pkl')
     if not os.path.exists(outpath):
         execute_processes(database_name)
     else:
         print(f'#### NHDPlus for {VPUID} is already processed ####')
 
 def execute_processes(database_name):
-    
-
-    logger = LoggerSetup(
-        verbose=True, rewrite=True).setup_logger("NHDPlus_preprocessing")
-
+    logger = LoggerSetup(verbose=True, rewrite=True).setup_logger("NHDPlus_preprocessing")
     logger.info(f"Start time: {datetime.datetime.now()}")
 
     stage = "loading data"
@@ -280,6 +336,12 @@ def execute_processes(database_name):
     NHDWaterbody = gpd.GeoDataFrame(pd.read_pickle(os.path.join(SWATGenXPaths.NHDPlus_path, f'{database_name}/NHDWaterbody.pkl')))
     NHDFlowline = gpd.GeoDataFrame(pd.read_pickle(os.path.join(SWATGenXPaths.NHDPlus_path, f'{database_name}/NHDFlowline.pkl')))
     NHDPlusFlowlineVAA = gpd.GeoDataFrame(pd.read_pickle(os.path.join(SWATGenXPaths.NHDPlus_path, f'{database_name}/NHDPlusFlowlineVAA.pkl')))
+
+    # Clean ID columns in source dataframes for consistency
+    NHDPlusCatchment = clean_id_column(NHDPlusCatchment, 'NHDPlusID')
+    NHDFlowline = clean_id_column(NHDFlowline, 'NHDPlusID')
+    NHDPlusFlowlineVAA = clean_id_column(NHDPlusFlowlineVAA, 'NHDPlusID')
+
     logger.info('Data loaded')
     logger.info(f"NHDPlusFlowlineVAA columns: {NHDPlusFlowlineVAA.columns}")
     logger.info(f"NHDPlusCatchment columns: {NHDPlusCatchment.columns}")
@@ -289,22 +351,25 @@ def execute_processes(database_name):
 
     ### in some cases the VPUID is in lower case, we need to change to upper case
 
-
-    NHDPlusCatchment = NHDPlusCatchment.merge(NHDPlusFlowlineVAA.drop(columns=['VPUID','AreaSqKm']), on='NHDPlusID')
+    NHDPlusCatchment = NHDPlusCatchment.merge(NHDPlusFlowlineVAA.drop(columns=['VPUID', 'AreaSqKm']), on='NHDPlusID')
     NHDFlowline = NHDFlowline.merge(NHDPlusFlowlineVAA.drop(columns=['VPUID']), on='NHDPlusID')
 
     streams = NHDFlowline.copy()[
-                                [
-                                'NHDPlusID','StreamOrde','UpHydroSeq','HydroSeq',
-                                'DnHydroSeq','WBArea_Permanent_Identifier',
-                                'StartFlag','TerminalFl','Divergence','VPUID',
-                                'Permanent_Identifier','MaxElevSmo','MinElevSmo',
-                                'AreaSqKm','LengthKM','TotDASqKm', 'geometry'
-                                ]
-                                ]
+        [
+            'NHDPlusID', 'StreamOrde', 'UpHydroSeq', 'HydroSeq',
+            'DnHydroSeq', 'WBArea_Permanent_Identifier',
+            'StartFlag', 'TerminalFl', 'Divergence', 'VPUID',
+            'Permanent_Identifier', 'MaxElevSmo', 'MinElevSmo',
+            'AreaSqKm', 'LengthKM', 'TotDASqKm', 'geometry'
+        ]
+    ]
 
+    watersheds = NHDPlusCatchment.copy()[['NHDPlusID', 'UpHydroSeq', 'HydroSeq', 'DnHydroSeq', 'StartFlag', 'TerminalFl', 'Divergence', 'VPUID', 'geometry']]
 
-    watersheds = NHDPlusCatchment.copy()[['NHDPlusID','UpHydroSeq','HydroSeq','DnHydroSeq','StartFlag','TerminalFl','Divergence','VPUID','geometry']]
+    # Clean ID columns after merging
+    streams = clean_id_columns(streams, ['NHDPlusID', 'HydroSeq', 'DnHydroSeq', 'UpHydroSeq'])
+    watersheds = clean_id_columns(watersheds, ['NHDPlusID', 'HydroSeq', 'DnHydroSeq', 'UpHydroSeq'])
+
     # process dat huc8 and huc12"
     stage = "processing huc8 and huc12"
     logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
@@ -312,67 +377,66 @@ def execute_processes(database_name):
     streams = process_huc_and_merge(watersheds, WBDHU12, streams, 'huc12')
 
     stage = "resetting length unit"
-    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")   
+    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
     streams = converting_length_unit_of_streams(streams)
     streams = calculating_drop(streams)
 
     stage = "removing second divergence"
-    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")   
-    save_divergence_2_streams(streams,watersheds, database_name)
+    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    save_divergence_2_streams(streams, watersheds, database_name)
     streams = removing_second_divergence(streams)
-    streams = remove_streams_without_drainage(streams,watersheds)
+    streams = remove_streams_without_drainage(streams, watersheds)
     streams = remove_coastal_lines(streams)
+
+    # Ensure IDs are clean before setting zero
+    streams = clean_id_columns(streams, ['NHDPlusID', 'HydroSeq', 'DnHydroSeq', 'UpHydroSeq'])
+
     streams = setting_zero_for_outlets_and_headwaters(streams)
 
     stage = "removing isolated streams"
     logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
-    isolated_path = os.path.join(
-        SWATGenXPaths.NHDPlus_path, database_name)
-    streams = removing_isolated_streams(streams,watersheds, isolated_path)
+    isolated_path = os.path.join(SWATGenXPaths.NHDPlus_path, database_name)
+    streams = removing_isolated_streams(streams, watersheds, isolated_path)
 
     stage = "resetting start and terminal flags"
     logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
     streams = resetting_start_terminate_flags(streams)
     outlets_upstream_dict = generate_hydroseq_upstream_dict(streams)
-    streams = adding_subbasins_level_one(streams,outlets_upstream_dict)
+    streams = adding_subbasins_level_one(streams, outlets_upstream_dict)
 
     stage = "setting data type"
-    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")   
+    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
     streams = setting_data_type(streams)
 
     stage = "removing huc12 with nan"
-    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")   
+    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
     streams = streams[~streams.huc12.isna()].reset_index(drop=True)
 
     stage = "creating watersheds"
-    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")   
-    watersheds = creating_watershed_dissolving_divergence (watersheds)
+    logger.info(f"stage: {stage}, \nlength of streams before processing: {len(streams)}")
+    watersheds = creating_watershed_dissolving_divergence(watersheds)
     ###### SAVING THE PROCESSES STREAMS AND WATERSHEDS TO PICKLE FORMAT FOR FURTHER analysis
 
     stage = "saving the processed data"
     logger.info(f"stage: {stage}")
-    watersheds.to_pickle(os.path.join(SWATGenXPaths.NHDPlus_path,f'{database_name}/watersheds.pkl'))
-    streams.to_pickle(os.path.join(SWATGenXPaths.NHDPlus_path,f'{database_name}/streams.pkl'))
+    watersheds.to_pickle(os.path.join(SWATGenXPaths.NHDPlus_path, f'{database_name}/watersheds.pkl'))
+    streams.to_pickle(os.path.join(SWATGenXPaths.NHDPlus_path, f'{database_name}/streams.pkl'))
 
     # save the log file
     logger.info(f"End time: {datetime.datetime.now()}")
-    
-
 
 def check_NHDPlus_preprocessed_by_VPUID(VPUID):
     output_names = ['watersheds.pkl', 'streams.pkl']
     for output_name in output_names:
         if not os.path.exists(os.path.join(SWATGenXPaths.extracted_nhd_swatplus_path, VPUID, output_name)):
-            raise ValueError(f'#### NHDPlus for {VPUID} is not preprocessed ####')    
+            raise ValueError(f'#### NHDPlus for {VPUID} is not preprocessed ####')
     print(f'#### NHDPlus for {VPUID} is preprocessed ####')
 
-
 if __name__ == "__main__":
-    VPUID = '0202'
     VPUIDs = get_all_VPUIDs()
-
+    #VPUIDs = ["0405"]
     for VPUID in VPUIDs:
-        try:
-            check_NHDPlus_preprocessed_by_VPUID(VPUID)
-        except Exception:
-            NHDPlus_preprocessing(VPUID)
+        # try:
+        # check_NHDPlus_preprocessed_by_VPUID(VPUID)
+        # except Exception:
+        NHDPlus_preprocessing(VPUID)

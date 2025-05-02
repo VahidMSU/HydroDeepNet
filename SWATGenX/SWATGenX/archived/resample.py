@@ -4,7 +4,7 @@ import os
 # Paths
 base_path = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/"
 original_DEM_path = os.path.join(base_path, "DEM/dem.tif")
-reference_raster = os.path.join(base_path, "Soil/soil.tif")
+reference_raster = os.path.join(base_path, "gSSURGO/soil.tif")
 resampled_raster_majority = os.path.join(base_path, "DEM/resampled_majority.tif")
 resampled_raster_nearest = os.path.join(base_path, "DEM/resampled_nearest.tif")
 
@@ -79,7 +79,7 @@ resample_raster(
 
 
 # Paths
-soil_path = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/Soil/soil.tif"
+soil_path = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/gSSURGO/soil.tif"
 majority_DEM = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/DEM/resampled_majority.tif"
 snapped_output_path = "/data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0415/huc12/04292000/SWAT_MODEL/Watershed/Rasters/DEM/snapped_resampled_majority.tif"
 
@@ -90,13 +90,13 @@ def get_raster_metadata(raster_path):
     ds = gdal.Open(raster_path)
     if not ds:
         raise RuntimeError(f"Failed to open raster: {raster_path}")
-    
+
     transform = ds.GetGeoTransform()
     xres, yres = transform[1], transform[5]
     xmin, ymax = transform[0], transform[3]
     xmax = xmin + (ds.RasterXSize * xres)
     ymin = ymax + (ds.RasterYSize * yres)
-    
+
     ds = None  # Close dataset
     return xres, yres, xmin, ymin, xmax, ymax
 
@@ -114,7 +114,7 @@ def snap_raster(input_path, output_path, xres, yres, xmin, ymin, xmax, ymax):
     result = gdal.Warp(output_path, input_path, options=options)
     if not result:
         raise RuntimeError(f"Failed to snap raster: {input_path}")
-    
+
     result.FlushCache()
     print(f"Snapped raster saved to: {output_path}")
 xres, yres, xmin, ymin, xmax, ymax = get_raster_metadata(soil_path)

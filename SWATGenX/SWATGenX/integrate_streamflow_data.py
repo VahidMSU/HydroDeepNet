@@ -5,7 +5,7 @@ try:
     from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     from SWATGenX.utils import get_all_VPUIDs
 except ImportError:
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
+    from SWATGenXConfigPars import SWATGenXPaths
     from utils import get_all_VPUIDs
 
 
@@ -33,7 +33,7 @@ def write_available_sites(VPUIDs, rewrite=False):
 
             station_data = pd.read_csv(streamflow_metadata_path, dtype={'site_no': str, "first_huc": str})
             all_stations.append(station_data)
-
+        print(f"all_stations: {all_stations}")
         all_stations = pd.concat(all_stations)
         all_stations['site_no'] = all_stations['site_no'].astype(str)  # Convert 'site_no' to object type
         all_stations.to_csv(SWATGenXPaths.available_sites_path, index=False)
@@ -53,14 +53,14 @@ def integrate_streamflow_data(usgs_data_base=None):
     Returns:
         pd.DataFrame: DataFrame containing integrated streamflow data.
     """
-    rewrite = False
+    rewrite = True
 
     print("Integrating streamflow data")
     VPUIDs = get_all_VPUIDs()
     all_stations = write_available_sites(VPUIDs, rewrite=rewrite)
 
-    fps = pd.read_csv(SWATGenXPaths.FPS_State_Territories, skiprows=1, dtype={'SiteNumber': str})
-
+    fps = pd.read_csv(SWATGenXPaths.FPS_State_Territories, dtype={'SiteNumber': str})
+    print(f"fps columns: {fps.columns}")
     fps_all_stations = pd.merge(all_stations, fps, left_on="site_no", right_on="SiteNumber", how="left")
     fps_all_stations = fps_all_stations.dropna(subset=["site_no"])
     fps_all_stations = fps_all_stations.fillna("---")

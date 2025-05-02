@@ -23,7 +23,7 @@ def extract_PRISM_parallel(SWATGenXPaths, VPUID, LEVEL, NAME, list_of_huc12s=Non
 
 
 class PRISMExtractor:
-    
+
     """
     Extracts PRISM precipitation and temperature data for SWAT+ simulations.
     """
@@ -37,7 +37,7 @@ class PRISMExtractor:
         self._prism_dir = SWATGenXPaths.PRISM_path
         self._outlet_dir = SWATGenXPaths.swatgenx_outlet_path
         self.SWAT_MODEL_PRISM_path = f"{self._outlet_dir}/{self.VPUID}/{self.LEVEL}/{self.NAME}/PRISM"
-        self.max_workers = 48
+        self.max_workers = 3
         self.overwrite = overwrite
 
     def should_process_file(self, file_path):
@@ -51,7 +51,7 @@ class PRISMExtractor:
         if not self.overwrite:
             print("Skipping cleanup as overwrite is False")
             return
-            
+
         try:
             # Remove individual station files
             for pattern in ['*.tmp', '*.pcp']:
@@ -85,7 +85,7 @@ class PRISMExtractor:
         with rasterio.open(self.SWATGenXPaths.PRISM_dem_path) as src:
             elev_data = src.read(1)
         return elev_data[row, col]
-    
+
 
     def clip_PRISM_by_VPUID(self):
         """
@@ -123,7 +123,7 @@ class PRISMExtractor:
         """Write precipitation file using pandas for consistent formatting"""
         try:
             filename = os.path.join(self.SWAT_MODEL_PRISM_path, f"r{row}_c{col}.pcp")
-            
+
             if not self.should_process_file(filename):
                 print(f"Skipping existing file: {filename}")
                 return
@@ -148,7 +148,7 @@ class PRISMExtractor:
             # Group by year to ensure we only keep complete years
             year_groups = data_df.groupby('year')
             complete_years_data = []
-            
+
             for year, group in year_groups:
                 expected_days = 366 if self._is_leap_year(year) else 365
                 if len(group) == expected_days and not group['value'].isna().any():
@@ -160,7 +160,7 @@ class PRISMExtractor:
 
             # Combine all complete years
             df_final = pd.concat(complete_years_data, axis=0)
-            
+
             # Write the header lines first
             with open(filename, 'w') as f:
                 f.write(f"PRISM 4km grid for VPUID {self.VPUID}, r{row}, c{col}\n")
@@ -185,7 +185,7 @@ class PRISMExtractor:
         """Write temperature file using pandas for consistent formatting"""
         try:
             filename = os.path.join(self.SWAT_MODEL_PRISM_path, f"r{row}_c{col}.tmp")
-            
+
             if not self.should_process_file(filename):
                 print(f"Skipping existing file: {filename}")
                 return
@@ -212,11 +212,11 @@ class PRISMExtractor:
             # Group by year to ensure we only keep complete years
             year_groups = data_df.groupby('year')
             complete_years_data = []
-            
+
             for year, group in year_groups:
                 expected_days = 366 if self._is_leap_year(year) else 365
-                if (len(group) == expected_days and 
-                    not group['tmax'].isna().any() and 
+                if (len(group) == expected_days and
+                    not group['tmax'].isna().any() and
                     not group['tmin'].isna().any()):
                     complete_years_data.append(group)
 
@@ -226,7 +226,7 @@ class PRISMExtractor:
 
             # Combine all complete years
             df_final = pd.concat(complete_years_data, axis=0)
-            
+
             # Write the header lines first
             with open(filename, 'w') as f:
                 f.write(f"PRISM 4km grid for VPUID {self.VPUID}, r{row}, c{col}\n")
@@ -249,7 +249,7 @@ class PRISMExtractor:
     def write_pcp_cli(self, extracted_grid):
         """Write precipitation CLI file"""
         cli_path = os.path.join(self.SWAT_MODEL_PRISM_path, 'pcp.cli')
-        
+
         if not self.should_process_file(cli_path):
             print(f"Skipping existing CLI file: {cli_path}")
             return
@@ -271,7 +271,7 @@ class PRISMExtractor:
     def write_tmp_cli(self, extracted_grid):
         """Write temperature CLI file"""
         cli_path = os.path.join(self.SWAT_MODEL_PRISM_path, 'tmp.cli')
-        
+
         if not self.should_process_file(cli_path):
             print(f"Skipping existing CLI file: {cli_path}")
             return
@@ -298,7 +298,7 @@ class PRISMExtractor:
         end_date = datetime.datetime(years[-1], 12, 31)
         date_range = pd.date_range(start_date, end_date)
         nbyr = years[-1] - years[0] + 1
-        
+
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             for row, col in zip(df.row, df.col):
                 executor.submit(self.write_pcp_file, row, col, df, years, date_range, datasets, nbyr)
@@ -321,7 +321,7 @@ class PRISMExtractor:
         try:
             # Clean up existing files first
             self.cleanup_existing_files()
-            
+
             prism_vpuid_grid = self.clip_PRISM_by_VPUID()
             print(f"Extracting PRISM data for {self.VPUID}...")
 

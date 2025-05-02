@@ -14,23 +14,23 @@ except ImportError:
 
 
 
-def generate_swatplus_rasters(SWATGenXPaths, 
-                              vpuid: str, level: str, name: str, model_name: str, 
-                               landuse_product: str, landuse_epoch: str, 
+def generate_swatplus_rasters(SWATGenXPaths,
+                              vpuid: str, level: str, name: str, model_name: str,
+                               landuse_product: str, landuse_epoch: str,
                                ls_resolution: str, dem_resolution: str) -> None:
     """Generate SWAT+ raster files."""
-    extractor = SWATplusRasterGenerator(SWATGenXPaths, vpuid, name, level, model_name, 
-                                         landuse_product, landuse_epoch, 
+    extractor = SWATplusRasterGenerator(SWATGenXPaths, vpuid, name, level, model_name,
+                                         landuse_product, landuse_epoch,
                                          ls_resolution, dem_resolution)
     extractor.generate_rasters()
 
 class SWATplusRasterGenerator:
-    def __init__(self, SWATGenXPaths, vpuid: str, name: str, level: str, model_name: str, 
-                 landuse_product: str, landuse_epoch: str, 
+    def __init__(self, SWATGenXPaths, vpuid: str, name: str, level: str, model_name: str,
+                 landuse_product: str, landuse_epoch: str,
                  ls_resolution: str, dem_resolution: str):
         self.paths = SWATGenXPaths
         print(f"################## Generating raster files for {name} {level} {vpuid} ##################")
-        
+
         # Define paths
         self.SOURCE = self.paths.construct_path(self.paths.swatgenx_outlet_path, vpuid, level, name, model_name)
 
@@ -43,7 +43,7 @@ class SWATplusRasterGenerator:
         self.swatplus_shapes_path = os.path.join(self.SOURCE, "Watershed/Shapes/")
         self.swatplus_landuse_path = os.path.join(self.SOURCE, "Watershed/Rasters/Landuse/")
         self.swatplus_dem_input = os.path.join(self.SOURCE, "Watershed/Rasters/DEM/")
-        self.swatplus_soil_input = os.path.join(self.SOURCE, "Watershed/Rasters/Soil/")
+        self.swatplus_soil_input = os.path.join(self.SOURCE, "Watershed/Rasters/gSSURGO/")
         self.swatplus_landuse_output = os.path.join(self.swatplus_landuse_path, "landuse.tif")
         self.swatplus_soil_output = os.path.join(self.swatplus_soil_input, "soil.tif")
         self.swatplus_soil_temp = os.path.join(self.swatplus_soil_input, f"soil_{ls_resolution}m_temp.tif")
@@ -136,7 +136,7 @@ class SWATplusRasterGenerator:
         landuse_raster = spatial_analysis.ExtractByMask(self.original_landuse_path, self.watershed_boundary_path)
         landuse_raster.save(self.swatplus_landuse_output)
 
-        # Extract and save Soil
+        # Extract and save gSSURGO
         soil_raster = spatial_analysis.ExtractByMask(self.original_soil_path, self.watershed_boundary_path)
         soil_raster.save(self.swatplus_soil_output)
 
@@ -161,7 +161,7 @@ class SWATplusRasterGenerator:
     def replace_invalid_soil_cells(self, soil_array: np.ndarray) -> int:
         """Replace invalid soil cells and return the most common value."""
         unique, counts = np.unique(soil_array[soil_array != 2147483647], return_counts=True)
-        
+
         df = pd.read_csv(self.paths.construct_path(self.paths.swatplus_gssurgo_csv))
         mask_value = df.muid.values.astype(int)
         ### remove the uniques that are not in the mask
@@ -172,13 +172,13 @@ class SWATplusRasterGenerator:
         ### if unique is not no
         assert len(unique) > 2, "No valid soil cells found in the raster."
         most_common_value = unique[np.argmax(counts)]
-        
+
         print(f"Most common value: {most_common_value}")
-    
+
         # Replace invalid cells
         soil_array = np.where(soil_array == 2147483647, most_common_value, soil_array)
         soil_array = np.where(np.isin(soil_array, mask_value), soil_array, most_common_value)
-    
+
         return most_common_value, soil_array
 
     def write_updated_soil_raster(self, soil_array: np.ndarray, most_common_value: int) -> None:

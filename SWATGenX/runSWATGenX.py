@@ -26,6 +26,13 @@ def check_station(station_name):
 
     FPS_sites_path = "/data/SWATGenXApp/GenXAppData/USGS/FPS_States_and_Territories.csv"
     FPS_sites = pd.read_csv(FPS_sites_path, skiprows=1)
+    if "Site Number" in FPS_sites.columns:
+        FPS_sites.rename(columns={"Site Number": "SiteNumber"}, inplace=True)
+    if "Site Name" in FPS_sites.columns:
+        FPS_sites.rename(columns={"Site Name": "SiteName"}, inplace=True)
+    ## rewrite the file
+    FPS_sites.to_csv(FPS_sites_path, index=False)
+    print(f"FPS columns: {FPS_sites.columns}")
     FPS_status = FPS_sites[FPS_sites.SiteNumber == station_name]
 
     if len(FPS_status) != 0:
@@ -41,6 +48,10 @@ def check_station(station_name):
 if __name__ == "__main__":
 
 
+    check_station("05406840")
+
+
+
     LEVEL = "huc12"
 
     MODEL_NAME = "SWAT_MODEL_Web_Application"
@@ -52,12 +63,12 @@ if __name__ == "__main__":
         #station_names = pd.read_csv(SWATGenXPaths.camel_hydro_path, sep=";", dtype={"gauge_id": str})['gauge_id'].values
 
     elif LEVEL == "huc8":
-        
+
         huc8_list = [
-            '04050001', '04050002', '04050003', '04050004', '04050005', '04050006', '04050007', 
-            '04060101', '04060102', '04060103', '04060104', '04060105', '04070003', '04070004', 
-            '04070005', '04070006', '04070007', '04080101', '04080102', '04080103', '04080104', 
-            '04080201', '04080202', '04080203', '04080204', '04080205', '04080206', '04090001', 
+            '04050001', '04050002', '04050003', '04050004', '04050005', '04050006', '04050007',
+            '04060101', '04060102', '04060103', '04060104', '04060105', '04070003', '04070004',
+            '04070005', '04070006', '04070007', '04080101', '04080102', '04080103', '04080104',
+            '04080201', '04080202', '04080203', '04080204', '04080205', '04080206', '04090001',
             '04090003', '04090004', '04100001', '04100002', '04100013'
         ]
 

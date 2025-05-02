@@ -4,7 +4,7 @@
 # and make subsequent API calls using the authentication token.
 
 # Configuration - Change these values as needed
-HOST="https://ciwre-bae.campusad.msu.edu" # Changed from 3000 to 5050
+HOST="https://swatgenx.com" # Changed from 3000 to 5050
 USERNAME="admin"
 PASSWORD="admin@admin"
 OUTPUT_FORMAT="pretty" # Options: pretty, compact

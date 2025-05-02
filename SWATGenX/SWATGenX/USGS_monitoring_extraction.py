@@ -12,16 +12,14 @@ def get_streamflow_stations_for_state(state_cds):
 
 
     for state_cd in state_cds:
-        print(f"Getting streamflow stations for {state_cd}")
-        """ Get the streamflow stations for each state and save it to a csv file, plus a shapefile"""
         try:
+            print(f"Getting streamflow stations for {state_cd}")
+            """ Get the streamflow stations for each state and save it to a csv file, plus a shapefile"""
             url = f"https://waterservices.usgs.gov/nwis/site/?format=rdb&stateCd={state_cd}&siteStatus=all&siteType=ST&hasDataTypeCd=dv"
-            locations_file = SWATGenXPaths.USGS_CONUS_stations_path
+            locations_file = f"/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/state/{state_cd}/{state_cd}.csv"
             os.makedirs(os.path.dirname(locations_file), exist_ok=True)
-            shapefile = SWATGenXPaths.USGS_CONUS_stations_shape_path
-            if os.path.exists(locations_file):
-                print(f"Data for {state_cd} already exists")
-                continue
+            shapefile = f"/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/state/{state_cd}/{state_cd}.shp"
+
             response = requests.get(url)
             if response.status_code == 200:
                 data = response.text
@@ -46,7 +44,7 @@ def get_streamflow_stations_for_state(state_cds):
             gdf.to_file(shapefile)
         except Exception as e:
             print(f"Error: {e}")
-            continue
+
 
 
 ### now read all csv files and make them one file
@@ -55,7 +53,7 @@ def organizing_stations_into_CONUS(state_cds):
     print("Organizing stations into CONUS")
     all_data = pd.DataFrame()
     for _ in state_cds:
-        locations_file = SWATGenXPaths.USGS_CONUS_stations_path
+        locations_file = f"/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/state/{_}/{_}.csv"
         if os.path.exists(locations_file):
             df = pd.read_csv(locations_file, skiprows=29, delimiter="\t", dtype={"site_no": str})
             df = df.drop(0)
@@ -72,14 +70,13 @@ def organizing_stations_into_CONUS(state_cds):
 def organizing_CONUS_by_VPUID():
     """ organize the CONUS data based on VPUID """
     print("Organizing CONUS data by VPUID")
-    all_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={"site_no": str})
-    ## convert huc_cd column to string
-    all_data['huc_cd'] = all_data['huc_cd'].astype(str)
+    all_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={"site_no": str, "huc_cd": str})
     ## filter out NaN values
+    all_data = all_data[all_data['huc_cd'].notna()]
     ## make sure huc_cd is string
     all_data['VPUID'] = ''
+    print(all_data.head())
 
-    all_data
     for i in range(len(all_data)):
         try:
             all_data.loc[i, 'VPUID'] = str(all_data.loc[i, 'huc_cd'])[:4]
@@ -89,14 +86,16 @@ def organizing_CONUS_by_VPUID():
     ## VPUID is the first 4 letters of huc_cd column
 
     VPUIDs = all_data['VPUID'].unique()
+    print(f"all unique VPUIDs: {VPUIDs}")
     print(f"Number of VPUIDs: {len(VPUIDs)}")
     print(f"VPUIDs: {VPUIDs}")
+
     for VPUID in VPUIDs:
         print(f"Organizing CONUS by VPUID: {VPUID}")
         df = all_data[all_data['VPUID'] == VPUID]
 
         os.makedirs(f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}", exist_ok=True)
-        df.to_csv(SWATGenXPaths.USGS_CONUS_stations_path, index=False)
+        df.to_csv(f"{SWATGenXPaths.streamflow_path}/VPUID/{VPUID}/streamflow_stations_{VPUID}.csv", index=False)
         geometry = df.apply(lambda row: Point(row.dec_long_va, row.dec_lat_va), axis=1).copy()
         gdf = gpd.GeoDataFrame(df, geometry=geometry, crs="EPSG:4326")
 

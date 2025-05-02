@@ -11,7 +11,7 @@ class SessionService {
     this.isSessionValid = true; // Assume session is valid initially
     this.lastCheckTime = Date.now();
     this.redirectDetected = false; // Flag to track if redirects were detected
-    this.productionHost = 'ciwre-bae.campusad.msu.edu'; // Your production host
+    this.productionHost = 'swatgenx.com'; // Your production host
     this.serverUnavailable = false; // Flag to track server availability
     this.serverUnavailableRetryTime = 300000; // 5 minutes before retrying after server unavailable
     this.mapInteracting = false;
@@ -26,7 +26,7 @@ class SessionService {
   /**
    * Check if the current URL contains Google OAuth success parameters and process them
    * @param {string} url - The current URL to check
-   * @returns {boolean} - True if processed an OAuth redirect, false otherwise 
+   * @returns {boolean} - True if processed an OAuth redirect, false otherwise
    */
   checkGoogleOAuthLogin(url) {
     // Don't process the same OAuth redirect multiple times
@@ -41,23 +41,23 @@ class SessionService {
 
       if (googleLogin === 'success' && username) {
         console.log('Google OAuth redirect detected by SessionService');
-        
+
         // Set auth state in localStorage
         localStorage.setItem('authToken', 'true');
         localStorage.setItem('username', username);
         localStorage.setItem('userName', username);
-        
+
         // Mark session as valid
         this.isSessionValid = true;
         this.consecutiveFailures = 0;
         this.oauthRedirectProcessed = true;
-        
+
         // Force an immediate session check to verify with backend
         this.forceSessionCheck();
-        
+
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Error checking Google OAuth login:', error);
@@ -79,7 +79,7 @@ class SessionService {
     this.lastCheckTime = Date.now();
     this.redirectDetected = false;
     this.serverUnavailable = false;
-    
+
     // Check if this is a Google OAuth redirect
     this.checkGoogleOAuthLogin();
 

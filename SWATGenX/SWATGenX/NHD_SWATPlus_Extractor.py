@@ -25,10 +25,10 @@ class NHD_SWATPlus_Extractor:
     It returns the processed and refined streams GeoDataFrame.
     """
     def __init__(self, SWATGenXPaths, list_of_HUC, LEVEL, VPUID, MODEL_NAME, NAME):
-        self.SWATGenXPaths = SWATGenXPaths  
-        self.BASE_PATH = SWATGenXPaths.database_dir  
+        self.SWATGenXPaths = SWATGenXPaths
+        self.BASE_PATH = SWATGenXPaths.database_dir
         self.list_of_HUC = list_of_HUC
-        self.LEVEL = LEVEL  
+        self.LEVEL = LEVEL
         self.VPUID = VPUID
         self.MODEL_NAME = MODEL_NAME
         self.NAME = NAME
@@ -49,7 +49,7 @@ class NHD_SWATPlus_Extractor:
         Create unique subbasin identifiers based on two criteria.
         """
         df['Subbasin_updated'] = pd.factorize(df[first_criteria].astype(str) + "_" + df[second_criteria].astype(str))[0] + 1
-        self.logger.info(f"Subbasin IDs created based on combination of {first_criteria} and {second_criteria}")    
+        self.logger.info(f"Subbasin IDs created based on combination of {first_criteria} and {second_criteria}")
         with contextlib.suppress(Exception):
             df = df.drop(columns='Subbasin')
 
@@ -129,7 +129,7 @@ class NHD_SWATPlus_Extractor:
                                 right_on='Permanent_Identifier', how='left')
         Lakes=Lakes[Lakes.Permanent_Identifier.isin(streams.WBArea_Permanent_Identifier)].reset_index(drop=True)
         return streams
-    
+
     def load_and_clean_lakes(self, criteria=0.1):
         Lakes_path = f'{self.SWATGenXPaths.extracted_nhd_swatplus_path}/{self.VPUID}/NHDWaterbody.pkl'
         Lakes = gpd.GeoDataFrame(pd.read_pickle(Lakes_path), geometry='geometry')
@@ -194,7 +194,7 @@ class NHD_SWATPlus_Extractor:
         return streams
 
 
-    def loading_and_adding_lake_ids(self, streams): 
+    def loading_and_adding_lake_ids(self, streams):
         Lakes = gpd.GeoDataFrame(pd.read_pickle(self.lakes_pickle_path), geometry='geometry')
         self.logger.info('NHDPluIDs of lakes renamed to LakeId')
         self.logger.info('lakes are loaded')
@@ -273,6 +273,14 @@ class NHD_SWATPlus_Extractor:
 
     def formating_stream_data_type_and_saving(self,df):
         df = df.copy()  # Work on a copy to avoid SettingWithCopyWarning
+
+        # Convert large numeric fields to strings
+        large_numeric_fields = ['NHDPlusID', 'HydroSeq', 'DnHydroSeq', 'UpHydroSeq']
+        for field in large_numeric_fields:
+            if field in df.columns:
+                df[field] = df[field].astype(str)
+
+        # Convert other numeric fields
         df['DSLINKNO'] = df['DSLINKNO'].astype('Int64')
         df['LINKNO'] = df['LINKNO'].astype('Int64')
         df['Length'] = df['Length'].astype(float)
@@ -290,7 +298,7 @@ class NHD_SWATPlus_Extractor:
         )
         df[['DSLINKNO','LINKNO','Length','Drop','BasinNo','WSNO','LakeId','LakeWithin','LakeIn','LakeOut','LakeMain','geometry']].reset_index(drop=True)
         df.to_file(swatplus_streams_path)
-        #df[['DSLINKNO','LINKNO','Length','Drop','BasinNo','WSNO','geometry']].to_file(BASE_PATH+'NHDPlusData/_SWAT_plus_streams_')
+        #df[['DSLINKNO','LINKNO','Length','Drop','BasinNo','WSNO','geometry']].to_file(BASE_PATH+'NHDPlusHR/_SWAT_plus_streams_')
 
         self.logger.info('\nSWAT+ streams shapefile is created')
 
@@ -298,7 +306,7 @@ class NHD_SWATPlus_Extractor:
     def _extracted_from_formating_stream_data_type_and_saving_4(self, arg0, arg1, arg2, arg3):
         arg0[arg1] = arg0[arg1].astype('Int64')
         arg0[arg2] = arg0[arg2].astype('Int64')
-        
+
         os.makedirs(self.swatplus_shape_path, exist_ok=True)
         return os.path.join(self.swatplus_shape_path, arg3)
 
@@ -401,7 +409,7 @@ class NHD_SWATPlus_Extractor:
 
         # Initialize new columns with self.no_value  (I found this an effective approach for handling nan and null values)
         self.logger.info(f'################################# Unique LAKEID {streams.LakeId.unique()}')
-        streams['LakeId'] = streams['LakeId'].fillna(self.no_value).infer_objects(copy=False) 
+        streams['LakeId'] = streams['LakeId'].fillna(self.no_value).infer_objects(copy=False)
         streams['LakeIn'] = self.no_value
         streams['LakeOut'] = self.no_value
         streams['LakeMain'] = self.no_value
@@ -422,7 +430,7 @@ class NHD_SWATPlus_Extractor:
                 continue
             # Ensure the LakeIn column is of type object
             streams['LakeIn'] = streams['LakeIn'].astype(object)
-            
+
             # Check and assign LakeIn value
             if lake_dict.get(dn_hydro_seq, self.no_value) != self.no_value and lake_dict.get(hydroseq, self.no_value) == self.no_value:
                 streams.loc[streams['HydroSeq'] == hydroseq, 'LakeIn'] = lake_dict[dn_hydro_seq]
@@ -444,11 +452,11 @@ class NHD_SWATPlus_Extractor:
                     single_row = group.iloc[0]
                     dn_hydro_seq = single_row['DnHydroSeq']
                     dn_row = streams.loc[streams['HydroSeq'] == dn_hydro_seq]
-                    
+
                     # Ensure the LakeOut and LakeWithin columns are of type object
                     streams['LakeOut'] = streams['LakeOut'].astype(object)
                     streams['LakeWithin'] = streams['LakeWithin'].astype(object)
-                    
+
                     # Check if dn_row is not empty and LakeId is self.no_value
                     if not dn_row.empty and dn_row['LakeId'].iloc[0] == self.no_value:
                         # Assign lake_id to LakeOut for the matching HydroSeq
@@ -472,7 +480,7 @@ class NHD_SWATPlus_Extractor:
                     # Ensure the LakeOut and LakeWithin columns are of type object
                     streams['LakeOut'] = streams['LakeOut'].astype(object)
                     streams['LakeWithin'] = streams['LakeWithin'].astype(object)
-                    
+
                     # Check if dn_row is not empty and LakeId is self.no_value
                     if not dn_row.empty and dn_row['LakeId'].iloc[0] == self.no_value:
                         # Assign lake_id to LakeOut for the matching HydroSeq
@@ -669,7 +677,7 @@ class NHD_SWATPlus_Extractor:
 
 
 
-def writing_swatplus_cli_files(SWATGenXPaths, VPUID, LEVEL, NAME):  
+def writing_swatplus_cli_files(SWATGenXPaths, VPUID, LEVEL, NAME):
     SWAT_MODEL_PRISM_path = f'{SWATGenXPaths.swatgenx_outlet_path}/{VPUID}/{LEVEL}/{NAME}/PRISM/'
     ## get the name of files
     files = os.listdir(SWAT_MODEL_PRISM_path)

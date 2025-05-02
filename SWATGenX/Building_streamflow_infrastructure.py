@@ -2,12 +2,14 @@ from SWATGenX.USGS_streamflow_retrieval import USGS_streamflow_retrieval_by_VPUI
 from multiprocessing import Process
 if __name__ == "__main__":
 
-    VPUIDs = get_all_VPUIDs("/data/SWATGenXApp/GenXAppData/NHDPlusData")
+    VPUIDs = get_all_VPUIDs("/data/SWATGenXApp/GenXAppData/NHDPlusHR")
+
     processes = []
 
     test = False
+
     if test:
-        VPUIDs = "0406"
+        VPUIDs = "0405"
         USGS_streamflow_retrieval_by_VPUID(VPUIDs)
         exit()
     from multiprocessing import Pool
@@ -18,6 +20,5 @@ if __name__ == "__main__":
         print(f"Processing VPUID: {VPUID}")
         USGS_streamflow_retrieval_by_VPUID(VPUID)
 
-    with Pool(processes=15) as pool:
+    with Pool(processes=1) as pool:
         pool.map(process_VPUID, VPUIDs)
- 

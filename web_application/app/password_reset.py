@@ -25,21 +25,21 @@ def send_reset_password_email(user, reset_token):
     """
     try:
         # Define the sender and recipient
-        sender = "no-reply@ciwre.msu.edu"
+        sender = "hydrodeepnet@gmail.com"
         recipient = user.email
 
         # Create the email content
-        subject = "Password Reset - SWATGenX Application"
-        
+        subject = "Password Reset - HydroDeepNet Application"
+
         # Get the site URL from application config - this will be set based on environment
         site_url = current_app.config.get('SITE_URL')
         logger.info(f"Using site URL for password reset: {site_url}")
-        
+
         # Create a professional reset email with the correct URL format
         body = f"""
 Hello {user.username},
 
-We received a request to reset your password for your SWATGenX Application account.
+We received a request to reset your password for your HydroDeepNet Application account.
 To reset your password, please click on the link below:
 
 {site_url}/reset-password?token={reset_token}
@@ -50,18 +50,20 @@ If you did not request a password reset, please ignore this email or contact sup
 
 This is an automated message, please do not reply.
         """
-        
+
         msg = MIMEText(body)
         msg["Subject"] = subject
         msg["From"] = sender
         msg["To"] = recipient
 
-        # Define the SMTP server and port
-        smtp_server = "express.mail.msu.edu"
-        smtp_port = 25
+        # Define the SMTP server and port for Gmail
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
 
-        # Send the email
+        # Send the email using Gmail's SMTP server
         with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Enable TLS
+            server.login(sender, current_app.config['GMAIL_APP_PASSWORD'])
             server.sendmail(sender, [recipient], msg.as_string())
         logger.info(f"Password reset email sent to {recipient} with site URL: {site_url}")
         return True
@@ -79,45 +81,45 @@ def request_password_reset():
     try:
         data = request.get_json()
         email = data.get('email', '').strip().lower()
-        
+
         if not email:
             current_app.logger.warning("Password reset failed: missing email")
             return jsonify({"success": False, "message": "Email is required"}), 400
-            
+
         # Find the user by email
         user = User.query.filter_by(email=email).first()
-        
+
         # Always return success even if email not found (for security)
         if not user:
             current_app.logger.warning(f"Password reset request for non-existent email: {email}")
             return jsonify({
-                "success": True, 
+                "success": True,
                 "message": "If your email is registered, you will receive password reset instructions."
             })
-        
+
         # Generate reset token
         reset_token = user.get_reset_token(expires_sec=1800)  # 30 minutes
-        
+
         # Send reset email
         email_sent = send_reset_password_email(user, reset_token)
-        
+
         if email_sent:
             current_app.logger.info(f"Password reset email sent to {email}")
             return jsonify({
-                "success": True, 
+                "success": True,
                 "message": "Password reset instructions have been sent to your email."
             })
         else:
             current_app.logger.error(f"Failed to send password reset email to {email}")
             return jsonify({
-                "success": False, 
+                "success": False,
                 "message": "Failed to send reset email. Please try again later."
             }), 500
-            
+
     except Exception as e:
         current_app.logger.error(f"Password reset request error: {e}")
         return jsonify({
-            "success": False, 
+            "success": False,
             "message": "An error occurred during the password reset request."
         }), 500
 
@@ -132,38 +134,38 @@ def reset_password():
         data = request.get_json()
         token = data.get('token', '')
         new_password = data.get('password', '')
-        
+
         if not token or not new_password:
             current_app.logger.warning("Password reset failed: missing token or new password")
             return jsonify({
-                "success": False, 
+                "success": False,
                 "message": "Reset token and new password are required"
             }), 400
-        
+
         # Verify the token
         user = User.verify_token(token, expires_sec=1800, salt='password-reset')
-        
+
         if not user:
             current_app.logger.warning(f"Password reset failed: invalid or expired token")
             return jsonify({
-                "success": False, 
+                "success": False,
                 "message": "Invalid or expired reset token. Please request a new reset link."
             }), 400
-        
+
         # Update the password
         user.set_password(new_password)
         db.session.commit()
-        
+
         current_app.logger.info(f"Password reset successful for user {user.username}")
         return jsonify({
-            "success": True, 
+            "success": True,
             "message": "Your password has been updated successfully. You can now log in with your new password."
         })
-        
+
     except Exception as e:
         current_app.logger.error(f"Password reset error: {e}")
         db.session.rollback()  # Roll back any failed transaction
         return jsonify({
-            "success": False, 
+            "success": False,
             "message": "An error occurred during password reset."
         }), 500

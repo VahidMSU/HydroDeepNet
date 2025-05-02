@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 def get_all_VPUIDs():
-    path = "/data/SWATGenXApp/GenXAppData/NHDPlusData/NHDPlus_VPU_National/"
+    path = "/data/SWATGenXApp/GenXAppData/NHDPlusHR/CONUS/"
     files = glob.glob(f"{path}*.zip")
     return [os.path.basename(file).split('_')[2] for file in files]
 
@@ -20,7 +20,7 @@ def fetch_station_information(VPUIDs, Region):
         Region (str): Region number
 
     Returns:
-        dataframe, dataframe, list 
+        dataframe, dataframe, list
     """
     all_streamflow_stations = pd.DataFrame()
     all_meta_data = pd.DataFrame()
@@ -49,17 +49,17 @@ def fetch_station_information(VPUIDs, Region):
         for huc12 in list_of_huc12s:
             data.add(huc12.strip("'"))
     all_list_of_huc12s = list(data)
-    
+
     ### save all_meta_data and all_streamflow_stations
     all_meta_data.to_csv(f"/data/SWATGenXApp/GenXAppData/Documentations/Region{Region}/all_meta_data.csv", index=False)
     all_streamflow_stations.to_file(f"/data/SWATGenXApp/GenXAppData/Documentations/Region{Region}/all_streamflow_stations.shp")
-    
+
     return all_streamflow_stations, all_meta_data, all_list_of_huc12s
 
 VPUIDs = get_all_VPUIDs()
 Region = "02"
 streamflow_base_path = "/data/SWATGenXApp/GenXAppData/USGS/streamflow_stations/VPUID"
-national_nhdplus_path = "/data/SWATGenXApp/GenXAppData/NHDPlusData/NHDPlus_H_National_Release_1_GDB/NHDPlus_H_National_Release_1_GDB.gdb"
+national_nhdplus_path = "/data/SWATGenXApp/GenXAppData/NHDPlusHR/NHDPlus_H_National_Release_1_GDB/NHDPlus_H_National_Release_1_GDB.gdb"
 national_doc_region_path = "/data/SWATGenXApp/GenXAppData/Documentations/Region02/"
 
 all_streamflow_stations, all_meta_data, all_list_of_huc12s = fetch_station_information(VPUIDs, Region)

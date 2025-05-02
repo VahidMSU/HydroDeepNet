@@ -15,9 +15,9 @@ def test_api_endpoint(base_url, endpoint, method='GET', data=None, verbose=False
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     }
-    
+
     print(f"Testing {method} request to {url}")
-    
+
     try:
         if method.upper() == 'GET':
             response = requests.get(url, headers=headers, timeout=10)
@@ -26,14 +26,14 @@ def test_api_endpoint(base_url, endpoint, method='GET', data=None, verbose=False
         else:
             print(f"Method {method} not supported")
             return False
-        
+
         print(f"Status Code: {response.status_code}")
-        
+
         if verbose:
             print("Response Headers:")
             for key, value in response.headers.items():
                 print(f"  {key}: {value}")
-        
+
         if 200 <= response.status_code < 300:
             try:
                 response_data = response.json()
@@ -48,49 +48,49 @@ def test_api_endpoint(base_url, endpoint, method='GET', data=None, verbose=False
             print("\nError Response:")
             print(response.text[:200])
             return False
-            
+
     except requests.exceptions.RequestException as e:
         print(f"Connection error: {e}")
         return False
 
 def main():
     parser = argparse.ArgumentParser(description='Test API endpoints')
-    parser.add_argument('--base-url', '-b', default='https://ciwre-bae.campusad.msu.edu', 
-                        help='Base URL for API (default: https://ciwre-bae.campusad.msu.edu)')
+    parser.add_argument('--base-url', '-b', default='https://swatgenx.com',
+                        help='Base URL for API (default: https://swatgenx.com)')
     parser.add_argument('--verbose', '-v', action='store_true', help='Show verbose output')
-    
+
     args = parser.parse_args()
-    
+
     # First test the diagnostic API endpoint
     print("\n=== Testing Diagnostic Status Endpoint ===")
     status_ok = test_api_endpoint(args.base_url, '/api/diagnostic/status', verbose=args.verbose)
-    
+
     if not status_ok:
         print("\n❌ API status check failed. Check network connectivity and server status.")
         sys.exit(1)
-    
+
     # Test the echo endpoint
     print("\n=== Testing Echo Endpoint ===")
     echo_data = {'test': 'data', 'timestamp': 'now'}
-    echo_ok = test_api_endpoint(args.base_url, '/api/diagnostic/echo', 
+    echo_ok = test_api_endpoint(args.base_url, '/api/diagnostic/echo',
                                 method='POST', data=echo_data, verbose=args.verbose)
-    
+
     if not echo_ok:
         print("\n❌ Echo test failed. There might be issues with POST requests.")
     else:
         print("\n✅ Echo test successful!")
-    
+
     # Test the model-settings simulation endpoint
     print("\n=== Testing Model Settings Simulation ===")
     model_data = {'site_no': '12345678', 'ls_resolution': 250, 'dem_resolution': 30}
-    model_ok = test_api_endpoint(args.base_url, '/api/diagnostic/test-model-settings', 
+    model_ok = test_api_endpoint(args.base_url, '/api/diagnostic/test-model-settings',
                                 method='POST', data=model_data, verbose=args.verbose)
-    
+
     if not model_ok:
         print("\n❌ Model settings simulation failed. This suggests the actual model-settings endpoint may have issues.")
     else:
         print("\n✅ Model settings simulation successful!")
-    
+
     # Print overall summary
     print("\n=== Test Summary ===")
     if status_ok and echo_ok and model_ok:

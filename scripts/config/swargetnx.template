@@ -1,0 +1,159 @@
+<VirtualHost *:443>
+    ServerName swatgenx.com
+    DocumentRoot ##WEBAPP_DIR##/frontend/build
+    <Directory ##WEBAPP_DIR##/frontend/build>
+        Require all granted
+        AllowOverride All
+        Options Indexes FollowSymLinks
+    </Directory>
+
+    RequestHeader set X-Forwarded-Proto "https"
+    RequestHeader set X-Forwarded-Ssl "on"
+
+    # Set proper content type for JSON responses from API
+    <LocationMatch "^/api/">
+        Header always set Content-Type "application/json" env=API_RESPONSE
+        SetEnvIf Request_URI "^/api/" API_RESPONSE
+    </LocationMatch>
+
+    # Proxy API Requests to Flask (port 5050)
+    ProxyPreserveHost On
+    ProxyRequests Off
+
+    # Add timeout settings to prevent issues
+    ProxyTimeout 120
+
+    # Special handling for the model-settings endpoint - redirect to the API version
+    <Location /model-settings>
+        # First handle the OPTIONS method for CORS
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=200,L]
+
+        # For any other method, internally rewrite to the /api version
+        RewriteCond %{REQUEST_METHOD} !OPTIONS
+        RewriteRule ^(.*)$ /api/model-settings [PT,L]
+
+        # Ensure content type and CORS headers are set
+        Header always set Content-Type "application/json"
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Content-Type, X-Requested-With, X-CSRF-Token"
+    </Location>
+
+    # Route the model-settings specifically (before the general /api)
+    ProxyPass /api/model-settings http://127.0.0.1:5050/api/model-settings timeout=120 retry=0
+    ProxyPassReverse /api/model-settings http://127.0.0.1:5050/api/model-settings
+
+    # Route the diagnostic endpoints with high priority
+    ProxyPass /api/diagnostic http://127.0.0.1:5050/api/diagnostic
+    ProxyPassReverse /api/diagnostic http://127.0.0.1:5050/api/diagnostic
+
+    # Regular API proxy
+    ProxyPass /api/ http://127.0.0.1:5050/api/ retry=0
+    ProxyPassReverse /api/ http://127.0.0.1:5050/api/
+
+    # Proxy WebSocket Requests (if needed)
+    ProxyPass /ws ws://127.0.0.1:5050/ws
+    ProxyPassReverse /ws ws://127.0.0.1:5050/ws
+
+    # Proxy login requests
+    ProxyPass /login http://127.0.0.1:5050/login
+    ProxyPassReverse /login http://127.0.0.1:5050/login
+
+    # Proxy Signup requests
+    ProxyPass /signup http://127.0.0.1:5050/signup
+    ProxyPassReverse /signup http://127.0.0.1:5050/signup
+
+    # Proxy verify requests
+    ProxyPass        /verify http://127.0.0.1:5050/api/verify
+    ProxyPassReverse /verify http://127.0.0.1:5050/api/verify
+
+    # Proxy model-related routes - ensure these are handled correctly with better timeout
+    ProxyPass        /model-settings http://127.0.0.1:5050/model-settings retry=0 timeout=120
+    ProxyPassReverse /model-settings http://127.0.0.1:5050/model-settings
+
+    # Explicitly set JSON content type for model-settings responses
+    <LocationMatch "^/model-settings$">
+        Header always set Content-Type "application/json" env=MODEL_SETTINGS_RESPONSE
+        SetEnvIf Request_URI "^/model-settings$" MODEL_SETTINGS_RESPONSE
+    </LocationMatch>
+
+    ProxyPass        /model-confirmation http://127.0.0.1:5050/model-confirmation
+    ProxyPassReverse /model-confirmation http://127.0.0.1:5050/model-confirmation
+
+    # Proxy visualization routes
+    ProxyPass        /vision_system http://127.0.0.1:5050/vision_system
+    ProxyPassReverse /vision_system http://127.0.0.1:5050/vision_system
+
+    # Proxy download routes to Flask
+    ProxyPass        /download/ http://127.0.0.1:5050/download/
+    ProxyPassReverse /download/ http://127.0.0.1:5050/download/
+
+    # Add new download_directory route
+    ProxyPass        /download_directory/ http://127.0.0.1:5050/download_directory/
+    ProxyPassReverse /download_directory/ http://127.0.0.1:5050/download_directory/
+
+    # Proxy reports routes
+    ProxyPass        /reports http://127.0.0.1:5050/reports
+    ProxyPassReverse /reports http://127.0.0.1:5050/reports
+
+    # Serve React's static files
+    Alias /static/react ##WEBAPP_DIR##/frontend/build/static
+    <Directory ##WEBAPP_DIR##/frontend/build/static>
+        Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride None
+    </Directory>
+
+    # Legacy static files
+    Alias /static/images ##DATA_DIR##/images
+    <Directory ##DATA_DIR##/images>
+        Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Header set Access-Control-Allow-Origin "*"
+    </Directory>
+
+    Alias /static/videos ##DATA_DIR##/videos
+    <Directory ##DATA_DIR##/videos>
+        Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Header set Access-Control-Allow-Origin "*"
+    </Directory>
+
+    # Alias for visualization content
+    Alias /static/visualizations ##DATA_DIR##/SWATplus_by_VPUID/0000/huc12
+    <Directory ##DATA_DIR##/SWATplus_by_VPUID/0000/huc12>
+        Require all granted
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Header set Access-Control-Allow-Origin "*"
+    </Directory>
+
+    # Allow access to user directories
+    <Directory ##USER_DIR##>
+        Require all granted
+    </Directory>
+
+    # React frontend routing fallback
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/api/
+    RewriteCond %{REQUEST_URI} !^/ws
+    RewriteCond %{REQUEST_URI} !^/download/
+    RewriteCond %{REQUEST_URI} !^/download_directory/
+    RewriteCond %{REQUEST_URI} !^/static/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ /index.html [QSA,L]
+
+    # SSL certificates
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/ciwre-bae_campusad_msu_edu_cert.cer
+    SSLCertificateChainFile /etc/ssl/certs/ciwre-bae_campusad_msu_edu.cer
+    SSLCertificateKeyFile /etc/ssl/private/swatgenx.com.key
+
+    # Error and Access Logs
+    ErrorLog ##LOG_DIR##/ciwre-bae_error.log
+    CustomLog ##LOG_DIR##/ciwre-bae_access.log combined
+</VirtualHost>

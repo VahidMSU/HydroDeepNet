@@ -6,12 +6,20 @@ except Exception:
     from SWATGenXConfigPars import SWATGenXPaths
 
 def get_all_VPUIDs():
-    VPUIDs_path = f"{SWATGenXPaths.DEM_path}/VPUID/"
-    VPUIDs = os.listdir(VPUIDs_path)
-    VPUIDs = [VPUID for VPUID in VPUIDs if os.path.isdir(os.path.join(VPUIDs_path, VPUID))]
+    try:
+        from SWATGenX.download_nhdplus_hr import get_file_list
+    except Exception:
+        from download_nhdplus_hr import get_file_list
+
+    available_files = get_file_list()
+    VPUIDs = list(available_files.keys())
+
     return VPUIDs
 
 def find_VPUID(station_no):
+
+    assert os.path.exists(SWATGenXPaths.USGS_CONUS_stations_path), f"File {SWATGenXPaths.USGS_CONUS_stations_path} does not exist"
+
     CONUS_streamflow_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={'site_no': str,'huc_cd': str})
     return CONUS_streamflow_data[
         CONUS_streamflow_data.site_no == station_no
@@ -41,8 +49,5 @@ def return_list_of_huc12s(station_name):
     print(f"Station name: {station_name}, VPUID: {vpuid}")
     list_of_huc12s = {int(huc12.strip("'")) for huc12 in list_of_huc12s[1:-1].split(", ")}
     list_of_huc12s = [f"{huc12:012d}" for huc12 in list_of_huc12s]
-    
+
     return list_of_huc12s, vpuid
-
-
-

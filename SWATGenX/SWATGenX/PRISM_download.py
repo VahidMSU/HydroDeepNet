@@ -76,35 +76,62 @@ def download_and_unzip_data(TYPE, YEAR, MONTH, DAY, zip_dir, extract_dir):
     os.makedirs(os.path.dirname(zip_path), exist_ok=True)
     os.makedirs(extract_dir, exist_ok=True)
 
-    # Check if we need to download
-    if not os.path.exists(zip_path) or not is_valid_zip(zip_path):
-        print(f"Downloading {zip_path}")
-        if not download_file(url, zip_path):
-            print(f"Failed to download {zip_path} after multiple attempts")
-            return
-    else:
-        print(f"{zip_path} exists and is valid")
-
     extract_path = os.path.join(extract_dir, f"PRISM_{TYPE}_stable_4kmD2_{YEAR}{MONTH:02}{DAY:02}_bil")
+    bil_file = os.path.join(extract_path, f"PRISM_{TYPE}_stable_4kmD2_{YEAR}{MONTH:02}{DAY:02}_bil.bil")
+    hdr_file = os.path.join(extract_path, f"PRISM_{TYPE}_stable_4kmD2_{YEAR}{MONTH:02}{DAY:02}_bil.hdr")
 
-    # Check if we need to extract
-    if not os.path.exists(extract_path) or not os.listdir(extract_path):
+    # Check if we already have valid files
+    if os.path.exists(bil_file) and os.path.exists(hdr_file) and os.path.getsize(bil_file) > 0:
+        print(f"Valid files already exist for {YEAR}-{MONTH:02}-{DAY:02}")
+        return
+
+    # If we have empty files, remove them
+    if os.path.exists(bil_file) and os.path.getsize(bil_file) == 0:
+        print(f"Removing empty file {bil_file}")
+        os.remove(bil_file)
+    if os.path.exists(hdr_file) and os.path.getsize(hdr_file) == 0:
+        print(f"Removing empty file {hdr_file}")
+        os.remove(hdr_file)
+
+    max_retries = 3
+    for attempt in range(max_retries):
+        # Check if we need to download
+        if not os.path.exists(zip_path) or not is_valid_zip(zip_path):
+            print(f"Download attempt {attempt + 1} for {zip_path}")
+            if not download_file(url, zip_path):
+                print(f"Failed to download {zip_path} on attempt {attempt + 1}")
+                continue
+        else:
+            print(f"{zip_path} exists and is valid")
+
+        # Extract the files
         print(f"Extracting {zip_path} to {extract_path}")
         try:
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 zip_ref.extractall(extract_path)
+
             # Verify extraction
-            if not os.listdir(extract_path):
-                print(f"Extraction failed - directory is empty")
+            if not os.path.exists(bil_file) or not os.path.exists(hdr_file):
+                print(f"Extraction failed - missing required files")
                 shutil.rmtree(extract_path)
-                return
+                continue
+
+            if os.path.getsize(bil_file) == 0 or os.path.getsize(hdr_file) == 0:
+                print(f"Extracted files are empty")
+                shutil.rmtree(extract_path)
+                continue
+
+            # If we get here, we have valid files
+            print(f"Successfully downloaded and extracted files for {YEAR}-{MONTH:02}-{DAY:02}")
+            return
+
         except (zipfile.BadZipFile, zipfile.LargeZipFile) as e:
             print(f"Error extracting {zip_path}: {e}")
             if os.path.exists(extract_path):
                 shutil.rmtree(extract_path)
-            return
-    else:
-        print(f"{extract_path} exists")
+            continue
+
+    print(f"Failed to download and extract files for {YEAR}-{MONTH:02}-{DAY:02} after {max_retries} attempts")
 
 
 if __name__ == "__main__":
@@ -122,7 +149,7 @@ if __name__ == "__main__":
             process.start()
 
             ## maximum 5 processes at a time
-            if len(processes) >= 10:
+            if len(processes) >= 200:
                 for process in processes:
                     process.join()
                 processes = []

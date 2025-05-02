@@ -1,7 +1,7 @@
 <VirtualHost *:443>
-    ServerName ciwre-bae.campusad.msu.edu
-    DocumentRoot ##WEBAPP_DIR##/frontend/build
-    <Directory ##WEBAPP_DIR##/frontend/build>
+    ServerName swatgenx.com
+    DocumentRoot /data/SWATGenXApp/codes/web_application/frontend/build
+    <Directory /data/SWATGenXApp/codes/web_application/frontend/build>
         Require all granted
         AllowOverride All
         Options Indexes FollowSymLinks
@@ -19,28 +19,28 @@
     # Proxy API Requests to Flask (port 5050)
     ProxyPreserveHost On
     ProxyRequests Off
-    
+
     # Add timeout settings to prevent issues
     ProxyTimeout 120
-    
+
     # Special handling for the model-settings endpoint - redirect to the API version
     <Location /model-settings>
         # First handle the OPTIONS method for CORS
         RewriteEngine On
         RewriteCond %{REQUEST_METHOD} OPTIONS
         RewriteRule ^(.*)$ $1 [R=200,L]
-        
+
         # For any other method, internally rewrite to the /api version
         RewriteCond %{REQUEST_METHOD} !OPTIONS
         RewriteRule ^(.*)$ /api/model-settings [PT,L]
-        
+
         # Ensure content type and CORS headers are set
         Header always set Content-Type "application/json"
         Header always set Access-Control-Allow-Origin "*"
         Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
         Header always set Access-Control-Allow-Headers "Content-Type, X-Requested-With, X-CSRF-Token"
     </Location>
-    
+
     # Route the model-settings specifically (before the general /api)
     ProxyPass /api/model-settings http://127.0.0.1:5050/api/model-settings timeout=120 retry=0
     ProxyPassReverse /api/model-settings http://127.0.0.1:5050/api/model-settings
@@ -48,7 +48,7 @@
     # Route the diagnostic endpoints with high priority
     ProxyPass /api/diagnostic http://127.0.0.1:5050/api/diagnostic
     ProxyPassReverse /api/diagnostic http://127.0.0.1:5050/api/diagnostic
-    
+
     # Regular API proxy
     ProxyPass /api/ http://127.0.0.1:5050/api/ retry=0
     ProxyPassReverse /api/ http://127.0.0.1:5050/api/
@@ -60,7 +60,7 @@
     # Proxy login requests
     ProxyPass /login http://127.0.0.1:5050/login
     ProxyPassReverse /login http://127.0.0.1:5050/login
-    
+
     # Proxy Signup requests
     ProxyPass /signup http://127.0.0.1:5050/signup
     ProxyPassReverse /signup http://127.0.0.1:5050/signup
@@ -72,16 +72,16 @@
     # Proxy model-related routes - ensure these are handled correctly with better timeout
     ProxyPass        /model-settings http://127.0.0.1:5050/model-settings retry=0 timeout=120
     ProxyPassReverse /model-settings http://127.0.0.1:5050/model-settings
-    
+
     # Explicitly set JSON content type for model-settings responses
     <LocationMatch "^/model-settings$">
         Header always set Content-Type "application/json" env=MODEL_SETTINGS_RESPONSE
         SetEnvIf Request_URI "^/model-settings$" MODEL_SETTINGS_RESPONSE
     </LocationMatch>
-    
+
     ProxyPass        /model-confirmation http://127.0.0.1:5050/model-confirmation
     ProxyPassReverse /model-confirmation http://127.0.0.1:5050/model-confirmation
-    
+
     # Proxy visualization routes
     ProxyPass        /vision_system http://127.0.0.1:5050/vision_system
     ProxyPassReverse /vision_system http://127.0.0.1:5050/vision_system
@@ -89,7 +89,7 @@
     # Proxy download routes to Flask
     ProxyPass        /download/ http://127.0.0.1:5050/download/
     ProxyPassReverse /download/ http://127.0.0.1:5050/download/
-    
+
     # Add new download_directory route
     ProxyPass        /download_directory/ http://127.0.0.1:5050/download_directory/
     ProxyPassReverse /download_directory/ http://127.0.0.1:5050/download_directory/
@@ -99,24 +99,24 @@
     ProxyPassReverse /reports http://127.0.0.1:5050/reports
 
     # Serve React's static files
-    Alias /static/react ##WEBAPP_DIR##/frontend/build/static
-    <Directory ##WEBAPP_DIR##/frontend/build/static>
+    Alias /static/react /data/SWATGenXApp/codes/web_application/frontend/build/static
+    <Directory /data/SWATGenXApp/codes/web_application/frontend/build/static>
         Require all granted
         Options Indexes FollowSymLinks
         AllowOverride None
     </Directory>
 
     # Legacy static files
-    Alias /static/images ##DATA_DIR##/images
-    <Directory ##DATA_DIR##/images>
+    Alias /static/images /data/SWATGenXApp/GenXAppData/images
+    <Directory /data/SWATGenXApp/GenXAppData/images>
         Require all granted
         Options Indexes FollowSymLinks
         AllowOverride None
         Header set Access-Control-Allow-Origin "*"
     </Directory>
 
-    Alias /static/videos ##DATA_DIR##/videos
-    <Directory ##DATA_DIR##/videos>
+    Alias /static/videos /data/SWATGenXApp/GenXAppData/videos
+    <Directory /data/SWATGenXApp/GenXAppData/videos>
         Require all granted
         Options Indexes FollowSymLinks
         AllowOverride None
@@ -124,16 +124,16 @@
     </Directory>
 
     # Alias for visualization content
-    Alias /static/visualizations ##DATA_DIR##/SWATplus_by_VPUID/0000/huc12
-    <Directory ##DATA_DIR##/SWATplus_by_VPUID/0000/huc12>
+    Alias /static/visualizations /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12
+    <Directory /data/SWATGenXApp/GenXAppData/SWATplus_by_VPUID/0000/huc12>
         Require all granted
         Options Indexes FollowSymLinks
         AllowOverride None
         Header set Access-Control-Allow-Origin "*"
     </Directory>
-    
+
     # Allow access to user directories
-    <Directory ##USER_DIR##>
+    <Directory /data/SWATGenXApp/Users>
         Require all granted
     </Directory>
 
@@ -151,9 +151,9 @@
     SSLEngine on
     SSLCertificateFile /etc/ssl/certs/ciwre-bae_campusad_msu_edu_cert.cer
     SSLCertificateChainFile /etc/ssl/certs/ciwre-bae_campusad_msu_edu.cer
-    SSLCertificateKeyFile /etc/ssl/private/ciwre-bae.campusad.msu.edu.key
+    SSLCertificateKeyFile /etc/ssl/private/swatgenx.com.key
 
     # Error and Access Logs
-    ErrorLog ##LOG_DIR##/ciwre-bae_error.log
-    CustomLog ##LOG_DIR##/ciwre-bae_access.log combined
+    ErrorLog /data/SWATGenXApp/codes/web_application/logs/ciwre-bae_error.log
+    CustomLog /data/SWATGenXApp/codes/web_application/logs/ciwre-bae_access.log combined
 </VirtualHost>

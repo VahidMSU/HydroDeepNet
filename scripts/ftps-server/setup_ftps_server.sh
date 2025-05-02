@@ -117,7 +117,7 @@ fi
 log "FTPS server setup is complete and service is running"
 echo "========================================================="
 echo "FTPS Server Information:"
-echo "  - Server: ciwre-bae.campusad.msu.edu (35.9.219.73)"
+echo "  - Server: swatgenx.com (207.180.226.103)"
 echo "  - Port: 990"
 echo "  - Protocol: FTPS (FTP over SSL/TLS)"
 echo "  - Passive Port Range: 40000-50000"

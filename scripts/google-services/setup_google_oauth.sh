@@ -4,7 +4,7 @@
 
 echo "Google OAuth Setup Helper for SWATGenX"
 echo "====================================="
-echo 
+echo
 echo "This script will guide you through setting up Google OAuth credentials."
 echo
 
@@ -24,10 +24,10 @@ echo "6. Create OAuth client ID:"
 echo "   - Application type: Web application"
 echo "   - Name: SWATGenX Web Client"
 echo "   - Authorized JavaScript origins: "
-echo "     * https://ciwre-bae.campusad.msu.edu (for production)"
+echo "     * https://swatgenx.com (for production)"
 echo "     * http://localhost:3000 (for development)"
 echo "   - Authorized redirect URIs:"
-echo "     * https://ciwre-bae.campusad.msu.edu/api/login/google/callback (production)"
+echo "     * https://swatgenx.com/api/login/google/callback (production)"
 echo "     * http://localhost:3000/api/login/google/callback (development)"
 echo
 echo "7. Click 'Create' and note your Client ID and Client Secret"

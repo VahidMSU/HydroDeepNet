@@ -22,15 +22,13 @@ def fetching_streamflow_stations(base_directory,VPUID) -> pd.DataFrame:
     """ Get the streamflow stations for a specific VPUID
     return a dataframe"""
 
-    try:
-        df= gpd.read_file(
-        os.path.join(
-            base_directory, f"streamflow_stations/VPUID/{VPUID}/streamflow_stations_{VPUID}.shp"
-        )
+
+    df= gpd.read_file(
+    os.path.join(
+        base_directory, f"streamflow_stations/VPUID/{VPUID}/streamflow_stations_{VPUID}.shp"
     )
-    except Exception as e:
-        print(f"Error: {e}")
-        return pd.DataFrame()
+)
+
 
     return df
 def find_upstrean_huc12s(huc12, WBDHU12):
@@ -49,7 +47,7 @@ def find_upstrean_huc12s(huc12, WBDHU12):
 def get_nhdplus_huc12(VPUID) -> gpd.GeoDataFrame:
     """ Get the NHDPlus catchments for a specific VPUID
     return a dataframe"""
-    base_directory = f"{SWATGenXPaths.NHDPlus_path}/{VPUID}/unzipped_NHDPlusVPU/"
+    base_directory = f"{SWATGenXPaths.NHDPlus_path}VPUID/{VPUID}/unzipped_NHDPlusVPU/"
 
     ## raise error if the directory does not exist
     if not os.path.exists(base_directory):
@@ -124,6 +122,8 @@ def process_streamflow_station(huc12, stations_nhplus, WBDHU12, VPUID, base_dire
 def adding_huc12_to_stations(stations, VPUID):
 
     WBDHU12 = get_nhdplus_huc12(VPUID)
+    print(f"WBDHU12 columns: {WBDHU12.columns}")
+    print(f"stations columns: {stations.columns}")
     stations_nhplus = stations[['VPUID','site_no','geometry']].sjoin(WBDHU12[['huc12','tohuc','geometry']], how="inner", predicate='intersects')
 
     return stations_nhplus, WBDHU12
@@ -211,7 +211,7 @@ def extract_from_NWIS(USGS_path, VPUID, meta_data_directory):
 
 def get_all_VPUIDs(base_directory):
 
-    path = os.path.join(base_directory, "NHDPlus_VPU_National")
+    path = os.path.join(base_directory, "CONUS")
     files = [f for f in os.listdir(path) if f.endswith('.zip')]
     return [file.split('_')[2] for file in files]
 
@@ -278,5 +278,3 @@ def USGS_streamflow_retrieval_by_VPUID(VPUID):
     else:
         print(f"Data for {VPUID} already exists")
         meta_data_df = pd.read_csv(meta_data_path, dtype={'site_no': str})
-
-    

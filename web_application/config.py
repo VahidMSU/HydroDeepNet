@@ -48,13 +48,16 @@ class Config:
     logger = LoggerSetup(f"{WEB_APP_PATH}/logs", rewrite=False).setup_logger("Config")
 
     # Certificates and Secret Key
-    SSL_CERT_FILE = "/data/SWATGenXApp/codes/ciwre-bae-crs/ciwre-bae.campusad.msu.edu.key"
-    assert os.path.exists(SSL_CERT_FILE), f"SSL certificate not found: {SSL_CERT_FILE}"
+    SSL_CERT_FILE = "/data/SWATGenXApp/codes/ssl_certificate/swatgenx.com.key"
+    #assert os.path.exists(SSL_CERT_FILE), f"SSL certificate not found: {SSL_CERT_FILE}"
     SECRET_KEY = load_secret_key(SSL_CERT_FILE, logger)
+
+    # Gmail Configuration
+    GMAIL_APP_PASSWORD =  "fnla futv buoz xfld"  # Default to the provided app password
 
     # Shibboleth SSO Configuration
     SAML_METADATA_URL = "https://login.msu.edu/idp/shibboleth"
-    SAML_SP_ENTITY_ID = "https://ciwre-bae.campusad.msu.edu/shibboleth"
+    SAML_SP_ENTITY_ID = "https://swatgenx.com/shibboleth"
     SAML_SP_METADATA = "/etc/shibboleth/sp-metadata.xml"
     SAML_SP_PRIVATE_KEY = "/etc/shibboleth/sp-key.pem"
     SAML_SP_CERTIFICATE = "/etc/shibboleth/sp-cert.pem"
@@ -68,7 +71,7 @@ class Config:
     PRIVATE_MODE = os.getenv('PRIVATE_MODE', 'true').lower() == 'true'
 
     SITE_URL = {
-        'production': 'https://ciwre-bae.campusad.msu.edu',
+        'production': 'https://swatgenx.com',
         'development': 'http://localhost:3000'
     }.get(ENV, 'http://localhost:3000')
 

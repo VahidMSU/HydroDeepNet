@@ -18,7 +18,7 @@ from scipy.spatial import cKDTree
 import traceback
 
 HYDROGEO_DATASET_PATH = "/data/SWATGenXApp/GenXAppData/HydroGeoDataset/HydroGeoDataset_ML_250.h5"
-NHD_VPUID_PATH = "/data/SWATGenXApp/GenXAppData/NHDPlusData/SWATPlus_NHDPlus"
+NHD_VPUID_PATH = "/data/SWATGenXApp/GenXAppData/NHDPlusHR/VPUIDs"
 CDL_LOOKUP_PATH = "/data/SWATGenXApp/GenXAppData/CDL/CDL_CODES.csv"
 LOG_PATH = "/data/SWATGenXApp/codes/web_application/logs/"
 BASE_PATH = "/data/SWATGenXApp/GenXAppData/"
@@ -238,7 +238,7 @@ def read_h5_file(address, lat=None, lon=None, lat_range=None, lon_range=None, lo
             logger.error(f"Error reading data: {e}")
         return None
     if logger:
-        logger.info(f"Data read successfully: {data}")    
+        logger.info(f"Data read successfully: {data}")
     return dict_data
 
 def process_data(data, address):
@@ -319,7 +319,7 @@ def get_rowcol_index_by_latlon(desired_lat, desired_lon):
 
 
 def find_VPUID(station_no):
-    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths  
+    from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
     CONUS_streamflow_data = pd.read_csv(SWATGenXPaths.USGS_CONUS_stations_path, dtype={'site_no': str,'huc_cd': str})
     return CONUS_streamflow_data[
         CONUS_streamflow_data.site_no == station_no
@@ -327,11 +327,11 @@ def find_VPUID(station_no):
 
 
 def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolution):
-    
-    """ 
+
+    """
     Create a SWATGenX model for a single USGS site for a given user setting.
     """
-    
+
     VPUID = find_VPUID(site_no)
     from SWATGenX.SWATGenXLogging import LoggerSetup
     logger = LoggerSetup(LOG_PATH, verbose=True, rewrite=False)
@@ -376,21 +376,21 @@ def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolut
 
     logger.info(f"Configuration: {config}")
     # Model creation
-    
+
     os.makedirs(f"{USER_PATH}/{username}/SWATplus_by_VPUID", exist_ok=True)
-    
+
     if not os.path.exists(f"{USER_PATH}/{username}/SWATplus_by_VPUID/"):
          logger.error(f"Output directory not found: {USER_PATH}/{username}/SWATplus_by_VPUID/")
     else:
         logger.info(f"Output directory found: {USER_PATH}/{username}/SWATplus_by_VPUID/")
-    
+
     # Initialize model_path to None in case of exceptions
     model_path = None
-    
+
     try:
         commander = SWATGenXCommand(config)
         model_path = commander.execute()
-        logger.info(f"CommandX: Model created successfully: {model_path}") 
+        logger.info(f"CommandX: Model created successfully: {model_path}")
     except Exception as e:
         logger.error(f"Error in single_swatplus_model_creation: {str(e)}")
         logger.error(f"Traceback: {traceback.format_exc()}")
@@ -398,7 +398,7 @@ def single_swatplus_model_creation(username, site_no, ls_resolution, dem_resolut
         expected_path = f"{USER_PATH}/{username}/SWATplus_by_VPUID/{VPUID}/huc12/{site_no}/SWAT_MODEL_Web_Application"
         logger.error(f"Model would have been created at: {expected_path}")
         logger.error(f"Traceback: {traceback.format_exc()}")
-       
+
     # Calibration, validation, sensitivity analysis
     #if calibration_flag or validation_flag or sensitivity_flag:
     #    process_SCV_SWATGenXModel(config)
@@ -426,16 +426,16 @@ def get_huc12_streams_geometries(list_of_huc12s):
     print(VPUID)
     # Read the shapefile
     path = f"{NHD_VPUID_PATH}/{VPUID}/streams.pkl"
-    
+
     gdf = gpd.GeoDataFrame(pd.read_pickle(path)).to_crs("EPSG:4326")
     ### make sure list_of_huc12s and huc12 column in the geodataframe are in 12 digit int
     gdf['huc12'] = gdf['huc12'].astype(int)
     list_of_huc12s = [int(x) for x in list_of_huc12s]
-    
+
     ### type as str
     gdf = gdf[gdf['huc12'].isin(list_of_huc12s)]
-    WBArea_Permanent_Identifier = gdf['WBArea_Permanent_Identifier'].tolist() 
-    
+    WBArea_Permanent_Identifier = gdf['WBArea_Permanent_Identifier'].tolist()
+
     return gdf['geometry'].apply(mapping).tolist(), WBArea_Permanent_Identifier
 
 def get_huc12_lakes_geometries(list_of_huc12s, WBArea_Permanent_Identifier):
@@ -447,7 +447,7 @@ def get_huc12_lakes_geometries(list_of_huc12s, WBArea_Permanent_Identifier):
     gdf = gdf.rename(columns={'Permanent_Identifier': 'WBArea_Permanent_Identifier'})
     gdf['WBArea_Permanent_Identifier'] = gdf['WBArea_Permanent_Identifier'].astype(str)
 
-    gdf = gdf[gdf.WBArea_Permanent_Identifier.isin(WBArea_Permanent_Identifier)] 
+    gdf = gdf[gdf.WBArea_Permanent_Identifier.isin(WBArea_Permanent_Identifier)]
     return gdf['geometry'].apply(mapping).tolist()
 
 def find_station(search_term='metal'):

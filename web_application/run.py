@@ -5,8 +5,9 @@ from app import create_app, socketio
 
 os.environ['MPLCONFIGDIR'] = '/tmp/matplotlib-cache'
 os.makedirs(os.environ['MPLCONFIGDIR'], exist_ok=True)
-os.environ['FLASK_ENV'] = 'production'
+os.environ['FLASK_ENV'] = 'development'  # Force development mode
 os.environ['FLASK_APP'] = 'run.py'
+os.environ['SITE_URL'] = 'http://localhost:3000'  # Set correct site URL
 
 # Expose app early for CLI tools
 app = create_app()
@@ -44,7 +45,7 @@ def model_settings_fallback():
 def main():
     run_oauth_migration()
     app.logger.info("Flask application initialized for local SocketIO server.")
-    socketio.run(app, host='0.0.0.0', port=5050)
+    socketio.run(app, host='0.0.0.0', port=3000, debug=True)  # Run on port 3000 with debug mode
 
 if __name__ == '__main__':
     main()

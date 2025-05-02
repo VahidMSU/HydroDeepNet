@@ -132,7 +132,7 @@ class runHUC():
             self.projDir, 'Watershed', 'Rasters', 'Landuse', 'landuse.tif'
         )
         self.hrus.landuseLayer = QgsRasterLayer(self.hrus.landuseFile, 'landuse')
-        self.hrus.soilFile = os.path.join(self.projDir, 'Watershed', 'Rasters', 'Soil', 'soil.tif')
+        self.hrus.soilFile = os.path.join(self.projDir, 'Watershed', 'Rasters', 'gSSURGO', 'soil.tif')
         self.hrus.soilLayer = QgsRasterLayer(self.hrus.soilFile, 'soil')
         #landCombo = hrudlg.selectLanduseTable
         #landIndex = landCombo.findText('nlcd2001_landuses')
@@ -141,7 +141,7 @@ class runHUC():
         print(' %###% debug: landuseFile {0}'.format(self.hrus.landuseFile), ' ###')
         hrudlg.SSURGOButton.setChecked(True)
         hrudlg.usersoilButton.setChecked(True)
-        self.LanduseTable = '/data/SWATGenXApp/GenXAppData/LandUse/landuse_lookup.csv'
+        self.LanduseTable = '/data/SWATGenXApp/GenXAppData/NLCD/landuse_lookup.csv'
         gv.db.importCsv('landuse_lookup', "landuse", self.LanduseTable)
         gv.db.useSSURGO = True
         gv.db.slopeLimits = [3,9]
