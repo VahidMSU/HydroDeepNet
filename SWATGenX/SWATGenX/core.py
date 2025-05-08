@@ -188,13 +188,13 @@ class SWATGenXCore:
 
 		if sim_file_exists and not state:
 			raise ValueError(f"Model already exists but did not execute successfully for {self.VPUID}/{self.LEVEL}/{self.NAME}")
-		
+
 		return state
-	
+
 
 	def path_setup(self):
 		"""Sets up the paths for the SWATGenX model."""
-		
+
 		self.paths.extracted_swat_prism_path = self.paths.construct_path(
 			self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "PRISM"
 		)
@@ -203,12 +203,12 @@ class SWATGenXCore:
 		streamflow_shape = self.paths.construct_path(
 			self.paths.swatgenx_outlet_path, self.VPUID, self.LEVEL, self.NAME, "streamflow_data", "stations.shp"
 		)
-		
+
 		if not os.path.exists(streamflow_shape) and os.path.exists(self.paths.extracted_swat_prism_path):
 			self.logger.error(
 				f"The model extraction has failed for {self.NAME} before (PRISM extracted but streamflow shapefile does not exist)"
 			)
-		
+
 
 	def process(self):
 		"""Core function to run the SWATGenX model for a given watershed."""
@@ -220,41 +220,42 @@ class SWATGenXCore:
 		assert self.ls_resolution is not None, "ls_resolution is not provided"
 		assert self.dem_resolution is not None, "dem_resolution is not provided"
 		assert self.MODEL_NAME is not None, "MODEL_NAME is not provided"
-		
+
 		self.EPSG = check_configuration(self.VPUID, self.landuse_epoch)
+
 		self.logger.info(f"SWATGenXCore: Beginning the extraction of the model for {self.site_no}")
 		self.NAME = self.site_no
 		if state := self.check_simulation_output():
 			return None
 		self.path_setup()
 		self.list_of_huc12s = self.prepare_huc12s()
-		
+
 
 		generate_swatplus_shapes(self.paths,
 			self.list_of_huc12s, self.VPUID, self.LEVEL, self.NAME, self.EPSG, self.MODEL_NAME
 		)
-		try:
-			generate_swatplus_rasters(
-				self.paths,
-				self.VPUID,
-				self.LEVEL,
-				self.NAME,
-				self.MODEL_NAME,
-				self.landuse_product,
-				self.landuse_epoch,
-				self.ls_resolution,
-				self.dem_resolution,
-			)
-			
-			self.logger.info(f"Generated SWAT+ shapes and rasters for {self.NAME}, {self.VPUID}")
-		except Exception as e:
-			self.logger.error(f"Error in generating SWAT+ shapes and rasters for {self.NAME}: {e}")
-			return None
+		#try:
+		generate_swatplus_rasters(
+			self.paths,
+			self.VPUID,
+			self.LEVEL,
+			self.NAME,
+			self.MODEL_NAME,
+			self.landuse_product,
+			self.landuse_epoch,
+			self.ls_resolution,
+			self.dem_resolution,
+		)
+
+		self.logger.info(f"Generated SWAT+ shapes and rasters for {self.NAME}, {self.VPUID}")
+		#except Exception as e:
+		#	self.logger.error(f"Error in generating SWAT+ shapes and rasters for {self.NAME}: {e}")
+		#	return None
 
 		self.list_of_huc12s = [f"{huc12:012d}" for huc12 in self.list_of_huc12s]
 		self.logger.info(f"list of requested huc12s: {self.list_of_huc12s}")
 		self.logger.info(f"Runnig QSWAT+ for {self.NAME}")
-		
+
 		success_flag = self.run_qswat_plus()
 
 		if not success_flag:

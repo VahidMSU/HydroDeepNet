@@ -160,7 +160,7 @@ def get_streamflow_by_VPUID(VPUID) -> pd.DataFrame:
 
 def extract_from_NWIS(USGS_path, VPUID, meta_data_directory):
     data = []
-    total_expected_days = (pd.to_datetime(SWATGenXPaths.niws_end_date) - pd.to_datetime(SWATGenXPaths.niws_end_date)).days + 1
+    total_expected_days = (pd.to_datetime(SWATGenXPaths.niws_end_date) - pd.to_datetime(SWATGenXPaths.niws_start_date)).days + 1
     stations = fetching_streamflow_stations(USGS_path, VPUID)
     stations_nhplus, WBDHU12 = adding_huc12_to_stations(stations, VPUID)
     huc12s = stations_nhplus.huc12.values
@@ -208,12 +208,6 @@ def extract_from_NWIS(USGS_path, VPUID, meta_data_directory):
     return result
 
 
-
-def get_all_VPUIDs(base_directory):
-
-    path = os.path.join(base_directory, "CONUS")
-    files = [f for f in os.listdir(path) if f.endswith('.zip')]
-    return [file.split('_')[2] for file in files]
 
 
 def plot_streamflow_data(meta_data_df, VPUID):

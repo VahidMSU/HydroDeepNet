@@ -31,6 +31,12 @@ def write_available_sites(VPUIDs, rewrite=False):
                 print(f"File not found: {streamflow_metadata_path}")
                 continue
 
+            ###if exists but is empty, delete it
+            if os.path.getsize(streamflow_metadata_path) == 0:
+                os.remove(streamflow_metadata_path)
+                print(f"File is empty: {streamflow_metadata_path}")
+                continue
+
             station_data = pd.read_csv(streamflow_metadata_path, dtype={'site_no': str, "first_huc": str})
             all_stations.append(station_data)
         print(f"all_stations: {all_stations}")
@@ -60,7 +66,9 @@ def integrate_streamflow_data(usgs_data_base=None):
     all_stations = write_available_sites(VPUIDs, rewrite=rewrite)
 
     fps = pd.read_csv(SWATGenXPaths.FPS_State_Territories, dtype={'SiteNumber': str})
+    print(f"fps path: {SWATGenXPaths.FPS_State_Territories}")
     print(f"fps columns: {fps.columns}")
+    print(f"all_stations columns: {all_stations.columns}")
     fps_all_stations = pd.merge(all_stations, fps, left_on="site_no", right_on="SiteNumber", how="left")
     fps_all_stations = fps_all_stations.dropna(subset=["site_no"])
     fps_all_stations = fps_all_stations.fillna("---")

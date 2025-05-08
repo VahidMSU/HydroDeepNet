@@ -1,10 +1,13 @@
-from SWATGenX.USGS_streamflow_retrieval import USGS_streamflow_retrieval_by_VPUID, get_all_VPUIDs
+from SWATGenX.USGS_streamflow_retrieval import USGS_streamflow_retrieval_by_VPUID
+from SWATGenX.utils import get_all_VPUIDs
 from multiprocessing import Process
 if __name__ == "__main__":
 
-    VPUIDs = get_all_VPUIDs("/data/SWATGenXApp/GenXAppData/NHDPlusHR")
-
+    VPUIDs = get_all_VPUIDs()
+    print(VPUIDs)
     processes = []
+
+    VPUIDs = ["0405", "0406", "0407", "0408", "0409", "0410"]
 
     test = False
 

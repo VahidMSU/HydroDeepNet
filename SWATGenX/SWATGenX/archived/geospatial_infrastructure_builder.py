@@ -1,9 +1,9 @@
-from SWATGenX.gSSURGO_extraction import gSSURGO_extract_by_VPUID
+from SWATGenX.gssurgo_extraction import gSSURGO_extract_by_VPUID
 from SWATGenX.NHDPlus_extract_by_VPUID import NHDPlus_extract_by_VPUID
 from SWATGenX.USGS_DEM_extraction import DEM_extract_by_VPUID
 from SWATGenX.NLCD_extraction import NLCD_extract_by_VPUID_helper
 from SWATGenX.NHDPlus_preprocessing import NHDPlus_preprocessing
-from SWATGenX.extract_CONUS_gssurgo_raster import extract_CONUS_gssurgo_raster
+from SWATGenX.extract_gssurgo_conus_raster import extract_CONUS_gssurgo_raster
 from SWATGenX.SWATGenXConfigPars import SWATGenXPaths
 from SWATGenX.SWATGenXLogging import LoggerSetup
 import os

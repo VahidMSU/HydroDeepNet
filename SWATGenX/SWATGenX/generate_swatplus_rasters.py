@@ -35,8 +35,8 @@ class SWATplusRasterGenerator:
         self.SOURCE = self.paths.construct_path(self.paths.swatgenx_outlet_path, vpuid, level, name, model_name)
 
         # Input paths
-        self.original_landuse_path = self.paths.construct_path(self.paths.NLCD_path, f"{vpuid}/{landuse_product}_{vpuid}_{landuse_epoch}_{ls_resolution}m.tif")
-        self.original_soil_path = self.paths.construct_path(self.paths.gSSURGO_path, f"{vpuid}/gSSURGO_{vpuid}_{ls_resolution}m.tif")
+        self.original_landuse_path = self.paths.construct_path(self.paths.NLCD_path, f"VPUID/{vpuid}/{landuse_product}_{vpuid}_{landuse_epoch}_{ls_resolution}m.tif")
+        self.original_soil_path = self.paths.construct_path(self.paths.gSSURGO_path, f"VPUID/{vpuid}/gSSURGO_{vpuid}_{ls_resolution}m.tif")
         self.original_dem_path = self.paths.construct_path(self.paths.DEM_path, "VPUID", vpuid)
 
         # Output paths

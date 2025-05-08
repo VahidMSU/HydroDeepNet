@@ -25,13 +25,12 @@ import logging
 def check_station(station_name):
 
     FPS_sites_path = "/data/SWATGenXApp/GenXAppData/USGS/FPS_States_and_Territories.csv"
-    FPS_sites = pd.read_csv(FPS_sites_path, skiprows=1)
+    FPS_sites = pd.read_csv(FPS_sites_path)
     if "Site Number" in FPS_sites.columns:
         FPS_sites.rename(columns={"Site Number": "SiteNumber"}, inplace=True)
     if "Site Name" in FPS_sites.columns:
         FPS_sites.rename(columns={"Site Name": "SiteName"}, inplace=True)
     ## rewrite the file
-    FPS_sites.to_csv(FPS_sites_path, index=False)
     print(f"FPS columns: {FPS_sites.columns}")
     FPS_status = FPS_sites[FPS_sites.SiteNumber == station_name]
 
@@ -48,9 +47,7 @@ def check_station(station_name):
 if __name__ == "__main__":
 
 
-    check_station("05406840")
-
-
+    check_station("4096515")
 
     LEVEL = "huc12"
 
@@ -83,7 +80,7 @@ if __name__ == "__main__":
         "landuse_epoch": "2021",
         "ls_resolution": "250",
         "dem_resolution": "30",
-        "station_name": ['05406840'],
+        "station_name": ['04097970'],
         "MODEL_NAME": MODEL_NAME,
         "MAX_AREA": 1500,
         "MIN_AREA": 50,

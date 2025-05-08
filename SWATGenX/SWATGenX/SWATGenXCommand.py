@@ -26,13 +26,13 @@ class SWATGenXCommand:
 			swatgenx_config (dict): Configuration settings for the SWATGenX command.
 		"""
 		self.config = swatgenx_config
-		
+
 		self.paths = SWATGenXPaths(**swatgenx_config)
-		
+
 		self.logger = LoggerSetup(verbose=True, report_path=self.paths.report_path,
 							rewrite=True).setup_logger("SWATGenXCommand")
-		self.logger.info(f"usernames: {self.config.get('username')}, outpath: {self.paths.swatgenx_outlet_path}")		
-		#self.logger.info(f"extracted_swat_prism_path: {self.paths.extracted_swat_prism_path}")	
+		self.logger.info(f"usernames: {self.config.get('username')}, outpath: {self.paths.swatgenx_outlet_path}")
+		#self.logger.info(f"extracted_swat_prism_path: {self.paths.extracted_swat_prism_path}")
 		#os.makedirs(self.paths.extracted_swat_prism_path, exist_ok=True)
 	def find_VPUID(self, station_no, level="huc12"):
 		"""
@@ -51,6 +51,11 @@ class SWATGenXCommand:
 			return f"0{int(station_no)[:3]}"
 
 		conus_streamflow_data = pd.read_csv(self.paths.USGS_CONUS_stations_path, dtype={'site_no': str, 'huc_cd': str})
+		print(conus_streamflow_data)
+		conus_streamflow_data['VPUID'] = conus_streamflow_data['huc_cd'].str[:4]
+        ## test. only keep VPUID 0405
+		#conus_streamflow_data = conus_streamflow_data[conus_streamflow_data.VPUID == "0405"]
+		#print(conus_streamflow_data)
 		return conus_streamflow_data[conus_streamflow_data.site_no == station_no].huc_cd.values[0][:4]
 	def generate_huc12_list(self, huc8, vpuid):
 		"""
@@ -67,7 +72,7 @@ class SWATGenXCommand:
 		"""
 		path = f"{self.paths.extracted_nhd_swatplus_path}/{vpuid}/unzipped_NHDPlusVPU/"
 		gdb_files = [g for g in os.listdir(path) if g.endswith('.gdb')]
-		
+
 		if not gdb_files:
 			raise FileNotFoundError(f"No .gdb files found in the directory: {path}")
 
@@ -159,11 +164,9 @@ class SWATGenXCommand:
 		# If only one station, do the original single-process approach
 		if len(station_names) == 1:
 			station_name = station_names[0]
-			try:
-				list_of_huc12s, vpuid = self.return_list_of_huc12s(station_name, self.config.get("MAX_AREA"))
-			except Exception as e:
-				self.logger.error(f"Error processing station {station_name}: {e}")
-				return None
+
+			list_of_huc12s, vpuid = self.return_list_of_huc12s(station_name, self.config.get("MAX_AREA"))
+
 
 			# Update the configuration dictionary for this single station
 			self.config.update({
@@ -234,7 +237,7 @@ class SWATGenXCommand:
 		# We'll process 3 models per HUC4, with a queue size of 10 parallel tasks max.
 		max_queue_size = 10
 		max_models_per_huc4 = 3
-		
+
 		# Create an executor with up to 10 workers
 		with ProcessPoolExecutor(max_workers=max_queue_size) as executor:
 			future_to_info = {}
@@ -314,7 +317,7 @@ class SWATGenXCommand:
 			]
 			eligible_stations = eligible_stations[eligible_stations.GAP_percent < self.config.get("GAP_percent")]
 		else:
-			eligible_stations = pd.DataFrame()			
+			eligible_stations = pd.DataFrame()
 		return eligible_stations
 
 

@@ -119,7 +119,7 @@ class NLCDExtractor:
 
         resolutions = [100, 250, 500, 1000, 2000]
         for resolution in resolutions:
-            output_path = self.paths.construct_path(self.NLCD_path, self.VPUID, f"NLCD_{self.VPUID}_{self.epoch}_{resolution}m.tif")
+            output_path = self.paths.construct_path(self.NLCD_path, "VPUID", self.VPUID, f"NLCD_{self.VPUID}_{self.epoch}_{resolution}m.tif")
             if not os.path.exists(output_path):
                 gdal.Warp(output_path, self.original_out_raster, xRes=resolution, yRes=resolution, resampleAlg=gdal.GRA_NearestNeighbour)
                 print(f"Output path: {output_path}")
@@ -136,6 +136,6 @@ def NLCD_extract_by_VPUID_helper(VPUID, epoch):
 
 
 if __name__ == "__main__":
-    VPUID = "0405"
+    VPUID = "0406"
     epoch = 2021
     NLCD_extract_by_VPUID_helper(VPUID, epoch)

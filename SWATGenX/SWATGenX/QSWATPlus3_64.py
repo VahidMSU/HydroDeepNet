@@ -186,13 +186,17 @@ class runHUC():
         self.hrus = HRUs(gv, self.dlg.reportsBox)
         self.hrus.init()
         hrudlg = self.hrus._dlg
+
         assert os.path.isdir(self.projDir), f'No project directory {self.projDir}'
+
+        print(f"##### projDir: {self.projDir}")
         self.hrus.landuseFile = os.path.join(
             self.projDir, 'Watershed', 'Rasters', 'Landuse', 'landuse.tif'
         )
         self.hrus.landuseLayer = QgsRasterLayer(self.hrus.landuseFile, 'landuse')
         self.hrus.soilFile = os.path.join(self.projDir, 'Watershed', 'Rasters', 'gSSURGO', 'soil.tif')
         self.hrus.soilLayer = QgsRasterLayer(self.hrus.soilFile, 'soil')
+
         self.hrus.landuseTable = 'landuse_lookup'
         self.logger.info(f'landuseFile {self.hrus.landuseFile}')
         hrudlg.SSURGOButton.setChecked(True)
@@ -207,6 +211,7 @@ class runHUC():
         self.hrus.initLanduses(self.hrus.landuseTable)
         assert os.path.isfile(self.hrus.landuseFile), f'No landuse file {self.hrus.landuseFile}'
         assert os.path.isfile(self.hrus.soilFile), f'No soil file {self.hrus.soilFile}'
+
         if not self.hrus.readFiles():
             hrudlg.close()
             return

@@ -4,9 +4,18 @@
 
 BASE_DIR="${SWAT_BASE_DIR:-$(cd "$SCRIPT_DIR/../../" && pwd)}"
 INSTALL_DIR="${BASE_DIR}/swatplus_installation"
+
+
 TARGET_DB_DIR="/usr/local/share/SWATPlus/Databases"
 USER_DB_DIR="${HOME}/.local/share/SWATPlus/Databases"
 SWATPLUS_EDITOR_DIR="/usr/local/share/SWATPlusEditor/swatplus-editor"
+
+
+echo "BASE_DIR: ${BASE_DIR}"
+echo "INSTALL_DIR: ${INSTALL_DIR}"
+echo "TARGET_DB_DIR: ${TARGET_DB_DIR}"
+echo "USER_DB_DIR: ${USER_DB_DIR}"
+echo "SWATPLUS_EDITOR_DIR: ${SWATPLUS_EDITOR_DIR}"
 
 # Create installation directory and clean it
 echo "Creating and cleaning installation directory..."
