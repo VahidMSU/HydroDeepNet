@@ -502,7 +502,7 @@ class NHD_SWATPlus_Extractor:
                 downstreamLake_HydroSeq=streams[streams.LakeId.isin([lwo])].DnHydroSeq.values
                 downstreamLake_LakeId = streams[streams.HydroSeq.isin(downstreamLake_HydroSeq)].LakeId.unique()
                 if len(downstreamLake_LakeId)>0:
-                    self.logger.info("##################",downstreamLake_LakeId,"###################")
+                    self.logger.info("##################downstreamLake_LakeId###################")
                     for i in ['LakeId', 'LakeWithin', 'LakeIn']:
                         for j in downstreamLake_LakeId:
                             streams[i] = np.where(streams[i].isin([lwo]), j, streams[i])

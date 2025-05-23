@@ -194,7 +194,7 @@ class runHUC():
             self.projDir, 'Watershed', 'Rasters', 'Landuse', 'landuse.tif'
         )
         self.hrus.landuseLayer = QgsRasterLayer(self.hrus.landuseFile, 'landuse')
-        self.hrus.soilFile = os.path.join(self.projDir, 'Watershed', 'Rasters', 'gSSURGO', 'soil.tif')
+        self.hrus.soilFile = os.path.join(self.projDir, 'Watershed', 'Rasters', 'Soil', 'soil.tif')
         self.hrus.soilLayer = QgsRasterLayer(self.hrus.soilFile, 'soil')
 
         self.hrus.landuseTable = 'landuse_lookup'
