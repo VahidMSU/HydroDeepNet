@@ -43,7 +43,7 @@ class SWATplusRasterGenerator:
         self.swatplus_shapes_path = os.path.join(self.SOURCE, "Watershed/Shapes/")
         self.swatplus_landuse_path = os.path.join(self.SOURCE, "Watershed/Rasters/Landuse/")
         self.swatplus_dem_input = os.path.join(self.SOURCE, "Watershed/Rasters/DEM/")
-        self.swatplus_soil_input = os.path.join(self.SOURCE, "Watershed/Rasters/gSSURGO/")
+        self.swatplus_soil_input = os.path.join(self.SOURCE, "Watershed/Rasters/Soil/")
         self.swatplus_landuse_output = os.path.join(self.swatplus_landuse_path, "landuse.tif")
         self.swatplus_soil_output = os.path.join(self.swatplus_soil_input, "soil.tif")
         self.swatplus_soil_temp = os.path.join(self.swatplus_soil_input, f"soil_{ls_resolution}m_temp.tif")
@@ -177,6 +177,8 @@ class SWATplusRasterGenerator:
 
         # Replace invalid cells
         soil_array = np.where(soil_array == 2147483647, most_common_value, soil_array)
+        soil_array = np.where(soil_array == 0, most_common_value, soil_array)
+        
         soil_array = np.where(np.isin(soil_array, mask_value), soil_array, most_common_value)
 
         return most_common_value, soil_array
