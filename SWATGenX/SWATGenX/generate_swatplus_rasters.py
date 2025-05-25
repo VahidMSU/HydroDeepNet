@@ -128,9 +128,35 @@ class SWATplusRasterGenerator:
 
     def extract_and_save_rasters(self, spatial_analysis) -> None:
         """Extract and save DEM, landuse, and soil rasters."""
-        # Extract and save DEM
-        dem_raster = spatial_analysis.ExtractByMask(self.original_dem_path, self.watershed_boundary_path)
+        # Read original DEM to get just the elevation band
+        with rasterio.open(self.original_dem_path) as src:
+            dem_data = src.read(1)  # Read only first band (elevation)
+            profile = src.profile.copy()
+            profile.update(count=1, nodata=-9999)  # Ensure output has only one band and proper nodata value
+            
+            # Create temporary single-band DEM
+            temp_dem = os.path.join(self.swatplus_dem_input, "temp_dem.tif")
+            with rasterio.open(temp_dem, 'w', **profile) as dst:
+                dst.write(dem_data, 1)
+
+        # Extract and save DEM using the single-band temp file
+        dem_raster = spatial_analysis.ExtractByMask(temp_dem, self.watershed_boundary_path)
         dem_raster.save(self.swatplus_dem_output)
+
+        # Validate the saved DEM
+        with rasterio.open(self.swatplus_dem_output) as src:
+            print(f"DEM validation - Bands: {src.count}, Shape: {src.shape}, CRS: {src.crs}")
+            profile = src.profile
+            profile.update(count=1, nodata=-9999)  # Ensure single band and proper nodata
+            dem_data = src.read(1)
+            
+            # Save with validated settings
+            with rasterio.open(self.swatplus_dem_output, 'w', **profile) as dst:
+                dst.write(dem_data, 1)
+
+        # Clean up temp file
+        if os.path.exists(temp_dem):
+            os.remove(temp_dem)
 
         # Extract and save Landuse
         landuse_raster = spatial_analysis.ExtractByMask(self.original_landuse_path, self.watershed_boundary_path)

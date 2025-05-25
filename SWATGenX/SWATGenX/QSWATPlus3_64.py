@@ -130,7 +130,7 @@ class runHUC():
         self.delin._dlg.recalcButton.setChecked(False)  # want to use length field in channels shapefile
         self.delin._dlg.snapThreshold.setText('300')
         # use MPI on HUC10 and HUC8 projects
-        numProc = 8
+        numProc = 1
         self.delin._dlg.numProcesses.setValue(numProc)
         gv.useGridModel = False
         gv.existingWshed = True
@@ -211,7 +211,6 @@ class runHUC():
         self.hrus.initLanduses(self.hrus.landuseTable)
         assert os.path.isfile(self.hrus.landuseFile), f'No landuse file {self.hrus.landuseFile}'
         assert os.path.isfile(self.hrus.soilFile), f'No soil file {self.hrus.soilFile}'
-
         if not self.hrus.readFiles():
             hrudlg.close()
             return
